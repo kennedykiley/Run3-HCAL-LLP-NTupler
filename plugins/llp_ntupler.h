@@ -107,11 +107,11 @@ using namespace std;
 
 //------ Class declaration ------//
 
-class JetNtupler : public edm::EDAnalyzer {
+class llp_ntupler : public edm::EDAnalyzer {
 public:
   //analyzer constructor and destructor
-  explicit JetNtupler(const edm::ParameterSet&);
-  ~JetNtupler();
+  explicit llp_ntupler(const edm::ParameterSet&);
+  ~llp_ntupler();
 
   void loadEvent(const edm::Event& iEvent); //call at the beginning of each event to get input handles from the python config
   virtual void resetBranches();
