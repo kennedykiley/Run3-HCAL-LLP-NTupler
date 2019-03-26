@@ -16,7 +16,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 
 
 #initialize the process
-process = cms.Process("JetNtupler")
+process = cms.Process("LLPNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
 process.load("Configuration.EventContent.EventContent_cff")
@@ -35,11 +35,11 @@ process.source = cms.Source("PoolSource",
 
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(101) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 #TFileService for output
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string('jetNtuple_M-500_CTau-1000mm_pt20.root'),
+	fileName = cms.string('llp_ntupler.root'),
     closeFileFast = cms.untracked.bool(True)
 )
 
@@ -74,7 +74,7 @@ process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
 #------ Analyzer ------#
 
 #list input collections
-process.ntuples = cms.EDAnalyzer('JetNtupler',
+process.ntuples = cms.EDAnalyzer('llp_ntupler',
     isData = cms.bool(False),
     useGen = cms.bool(True),
     isFastsim = cms.bool(False),
