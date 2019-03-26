@@ -1,6 +1,6 @@
 #include "llp_ntupler.h"
 
-const reco::Candidate* JetNtupler::findFirstMotherWithDifferentID(const reco::Candidate *particle){
+const reco::Candidate* llp_ntupler::findFirstMotherWithDifferentID(const reco::Candidate *particle){
 
   if( particle == 0 ){
     printf("ERROR! null candidate pointer, this should never happen\n");
@@ -22,7 +22,7 @@ const reco::Candidate* JetNtupler::findFirstMotherWithDifferentID(const reco::Ca
   return 0;
 };
 
-const reco::Candidate* JetNtupler::findOriginalMotherWithSameID(const reco::Candidate *particle){
+const reco::Candidate* llp_ntupler::findOriginalMotherWithSameID(const reco::Candidate *particle){
 
   if( particle == 0 ){
     printf("ERROR! null candidate pointer, this should never happen\n");

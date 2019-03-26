@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// Class:      JetNtupler
+// Class:      llp_ntupler
 /*
   Description: Base class for miniAOD analysis with CRAB
 */
@@ -8,7 +8,7 @@
 
 #include "llp_ntupler.h"
 //------ Constructors and destructor ------//
-JetNtupler::JetNtupler(const edm::ParameterSet& iConfig):
+llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   //get inputs from config file
   isData_(iConfig.getParameter<bool> ("isData")),
   isFourJet_(iConfig.getParameter<bool> ("isFourJet")),
@@ -129,12 +129,12 @@ JetNtupler::JetNtupler(const edm::ParameterSet& iConfig):
 */
 }
 
-JetNtupler::~JetNtupler()
+llp_ntupler::~llp_ntupler()
 {
 };
 
 //------ Enable the desired set of branches ------//
-void JetNtupler::setBranches(){
+void llp_ntupler::setBranches(){
 
   llpTree->Branch("isData", &isData, "isData/O");
   llpTree->Branch("isFourJet", &isFourJet, "isFourJet/O");
@@ -243,7 +243,7 @@ void JetNtupler::setBranches(){
   if (isQCD_)enableQCDBranches();
 };
 
-void JetNtupler::enableFatJetBranches()
+void llp_ntupler::enableFatJetBranches()
 {
   llpTree->Branch("n_fat_Jets", &n_fat_Jets,"n_fat_Jets/I");
   llpTree->Branch("fat_jetE", fat_jetE,"fat_jetE[n_fat_Jets]/F");
@@ -315,7 +315,7 @@ void JetNtupler::enableFatJetBranches()
   return;
 };
 
-void JetNtupler::enableMCBranches(){
+void llp_ntupler::enableMCBranches(){
   llpTree->Branch("nGenJets", &nGenJets, "nGenJets/I");
   llpTree->Branch("genJetE", genJetE, "genJetE[nGenJets]/F");
   llpTree->Branch("genJetPt", genJetPt, "genJetPt[nGenJets]/F");
@@ -347,7 +347,7 @@ void JetNtupler::enableMCBranches(){
   llpTree->Branch("alphasWeights", "std::vector<float>",&alphasWeights);
   */
 };
-void JetNtupler::enableQCDBranches()
+void llp_ntupler::enableQCDBranches()
 {
   //QCD BRANCHES
   llpTree->Branch("nGenQCDParticles", &nGenQCDParticles, "nGenQCDParticles/I");
@@ -358,7 +358,7 @@ void JetNtupler::enableQCDBranches()
   llpTree->Branch("genParticleQCD_match_jet_index", &genParticleQCD_match_jet_index, "genParticleQCD_match_jet_index[nGenQCDParticles]/i");
   llpTree->Branch("genParticleQCD_min_delta_r_match_jet", &genParticleQCD_min_delta_r_match_jet, "genParticleQCD_min_delta_r_match_jet[nGenQCDParticles]/F");
 };
-void JetNtupler::enableTriggerBranches()
+void llp_ntupler::enableTriggerBranches()
 {
   nameHLT = new std::vector<std::string>; nameHLT->clear();
   llpTree->Branch("HLTDecision", &triggerDecision, ("HLTDecision[" + std::to_string(NTriggersMAX) +  "]/O").c_str());
@@ -367,7 +367,7 @@ void JetNtupler::enableTriggerBranches()
   //llpTree->Branch("HLTRSQ", &HLTRSQ, "HLTRSQ/F");
 };
 
-void JetNtupler::enableGenParticleBranches(){
+void llp_ntupler::enableGenParticleBranches(){
   llpTree->Branch("gLLP_prod_vertex_x", gLLP_prod_vertex_x, "gLLP_prod_vertex_x[2]/F");
   llpTree->Branch("gLLP_prod_vertex_y", gLLP_prod_vertex_y, "gLLP_prod_vertex_y[2]/F");
   llpTree->Branch("gLLP_prod_vertex_z", gLLP_prod_vertex_z, "gLLP_prod_vertex_z[2]/F");
@@ -424,7 +424,7 @@ void JetNtupler::enableGenParticleBranches(){
 
 
 //------ Load the miniAOD objects and reset tree variables for each event ------//
-void JetNtupler::loadEvent(const edm::Event& iEvent){//load all miniAOD objects for the current event
+void llp_ntupler::loadEvent(const edm::Event& iEvent){//load all miniAOD objects for the current event
   iEvent.getByToken(triggerBitsToken_, triggerBits);
   iEvent.getByToken(hepMCToken_, hepMC);
   iEvent.getByToken(triggerBitsToken_, triggerBits);
@@ -485,7 +485,7 @@ void JetNtupler::loadEvent(const edm::Event& iEvent){//load all miniAOD objects 
 }
 
 //called by the loadEvent() method
-void JetNtupler::resetBranches(){
+void llp_ntupler::resetBranches(){
     //reset tree variables
     reset_event_variables();
     reset_photon_variable();
@@ -495,7 +495,7 @@ void JetNtupler::resetBranches(){
     reset_qcd_variables();
 }
 
-void JetNtupler::reset_event_variables()
+void llp_ntupler::reset_event_variables()
 {
   eventNum = 0;
   lumiNum = 0;
@@ -510,7 +510,7 @@ void JetNtupler::reset_event_variables()
   return;
 };
 
-void JetNtupler::reset_photon_variable()
+void llp_ntupler::reset_photon_variable()
 {
   fJetNPhotons = 0;
   for (int i=0; i< OBJECTARRAYSIZE; i++) {
@@ -525,7 +525,7 @@ void JetNtupler::reset_photon_variable()
   return;
 };
 
-void JetNtupler::reset_jet_variables()
+void llp_ntupler::reset_jet_variables()
 {
   nJets = 0;
   for ( int i = 0; i < OBJECTARRAYSIZE; i++)
@@ -599,7 +599,7 @@ void JetNtupler::reset_jet_variables()
   return;
 };
 
-void JetNtupler::reset_gen_llp_variable()
+void llp_ntupler::reset_gen_llp_variable()
 {
   for ( int i = 0; i < LLP_ARRAY_SIZE; i++ )
   {
@@ -644,7 +644,7 @@ void JetNtupler::reset_gen_llp_variable()
   return;
 };
 
-void JetNtupler::reset_gen_jet_variable()
+void llp_ntupler::reset_gen_jet_variable()
 {
   nGenJets = 0;
   for ( int i = 0; i < OBJECTARRAYSIZE; i++ )
@@ -659,7 +659,7 @@ void JetNtupler::reset_gen_jet_variable()
   }
   return;
 };
-void JetNtupler::reset_qcd_variables()
+void llp_ntupler::reset_qcd_variables()
 {
   nGenQCDParticles = 0;
   for (int i = 0; i < GENPARTICLEARRAYSIZE; i++ )
@@ -680,21 +680,21 @@ void JetNtupler::reset_qcd_variables()
 
 //------ Method called for each run ------//
 
-void JetNtupler::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
+void llp_ntupler::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
 
 
 }
 
 
 //------ Method called for each lumi block ------//
-void JetNtupler::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) {
+void llp_ntupler::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) {
 
 }
 
 
 //------ Method called for each event ------//
 
-void JetNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
 
   //initialize
@@ -843,7 +843,7 @@ void JetNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     edm::ESHandle<CaloGeometry> geoHandle;
     iSetup.get<CaloGeometryRecord>().get(geoHandle);
     const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-    const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
     double ecal_radius = 129.0;
     int n_matched_rechits = 0;
     for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
@@ -953,16 +953,16 @@ void JetNtupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 }
 
 //------ Method called once each job just before starting event loop ------//
-void JetNtupler::beginJob(){
+void llp_ntupler::beginJob(){
   setBranches();
 }
 
 //------ Method called once each job just after ending the event loop ------//
-void JetNtupler::endJob(){
+void llp_ntupler::endJob(){
 }
 
 
-bool JetNtupler::fill_fat_jet(const edm::EventSetup& iSetup)
+bool llp_ntupler::fill_fat_jet(const edm::EventSetup& iSetup)
 {
   int i_fat_jet = 0;
   for (const reco::PFJet &j : *jetsAK8)
@@ -1020,7 +1020,7 @@ bool JetNtupler::fill_fat_jet(const edm::EventSetup& iSetup)
     edm::ESHandle<CaloGeometry> geoHandle;
     iSetup.get<CaloGeometryRecord>().get(geoHandle);
     const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-    const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
     double ecal_radius = 129.0;
     int n_matched_rechits = 0;
     for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
@@ -1116,7 +1116,7 @@ bool JetNtupler::fill_fat_jet(const edm::EventSetup& iSetup)
   return true;
 };
 
-bool JetNtupler::passJetID( const reco::PFJet *jet, int cutLevel) {
+bool llp_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
   bool result = false;
 
   double NHF = jet->neutralHadronEnergyFraction();
@@ -1167,7 +1167,7 @@ bool JetNtupler::passJetID( const reco::PFJet *jet, int cutLevel) {
   return result;
 }
 
-double JetNtupler::deltaPhi(double phi1, double phi2)
+double llp_ntupler::deltaPhi(double phi1, double phi2)
 {
   double dphi = phi1-phi2;
   while (dphi > TMath::Pi())
@@ -1181,14 +1181,14 @@ double JetNtupler::deltaPhi(double phi1, double phi2)
   return dphi;
 };
 
-double JetNtupler::deltaR(double eta1, double phi1, double eta2, double phi2)
+double llp_ntupler::deltaR(double eta1, double phi1, double eta2, double phi2)
 {
 double dphi = deltaPhi(phi1,phi2);
 double deta = eta1 - eta2;
 return sqrt( dphi*dphi + deta*deta);
 };
 
-bool JetNtupler::fillMC()
+bool llp_ntupler::fillMC()
 {
   for(const reco::GenJet &j : *genJets)
   {
@@ -1355,7 +1355,7 @@ bool JetNtupler::fillMC()
     return true;
 };
 
-bool JetNtupler::fillGenParticles(){
+bool llp_ntupler::fillGenParticles(){
   std::vector<const reco::Candidate*> prunedV;//Allows easier comparison for mother finding
   //Fills selected gen particles
   //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
@@ -1847,7 +1847,7 @@ bool JetNtupler::fillGenParticles(){
 
 
 
-bool JetNtupler::fillTrigger(const edm::Event& iEvent)
+bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
 {
 
   //fill trigger information
@@ -1924,4 +1924,4 @@ bool JetNtupler::fillTrigger(const edm::Event& iEvent)
 //define this as a plug-in
   return true;
 };
-DEFINE_FWK_MODULE(JetNtupler);
+DEFINE_FWK_MODULE(llp_ntupler);
