@@ -41,6 +41,8 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   hepMCToken_(consumes<edm::HepMCProduct>(iConfig.getParameter<edm::InputTag>("hepMC"))),
   //triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
   //triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
+  genMetCaloToken_(consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMetsCalo"))),
+  genMetTrueToken_(consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMetsTrue"))),
   metToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
 //  metNoHFToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metsNoHF"))),
   metPuppiToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metsPuppi"))),
@@ -322,8 +324,10 @@ void llp_ntupler::enableMCBranches(){
   llpTree->Branch("genJetEta", genJetEta, "genJetEta[nGenJets]/F");
   llpTree->Branch("genJetPhi", genJetPhi, "genJetPhi[nGenJets]/F");
   llpTree->Branch("genJetME", genJetME, "genJetME[nGenJets]/F");
-  llpTree->Branch("genMetPt", &genMetPt, "genMetPt/F");
-  llpTree->Branch("genMetPhi", &genMetPhi, "genMetPhi/F");
+  llpTree->Branch("genMetPtCalo", &genMetPtCalo, "genMetPtCalo/F");
+  llpTree->Branch("genMetPhiCalo", &genMetPhiCalo, "genMetPhiCalo/F");
+  llpTree->Branch("genMetPtTrue", &genMetPtTrue, "genMetPtTrue/F");
+  llpTree->Branch("genMetPhiTrue", &genMetPhiTrue, "genMetPhiTrue/F");
   llpTree->Branch("genVertexX", &genVertexX, "genVertexX/F");
   llpTree->Branch("genVertexY", &genVertexY, "genVertexY/F");
   llpTree->Branch("genVertexZ", &genVertexZ, "genVertexZ/F");
@@ -440,6 +444,8 @@ void llp_ntupler::loadEvent(const edm::Event& iEvent){//load all miniAOD objects
   iEvent.getByToken(jetsToken_, jets);
   iEvent.getByToken(jetsPuppiToken_, jetsPuppi);
   iEvent.getByToken(jetsAK8Token_, jetsAK8);
+  iEvent.getByToken(genMetCaloToken_, genMetsCalo);
+  iEvent.getByToken(genMetTrueToken_, genMetsTrue);
   iEvent.getByToken(metToken_, mets);
   //iEvent.getByToken(metNoHFToken_, metsNoHF);
   iEvent.getByToken(metPuppiToken_, metsPuppi);
@@ -657,6 +663,12 @@ void llp_ntupler::reset_gen_jet_variable()
     genJet_match_jet_index[i] = 666;
     genJet_min_delta_r_match_jet[i] = -666.;
   }
+
+  genMetPtCalo  = -666.;
+  genMetPhiCalo = -666.;
+  genMetPtTrue  = -666.;
+  genMetPhiTrue = -666.;
+
   return;
 };
 void llp_ntupler::reset_qcd_variables()
@@ -1201,6 +1213,13 @@ bool llp_ntupler::fillMC()
     nGenJets++;
   }
 
+  const reco::GenMET &GenMetCalo = genMetsCalo->front();
+  genMetPtCalo  = GenMetCalo.pt();
+  genMetPhiCalo = GenMetCalo.phi();
+
+  const reco::GenMET &GenMetTrue = genMetsTrue->front();
+  genMetPtTrue  = GenMetTrue.pt();
+  genMetPhiTrue = GenMetTrue.phi();
 
   bool foundGenVertex = false;
   for(size_t i=0; i<genParticles->size();i++)

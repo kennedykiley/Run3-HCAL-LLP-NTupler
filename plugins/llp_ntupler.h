@@ -57,6 +57,8 @@ using namespace std;
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
 
+#include "DataFormats/METReco/interface/GenMETCollection.h"
+#include "DataFormats/METReco/interface/GenMET.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 #include "DataFormats/METReco/interface/PFMET.h"
 #include "DataFormats/ParticleFlowReco/interface/PFCluster.h"
@@ -203,6 +205,8 @@ protected:
   edm::EDGetTokenT<edm::HepMCProduct> hepMCToken_;
   edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
   edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;
+  edm::EDGetTokenT<reco::GenMETCollection> genMetCaloToken_;
+  edm::EDGetTokenT<reco::GenMETCollection> genMetTrueToken_;
   edm::EDGetTokenT<reco::PFMETCollection> metToken_;
   edm::EDGetTokenT<reco::PFMETCollection> metNoHFToken_;
   edm::EDGetTokenT<reco::PFMETCollection> metPuppiToken_;
@@ -260,6 +264,9 @@ protected:
   edm::Handle<reco::PFJetCollection> jets;
   edm::Handle<reco::PFJetCollection> jetsPuppi;
   edm::Handle<reco::PFJetCollection> jetsAK8;
+  edm::Handle<reco::GenMETCollection> genMetsCalo;
+  edm::Handle<reco::GenMETCollection> genMetsTrue;
+  //edm::Handle<reco::GenMETCollection> mets;
   edm::Handle<reco::PFMETCollection> mets;
 //  edm::Handle<reco::PFMETCollection> metsNoHF;
   edm::Handle<reco::PFMETCollection> metsPuppi;
@@ -477,8 +484,10 @@ float genJetME[OBJECTARRAYSIZE];
 float genJetPt[OBJECTARRAYSIZE];
 float genJetEta[OBJECTARRAYSIZE];
 float genJetPhi[OBJECTARRAYSIZE];
-float genMetPt;
-float genMetPhi;
+float genMetPtCalo;
+float genMetPhiCalo;
+float genMetPtTrue;
+float genMetPhiTrue;
 float genVertexX;
 float genVertexY;
 float genVertexZ;
