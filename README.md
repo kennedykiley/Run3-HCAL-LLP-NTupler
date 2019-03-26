@@ -7,7 +7,7 @@ Long Lived Particle Ntupler based on AOD
 # Done once to setup environment
 cmsrel CMSSW_9_4_4
 cd src
-git clone git@github.com:RazorCMS/SUSYBSMAnalysis-JetNtupler.git SUSYBSMAnalysis/JetNtupler
+git clone git@github.com:cms-lpc-llp/llp_ntupler.git cms_lpc_llp/llp_ntupler
 scram b
 cmsenv
 # Run the ntuples
