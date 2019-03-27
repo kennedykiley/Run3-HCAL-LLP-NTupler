@@ -11,12 +11,12 @@
 llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   //get inputs from config file
   isData_(iConfig.getParameter<bool> ("isData")),
-  isFourJet_(iConfig.getParameter<bool> ("isFourJet")),
+  //isFourJet_(iConfig.getParameter<bool> ("isFourJet")),
   useGen_(iConfig.getParameter<bool> ("useGen")),
   isFastsim_(iConfig.getParameter<bool> ("isFastsim")),
-  isQCD_(iConfig.getParameter<bool> ("isQCD")),
+  //isQCD_(iConfig.getParameter<bool> ("isQCD")),
   enableTriggerInfo_(iConfig.getParameter<bool> ("enableTriggerInfo")),
-  enableRecHitInfo_(iConfig.getParameter<bool> ("enableRecHitInfo")),
+  //enableRecHitInfo_(iConfig.getParameter<bool> ("enableRecHitInfo")),
   readGenVertexTime_(iConfig.getParameter<bool> ("readGenVertexTime")),
   triggerPathNamesFile_(iConfig.getParameter<string> ("triggerPathNamesFile")),
   eleHLTFilterNamesFile_(iConfig.getParameter<string> ("eleHLTFilterNamesFile")),
@@ -135,7 +135,449 @@ llp_ntupler::~llp_ntupler()
 {
 };
 
+//***********************************************
+//Enable output ntuple branches
+//***********************************************
+
+void llp_ntupler::setBranches()
+{
+  enableEventInfoBranches();
+};
+void llp_ntupler::enableEventInfoBranches(){
+  llpTree->Branch("isData", &isData, "isData/O");
+  llpTree->Branch("nPV", &nPV, "nPV/I");
+  llpTree->Branch("runNum", &runNum, "runNum/i");
+  llpTree->Branch("nSlimmedSecondV", &nSlimmedSecondV, "nSlimmedSecondV/i");
+  llpTree->Branch("lumiNum", &lumiNum, "lumiNum/i");
+  llpTree->Branch("eventNum", &eventNum, "eventNum/i");
+  llpTree->Branch("eventTime", &eventTime, "eventTime/i");
+  llpTree->Branch("pvX", &pvX, "pvX/F");
+  llpTree->Branch("pvY", &pvY, "pvY/F");
+  llpTree->Branch("pvZ", &pvZ, "pvZ/F");
+  llpTree->Branch("fixedGridRhoAll", &fixedGridRhoAll, "fixedGridRhoAll/F");
+  llpTree->Branch("fixedGridRhoFastjetAll", &fixedGridRhoFastjetAll, "fixedGridRhoFastjetAll/F");
+  llpTree->Branch("fixedGridRhoFastjetAllCalo", &fixedGridRhoFastjetAllCalo, "fixedGridRhoFastjetAllCalo/F");
+  llpTree->Branch("fixedGridRhoFastjetCentralCalo", &fixedGridRhoFastjetCentralCalo, "fixedGridRhoFastjetCentralCalo/F");
+  llpTree->Branch("fixedGridRhoFastjetCentralChargedPileUp", &fixedGridRhoFastjetCentralChargedPileUp, "fixedGridRhoFastjetCentralChargedPileUp/F");
+  llpTree->Branch("fixedGridRhoFastjetCentralNeutral", &fixedGridRhoFastjetCentralNeutral, "fixedGridRhoFastjetCentralNeutral/F");
+}
+
+void llp_ntupler::enablePVAllBranches()
+{
+  llpTree->Branch("nPVAll", &nPVAll,"nPVAll/I");
+  llpTree->Branch("pvAllX", pvAllX,"pvAllX[nPVAll]/F");
+  llpTree->Branch("pvAllY", pvAllY,"pvAllY[nPVAll]/F");
+  llpTree->Branch("pvAllZ", pvAllZ,"pvAllZ[nPVAll]/F");
+  llpTree->Branch("pvAllLogSumPtSq", pvAllLogSumPtSq,"pvAllLogSumPtSq[nPVAll]/F");
+  llpTree->Branch("pvAllSumPx", pvAllSumPx,"pvAllSumPx[nPVAll]/F");
+  llpTree->Branch("pvAllSumPy", pvAllSumPy,"pvAllSumPy[nPVAll]/F");
+};
+
+void llp_ntupler::enablePileUpBranches()
+{
+  llpTree->Branch("nBunchXing", &nBunchXing, "nBunchXing/I");
+  llpTree->Branch("BunchXing", BunchXing, "BunchXing[nBunchXing]/I");
+  llpTree->Branch("nPU", nPU, "nPU[nBunchXing]/I");
+  llpTree->Branch("nPUmean", nPUmean, "nPUmean[nBunchXing]/F");
+};
+
+void llp_ntupler::enableMuonBranches()
+{
+  llpTree->Branch("nMuons", &nMuons,"nMuons/I");
+  llpTree->Branch("muonE", muonE,"muonE[nMuons]/F");
+  llpTree->Branch("muonPt", muonPt,"muonPt[nMuons]/F");
+  llpTree->Branch("muonEta", muonEta,"muonEta[nMuons]/F");
+  llpTree->Branch("muonPhi", muonPhi,"muonPhi[nMuons]/F");
+  llpTree->Branch("muonCharge", muonCharge, "muonCharge[nMuons]/I");
+  llpTree->Branch("muonIsLoose", muonIsLoose,"muonIsLoose[nMuons]/O");
+  llpTree->Branch("muonIsMedium", muonIsMedium,"muonIsMedium[nMuons]/O");
+  llpTree->Branch("muonIsTight", muonIsTight,"muonIsTight[nMuons]/O");
+  llpTree->Branch("muon_d0", muon_d0, "muon_d0[nMuons]/F");
+  llpTree->Branch("muon_dZ", muon_dZ, "muon_dZ[nMuons]/F");
+  llpTree->Branch("muon_ip3d", muon_ip3d, "muon_ip3d[nMuons]/F");
+  llpTree->Branch("muon_ip3dSignificance", muon_ip3dSignificance, "muon_ip3dSignificance[nMuons]/F");
+  llpTree->Branch("muonType", muonType, "muonType[nMuons]/i");
+  llpTree->Branch("muonQuality", muonQuality, "muonQuality[nMuons]/i");
+  llpTree->Branch("muon_pileupIso", muon_pileupIso, "muon_pileupIso[nMuons]/F");
+  llpTree->Branch("muon_chargedIso", muon_chargedIso, "muon_chargedIso[nMuons]/F");
+  llpTree->Branch("muon_photonIso", muon_photonIso, "muon_photonIso[nMuons]/F");
+  llpTree->Branch("muon_neutralHadIso", muon_neutralHadIso, "muon_neutralHadIso[nMuons]/F");
+  llpTree->Branch("muon_ptrel", muon_ptrel, "muon_ptrel[nMuons]/F");
+  llpTree->Branch("muon_chargedMiniIso", muon_chargedMiniIso, "muon_chargedMiniIso[nMuons]/F");
+  llpTree->Branch("muon_photonAndNeutralHadronMiniIso", muon_photonAndNeutralHadronMiniIso, "muon_photonAndNeutralHadronMiniIso[nMuons]/F");
+  llpTree->Branch("muon_chargedPileupMiniIso", muon_chargedPileupMiniIso, "muon_chargedPileupMiniIso[nMuons]/F");
+  llpTree->Branch("muon_activityMiniIsoAnnulus", muon_activityMiniIsoAnnulus, "muon_activityMiniIsoAnnulus[nMuons]/F");
+  llpTree->Branch("muon_passSingleMuTagFilter", muon_passSingleMuTagFilter, "muon_passSingleMuTagFilter[nMuons]/O");
+  llpTree->Branch("muon_passHLTFilter", &muon_passHLTFilter, Form("muon_passHLTFilter[nMuons][%d]/O",MAX_MuonHLTFilters));
+  llpTree->Branch("muon_validFractionTrackerHits", muon_validFractionTrackerHits, "muon_validFractionTrackerHits[nMuons]/F");
+  llpTree->Branch("muon_isGlobal", muon_isGlobal,"muon_isGlobal[nMuons]/O");
+  llpTree->Branch("muon_normChi2", muon_normChi2,"muon_normChi2[nMuons]/F");
+  llpTree->Branch("muon_chi2LocalPosition", muon_chi2LocalPosition,"muon_chi2LocalPosition[nMuons]/F");
+  llpTree->Branch("muon_kinkFinder", muon_kinkFinder,"muon_kinkFinder[nMuons]/F");
+  llpTree->Branch("muon_segmentCompatability", muon_segmentCompatability,"muon_segmentCompatability[nMuons]/F");
+  llpTree->Branch("muonIsICHEPMedium", muonIsICHEPMedium,"muonIsICHEPMedium[nMuons]/O");
+};
+
+void llp_ntupler::enableElectronBranches()
+{
+  llpTree->Branch("nElectrons", &nElectrons,"nElectrons/I");
+  llpTree->Branch("eleE", eleE,"eleE[nElectrons]/F");
+  llpTree->Branch("elePt", elePt,"elePt[nElectrons]/F");
+  llpTree->Branch("eleEta", eleEta,"eleEta[nElectrons]/F");
+  llpTree->Branch("elePhi", elePhi,"elePhi[nElectrons]/F");
+  llpTree->Branch("eleCharge", eleCharge, "eleCharge[nElectrons]/F");
+  //llpTree->Branch("EleE_SC", eleE_SC,"eleE_SC[nElectrons]/F");
+  llpTree->Branch("eleEta_SC", eleEta_SC,"eleEta_SC[nElectrons]/F");
+  //llpTree->Branch("elePhi_SC", elePhi_SC,"elePhi_SC[nElectrons]/F");
+  llpTree->Branch("eleSigmaIetaIeta", eleSigmaIetaIeta, "eleSigmaIetaIeta[nElectrons]/F");
+  llpTree->Branch("eleFull5x5SigmaIetaIeta", eleFull5x5SigmaIetaIeta, "eleFull5x5SigmaIetaIeta[nElectrons]/F");
+  llpTree->Branch("eleR9", eleR9, "eleR9[nElectrons]/F");
+  llpTree->Branch("ele_dEta", ele_dEta, "ele_dEta[nElectrons]/F");
+  llpTree->Branch("ele_dPhi", ele_dPhi, "ele_dPhi[nElectrons]/F");
+  llpTree->Branch("ele_HoverE", ele_HoverE, "ele_HoverE[nElectrons]/F");
+  llpTree->Branch("ele_d0", ele_d0, "ele_d0[nElectrons]/F");
+  llpTree->Branch("ele_dZ", ele_dZ, "ele_dZ[nElectrons]/F");
+  llpTree->Branch("ele_ip3d", ele_ip3d, "ele_ip3d[nElectrons]/F");
+  llpTree->Branch("ele_ip3dSignificance", ele_ip3dSignificance, "ele_ip3dSignificance[nElectrons]/F");
+  llpTree->Branch("ele_pileupIso", ele_pileupIso, "ele_pileupIso[nElectrons]/F");
+  llpTree->Branch("ele_chargedIso", ele_chargedIso, "ele_chargedIso[nElectrons]/F");
+  llpTree->Branch("ele_photonIso", ele_photonIso, "ele_photonIso[nElectrons]/F");
+  llpTree->Branch("ele_neutralHadIso", ele_neutralHadIso, "ele_neutralHadIso[nElectrons]/F");
+  llpTree->Branch("ele_MissHits", ele_MissHits, "ele_MissHits[nElectrons]/I");
+  llpTree->Branch("ele_PassConvVeto", ele_PassConvVeto, "ele_PassConvVeto[nElectrons]/O");
+  llpTree->Branch("ele_OneOverEminusOneOverP", ele_OneOverEminusOneOverP, "ele_OneOverEminusOneOverP[nElectrons]/F");
+  llpTree->Branch("ele_IDMVAGeneralPurpose", ele_IDMVAGeneralPurpose, "ele_IDMVAGeneralPurpose[nElectrons]/F");
+  llpTree->Branch("ele_IDMVACategoryGeneralPurpose", ele_IDMVACategoryGeneralPurpose, "ele_IDMVACategoryGeneralPurpose[nElectrons]/I");
+  llpTree->Branch("ele_IDMVAHZZ", ele_IDMVAHZZ, "ele_IDMVAHZZ[nElectrons]/F");
+  llpTree->Branch("ele_IDMVACategoryHZZ", ele_IDMVACategoryHZZ, "ele_IDMVACategoryHZZ[nElectrons]/I");
+  llpTree->Branch("ele_RegressionE", ele_RegressionE, "ele_RegressionE[nElectrons]/F");
+  llpTree->Branch("ele_CombineP4", ele_CombineP4, "ele_CombineP4[nElectrons]/F");
+  llpTree->Branch("ele_ptrel", ele_ptrel, "ele_ptrel[nElectrons]/F");
+  llpTree->Branch("ele_chargedMiniIso", ele_chargedMiniIso, "ele_chargedMiniIso[nElectrons]/F");
+  llpTree->Branch("ele_photonAndNeutralHadronMiniIso", ele_photonAndNeutralHadronMiniIso, "ele_photonAndNeutralHadronMiniIso[nElectrons]/F");
+  llpTree->Branch("ele_chargedPileupMiniIso", ele_chargedPileupMiniIso, "ele_chargedPileupMiniIso[nElectrons]/F");
+  llpTree->Branch("ele_activityMiniIsoAnnulus", ele_activityMiniIsoAnnulus, "ele_activityMiniIsoAnnulus[nElectrons]/F");
+  llpTree->Branch("ele_passSingleEleTagFilter", ele_passSingleEleTagFilter, "ele_passSingleEleTagFilter[nElectrons]/O");
+  llpTree->Branch("ele_passTPOneTagFilter", ele_passTPOneTagFilter, "ele_passTPOneTagFilter[nElectrons]/O");
+  llpTree->Branch("ele_passTPTwoTagFilter", ele_passTPTwoTagFilter, "ele_passTPTwoTagFilter[nElectrons]/O");
+  llpTree->Branch("ele_passTPOneProbeFilter", ele_passTPOneProbeFilter, "ele_passTPOneProbeFilter[nElectrons]/O");
+  llpTree->Branch("ele_passTPTwoProbeFilter", ele_passTPTwoProbeFilter, "ele_passTPTwoProbeFilter[nElectrons]/O");
+  llpTree->Branch("ele_passHLTFilter", &ele_passHLTFilter, Form("ele_passHLTFilter[nElectrons][%d]/O",MAX_ElectronHLTFilters));
+  if (enableEcalRechits_) {
+    ele_EcalRechitIndex = new std::vector<std::vector<uint> >; ele_EcalRechitIndex->clear();
+    llpTree->Branch("ele_EcalRechitIndex", "std::vector<std::vector<uint> >",&ele_EcalRechitIndex);
+    ele_SeedRechitIndex = new std::vector<uint>; ele_SeedRechitIndex->clear();
+    llpTree->Branch("ele_SeedRechitIndex", "std::vector<uint>",&ele_SeedRechitIndex);
+  }
+};
+
+void llp_ntupler::enableTauBranches()
+{
+  llpTree->Branch("nTaus", &nTaus,"nTaus/I");
+  llpTree->Branch("tauE", tauE,"tauE[nTaus]/F");
+  llpTree->Branch("tauPt", tauPt,"tauPt[nTaus]/F");
+  llpTree->Branch("tauEta", tauEta,"tauEta[nTaus]/F");
+  llpTree->Branch("tauPhi", tauPhi,"tauPhi[nTaus]/F");
+  llpTree->Branch("tau_IsLoose", tau_IsLoose, "tau_IsLoose[nTaus]/O");
+  llpTree->Branch("tau_IsMedium", tau_IsMedium, "tau_IsMedium[nTaus]/O");
+  llpTree->Branch("tau_IsTight", tau_IsTight, "tau_IsTight[nTaus]/O");
+  llpTree->Branch("tau_passEleVetoLoose", tau_passEleVetoLoose, "tau_passEleVetoLoose[nTaus]/O");
+  llpTree->Branch("tau_passEleVetoMedium", tau_passEleVetoMedium, "tau_passEleVetoMedium[nTaus]/O");
+  llpTree->Branch("tau_passEleVetoTight", tau_passEleVetoTight, "tau_passEleVetoTight[nTaus]/O");
+  llpTree->Branch("tau_passMuVetoLoose", tau_passMuVetoLoose, "tau_passMuVetoLoose[nTaus]/O");
+  llpTree->Branch("tau_passMuVetoMedium", tau_passMuVetoMedium, "tau_passMuVetoMedium[nTaus]/O");
+  llpTree->Branch("tau_passMuVetoTight", tau_passMuVetoTight, "tau_passMuVetoTight[nTaus]/O");
+  llpTree->Branch("tau_ID", tau_ID, "tau_ID[nTaus]/i");
+  llpTree->Branch("tau_combinedIsoDeltaBetaCorr3Hits", tau_combinedIsoDeltaBetaCorr3Hits, "tau_combinedIsoDeltaBetaCorr3Hits[nTaus]/F");
+  llpTree->Branch("tau_chargedIsoPtSum", tau_chargedIsoPtSum, "tau_chargedIsoPtSum[nTaus]/F");
+  llpTree->Branch("tau_neutralIsoPtSum", tau_neutralIsoPtSum, "tau_neutralIsoPtSum[nTaus]/F");
+  llpTree->Branch("tau_puCorrPtSum", tau_puCorrPtSum, "tau_puCorrPtSum[nTaus]/F");
+  llpTree->Branch("tau_eleVetoMVA", tau_eleVetoMVA, "tau_eleVetoMVA[nTaus]/F");
+  llpTree->Branch("tau_eleVetoCategory", tau_eleVetoCategory, "tau_eleVetoCategory[nTaus]/I");
+  llpTree->Branch("tau_muonVetoMVA", tau_muonVetoMVA, "tau_muonVetoMVA[nTaus]/F");
+  llpTree->Branch("tau_isoMVAnewDMwLT", tau_isoMVAnewDMwLT, "tau_isoMVAnewDMwLT[nTaus]/F");
+  llpTree->Branch("tau_isoMVAnewDMwoLT", tau_isoMVAnewDMwoLT, "tau_isoMVAnewDMwoLT[nTaus]/F");
+  llpTree->Branch("tau_leadCandPt", tau_leadCandPt, "tau_leadCandPt[nTaus]/F");
+  llpTree->Branch("tau_leadCandID", tau_leadCandID, "tau_leadCandID[nTaus]/I");
+  llpTree->Branch("tau_leadChargedHadrCandPt", tau_leadChargedHadrCandPt, "tau_leadChargedHadrCandPt[nTaus]/F");
+  llpTree->Branch("tau_leadChargedHadrCandID", tau_leadChargedHadrCandID, "tau_leadChargedHadrCandID[nTaus]/I");
+};
+
+void llp_ntupler::enableIsoPFCandidateBranches()
+{
+  llpTree->Branch("nIsoPFCandidates", &nIsoPFCandidates, "nIsoPFCandidates/i");
+  llpTree->Branch("isoPFCandidatePt", isoPFCandidatePt, "isoPFCandidatePt[nIsoPFCandidates]/F");
+  llpTree->Branch("isoPFCandidateEta", isoPFCandidateEta, "isoPFCandidateEta[nIsoPFCandidates]/F");
+  llpTree->Branch("isoPFCandidatePhi", isoPFCandidatePhi, "isoPFCandidatePhi[nIsoPFCandidates]/F");
+  llpTree->Branch("isoPFCandidateIso04", isoPFCandidateIso04, "isoPFCandidateIso04[nIsoPFCandidates]/F");
+  llpTree->Branch("isoPFCandidateD0", isoPFCandidateD0, "isoPFCandidateD0[nIsoPFCandidates]/F");
+  llpTree->Branch("isoPFCandidatePdgId", isoPFCandidatePdgId, "isoPFCandidatePdgId[nIsoPFCandidates]/I");
+};
+
+void llp_ntupler::enablePhotonBranches()
+{
+  llpTree->Branch("nPhotons", &nPhotons,"nPhotons/I");
+  llpTree->Branch("nPhotons_overlap", &nPhotons_overlap,"nPhotons_overlap/I");
+  llpTree->Branch("phoE", phoE,"phoE[nPhotons]/F");
+  llpTree->Branch("phoPt", phoPt,"phoPt[nPhotons]/F");
+  llpTree->Branch("phoEta", phoEta,"phoEta[nPhotons]/F");
+  llpTree->Branch("phoPhi", phoPhi,"phoPhi[nPhotons]/F");
+  llpTree->Branch("phoSigmaIetaIeta", phoSigmaIetaIeta, "phoSigmaIetaIeta[nPhotons]/F");
+  llpTree->Branch("phoFull5x5SigmaIetaIeta", phoFull5x5SigmaIetaIeta, "phoFull5x5SigmaIetaIeta[nPhotons]/F");
+  llpTree->Branch("phoR9", phoR9, "phoR9[nPhotons]/F");
+  llpTree->Branch("pho_sminor", pho_sminor, "pho_sminor[nPhotons]/F");
+  llpTree->Branch("pho_smajor", pho_smajor, "pho_smajor[nPhotons]/F");
+  llpTree->Branch("pho_HoverE", pho_HoverE, "pho_HoverE[nPhotons]/F");
+  llpTree->Branch("pho_sumChargedHadronPtAllVertices", &pho_sumChargedHadronPtAllVertices,Form("pho_sumChargedHadronPtAllVertices[nPhotons][%d]/F",MAX_NPV));
+  llpTree->Branch("pho_sumChargedHadronPt", &pho_sumChargedHadronPt, "pho_sumChargedHadronPt[nPhotons]/F");
+  llpTree->Branch("pho_sumNeutralHadronEt", pho_sumNeutralHadronEt, "pho_sumNeutralHadronEt[nPhotons]/F");
+  llpTree->Branch("pho_sumPhotonEt", pho_sumPhotonEt, "pho_sumPhotonEt[nPhotons]/F");
+  llpTree->Branch("pho_ecalPFClusterIso", pho_ecalPFClusterIso, "pho_ecalPFClusterIso[nPhotons]/F");
+  llpTree->Branch("pho_hcalPFClusterIso", pho_hcalPFClusterIso, "pho_hcalPFClusterIso[nPhotons]/F");
+  llpTree->Branch("pho_trkSumPtHollowConeDR03", pho_trkSumPtHollowConeDR03, "pho_trkSumPtHollowConeDR03[nPhotons]/F");
+  llpTree->Branch("pho_sumWorstVertexChargedHadronPt", pho_sumWorstVertexChargedHadronPt, "pho_sumWorstVertexChargedHadronPt[nPhotons]/F");
+  llpTree->Branch("pho_pfIsoChargedHadronIso", pho_pfIsoChargedHadronIso, "pho_pfIsoChargedHadronIso[nPhotons]/F");
+  llpTree->Branch("pho_pfIsoChargedHadronIsoWrongVtx", pho_pfIsoChargedHadronIsoWrongVtx, "pho_pfIsoChargedHadronIsoWrongVtx[nPhotons]/F");
+  llpTree->Branch("pho_pfIsoNeutralHadronIso", pho_pfIsoNeutralHadronIso, "pho_pfIsoNeutralHadronIso[nPhotons]/F");
+  llpTree->Branch("pho_pfIsoPhotonIso", pho_pfIsoPhotonIso, "pho_pfIsoPhotonIso[nPhotons]/F");
+  llpTree->Branch("pho_pfIsoModFrixione", pho_pfIsoModFrixione, "pho_pfIsoModFrixione[nPhotons]/F");
+  llpTree->Branch("pho_pfIsoSumPUPt", pho_pfIsoSumPUPt, "pho_pfIsoSumPUPt[nPhotons]/F");
+  llpTree->Branch("pho_isConversion", pho_isConversion, "pho_isConversion[nPhotons]/O");
+  llpTree->Branch("pho_passEleVeto", pho_passEleVeto, "pho_passEleVeto[nPhotons]/O");
+  llpTree->Branch("pho_RegressionE", pho_RegressionE, "pho_RegressionE[nPhotons]/F");
+  llpTree->Branch("pho_RegressionEUncertainty", pho_RegressionEUncertainty, "pho_RegressionEUncertainty[nPhotons]/F");
+  llpTree->Branch("pho_IDMVA", pho_IDMVA, "pho_IDMVA[nPhotons]/F");
+  llpTree->Branch("pho_superClusterEnergy", pho_superClusterEnergy, "pho_superClusterEnergy[nPhotons]/F");
+  llpTree->Branch("pho_superClusterRawEnergy", pho_superClusterRawEnergy, "pho_superClusterRawEnergy[nPhotons]/F");
+  llpTree->Branch("pho_superClusterEta", pho_superClusterEta, "pho_superClusterEta[nPhotons]/F");
+  llpTree->Branch("pho_superClusterPhi", pho_superClusterPhi, "pho_superClusterPhi[nPhotons]/F");
+  llpTree->Branch("pho_superClusterX", pho_superClusterX, "pho_superClusterX[nPhotons]/F");
+  llpTree->Branch("pho_superClusterY", pho_superClusterY, "pho_superClusterY[nPhotons]/F");
+  llpTree->Branch("pho_superClusterZ", pho_superClusterZ, "pho_superClusterZ[nPhotons]/F");
+  llpTree->Branch("pho_hasPixelSeed", pho_hasPixelSeed, "pho_hasPixelSeed[nPhotons]/O");
+  llpTree->Branch("pho_passHLTFilter", &pho_passHLTFilter, Form("pho_passHLTFilter[nPhotons][%d]/O",MAX_PhotonHLTFilters));
+  llpTree->Branch("pho_convType", pho_convType, "pho_convType[nPhotons]/I");
+  llpTree->Branch("pho_convTrkZ", pho_convTrkZ, "pho_convTrkZ[nPhotons]/F");
+  llpTree->Branch("pho_convTrkClusZ", pho_convTrkClusZ, "pho_convTrkClusZ[nPhotons]/F");
+  llpTree->Branch("pho_vtxSumPx", &pho_vtxSumPx,Form("pho_vtxSumPx[nPhotons][%d]/F",MAX_NPV));
+  llpTree->Branch("pho_vtxSumPy", &pho_vtxSumPy,Form("pho_vtxSumPy[nPhotons][%d]/F",MAX_NPV));
+  llpTree->Branch("pho_isStandardPhoton", pho_isStandardPhoton, "pho_isStandardPhoton[nPhotons]/O");
+  llpTree->Branch("pho_seedRecHitSwitchToGain6", pho_seedRecHitSwitchToGain6, "pho_seedRecHitSwitchToGain6[nPhotons]/F");
+  llpTree->Branch("pho_seedRecHitSwitchToGain1", pho_seedRecHitSwitchToGain1, "pho_seedRecHitSwitchToGain1[nPhotons]/F");
+  llpTree->Branch("pho_anyRecHitSwitchToGain6", pho_anyRecHitSwitchToGain6, "pho_anyRecHitSwitchToGain6[nPhotons]/F");
+  llpTree->Branch("pho_anyRecHitSwitchToGain1", pho_anyRecHitSwitchToGain1, "pho_anyRecHitSwitchToGain1[nPhotons]/F");
+  if (enableEcalRechits_) {
+    pho_EcalRechitIndex = new std::vector<std::vector<uint> >; pho_EcalRechitIndex->clear();
+    llpTree->Branch("pho_EcalRechitIndex", "std::vector<std::vector<uint> >",&pho_EcalRechitIndex);
+    pho_SeedRechitIndex = new std::vector<uint>; pho_SeedRechitIndex->clear();
+    llpTree->Branch("pho_SeedRechitIndex", "std::vector<uint>",&pho_SeedRechitIndex);
+  }
+
+};
+
+void llp_ntupler::enableEcalRechitBranches()
+{
+  ecalRechit_Eta = new std::vector<float>; ecalRechit_Eta->clear();
+  ecalRechit_Phi = new std::vector<float>; ecalRechit_Phi->clear();
+  ecalRechit_X = new std::vector<float>; ecalRechit_X->clear();
+  ecalRechit_Y = new std::vector<float>; ecalRechit_Y->clear();
+  ecalRechit_Z = new std::vector<float>; ecalRechit_Z->clear();
+  ecalRechit_E = new std::vector<float>; ecalRechit_E->clear();
+  ecalRechit_T = new std::vector<float>; ecalRechit_T->clear();
+  ecalRechit_ID = new std::vector<uint>; ecalRechit_ID->clear();
+  ecalRechit_FlagOOT = new std::vector<bool>; ecalRechit_FlagOOT->clear();
+  ecalRechit_GainSwitch1 = new std::vector<bool>; ecalRechit_GainSwitch1->clear();
+  ecalRechit_GainSwitch6 = new std::vector<bool>; ecalRechit_GainSwitch6->clear();
+  ecalRechit_transpCorr = new std::vector<float>; ecalRechit_transpCorr->clear();
+
+  llpTree->Branch("ecalRechit_Eta", "std::vector<float>",&ecalRechit_Eta);
+  llpTree->Branch("ecalRechit_Phi", "std::vector<float>",&ecalRechit_Phi);
+  llpTree->Branch("ecalRechit_X", "std::vector<float>",&ecalRechit_X);
+  llpTree->Branch("ecalRechit_Y", "std::vector<float>",&ecalRechit_Y);
+  llpTree->Branch("ecalRechit_Z", "std::vector<float>",&ecalRechit_Z);
+  llpTree->Branch("ecalRechit_E", "std::vector<float>",&ecalRechit_E);
+  llpTree->Branch("ecalRechit_T", "std::vector<float>",&ecalRechit_T);
+  llpTree->Branch("ecalRechit_ID", "std::vector<uint>",&ecalRechit_ID);
+  llpTree->Branch("ecalRechit_FlagOOT", "std::vector<bool>",&ecalRechit_FlagOOT);
+  llpTree->Branch("ecalRechit_GainSwitch1", "std::vector<bool>",&ecalRechit_GainSwitch1);
+  llpTree->Branch("ecalRechit_GainSwitch6", "std::vector<bool>",&ecalRechit_GainSwitch6);
+  llpTree->Branch("ecalRechit_transpCorr", "std::vector<float>",&ecalRechit_transpCorr);
+
+};
+
+void llp_ntupler::enableJetBranches()
+{
+  llpTree->Branch("nJets", &nJets,"nJets/I");
+  llpTree->Branch("jetE", jetE,"jetE[nJets]/F");
+  llpTree->Branch("jetPt", jetPt,"jetPt[nJets]/F");
+  llpTree->Branch("jetEta", jetEta,"jetEta[nJets]/F");
+  llpTree->Branch("jetPhi", jetPhi,"jetPhi[nJets]/F");
+  llpTree->Branch("jetCSV", jetCSV,"jetCSV[nJets]/F");
+  llpTree->Branch("jetCISV", jetCISV,"jetCISV[nJets]/F");
+  llpTree->Branch("jetProbb", jetProbb,"jetProbb[nJets]/F");
+  llpTree->Branch("jetProbc", jetProbc,"jetProbc[nJets]/F");
+  llpTree->Branch("jetProbudsg", jetProbudsg,"jetProbudsg[nJets]/F");
+  llpTree->Branch("jetProbbb", jetProbbb,"jetProbbb[nJets]/F");
+  llpTree->Branch("jetMass", jetMass, "jetMass[nJets]/F");
+  llpTree->Branch("jetJetArea", jetJetArea, "jetJetArea[nJets]/F");
+  llpTree->Branch("jetPileupE", jetPileupE, "jetPileupE[nJets]/F");
+  llpTree->Branch("jetPileupId", jetPileupId, "jetPileupId[nJets]/F");
+  llpTree->Branch("jetPileupIdFlag", jetPileupIdFlag, "jetPileupIdFlag[nJets]/I");
+  llpTree->Branch("jetPassIDLoose", jetPassIDLoose, "jetPassIDLoose[nJets]/O");
+  llpTree->Branch("jetPassIDTight", jetPassIDTight, "jetPassIDTight[nJets]/O");
+  llpTree->Branch("jetPassMuFrac", jetPassMuFrac, "jetPassMuFrac[nJets]/O");
+  llpTree->Branch("jetPassEleFrac", jetPassEleFrac, "jetPassEleFrac[nJets]/O");
+  llpTree->Branch("jetPartonFlavor", jetPartonFlavor, "jetPartonFlavor[nJets]/I");
+  llpTree->Branch("jetHadronFlavor", jetHadronFlavor, "jetHadronFlavor[nJets]/I");
+  llpTree->Branch("jetChargedEMEnergyFraction", jetChargedEMEnergyFraction, "jetChargedEMEnergyFraction[nJets]/F");
+  llpTree->Branch("jetNeutralEMEnergyFraction", jetNeutralEMEnergyFraction, "jetNeutralEMEnergyFraction[nJets]/F");
+  llpTree->Branch("jetChargedHadronEnergyFraction", jetChargedHadronEnergyFraction, "jetChargedHadronEnergyFraction[nJets]/F");
+  llpTree->Branch("jetNeutralHadronEnergyFraction", jetNeutralHadronEnergyFraction, "jetNeutralHadronEnergyFraction[nJets]/F");
+  llpTree->Branch("jetMuonEnergyFraction", jetMuonEnergyFraction, "jetMuonEnergyFraction[nJets]/F");
+  llpTree->Branch("jetHOEnergyFraction", jetHOEnergyFraction, "jetHOEnergyFraction[nJets]/F");
+  llpTree->Branch("jetHFHadronEnergyFraction", jetHFHadronEnergyFraction, "jetHFHadronEnergyFraction[nJets]/F");
+  llpTree->Branch("jetHFEMEnergyFraction",jetHFEMEnergyFraction, "jetHFEMEnergyFraction[nJets]/F");
+  llpTree->Branch("jetAllMuonPt", jetAllMuonPt,"jetAllMuonPt[nJets]/F");
+  llpTree->Branch("jetAllMuonEta", jetAllMuonEta,"jetAllMuonEta[nJets]/F");
+  llpTree->Branch("jetAllMuonPhi", jetAllMuonPhi,"jetAllMuonPhi[nJets]/F");
+  llpTree->Branch("jetAllMuonM", jetAllMuonM,"jetAllMuonM[nJets]/F");
+  llpTree->Branch("jetPtWeightedDZ", jetPtWeightedDZ,"jetPtWeightedDZ[nJets]/F");
+};
+
+void llp_ntupler::enableJetAK8Branches()
+{
+  llpTree->Branch("nFatJets", &nFatJets,"nFatJets/i");
+  llpTree->Branch("fatJetE", fatJetE,"fatJetE[nFatJets]/F");
+  llpTree->Branch("fatJetPt", fatJetPt,"fatJetPt[nFatJets]/F");
+  llpTree->Branch("fatJetEta", fatJetEta,"fatJetEta[nFatJets]/F");
+  llpTree->Branch("fatJetPhi", fatJetPhi,"fatJetPhi[nFatJets]/F");
+  llpTree->Branch("fatJetCorrectedPt", fatJetCorrectedPt,"fatJetCorrectedPt[nFatJets]/F");
+  // llpTree->Branch("fatJetCorrectedEta", fatJetCorrectedEta,"fatJetCorrectedEta[nFatJets]/F");
+  // llpTree->Branch("fatJetCorrectedPhi", fatJetCorrectedPhi,"fatJetCorrectedPhi[nFatJets]/F");
+  llpTree->Branch("fatJetPrunedM", fatJetPrunedM,"fatJetPrunedM[nFatJets]/F");
+  llpTree->Branch("fatJetTrimmedM", fatJetTrimmedM,"fatJetTrimmedM[nFatJets]/F");
+  llpTree->Branch("fatJetFilteredM", fatJetFilteredM,"fatJetFilteredM[nFatJets]/F");
+  llpTree->Branch("fatJetSoftDropM", fatJetSoftDropM,"fatJetSoftDropM[nFatJets]/F");
+  llpTree->Branch("fatJetCorrectedSoftDropM", fatJetCorrectedSoftDropM,"fatJetCorrectedSoftDropM[nFatJets]/F");
+  llpTree->Branch("fatJetUncorrectedSoftDropM", fatJetUncorrectedSoftDropM,"fatJetUncorrectedSoftDropM[nFatJets]/F");
+  llpTree->Branch("fatJetTau1", fatJetTau1,"fatJetTau1[nFatJets]/F");
+  llpTree->Branch("fatJetTau2", fatJetTau2,"fatJetTau2[nFatJets]/F");
+  llpTree->Branch("fatJetTau3", fatJetTau3,"fatJetTau3[nFatJets]/F");
+  llpTree->Branch("fatJetMaxSubjetCSV", fatJetMaxSubjetCSV, "fatJetMaxSubjetCSV[nFatJets]/F");
+  llpTree->Branch("fatJetPassIDLoose", fatJetPassIDLoose,"fatJetPassIDLoose[nFatJets]/O");
+  llpTree->Branch("fatJetPassIDTight", fatJetPassIDTight,"fatJetPassIDTight[nFatJets]/O");
+};
+
+void llp_ntupler::enableMetBranches()
+{
+  llpTree->Branch("metPt", &metPt, "metPt/F");
+  llpTree->Branch("metPhi", &metPhi, "metPhi/F");
+  llpTree->Branch("sumMET", &sumMET, "sumMET/F");
+  llpTree->Branch("metType0Pt", &metType0Pt, "metType0Pt/F");
+  llpTree->Branch("metType0Phi", &metType0Phi, "metType0Phi/F");
+  llpTree->Branch("metType1Pt_raw", &metType1Pt_raw, "metType1Pt_raw/F");
+  llpTree->Branch("metType1Pt", &metType1Pt, "metType1Pt/F");
+  llpTree->Branch("metType1Px", &metType1Px, "metType1Px/F");
+  llpTree->Branch("metType1Py", &metType1Py, "metType1Py/F");
+  llpTree->Branch("metType1Eta", &metType1Eta, "metType1Eta/F");
+  llpTree->Branch("metType1Phi", &metType1Phi, "metType1Phi/F");
+  llpTree->Branch("metType1Phi_raw", &metType1Phi_raw, "metType1Phi_raw/F");
+  llpTree->Branch("metType0Plus1Pt", &metType0Plus1Pt, "metType0Plus1Pt/F");
+  llpTree->Branch("metType0Plus1Phi", &metType0Plus1Phi, "metType0Plus1Phi/F");
+  llpTree->Branch("metNoHFPt", &metNoHFPt, "metNoHFPt/F");
+  llpTree->Branch("metNoHFPhi", &metNoHFPhi, "metNoHFPhi/F");
+  llpTree->Branch("metPuppiPt", &metPuppiPt, "metPuppiPt/F");
+  llpTree->Branch("metPuppiPhi", &metPuppiPhi, "metPuppiPhi/F");
+  llpTree->Branch("metCaloPt", &metCaloPt, "metCaloPt/F");
+  llpTree->Branch("metCaloPhi", &metCaloPhi, "metCaloPhi/F");
+
+  llpTree->Branch("Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter, "Flag_HBHENoiseFilter/O");
+  llpTree->Branch("Flag_HBHETightNoiseFilter", &Flag_HBHETightNoiseFilter, "Flag_HBHETightNoiseFilter/O");
+  llpTree->Branch("Flag_HBHEIsoNoiseFilter", &Flag_HBHEIsoNoiseFilter, "Flag_HBHEIsoNoiseFilter/O");
+  llpTree->Branch("Flag_badChargedCandidateFilter", &Flag_badChargedCandidateFilter, "Flag_badChargedCandidateFilter/O");
+  llpTree->Branch("Flag_badMuonFilter", &Flag_badMuonFilter, "Flag_badMuonFilter/O");
+  llpTree->Branch("Flag_badGlobalMuonFilter", &Flag_badGlobalMuonFilter, "Flag_badGlobalMuonFilter/O");
+  llpTree->Branch("Flag_duplicateMuonFilter", &Flag_duplicateMuonFilter, "Flag_duplicateMuonFilter/O");
+  llpTree->Branch("Flag_CSCTightHaloFilter", &Flag_CSCTightHaloFilter, "Flag_CSCTightHaloFilter/O");
+  llpTree->Branch("Flag_hcalLaserEventFilter", &Flag_hcalLaserEventFilter, "Flag_hcalLaserEventFilter/O");
+  llpTree->Branch("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, "Flag_EcalDeadCellTriggerPrimitiveFilter/O");
+  llpTree->Branch("Flag_EcalDeadCellBoundaryEnergyFilter", &Flag_EcalDeadCellBoundaryEnergyFilter, "Flag_EcalDeadCellBoundaryEnergyFilter/O");
+  llpTree->Branch("Flag_goodVertices", &Flag_goodVertices, "Flag_goodVertices/O");
+  llpTree->Branch("Flag_trackingFailureFilter", &Flag_trackingFailureFilter, "Flag_trackingFailureFilter/O");
+  llpTree->Branch("Flag_eeBadScFilter", &Flag_eeBadScFilter, "Flag_eeBadScFilter/O");
+  llpTree->Branch("Flag_ecalLaserCorrFilter", &Flag_ecalLaserCorrFilter, "Flag_ecalLaserCorrFilter/O");
+  llpTree->Branch("Flag_trkPOGFilters", &Flag_trkPOGFilters, "Flag_trkPOGFilters/O");
+  llpTree->Branch("Flag_trkPOG_manystripclus53X", &Flag_trkPOG_manystripclus53X, "Flag_trkPOG_manystripclus53X/O");
+  llpTree->Branch("Flag_trkPOG_toomanystripclus53X", &Flag_trkPOG_toomanystripclus53X, "Flag_trkPOG_toomanystripclus53X/O");
+  llpTree->Branch("Flag_trkPOG_logErrorTooManyClusters", &Flag_trkPOG_logErrorTooManyClusters, "Flag_trkPOG_logErrorTooManyClusters/O");
+  llpTree->Branch("Flag_BadPFMuonFilter", &Flag_BadPFMuonFilter, "Flag_BadPFMuonFilter/O");
+  llpTree->Branch("Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter, "Flag_BadChargedCandidateFilter/O");
+  llpTree->Branch("Flag_ecalBadCalibFilter", &Flag_ecalBadCalibFilter, "Flag_ecalBadCalibFilter/O");
+  llpTree->Branch("Flag_METFilters", &Flag_METFilters, "Flag_METFilters/O");
+};
+
+void llp_ntupler::enableTriggerBranches()
+{
+  nameHLT = new std::vector<std::string>; nameHLT->clear();
+  llpTree->Branch("HLTDecision", &triggerDecision, ("HLTDecision[" + std::to_string(NTriggersMAX) +  "]/O").c_str());
+  llpTree->Branch("HLTPrescale", &triggerHLTPrescale, ("HLTPrescale[" + std::to_string(NTriggersMAX) +  "]/I").c_str());
+  llpTree->Branch("HLTMR", &HLTMR, "HLTMR/F");
+  llpTree->Branch("HLTRSQ", &HLTRSQ, "HLTRSQ/F");
+};
+
+void llp_ntupler::enableMCBranches()
+{
+  llpTree->Branch("nGenJets", &nGenJets, "nGenJets/I");
+  llpTree->Branch("genJetE", genJetE, "genJetE[nGenJets]/F");
+  llpTree->Branch("genJetPt", genJetPt, "genJetPt[nGenJets]/F");
+  llpTree->Branch("genJetEta", genJetEta, "genJetEta[nGenJets]/F");
+  llpTree->Branch("genJetPhi", genJetPhi, "genJetPhi[nGenJets]/F");
+  llpTree->Branch("genMetPtCalo", &genMetPtCalo, "genMetPtCalo/F");
+  llpTree->Branch("genMetPhiCalo", &genMetPhiCalo, "genMetPhiCalo/F");
+  llpTree->Branch("genMetPtTrue", &genMetPtTrue, "genMetPtTrue/F");
+  llpTree->Branch("genMetPhiTrue", &genMetPhiTrue, "genMetPhiTrue/F");
+  llpTree->Branch("genVertexX", &genVertexX, "genVertexX/F");
+  llpTree->Branch("genVertexY", &genVertexY, "genVertexY/F");
+  llpTree->Branch("genVertexZ", &genVertexZ, "genVertexZ/F");
+  llpTree->Branch("genVertexT", &genVertexT, "genVertexT/F");
+  llpTree->Branch("genWeight", &genWeight, "genWeight/F");
+  llpTree->Branch("genSignalProcessID", &genSignalProcessID, "genSignalProcessID/i");
+  llpTree->Branch("genQScale", &genQScale, "genQScale/F");
+  llpTree->Branch("genAlphaQCD", &genAlphaQCD, "genAlphaQCD/F");
+  llpTree->Branch("genAlphaQED", &genAlphaQED, "genAlphaQED/F");
+  scaleWeights = new std::vector<float>; scaleWeights->clear();
+  pdfWeights = new std::vector<float>; pdfWeights->clear();
+  alphasWeights = new std::vector<float>; alphasWeights->clear();
+  if (isFastsim_) {
+    llpTree->Branch("lheComments", "std::string",&lheComments);
+  }
+  llpTree->Branch("scaleWeights", "std::vector<float>",&scaleWeights);
+  llpTree->Branch("pdfWeights", "std::vector<float>",&pdfWeights);
+  llpTree->Branch("alphasWeights", "std::vector<float>",&alphasWeights);
+};
+
+void llp_ntupler::enableGenParticleBranches()
+{
+  llpTree->Branch("nGenParticle", &nGenParticle, "nGenParticle/I");
+  llpTree->Branch("gParticleMotherId", gParticleMotherId, "gParticleMotherId[nGenParticle]/I");
+  llpTree->Branch("gParticleMotherIndex", gParticleMotherIndex, "gParticleMotherIndex[nGenParticle]/I");
+  llpTree->Branch("gParticleId", gParticleId, "gParticleId[nGenParticle]/I");
+  llpTree->Branch("gParticleStatus", gParticleStatus, "gParticleStatus[nGenParticle]/I");
+  llpTree->Branch("gParticleE", gParticleE, "gParticleE[nGenParticle]/F");
+  llpTree->Branch("gParticlePt", gParticlePt, "gParticlePt[nGenParticle]/F");
+  llpTree->Branch("gParticlePx", gParticlePx, "gParticlePx[nGenParticle]/F");
+  llpTree->Branch("gParticlePy", gParticlePy, "gParticlePy[nGenParticle]/F");
+  llpTree->Branch("gParticlePz", gParticlePz, "gParticlePz[nGenParticle]/F");
+  llpTree->Branch("gParticleEta", gParticleEta, "gParticleEta[nGenParticle]/F");
+  llpTree->Branch("gParticlePhi", gParticlePhi, "gParticlePhi[nGenParticle]/F");
+  llpTree->Branch("gParticleDecayVertexX", gParticleDecayVertexX, "gParticleDecayVertexX[nGenParticle]/F");
+  llpTree->Branch("gParticleDecayVertexY", gParticleDecayVertexY, "gParticleDecayVertexY[nGenParticle]/F");
+  llpTree->Branch("gParticleDecayVertexZ", gParticleDecayVertexZ, "gParticleDecayVertexZ[nGenParticle]/F");
+};
+
 //------ Enable the desired set of branches ------//
+
+/*
 void llp_ntupler::setBranches(){
 
   llpTree->Branch("isData", &isData, "isData/O");
@@ -340,7 +782,7 @@ void llp_ntupler::enableMCBranches(){
   llpTree->Branch("genJet_match_jet_index", &genJet_match_jet_index, "genJet_match_jet_index[nGenJets]/i");
   llpTree->Branch("genJet_min_delta_r_match_jet", &genJet_min_delta_r_match_jet, "genJet_min_delta_r_match_jet[nGenJets]/F");
 
-  /*scaleWeights = new std::vector<float>; scaleWeights->clear();
+  scaleWeights = new std::vector<float>; scaleWeights->clear();
   pdfWeights = new std::vector<float>; pdfWeights->clear();
   alphasWeights = new std::vector<float>; alphasWeights->clear();
   if (isFastsim_) {
@@ -349,7 +791,7 @@ void llp_ntupler::enableMCBranches(){
   llpTree->Branch("scaleWeights", "std::vector<float>",&scaleWeights);
   llpTree->Branch("pdfWeights", "std::vector<float>",&pdfWeights);
   llpTree->Branch("alphasWeights", "std::vector<float>",&alphasWeights);
-  */
+
 };
 void llp_ntupler::enableQCDBranches()
 {
@@ -425,7 +867,7 @@ void llp_ntupler::enableGenParticleBranches(){
   llpTree->Branch("gParticleDecayVertexZ", gParticleDecayVertexZ, "gParticleDecayVertexZ[nGenParticle]/F");
 }
 
-
+*/
 
 //------ Load the miniAOD objects and reset tree variables for each event ------//
 void llp_ntupler::loadEvent(const edm::Event& iEvent){//load all miniAOD objects for the current event
@@ -493,45 +935,98 @@ void llp_ntupler::loadEvent(const edm::Event& iEvent){//load all miniAOD objects
 //called by the loadEvent() method
 void llp_ntupler::resetBranches(){
     //reset tree variables
-    reset_event_variables();
-    reset_photon_variable();
-    reset_jet_variables();
-    reset_gen_llp_variable();
-    reset_mc_variable();
-    reset_qcd_variables();
+    resetEventInfoBranches();
+    resetPhotonBranches();
+    resetJetBranches();
+    resetGenParticleBranches();
+    resetMCBranches();
+    //reset_qcd_variables();
 }
 
-void llp_ntupler::reset_event_variables()
+void llp_ntupler::resetEventInfoBranches()
 {
+  //Event
+  nPV = -1;
   eventNum = 0;
+  eventTime = 0;
   lumiNum = 0;
   runNum = 0;
-  pvX = -99.0;
-  pvY = -99.0;
-  pvZ = -99.0;
-  nPV = -1;
-  Rho = -99.0;
-  nPUmean = -1;
-  nPU = -1;
+  nSlimmedSecondV = 0;
+  pvX = -999.0;
+  pvY = -999.0;
+  pvZ = -999.0;
+  fixedGridRhoAll = -999.0;
+  fixedGridRhoFastjetAll = -999.0;
+  fixedGridRhoFastjetAllCalo = -999.0;
+  fixedGridRhoFastjetCentralCalo = -999.0;
+  fixedGridRhoFastjetCentralChargedPileUp = -999.0;
+  fixedGridRhoFastjetCentralNeutral = -999.0;
   return;
 };
 
-void llp_ntupler::reset_photon_variable()
+void llp_ntupler::resetPhotonBranches()
 {
-  fJetNPhotons = 0;
-  for (int i=0; i< OBJECTARRAYSIZE; i++) {
-    fJetPhotonPt[i] = 0.0;
-    fJetPhotonEta[i] = 0.0;
-    fJetPhotonPhi[i] = 0.0;
-    fJetPhotonSeedRecHitE[i]      = -99.0;
-    fJetPhotonSeedRecHitEta[i]      = -99.0;
-    fJetPhotonSeedRecHitPhi[i]      = -99.0;
-    fJetPhotonSeedRecHitTime[i]      = -99.0;
+  nPhotons = 0;
+  nPhotons_overlap = 0;
+  //Photon
+  for(int i = 0; i < OBJECTARRAYSIZE; i++)
+  {
+    phoE[i] = 0.0;
+    phoPt[i] = 0.0;
+    phoEta[i] = 0.0;
+    phoPhi[i] = 0.0;
+    phoSigmaIetaIeta[i] = -99.0;
+    phoFull5x5SigmaIetaIeta[i] = -99.0;
+    phoR9[i] = -99.0;
+    pho_sminor[i] = -99.0;
+    pho_smajor[i] = -99.0;
+    pho_HoverE[i] = -99.0;
+    pho_sumChargedHadronPt[i] = -99.0;
+    pho_sumNeutralHadronEt[i] = -99.0;
+    pho_sumPhotonEt[i] = -99.0;
+    pho_ecalPFClusterIso[i] = -99.0;
+    pho_hcalPFClusterIso[i] = -99.0;
+    pho_trkSumPtHollowConeDR03[i] = -99.0;
+    pho_sumWorstVertexChargedHadronPt[i] = -99.0;
+    pho_pfIsoChargedHadronIso[i] = -99.0;
+    pho_pfIsoChargedHadronIsoWrongVtx[i] = -99.0;
+    pho_pfIsoNeutralHadronIso[i] = -99.0;
+    pho_pfIsoPhotonIso[i] = -99.0;
+    pho_pfIsoModFrixione[i] = -99.0;
+    pho_pfIsoSumPUPt[i] = -99.0;
+    pho_isConversion[i] = false;
+    pho_passEleVeto[i] = false;
+    pho_RegressionE[i] = -99.0;
+    pho_RegressionEUncertainty[i] = -99.0;
+    pho_IDMVA[i] = -99.0;
+    pho_superClusterEnergy[i] = -99.0;
+    pho_superClusterRawEnergy[i] = -99.0;
+    pho_superClusterEta[i]    = -99.0;
+    pho_superClusterPhi[i]    = -99.0;
+    pho_superClusterX[i]      = -99.0;
+    pho_superClusterY[i]      = -99.0;
+    pho_superClusterZ[i]      = -99.0;
+    pho_hasPixelSeed[i] = false;
+    for (int q=0;q<MAX_PhotonHLTFilters;q++) pho_passHLTFilter[i][q] = false;
+    pho_convType[i] = -99;
+    pho_convTrkZ[i] = -99.;
+    pho_convTrkClusZ[i] = -99.;
+
+    for (int ipv=0; ipv < MAX_NPV; ++ipv) {
+      pho_sumChargedHadronPtAllVertices[i][ipv] = -99.0;
+      pho_vtxSumPx[i][ipv] = 0.;
+      pho_vtxSumPy[i][ipv] = 0.;
+    }
+    pho_isStandardPhoton[i] = true;
+    pho_seedRecHitSwitchToGain6[i] = false;
+    pho_seedRecHitSwitchToGain1[i] = false;
+    pho_anyRecHitSwitchToGain6[i] = false;
+    pho_anyRecHitSwitchToGain1[i] = false;
   }
   return;
 };
 
-void llp_ntupler::reset_jet_variables()
+void llp_ntupler::resetJetBranches()
 {
   nJets = 0;
   for ( int i = 0; i < OBJECTARRAYSIZE; i++)
@@ -540,6 +1035,7 @@ void llp_ntupler::reset_jet_variables()
     jetPt[i] = 0.0;
     jetEta[i] = 0.0;
     jetPhi[i] = 0.0;
+    jetCSV[i] = 0.0;
     jetCISV[i] = 0.0;
     jetMass[i] =  -99.0;
     jetJetArea[i] = -99.0;
@@ -556,132 +1052,77 @@ void llp_ntupler::reset_jet_variables()
     jetNeutralEMEnergyFraction[i] = -99.0;
     jetChargedHadronEnergyFraction[i] = -99.0;
     jetNeutralHadronEnergyFraction[i] = -99.0;
-    jet_charged_hadron_multiplicity[i] = -99;
-    jet_neutral_hadron_multiplicity[i] = -99;
-    jet_photon_multiplicity[i] = -99;
-    jet_electron_multiplicity[i] = -99;
-    jet_muon_multiplicity[i] = -99;
-    jet_HF_hadron_multiplicity[i] = -99;
-    jet_HF_em_multiplicity[i] = -99;
-    jet_charged_multiplicity[i] = -99;
-    jet_neutral_multiplicity[i] = -99;
-    jetMatchedGenPt[i] = 0.0;
-    jetMatchedGenEta[i] = 0.0;
-    jetMatchedGenPhi[i] = 0.0;
-    jetMatchedGenMass[i] = 0.0;
-    jetMatchedGenTime[i] = 0.0;
-    jet_n_rechits[i] = 0;
-    jet_rechit_E[i] = 0.0;
-    jet_rechit_T[i] = 0.0;
-    jet_rechit_E_Ecut3[i] = 0.0; //energy with a 2 GeV cut
-    jet_rechit_T_Ecut3[i] = 0.0;
-
-    jet_rechit_E_Ecut4[i] = 0.0; //energy with a 2 GeV cut
-    jet_rechit_T_Ecut4[i] = 0.0;
-    jet_rechit_E_Ecut2[i] = 0.0; //energy with a 2 GeV cut
-    jet_rechit_T_Ecut2[i] = 0.0;
-    jet_rechit_E_Ecut1p5[i] = 0.0; //energy with a 2 GeV cut
-    jet_rechit_T_Ecut1p5[i] = 0.0;
-    jet_rechit_E_Ecut1[i] = 0.0; //energy with a 2 GeV cut
-    jet_rechit_T_Ecut1[i] = 0.0;
-    jet_rechit_E_Ecut0p5[i] = 0.0; //energy with a 2 GeV cut
-    jet_rechit_T_Ecut0p5[i] = 0.0;
-
-
-    jet_pv_rechit_T[i] = 0.0;
-    jet_pv_rechit_T_Ecut4[i] = 0.0;
-    jet_pv_rechit_T_Ecut2[i] = 0.0;
-    jet_pv_rechit_T_Ecut1p5[i] = 0.0;
-    jet_pv_rechit_T_Ecut1[i] = 0.0;
-    jet_pv_rechit_T_Ecut0p5[i] = 0.0;
-
-    for(int j =0; j < OBJECTARRAYSIZE;j++)
-    {
-      jet_rechits_E[i][j] = -666.;
-      jet_rechits_T[i][j] = -666.;
-      jet_pv_rechits_T[i][j] = -666.;
-    }
+    jetMuonEnergyFraction[i] = -99.0;
+    jetHOEnergyFraction[i] = -99.0;
+    jetHFHadronEnergyFraction[i] = -99.0;
+    jetHFEMEnergyFraction[i] = -99.0;
+    jetAllMuonPt[i] = 0.0;
+    jetAllMuonEta[i] = 0.0;
+    jetAllMuonPhi[i] = 0.0;
+    jetAllMuonM[i] = 0.0;
+    jetPtWeightedDZ[i] = 0.0;
   }
   return;
 };
 
-void llp_ntupler::reset_gen_llp_variable()
+void llp_ntupler::resetGenParticleBranches()
 {
-  for ( int i = 0; i < LLP_ARRAY_SIZE; i++ )
+  for(int i = 0; i < GENPARTICLEARRAYSIZE; i++)
   {
-    gLLP_prod_vertex_x[i] = -666.;
-    gLLP_prod_vertex_y[i] = -666.;
-    gLLP_prod_vertex_z[i] = -666.;
-    gLLP_decay_vertex_x[i] = -666.;
-    gLLP_decay_vertex_y[i] = -666.;
-    gLLP_decay_vertex_z[i] = -666.;
-    gLLP_beta[i] = -666.;
-    gLLP_travel_time[i] = -666.;
-  }
+    gParticleMotherId[i] = -99999;
+    gParticleMotherIndex[i] = -99999;
+    gParticleId[i] = -99999;
+    gParticleStatus[i] = -99999;
+    gParticleE[i] = -99999.0;
+    gParticlePt[i] = -99999.0;
+    gParticlePx[i] = -99999.0;
+    gParticlePy[i] = -99999.0;
+    gParticlePz[i] = -99999.0;
+    gParticleEta[i] = -99999.0;
+    gParticlePhi[i] = -99999.0;
 
-  for ( int i = 0; i < LLP_DAUGHTER_ARRAY_SIZE; i++ )
-  {
-    gLLP_daughter_pt[i] = -666.;
-    gLLP_daughter_eta[i] = -666.;
-    gLLP_daughter_phi[i] = -666.;
-    gLLP_daughter_eta_ecalcorr[i] = -666.;
-    gLLP_daughter_phi_ecalcorr[i] = -666.;
-    gLLP_daughter_eta_hcalcorr[i] = -666.;
-    gLLP_daughter_phi_hcalcorr[i] = -666.;
-    gLLP_daughter_e[i] = -666.;
-    gLLP_daughter_travel_time[i] = -666.;
-    gen_time[i] = -666.;
-    gen_time_pv[i] = -666.;
-    photon_travel_time[i] = -666.;
-    photon_travel_time_pv[i] = -666.;
-    gLLP_daughter_match_jet_index[i] = 666;
-    gLLP_daughter_match_jet_index_hcal[i] = 666;
-    gLLP_daughter_match_jet_index_hcal_loose[i] = 666;
-    gLLP_daughter_match_jet_index_loose[i] = 666;
-    gLLP_min_delta_r_match_jet[i] = -666.;
-    gLLP_min_delta_r_match_jet_hcal[i] = -666.;
-    gLLP_min_delta_r_match_jet_loose[i] = -666.;
-    gLLP_min_delta_r_match_jet_hcal_loose[i] = -666.;
-    gLLP_min_delta_r_nocorr_match_jet[i] = -666.;
-    gLLP_daughter_match_genJet_index[i] = 666;
-    gLLP_min_delta_r_match_genJet[i] = -666.;
+    gParticleDecayVertexX[i] = -99999.0;
+    gParticleDecayVertexY[i] = -99999.0;
+    gParticleDecayVertexZ[i] = -99999.0;
 
   }
   return;
 };
 
-void llp_ntupler::reset_mc_variable()
+void llp_ntupler::resetMCBranches()
 {
   nGenJets = 0;
   for ( int i = 0; i < OBJECTARRAYSIZE; i++ )
   {
-    genJetE[i] = -666.;
-    genJetPt[i] = -666.;
-    genJetEta[i] = -666.;
-    genJetPhi[i] = -666.;
-    genJetME[i] = -666.;
-    genJet_match_jet_index[i] = 666;
-    genJet_min_delta_r_match_jet[i] = -666.;
+    genJetE[i] = -999.;
+    genJetPt[i] = -999.;
+    genJetEta[i] = -999.;
+    genJetPhi[i] = -999.;
+    genJetMET[i] = -999.;
+    //genJet_match_jet_index[i] = 666;
+    //genJet_min_delta_r_match_jet[i] = -666.;
   }
 
-  genMetPtCalo  = -666.;
-  genMetPhiCalo = -666.;
-  genMetPtTrue  = -666.;
-  genMetPhiTrue = -666.;
+  genMetPtCalo  = -999.;
+  genMetPhiCalo = -999.;
+  genMetPtTrue  = -999.;
+  genMetPhiTrue = -999.;
 
-  genVertexX = -666.;
-  genVertexY = -666.;
-  genVertexZ = -666.;
-  genVertexT = -666.;
+  genVertexX = -999.;
+  genVertexY = -999.;
+  genVertexZ = -999.;
+  genVertexT = -999.;
 
-  genWeight = -666.;
+  genWeight = -999.;
   genSignalProcessID = 0;
-  genQScale = -666.;
-  genAlphaQCD = -666.;
-  genAlphaQED = -666.;
+  genQScale = -999.;
+  genAlphaQCD = -999.;
+  genAlphaQED = -999.;
 
   return;
 };
+
+/*
 void llp_ntupler::reset_qcd_variables()
 {
   nGenQCDParticles = 0;
@@ -696,10 +1137,8 @@ void llp_ntupler::reset_qcd_variables()
   }
   return;
 };
+*/
 //------ Methods to fill tree variables ------//
-
-
-
 
 //------ Method called for each run ------//
 
@@ -731,8 +1170,8 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   //store basic event info
   isData = isData_;
-  isFourJet = isFourJet_;
-  isQCD = isQCD_;
+  //isFourJet = isFourJet_;
+  //isQCD = isQCD_;
   runNum = iEvent.id().run();
   lumiNum = iEvent.luminosityBlock();
   eventNum = iEvent.id().event();
@@ -760,9 +1199,10 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   pvZ = myPV->z();
 
   //get rho
-  Rho = *rhoFastjetAll;
+  //Rho = *rhoFastjetAll;
 
   //Fill Pileup info
+  /*
   if (!isData)
   {
     for(const PileupSummaryInfo &pu : *puInfo)
@@ -774,7 +1214,7 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       }
     }
   }
-
+*/
   int i_jet = 0;
   for (const reco::PFJet &j : *jets)
   {
@@ -813,20 +1253,21 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     jetNeutralEMEnergyFraction[i_jet] = j.neutralEmEnergyFraction();
     jetChargedHadronEnergyFraction[i_jet] = j.chargedHadronEnergyFraction();
     jetNeutralHadronEnergyFraction[i_jet] = j.neutralHadronEnergyFraction();
-    jet_charged_hadron_multiplicity[i_jet] = j.chargedHadronMultiplicity();
-    jet_neutral_hadron_multiplicity[i_jet] = j.neutralHadronMultiplicity();
-    jet_photon_multiplicity[i_jet] = j.photonMultiplicity();
-    jet_electron_multiplicity[i_jet] = j.electronMultiplicity();
-    jet_muon_multiplicity[i_jet] = j.muonMultiplicity();
-    jet_HF_hadron_multiplicity[i_jet] = j.HFHadronMultiplicity();
-    jet_HF_em_multiplicity[i_jet] = j.HFEMMultiplicity();
-    jet_charged_multiplicity[i_jet] = j.chargedMultiplicity();
-    jet_neutral_multiplicity[i_jet] = j.neutralMultiplicity();
+    //jet_charged_hadron_multiplicity[i_jet] = j.chargedHadronMultiplicity();
+    //jet_neutral_hadron_multiplicity[i_jet] = j.neutralHadronMultiplicity();
+    //jet_photon_multiplicity[i_jet] = j.photonMultiplicity();
+    //jet_electron_multiplicity[i_jet] = j.electronMultiplicity();
+    //jet_muon_multiplicity[i_jet] = j.muonMultiplicity();
+    //jet_HF_hadron_multiplicity[i_jet] = j.HFHadronMultiplicity();
+    //jet_HF_em_multiplicity[i_jet] = j.HFEMMultiplicity();
+    //jet_charged_multiplicity[i_jet] = j.chargedMultiplicity();
+    //jet_neutral_multiplicity[i_jet] = j.neutralMultiplicity();
 
 
     //*************************************
     //find photons inside the jet
     //*************************************
+    /*
     for (const reco::Photon &pho : *photons) {
       //cout << "Nphoton: " << fJetNPhotons << "\n";
 
@@ -858,6 +1299,8 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       fJetNPhotons++;
 
     }
+    */
+
     //***************************
     //Find RecHits Inside the Jet
     //***************************
@@ -877,84 +1320,24 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
         const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
         if ( deltaR(jetEta[i_jet], jetPhi[i_jet], recHitPos.eta(), recHitPos.phi())  < 0.4)
         {
-          jet_rechit_E[i_jet] += recHit->energy();
-          jet_rechit_T[i_jet] += recHit->time()*recHit->energy();
-          jet_rechits_E[i_jet][n_matched_rechits] = recHit->energy();
-    	    jet_rechits_T[i_jet][n_matched_rechits] = recHit->time();
-    	    double rechit_x = ecal_radius * cos(recHitPos.phi());
+          double rechit_x = ecal_radius * cos(recHitPos.phi());
     	    double rechit_y = ecal_radius * sin(recHitPos.phi());
     	    double rechit_z = ecal_radius * sinh(recHitPos.eta());
     	    double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
-          jet_pv_rechits_T[i_jet][n_matched_rechits] = recHit->time()+(1./30)*ecal_radius*cosh(recHitPos.eta()) - photon_pv_travel_time;
-    	    jet_pv_rechit_T[i_jet] += recHit->energy()*jet_pv_rechits_T[i_jet][n_matched_rechits];
-          // std::cout << jet_pv_rechits_T[i_jet][n_matched_rechits] << jet_rechits_T[i_jet][n_matched_rechits] << std::endl;
-          if (recHit->energy() > 0.5)
-    	    {
-        		jet_rechit_E_Ecut0p5[i_jet] += recHit->energy();
-        		jet_rechit_T_Ecut0p5[i_jet] += recHit->time()*recHit->energy();
-            jet_pv_rechit_T_Ecut0p5[i_jet] += jet_pv_rechits_T[i_jet][n_matched_rechits] *recHit->energy();
-    	    }
+
           if (recHit->energy() > 1.0)
     	    {
-    		    jet_rechit_E_Ecut1[i_jet] += recHit->energy();
-    		    jet_rechit_T_Ecut1[i_jet] += recHit->time()*recHit->energy();
-            jet_pv_rechit_T_Ecut1[i_jet] += jet_pv_rechits_T[i_jet][n_matched_rechits] *recHit->energy();
-            // std::cout << "rechit time, with pv"<<jet_rechit_T_Ecut1[i_jet]<< jet_pv_rechit_T_Ecut1[i_jet]<< std::endl;
-            // std::cout << "rechits with pv, without" <<jet_pv_rechits_T[i_jet][n_matched_rechits] << jet_rechits_T[i_jet][n_matched_rechits] << std::endl;
-            // std::cout << "rechit energy and time"<<recHit->energy()<< recHit->time()<< std::endl;
-
-
-    	    }
-          if (recHit->energy() > 1.5)
-    	    {
-    		    jet_rechit_E_Ecut1p5[i_jet] += recHit->energy();
-    		    jet_rechit_T_Ecut1p5[i_jet] += recHit->time()*recHit->energy();
-            jet_pv_rechit_T_Ecut1p5[i_jet] += jet_pv_rechits_T[i_jet][n_matched_rechits] *recHit->energy();
-
-    	    }
-          if (recHit->energy() > 2.0)
-    	    {
-    		    jet_rechit_E_Ecut2[i_jet] += recHit->energy();
-    		    jet_rechit_T_Ecut2[i_jet] += recHit->time()*recHit->energy();
-            jet_pv_rechit_T_Ecut2[i_jet] += jet_pv_rechits_T[i_jet][n_matched_rechits] *recHit->energy();
-
-    	    }
-    	    if (recHit->energy() > 3.0)
-          {
-            jet_rechit_E_Ecut3[i_jet] += recHit->energy();
-            jet_rechit_T_Ecut3[i_jet] += recHit->time()*recHit->energy();
-            jet_pv_rechit_T_Ecut3[i_jet] += jet_pv_rechits_T[i_jet][n_matched_rechits] *recHit->energy();
-
+    		    jetRechitE[i_jet] += recHit->energy();
+    		    jetRechitTime[i_jet] += recHit->time()*recHit->energy();
           }
-
-    	    if (recHit->energy() > 4.0)
-          {
-            jet_rechit_E_Ecut4[i_jet] += recHit->energy();
-            jet_rechit_T_Ecut4[i_jet] += recHit->time()*recHit->energy();
-            jet_pv_rechit_T_Ecut4[i_jet] += jet_pv_rechits_T[i_jet][n_matched_rechits] *recHit->energy();
-
-          }
-    	    n_matched_rechits++;
+          n_matched_rechits++;
         }
       }
     }
     //cout << "Last Nphoton: " << fJetNPhotons << "\n";
     //std::cout << "n: " << n_matched_rechits << std::endl;
-    jet_n_rechits[i_jet] = n_matched_rechits;
-    jet_rechit_T[i_jet] = jet_rechit_T[i_jet]/jet_rechit_E[i_jet];
-    jet_rechit_T_Ecut4[i_jet] = jet_rechit_T_Ecut4[i_jet]/jet_rechit_E_Ecut4[i_jet];
-    jet_rechit_T_Ecut3[i_jet] = jet_rechit_T_Ecut3[i_jet]/jet_rechit_E_Ecut3[i_jet];
-    jet_rechit_T_Ecut2[i_jet] = jet_rechit_T_Ecut2[i_jet]/jet_rechit_E_Ecut2[i_jet];
-    jet_rechit_T_Ecut1p5[i_jet] = jet_rechit_T_Ecut1p5[i_jet]/jet_rechit_E_Ecut1p5[i_jet];
-    jet_rechit_T_Ecut1[i_jet] =  jet_rechit_T_Ecut1[i_jet]/jet_rechit_E_Ecut1[i_jet];
-    jet_rechit_T_Ecut0p5[i_jet] = jet_rechit_T_Ecut0p5[i_jet]/jet_rechit_E_Ecut0p5[i_jet]; //incrementing jet counter
-    jet_pv_rechit_T[i_jet] = jet_pv_rechit_T[i_jet]/jet_rechit_E[i_jet];
-    jet_pv_rechit_T_Ecut4[i_jet] = jet_pv_rechit_T_Ecut4[i_jet]/jet_rechit_E_Ecut4[i_jet];
-    jet_pv_rechit_T_Ecut3[i_jet] = jet_pv_rechit_T_Ecut3[i_jet]/jet_rechit_E_Ecut3[i_jet];
-    jet_pv_rechit_T_Ecut2[i_jet] =  jet_pv_rechit_T_Ecut2[i_jet]/jet_rechit_E_Ecut2[i_jet];
-    jet_pv_rechit_T_Ecut1p5[i_jet] = jet_pv_rechit_T_Ecut1p5[i_jet]/jet_rechit_E_Ecut1p5[i_jet];
-    jet_pv_rechit_T_Ecut1[i_jet] = jet_pv_rechit_T_Ecut1[i_jet]/jet_rechit_E_Ecut1[i_jet];
-    jet_pv_rechit_T_Ecut0p5[i_jet] = jet_pv_rechit_T_Ecut0p5[i_jet]/jet_rechit_E_Ecut0p5[i_jet]; //incrementing jet counter
+    jetNRechits[i_jet] = n_matched_rechits;
+    jetRechitTime[i_jet] = jetRechitTime[i_jet]/jetRechitE[i_jet];
     nJets++;
     i_jet++;
 
@@ -984,7 +1367,7 @@ void llp_ntupler::beginJob(){
 void llp_ntupler::endJob(){
 }
 
-
+/*
 bool llp_ntupler::fill_fat_jet(const edm::EventSetup& iSetup)
 {
   int i_fat_jet = 0;
@@ -1138,6 +1521,7 @@ bool llp_ntupler::fill_fat_jet(const edm::EventSetup& iSetup)
   } //loop over jets
   return true;
 };
+*/
 
 bool llp_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
   bool result = false;
@@ -1220,7 +1604,7 @@ bool llp_ntupler::fillMC()
     genJetPt[nGenJets] = j.pt();
     genJetEta[nGenJets] = j.eta();
     genJetPhi[nGenJets] = j.phi();
-    genJetME[nGenJets] = j.invisibleEnergy();
+    genJetMET[nGenJets] = j.invisibleEnergy();
     nGenJets++;
   }
 
@@ -1258,6 +1642,7 @@ bool llp_ntupler::fillMC()
   genQScale = genInfo->qScale();
   genAlphaQCD = genInfo->alphaQCD();
   genAlphaQED = genInfo->alphaQED();
+  /*
   for ( int i_genJet = 0; i_genJet < nGenJets; i_genJet++ )
   {
 
@@ -1283,7 +1668,7 @@ bool llp_ntupler::fillMC()
    }
 
 
-
+*/
 
 
     /*
@@ -1385,6 +1770,11 @@ bool llp_ntupler::fillMC()
     return true;
 };
 
+bool llp_ntupler::fillGenParticles()
+{
+  return true;
+};
+/*
 bool llp_ntupler::fillGenParticles(){
   std::vector<const reco::Candidate*> prunedV;//Allows easier comparison for mother finding
   //Fills selected gen particles
@@ -1697,9 +2087,9 @@ bool llp_ntupler::fillGenParticles(){
     	    double radius = sqrt( pow(gLLP_decay_vertex_x[1],2) + pow(gLLP_decay_vertex_y[1],2) );
     	    double ecal_radius = 129.0;
           double hcal_radius = 179.0;
-    	    /*
-    	    Second two LLP daughters belong to LLP->pdgID()=36
-          */
+    	    //***************
+    	    //Second two LLP daughters belong to LLP->pdgID()=36
+          //************
     	    for (unsigned int id = 0; id < tmpParticle->numberOfDaughters(); id++ )
     	    {
     	      //std::cout << " -> "<< tmpParticle->daughter(id)->pdgId() << std::endl;
@@ -1875,7 +2265,7 @@ bool llp_ntupler::fillGenParticles(){
   return true;
 };
 
-
+*/
 
 bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
 {
