@@ -125,7 +125,7 @@ public:
   void reset_jet_variables();
   void reset_fat_jet_variables();
   void reset_gen_llp_variable();
-  void reset_gen_jet_variable();
+  void reset_mc_variable();
   void reset_qcd_variables();
 
   //------ HELPER FUNCTIONS ------//

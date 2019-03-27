@@ -3,8 +3,8 @@
 /*
   Description: Base class for miniAOD analysis with CRAB
 */
-//         Author:  Caltech razor team
-//         Created:  Thu, 17 Jul 2014 15:00:06 GMT
+//         Author:  Cristián Peña and Si Xie.
+//         Created:  Thu, 26 March 2019 15:00:06 GMT
 
 #include "llp_ntupler.h"
 //------ Constructors and destructor ------//
@@ -497,7 +497,7 @@ void llp_ntupler::resetBranches(){
     reset_photon_variable();
     reset_jet_variables();
     reset_gen_llp_variable();
-    reset_gen_jet_variable();
+    reset_mc_variable();
     reset_qcd_variables();
 }
 
@@ -650,7 +650,7 @@ void llp_ntupler::reset_gen_llp_variable()
   return;
 };
 
-void llp_ntupler::reset_gen_jet_variable()
+void llp_ntupler::reset_mc_variable()
 {
   nGenJets = 0;
   for ( int i = 0; i < OBJECTARRAYSIZE; i++ )
@@ -668,6 +668,17 @@ void llp_ntupler::reset_gen_jet_variable()
   genMetPhiCalo = -666.;
   genMetPtTrue  = -666.;
   genMetPhiTrue = -666.;
+
+  genVertexX = -666.;
+  genVertexY = -666.;
+  genVertexZ = -666.;
+  genVertexT = -666.;
+
+  genWeight = -666.;
+  genSignalProcessID = 0;
+  genQScale = -666.;
+  genAlphaQCD = -666.;
+  genAlphaQED = -666.;
 
   return;
 };
