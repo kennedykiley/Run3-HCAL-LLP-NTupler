@@ -142,7 +142,22 @@ llp_ntupler::~llp_ntupler()
 void llp_ntupler::setBranches()
 {
   enableEventInfoBranches();
+  enablePVAllBranches();
+  enablePileUpBranches();
+  enableMuonBranches();
+  enableElectronBranches();
+  enableTauBranches();
+  enableIsoPFCandidateBranches();
+  enablePhotonBranches();
+  enableEcalRechitBranches();
+  enableJetBranches();
+  enableJetAK8Branches();
+  enableMetBranches();
+  enableTriggerBranches();
+  enableMCBranches();
+  enableGenParticleBranches();
 };
+
 void llp_ntupler::enableEventInfoBranches(){
   llpTree->Branch("isData", &isData, "isData/O");
   llpTree->Branch("nPV", &nPV, "nPV/I");
@@ -521,8 +536,8 @@ void llp_ntupler::enableTriggerBranches()
   nameHLT = new std::vector<std::string>; nameHLT->clear();
   llpTree->Branch("HLTDecision", &triggerDecision, ("HLTDecision[" + std::to_string(NTriggersMAX) +  "]/O").c_str());
   llpTree->Branch("HLTPrescale", &triggerHLTPrescale, ("HLTPrescale[" + std::to_string(NTriggersMAX) +  "]/I").c_str());
-  llpTree->Branch("HLTMR", &HLTMR, "HLTMR/F");
-  llpTree->Branch("HLTRSQ", &HLTRSQ, "HLTRSQ/F");
+  //llpTree->Branch("HLTMR", &HLTMR, "HLTMR/F");
+  //llpTree->Branch("HLTRSQ", &HLTRSQ, "HLTRSQ/F");
 };
 
 void llp_ntupler::enableMCBranches()
@@ -936,6 +951,7 @@ void llp_ntupler::loadEvent(const edm::Event& iEvent){//load all miniAOD objects
 void llp_ntupler::resetBranches(){
     //reset tree variables
     resetEventInfoBranches();
+    resetMuonBranches();
     resetPhotonBranches();
     resetJetBranches();
     resetGenParticleBranches();
@@ -962,6 +978,46 @@ void llp_ntupler::resetEventInfoBranches()
   fixedGridRhoFastjetCentralChargedPileUp = -999.0;
   fixedGridRhoFastjetCentralNeutral = -999.0;
   return;
+};
+
+void llp_ntupler::resetMuonBranches()
+{
+  nMuons = 0;
+  for(int i = 0; i < OBJECTARRAYSIZE; i++)
+  {
+    muonE[i] = 0.0;
+    muonPt[i] = 0.0;
+    muonEta[i] = 0.0;
+    muonPhi[i] = 0.0;
+    muonCharge[i] = -99;
+    muonIsLoose[i] = false;
+    muonIsMedium[i] = false;
+    muonIsTight[i] = false;
+    muon_d0[i] = -99.0;
+    muon_dZ[i] = -99.0;
+    muon_ip3d[i] = -99.0;
+    muon_ip3dSignificance[i] = -99.0;
+    muonType[i] = 0;
+    muonQuality[i] = 0;
+    muon_pileupIso[i] = -99.0;
+    muon_chargedIso[i] = -99.0;
+    muon_photonIso[i] = -99.0;
+    muon_neutralHadIso[i] = -99.0;
+    muon_ptrel[i] = -99.0;
+    muon_chargedMiniIso[i] = -99.0;
+    muon_photonAndNeutralHadronMiniIso[i] = -99.0;
+    muon_chargedPileupMiniIso[i] = -99.0;
+    muon_activityMiniIsoAnnulus[i] = -99.0;
+    muon_passSingleMuTagFilter[i] = false;
+    for (int q=0;q<MAX_MuonHLTFilters;q++) muon_passHLTFilter[i][q] = false;
+    muon_validFractionTrackerHits[i] = -99.0;
+    muon_isGlobal[i] = false;
+    muon_normChi2[i] = -99.0;
+    muon_chi2LocalPosition[i] = -99.0;
+    muon_kinkFinder[i] = -99.0;
+    muon_segmentCompatability[i] = -99.0;
+    muonIsICHEPMedium[i] = false;
+  }
 };
 
 void llp_ntupler::resetPhotonBranches()
@@ -1164,24 +1220,27 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   NEvents->Fill(0); //increment event count
   //resetting output tree branches
   resetBranches();
+  fillEventInfo(iEvent);
+  fillPVAll();
+  fillPileUp();
+  fillMuons(iEvent);
   //*************************************
   //Fill Event-Level Info
   //*************************************
-
   //store basic event info
-  isData = isData_;
+  //isData = isData_;
   //isFourJet = isFourJet_;
   //isQCD = isQCD_;
-  runNum = iEvent.id().run();
-  lumiNum = iEvent.luminosityBlock();
-  eventNum = iEvent.id().event();
+  //runNum = iEvent.id().run();
+  //lumiNum = iEvent.luminosityBlock();
+  //eventNum = iEvent.id().event();
 
- //select the primary vertex, if any
-  nPV = 0;
-  myPV = &(vertices->front());
+  //select the primary vertex, if any
+  //nPV = 0;
+  //myPV = &(vertices->front());
 
-  bool foundPV = false;
-  for(unsigned int i = 0; i < vertices->size(); i++)
+  //bool foundPV = false;
+  /*for(unsigned int i = 0; i < vertices->size(); i++)
   {
     if(vertices->at(i).isValid() && !vertices->at(i).isFake())
     {
@@ -1200,7 +1259,7 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   //get rho
   //Rho = *rhoFastjetAll;
-
+*/
   //Fill Pileup info
   /*
   if (!isData)
@@ -1215,6 +1274,7 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     }
   }
 */
+
   int i_jet = 0;
   for (const reco::PFJet &j : *jets)
   {
@@ -1346,17 +1406,16 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   //MC AND GEN LEVEL INFO
   fillMC();
   fillGenParticles();
-  //fill_fat_jet( iSetup );
+    //fill_fat_jet( iSetup );
   /*if(readGenVertexTime_)
   {
     genVertexT = *genParticles_t0; //std::cout << genVertexT << std::endl;
   }
   */
   //fillMC();
-
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
   llpTree->Fill();
-}
+};
 
 //------ Method called once each job just before starting event loop ------//
 void llp_ntupler::beginJob(){
@@ -1522,6 +1581,236 @@ bool llp_ntupler::fill_fat_jet(const edm::EventSetup& iSetup)
   return true;
 };
 */
+
+bool llp_ntupler::fillEventInfo(const edm::Event& iEvent)
+{
+  isData = isData_;
+  runNum = iEvent.id().run();
+  lumiNum = iEvent.luminosityBlock();
+  eventNum = iEvent.id().event();
+  eventTime = iEvent.eventAuxiliary().time().unixTime();
+
+  //number of slimmedSecondaryVertices
+  nSlimmedSecondV = secondaryVertices->size();
+
+  //select the primary vertex, if any
+  nPV = 0;
+  myPV = &(vertices->front());
+  bool foundPV = false;
+  for(unsigned int i = 0; i < vertices->size(); i++)
+  {
+    if(vertices->at(i).isValid() && !vertices->at(i).isFake())
+    {
+      if (!foundPV)
+      {
+        myPV = &(vertices->at(i));
+        foundPV = true;
+      }
+      nPV++;
+    }
+  }
+
+  pvX = myPV->x();
+  pvY = myPV->y();
+  pvZ = myPV->z();
+
+  //get rho
+  fixedGridRhoAll = *rhoAll;
+  fixedGridRhoFastjetAll = *rhoFastjetAll;
+  fixedGridRhoFastjetAllCalo = *rhoFastjetAllCalo;
+  fixedGridRhoFastjetCentralCalo = *rhoFastjetCentralCalo;
+  fixedGridRhoFastjetCentralChargedPileUp = *rhoFastjetCentralChargedPileUp;
+  fixedGridRhoFastjetCentralNeutral = *rhoFastjetCentralNeutral;
+
+  return true;
+};
+
+bool llp_ntupler::fillPVAll()
+{
+  nPVAll = std::min(int(vertices->size()),int(MAX_NPV));
+  for (int ipv = 0; ipv < nPVAll; ++ipv)
+  {
+    const reco::Vertex &vtx = vertices->at(ipv);
+    pvAllX[ipv] = vtx.x();
+    pvAllY[ipv] = vtx.y();
+    pvAllZ[ipv] = vtx.z();
+  }
+
+  double pvAllSumPtSqD[MAX_NPV];
+  double pvAllSumPxD[MAX_NPV];
+  double pvAllSumPyD[MAX_NPV];
+
+  for (int ipv=0; ipv<nPVAll; ++ipv)
+  {
+    pvAllSumPtSqD[ipv] = 0.;
+    pvAllSumPxD[ipv]   = 0.;
+    pvAllSumPyD[ipv]   = 0.;
+  }
+
+/*
+  int counter = 0;
+  for (const pat::PackedCandidate &pfcand : *packedPFCands)
+  {
+    counter++;
+    if (pfcand.charge()==0) continue;
+    double mindz = std::numeric_limits<double>::max();
+    int ipvmin = -1;
+    for (int ipv = 0; ipv < nPVAll; ++ipv) {
+      const reco::Vertex &vtx = vertices->at(ipv);
+      double dz = std::abs(pfcand.dz(vtx.position()));
+      if (dz<mindz) {
+        mindz = dz;
+        ipvmin = ipv;
+      }
+    }
+
+    if (mindz<0.2 && ipvmin>=0 && ipvmin<MAX_NPV) {
+      pvAllSumPtSqD[ipvmin] += pfcand.pt()*pfcand.pt();
+      pvAllSumPxD[ipvmin] += pfcand.px();
+      pvAllSumPyD[ipvmin] += pfcand.py();
+    }
+  }
+  */
+  for (int ipv=0; ipv<nPVAll; ++ipv) {
+    pvAllLogSumPtSq[ipv] = log(pvAllSumPtSqD[ipv]);
+    pvAllSumPx[ipv] = pvAllSumPxD[ipv];
+    pvAllSumPy[ipv] = pvAllSumPyD[ipv];
+  }
+
+  return true;
+};
+
+bool llp_ntupler::fillPileUp()
+{
+  for(const PileupSummaryInfo &pu : *puInfo)
+  {
+    BunchXing[nBunchXing] = pu.getBunchCrossing();
+    nPU[nBunchXing] = pu.getPU_NumInteractions();
+    nPUmean[nBunchXing] = pu.getTrueNumInteractions();
+    nBunchXing++;
+  }
+  return true;
+};
+
+
+bool llp_ntupler::fillMuons(const edm::Event& iEvent)
+{
+  for(const pat::Muon &mu : *muons)
+  {
+    if(mu.pt() < 5) continue;
+    muonE[nMuons] = mu.energy();
+    muonPt[nMuons] = mu.pt();
+    muonEta[nMuons] = mu.eta();
+    muonPhi[nMuons] = mu.phi();
+    muonCharge[nMuons] = mu.charge();
+    std::cout << "muon debug 0 " << nMuons << std::endl;
+    muonIsLoose[nMuons] = mu.isLooseMuon();
+    muonIsMedium[nMuons] = mu.isMediumMuon();
+    muonIsTight[nMuons] = mu.isTightMuon(*myPV);
+    muon_d0[nMuons] = -mu.muonBestTrack()->dxy(myPV->position());
+    std::cout << "muon debug 1 " << nMuons << std::endl;
+    muon_dZ[nMuons] = mu.muonBestTrack()->dz(myPV->position());
+    std::cout << "muon debug 2 " << nMuons << std::endl;
+    muon_ip3d[nMuons] = mu.dB(pat::Muon::PV3D);
+    muon_ip3dSignificance[nMuons] = mu.dB(pat::Muon::PV3D)/mu.edB(pat::Muon::PV3D);
+    muonType[nMuons] = mu.isMuon() + mu.isGlobalMuon() + mu.isTrackerMuon() + mu.isStandAloneMuon()
+      + mu.isCaloMuon() + mu.isPFMuon() + mu.isRPCMuon();
+      std::cout << "muon debug 3 " << nMuons << std::endl;
+    muonQuality[nMuons] =
+      muon::isGoodMuon(mu,muon::All)
+    + muon::isGoodMuon(mu,muon::AllGlobalMuons)
+    + muon::isGoodMuon(mu,muon::AllStandAloneMuons)
+    + muon::isGoodMuon(mu,muon::AllTrackerMuons)
+    + muon::isGoodMuon(mu,muon::TrackerMuonArbitrated)
+    + muon::isGoodMuon(mu,muon::AllArbitrated)
+    + muon::isGoodMuon(mu,muon::GlobalMuonPromptTight)
+    + muon::isGoodMuon(mu,muon::TMLastStationLoose)
+    + muon::isGoodMuon(mu,muon::TMLastStationTight)
+    + muon::isGoodMuon(mu,muon::TM2DCompatibilityLoose)
+    + muon::isGoodMuon(mu,muon::TM2DCompatibilityTight)
+    + muon::isGoodMuon(mu,muon::TMOneStationLoose)
+    + muon::isGoodMuon(mu,muon::TMOneStationTight)
+    + muon::isGoodMuon(mu,muon::TMLastStationOptimizedLowPtLoose)
+    + muon::isGoodMuon(mu,muon::TMLastStationOptimizedLowPtTight)
+    + muon::isGoodMuon(mu,muon::GMTkChiCompatibility)
+    + muon::isGoodMuon(mu,muon::GMStaChiCompatibility)
+    + muon::isGoodMuon(mu,muon::GMTkKinkTight)
+    + muon::isGoodMuon(mu,muon::TMLastStationAngLoose)
+    + muon::isGoodMuon(mu,muon::TMLastStationAngTight)
+    + muon::isGoodMuon(mu,muon::TMOneStationAngLoose)
+    + muon::isGoodMuon(mu,muon::TMOneStationAngTight)
+    + muon::isGoodMuon(mu,muon::TMLastStationOptimizedBarrelLowPtLoose)
+    + muon::isGoodMuon(mu,muon::TMLastStationOptimizedBarrelLowPtTight)
+    + muon::isGoodMuon(mu,muon::RPCMuLoose);
+    std::cout << "muon debug 4 " << nMuons << std::endl;
+    muon_pileupIso[nMuons] = mu.pfIsolationR04().sumPUPt;
+    std::cout << "muon debug 5 " << nMuons << std::endl;
+    muon_chargedIso[nMuons] = mu.pfIsolationR04().sumChargedHadronPt;
+    std::cout << "muon debug 6 " << nMuons << std::endl;
+    muon_photonIso[nMuons] = mu.pfIsolationR04().sumPhotonEt;
+    std::cout << "muon debug 7 " << nMuons << std::endl;
+    muon_neutralHadIso[nMuons] = mu.pfIsolationR04().sumNeutralHadronEt;
+    std::cout << "muon debug 8 " << nMuons << std::endl;
+    //muon_ptrel[nMuons] = getLeptonPtRel( jets, &mu );
+    //tuple<double,double,double> PFMiniIso = getPFMiniIsolation(packedPFCands, dynamic_cast<const reco::Candidate *>(&mu), 0.05, 0.2, 10., false, false);
+    //muon_chargedMiniIso[nMuons] = std::get<0>(PFMiniIso);
+    //muon_photonAndNeutralHadronMiniIso[nMuons] = std::get<1>(PFMiniIso);
+    //muon_chargedPileupMiniIso[nMuons] = std::get<2>(PFMiniIso);
+    //muon_activityMiniIsoAnnulus[nMuons] = ActivityPFMiniIsolationAnnulus( packedPFCands, dynamic_cast<const reco::Candidate *>(&mu), 0.4, 0.05, 0.2, 10.);
+    muon_validFractionTrackerHits[nMuons] = (mu.innerTrack().isNonnull() ? mu.track()->validFraction() : -99.0);
+    std::cout << "muon debug 9 " << nMuons << std::endl;
+    muon_isGlobal[nMuons] = muon::isGoodMuon(mu,muon::AllGlobalMuons);
+    std::cout << "muon debug 10 " << nMuons << std::endl;
+    muon_normChi2[nMuons] = ( muon::isGoodMuon(mu,muon::AllGlobalMuons) ? mu.globalTrack()->normalizedChi2() : -99.0);
+    std::cout << "muon debug 11 " << nMuons << std::endl;
+    muon_chi2LocalPosition[nMuons] = mu.combinedQuality().chi2LocalPosition;
+    std::cout << "muon debug 12 " << nMuons << std::endl;
+    muon_kinkFinder[nMuons] = mu.combinedQuality().trkKink;
+    std::cout << "muon debug 13 " << nMuons << std::endl;
+    muon_segmentCompatability[nMuons] = muon::segmentCompatibility(mu);
+    std::cout << "muon debug 14 " << nMuons << std::endl;
+    bool isGoodGlobal = mu.isGlobalMuon() && mu.globalTrack()->normalizedChi2() < 3 && mu.combinedQuality().chi2LocalPosition < 12 && mu.combinedQuality().trkKink < 20;
+    std::cout << "muon debug 15 " << nMuons << std::endl;
+    muonIsICHEPMedium[nMuons] = muon::isLooseMuon(mu) && muon_validFractionTrackerHits[nMuons] > 0.49 && muon::segmentCompatibility(mu) > (isGoodGlobal ? 0.303 : 0.451);
+    std::cout << "muon debug 16 " << nMuons << std::endl;
+    //*************************************************
+    //Trigger Object Matching
+    //*************************************************
+    bool passTagMuonFilter = false;
+    std::cout << "muon debug 17 " << nMuons << std::endl;
+
+    /*for (pat::TriggerObjectStandAlone trigObject : *triggerObjects) {
+      std::cout << "muon debug 18 " << nMuons << std::endl;
+      if (deltaR(trigObject.eta(), trigObject.phi(),mu.eta(),mu.phi()) > 0.3) continue;
+      trigObject.unpackFilterLabels(iEvent, *triggerBits);
+      std::cout << "muon debug 19 " << nMuons << std::endl;
+      //check single muon filters
+      if ( trigObject.hasFilterLabel("hltL3fL1sMu25L1f0Tkf27QL3trkIsoFiltered0p09") ||
+    	   trigObject.hasFilterLabel("hltL3fL1sMu20Eta2p1L1f0Tkf24QL3trkIsoFiltered0p09") ||
+    	   trigObject.hasFilterLabel("hltL3fL1sMu16Eta2p1L1f0Tkf20QL3trkIsoFiltered0p09") ||
+    	   trigObject.hasFilterLabel("hltL3fL1sMu16L1f0Tkf20QL3trkIsoFiltered0p09") ||
+    	   trigObject.hasFilterLabel("hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09") ||
+    	   trigObject.hasFilterLabel("hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09") ||
+    	   trigObject.hasFilterLabel("hltL3crIsoL1sMu16Eta2p1L1f0L2f10QL3f20QL3trkIsoFiltered0p09") ||
+    	   trigObject.hasFilterLabel("hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09")
+    	   ) passTagMuonFilter = true;
+         std::cout << "muon debug 20 " << nMuons << std::endl;
+      //check all filters
+      for ( int q=0; q<MAX_MuonHLTFilters;q++) {
+    	if (trigObject.hasFilterLabel(muonHLTFilterNames[q].c_str())) muon_passHLTFilter[nMuons][q] = true;
+      std::cout << "muon debug 21 " << nMuons << std::endl;
+      }
+
+    }*/
+
+    muon_passSingleMuTagFilter[nMuons] = passTagMuonFilter;
+    std::cout << "muon debug 22 " << nMuons << std::endl;
+
+    nMuons++;
+  }
+
+  return true;
+};
 
 bool llp_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
   bool result = false;
@@ -2302,7 +2591,6 @@ bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
   //********************************************************************
   // Save trigger decisions in array of booleans
   //********************************************************************
-
   for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i)
   {
     string hltPathNameReq = "HLT_";
@@ -2321,7 +2609,6 @@ bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
       }
     }
   }
-
   //********************************************************************
   // Print Trigger Objects
   //********************************************************************

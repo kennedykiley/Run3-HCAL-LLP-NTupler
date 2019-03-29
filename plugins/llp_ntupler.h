@@ -174,7 +174,11 @@ public:
   void enableQCDBranches();
   */
 
-  bool fill_fat_jet(const edm::EventSetup& iSetup);
+  //bool fill_fat_jet(const edm::EventSetup& iSetup);
+  bool fillEventInfo(const edm::Event& iEvent);
+  bool fillPVAll();
+  bool fillPileUp();
+  bool fillMuons(const edm::Event& iEvent);
   bool fillMC();
   bool fillGenParticles();
   bool fillTrigger(const edm::Event& iEvent);
@@ -800,7 +804,7 @@ protected:
  float HLTMR, HLTRSQ;
 
  //trigger info
- vector<string>  *nameHLT;
+ std::vector<std::string>  *nameHLT;
  bool triggerDecision[NTriggersMAX];
  int  triggerHLTPrescale[NTriggersMAX];
 
