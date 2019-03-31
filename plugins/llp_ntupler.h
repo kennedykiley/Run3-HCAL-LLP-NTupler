@@ -15,6 +15,7 @@ Description: Base class for miniAOD analysis with CRAB
 #include <vector>
 #include <tuple>
 #include <fstream>
+#include <TRandom3.h>
 
 using namespace std;
 
@@ -179,6 +180,8 @@ public:
   bool fillPVAll();
   bool fillPileUp();
   bool fillMuons(const edm::Event& iEvent);
+  bool fillElectrons(const edm::Event& iEvent);
+  bool fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillMC();
   bool fillGenParticles();
   bool fillTrigger(const edm::Event& iEvent);
