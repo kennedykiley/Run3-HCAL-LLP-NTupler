@@ -97,13 +97,19 @@ using namespace std;
 #include "TFile.h"
 #include "TLorentzVector.h"
 
+//LOCAL includes
+#include "cms_lpc_llp/llp_ntupler/interface/EGammaMvaEleEstimatorCSA14.h"
+#include "cms_lpc_llp/llp_ntupler/interface/ElectronMVAEstimatorRun2NonTrig.h"
+#include "cms_lpc_llp/llp_ntupler/interface/EGammaMvaPhotonEstimator.h"
+//#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
+
 //------ Array Size Constants ------//
 #define OBJECTARRAYSIZE 2000
 #define RECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
 #define MAX_NPV 600
 #define MAX_NTRACK 2000
-#define MAX_NPU 300
+#define MAX_NPU 600
 #define MAX_NBX 40
 #define LLP_ARRAY_SIZE 2
 #define LLP_DAUGHTER_ARRAY_SIZE 4
@@ -182,6 +188,7 @@ public:
   bool fillMuons(const edm::Event& iEvent);
   bool fillElectrons(const edm::Event& iEvent);
   bool fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+  bool fillTaus();
   bool fillMC();
   bool fillGenParticles();
   bool fillTrigger(const edm::Event& iEvent);
@@ -346,6 +353,16 @@ protected:
   //  edm::Handle<vector<reco::SuperCluster> > superClusters;
   //  edm::Handle<vector<reco::PFCandidate> > lostTracks;
   edm::Handle<float> genParticles_t0;
+
+
+
+
+
+  //MVAs for triggering and non-triggering electron ID
+  EGammaMvaEleEstimatorCSA14* myMVATrig;
+  ElectronMVAEstimatorRun2NonTrig* myMVANonTrig;
+  EGammaMvaPhotonEstimator* myPhotonMVA;
+
 
   const reco::Vertex *myPV;
   const reco::Vertex *myPV_GenMatch;
@@ -574,6 +591,23 @@ protected:
  vector<vector<uint> > *pho_EcalRechitIndex;
  vector<uint>  pho_SeedRechitID;
  vector<uint>  *pho_SeedRechitIndex;
+ //extra stuff
+ float pho_sumChargedHadronPt_NewPV_NoTiming[OBJECTARRAYSIZE];
+ float pho_sumChargedHadronPt_NewPV_Timing50_TrkVtx[OBJECTARRAYSIZE];
+ float pho_sumChargedHadronPt_NewPV_Timing80_TrkVtx[OBJECTARRAYSIZE];
+ float pho_sumChargedHadronPt_NewPV_Timing100_TrkVtx[OBJECTARRAYSIZE];
+ float pho_sumChargedHadronPt_NewPV_Timing120_TrkVtx[OBJECTARRAYSIZE];
+ float pho_sumChargedHadronPt_NewPV_Timing50_TrkPho[OBJECTARRAYSIZE];
+ float pho_sumChargedHadronPt_NewPV_Timing80_TrkPho[OBJECTARRAYSIZE];
+ float pho_sumChargedHadronPt_NewPV_Timing100_TrkPho[OBJECTARRAYSIZE];
+ float pho_sumChargedHadronPt_NewPV_Timing120_TrkPho[OBJECTARRAYSIZE];
+ float pho_superClusterSeedX[OBJECTARRAYSIZE];
+float pho_superClusterSeedY[OBJECTARRAYSIZE];
+float pho_superClusterSeedZ[OBJECTARRAYSIZE];
+float pho_superClusterSeedT[OBJECTARRAYSIZE];
+float pho_superClusterSeedE[OBJECTARRAYSIZE];
+float pho_pfClusterSeedE[OBJECTARRAYSIZE];
+
 
  //Ecal RecHits
  vector<uint> ecalRechitID_ToBeSaved;

@@ -86,6 +86,46 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   llpTree = fs->make<TTree>("llp", "selected AOD information for llp analyses");
   //llpTree = new TTree("Jets", "selected AOD information");
   NEvents = fs->make<TH1F>("NEvents",";;NEvents;",1,-0.5,0.5);
+
+  /*
+  //set up electron MVA ID
+  std::vector<std::string> myTrigWeights;
+  myTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/TrigIDMVA_25ns_EB_BDT.weights.xml").fullPath().c_str());
+  myTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/TrigIDMVA_25ns_EE_BDT.weights.xml").fullPath().c_str());
+
+  myMVATrig = new EGammaMvaEleEstimatorCSA14();
+  myMVATrig->initialize("BDT",
+  EGammaMvaEleEstimatorCSA14::kTrig,
+  true,
+  myTrigWeights);
+
+  std::vector<std::string> myNonTrigWeights;
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EB1_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EB2_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EE_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EB1_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EB2_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EE_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+
+  myMVANonTrig = new ElectronMVAEstimatorRun2NonTrig();
+  myMVANonTrig->initialize("BDTG method",
+  ElectronMVAEstimatorRun2NonTrig::kPHYS14,
+  true,
+  myNonTrigWeights);
+
+  //set up photon MVA ID
+  std::vector<std::string> myPhotonMVAWeights;
+  myPhotonMVAWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/PhotonIDMVA_Spring15_50ns_v0_EB.weights.xml").fullPath().c_str());
+  myPhotonMVAWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/PhotonIDMVA_Spring15_50ns_v0_EE.weights.xml").fullPath().c_str());
+  std::vector<std::string> myPhotonMVAMethodNames;
+  myPhotonMVAMethodNames.push_back("BDTG photons barrel");
+  myPhotonMVAMethodNames.push_back("BDTG photons endcap");
+
+  myPhotonMVA = new EGammaMvaPhotonEstimator();
+  myPhotonMVA->initialize(myPhotonMVAMethodNames,myPhotonMVAWeights,
+    EGammaMvaPhotonEstimator::kPhotonMVATypeDefault);
+
+*/
   //*****************************************************************************************
   //Read in HLT Trigger Path List from config file
   //*****************************************************************************************
@@ -963,18 +1003,20 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   //resetting output tree branches
   resetBranches();
 
-  fillEventInfo(iEvent);
   std::cout << "fill event" << std::endl;
-  fillPVAll();
+  fillEventInfo(iEvent);
   std::cout << "fill PV" << std::endl;
-  fillPileUp();
+  fillPVAll();
   std::cout << "fill PU" << std::endl;
-  fillMuons(iEvent);
+  fillPileUp();
   std::cout << "fill muons" << std::endl;
-  fillElectrons(iEvent);
+  fillMuons(iEvent);
   std::cout << "fill electrons" << std::endl;
-  fillPhotons(iEvent, iSetup);
+  fillElectrons(iEvent);
   std::cout << "fill photons" << std::endl;
+  fillPhotons(iEvent, iSetup);
+  std::cout << "fill taus" << std::endl;
+  fillTaus();
   //*************************************
   //Fill Event-Level Info
   //*************************************
@@ -1699,14 +1741,83 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
   return true;
 };
 
+bool llp_ntupler::fillTaus(){
+  for (const reco::PFTau &tau : *taus) {
+    if (tau.pt() < 20) continue;
+    tauE[nTaus] = tau.energy();
+    tauPt[nTaus] = tau.pt();
+    tauEta[nTaus] = tau.eta();
+    tauPhi[nTaus] = tau.phi();
+
+    //comment here
+    /*
+    tau_IsLoose[nTaus] = bool(tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits"));
+    tau_IsMedium[nTaus] = bool(tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits"));
+    tau_IsTight[nTaus] = bool(tau.tauID("byTightCombinedIsolationDeltaBetaCorr3Hits"));
+    tau_passEleVetoLoose[nTaus] = bool(tau.tauID("againstElectronLooseMVA6"));
+    tau_passEleVetoMedium[nTaus] = bool(tau.tauID("againstElectronMediumMVA6"));
+    tau_passEleVetoTight[nTaus] = bool(tau.tauID("againstElectronTightMVA6"));
+    tau_passMuVetoLoose[nTaus] = bool(tau.tauID("againstMuonLoose3"));
+    //tau_passMuVetoMedium[nTaus] = bool(tau.tauID("")); //doesn't exist anymore in miniAOD 2015 v2
+    tau_passMuVetoTight[nTaus] = bool(tau.tauID("againstMuonTight3") );
+    tau_combinedIsoDeltaBetaCorr3Hits[nTaus] = tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+    tau_chargedIsoPtSum[nTaus] = tau.tauID("chargedIsoPtSum");
+    tau_neutralIsoPtSum[nTaus] = tau.tauID("neutralIsoPtSum");
+    tau_puCorrPtSum[nTaus] = tau.tauID("puCorrPtSum");
+    tau_eleVetoMVA[nTaus] = tau.tauID("againstElectronMVA6Raw") ;
+    tau_eleVetoCategory[nTaus] = tau.tauID("againstElectronMVA6category");
+    //tau_muonVetoMVA[nTaus] = tau.tauID("againstMuonMVAraw"); //doesn't exist anymore in miniAOD 2015 v2
+    tau_isoMVAnewDMwLT[nTaus] = tau.tauID("byIsolationMVArun2v1DBnewDMwLTraw");
+    //tau_isoMVAnewDMwoLT[nTaus] = tau.tauID("byIsolationMVA3newDMwoLTraw") ; //doesn't exist anymore in miniAOD 2015 v2
+    tau_ID[nTaus] =
+      bool(tau.tauID("decayModeFinding")) +
+      bool(tau.tauID("decayModeFindingNewDMs")) +
+      bool(tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")) +
+      bool(tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")) +
+      bool(tau.tauID("byTightCombinedIsolationDeltaBetaCorr3Hits")) +
+      bool(tau.tauID("againstElectronVLooseMVA6")) +
+      bool(tau.tauID("againstElectronLooseMVA6")) +
+      bool(tau.tauID("againstElectronMediumMVA6")) +
+      bool(tau.tauID("againstElectronTightMVA6")) +
+      bool(tau.tauID("againstElectronVTightMVA6")) +
+      bool(tau.tauID("againstMuonLoose3")) +
+      bool(tau.tauID("againstMuonTight3")) +
+      bool(tau.tauID("byVLooseIsolationMVArun2v1DBnewDMwLT")) +
+      bool(tau.tauID("byLooseIsolationMVArun2v1DBnewDMwLT")) +
+      bool(tau.tauID("byMediumIsolationMVArun2v1DBnewDMwLT")) +
+      bool(tau.tauID("byTightIsolationMVArun2v1DBnewDMwLT")) +
+      bool(tau.tauID("byVTightIsolationMVArun2v1DBnewDMwLT")) +
+      bool(tau.tauID("byVVTightIsolationMVArun2v1DBnewDMwLT"));
+      */
+//tohere
+    tau_leadCandPt[nTaus] = 0;
+    tau_leadCandID[nTaus] = 0;
+    tau_leadChargedHadrCandPt[nTaus] = 0;
+    tau_leadChargedHadrCandID[nTaus] = 0;
+
+  if (tau.leadPFCand().isNonnull()) {
+      tau_leadCandPt[nTaus] = tau.leadPFCand()->pt();
+      tau_leadCandID[nTaus] = tau.leadPFCand()->pdgId();
+    }
+
+
+    if (tau.leadPFChargedHadrCand().isNonnull()) {
+      tau_leadChargedHadrCandPt[nTaus] = tau.leadPFChargedHadrCand()->pt();
+      tau_leadChargedHadrCandID[nTaus] = tau.leadPFChargedHadrCand()->pdgId();
+    }
+
+
+    nTaus++;
+  }
+
+  return true;
+};
+
 
 bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   std::cout << "debug photons -1 " <<  std::endl;
-
   noZS::EcalClusterLazyTools *lazyToolnoZS = new noZS::EcalClusterLazyTools(iEvent, iSetup, ebRecHitsToken_, eeRecHitsToken_);
-
-
   for (const reco::Photon &pho : *photons) {
     //if (pho.pt() < 20) continue;
     std::vector<float> vCov = lazyToolnoZS->localCovariances( *(pho.superCluster()->seed()) );
@@ -1757,16 +1868,454 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
     pho_superClusterY[nPhotons]      = pho.superCluster()->y();
     pho_superClusterZ[nPhotons]      = pho.superCluster()->z();
     pho_hasPixelSeed[nPhotons]       = pho.hasPixelSeed();
-    std::cout << "debug photons 5 " <<  std::endl;
-    //pho_superClusterSeedX[nPhotons]      = pho.superCluster()->seed()->x();
-    //pho_superClusterSeedY[nPhotons]      = pho.superCluster()->seed()->y();
-    //pho_superClusterSeedZ[nPhotons]      = pho.superCluster()->seed()->z();
 
-    //pho_superClusterSeedE[nPhotons]      = pho.superCluster()->seed()->energy();
+    pho_superClusterSeedX[nPhotons]      = pho.superCluster()->seed()->x();
+    pho_superClusterSeedY[nPhotons]      = pho.superCluster()->seed()->y();
+    pho_superClusterSeedZ[nPhotons]      = pho.superCluster()->seed()->z();
+
+    pho_superClusterSeedE[nPhotons]      = pho.superCluster()->seed()->energy();
+
+    /*for (const reco::PFCluster &pfcluster : *pfClusters)
+    {
+      if(pfcluster.seed() == pho.superCluster()->seed()->seed())
+      {
+        pho_superClusterSeedT[nPhotons] = pfcluster.time();
+        pho_pfClusterSeedE[nPhotons]      = pfcluster.energy();
+        //std::cout<<"find seed cluster for photon #"<<nPhotons<<std::endl;
+      }
+    }*/
+    //std::cout<<"finished searching for seed cluster for photon #"<<nPhotons<<std::endl;
+
+
+    //**********************************************************
+    //Compute PF isolation
+    //absolute uncorrected isolations with footprint removal
+    //**********************************************************
+    const float coneSizeDR = 0.3;
+    const float dxyMax = 0.1;
+    const float dzMax = 0.2;
+    float chargedIsoSumAllVertices[MAX_NPV];
+    for (int q=0;q<MAX_NPV;++q) chargedIsoSumAllVertices[q] = 0.0;
+    float chargedIsoSum = 0;
+    float chargedIsoSum_NewPV_NoTiming = 0;
+    float chargedIsoSum_NewPV_Timing50_TrkVtx = 0;
+    float chargedIsoSum_NewPV_Timing80_TrkVtx = 0;
+    float chargedIsoSum_NewPV_Timing100_TrkVtx = 0;
+    float chargedIsoSum_NewPV_Timing120_TrkVtx = 0;
+    float chargedIsoSum_NewPV_Timing50_TrkPho = 0;
+    float chargedIsoSum_NewPV_Timing80_TrkPho = 0;
+    float chargedIsoSum_NewPV_Timing100_TrkPho = 0;
+    float chargedIsoSum_NewPV_Timing120_TrkPho = 0;
+
+    float neutralHadronIsoSum = 0;
+    float photonIsoSum = 0;
+    std::cout << "debug photons 4.1 " <<  std::endl;
+    // First, find photon direction with respect to the good PV
+    math::XYZVector photon_directionWrtVtx(pho.superCluster()->x() - myPV->x(),pho.superCluster()->y() - myPV->y(),pho.superCluster()->z() - myPV->z());
+    std::cout << "debug photons 4.2 " <<  std::endl;
+    //math::XYZVector photon_directionWrtVtx_GenMatch(pho.superCluster()->x() - myPV_GenMatch->x(),pho.superCluster()->y() - myPV_GenMatch->y(),pho.superCluster()->z() - myPV_GenMatch->z());
+    std::cout << "debug photons 5 " <<  std::endl;
+
+    // old PV, Loop over all PF candidates
+    for (const reco::PFCandidate &candidate : *pfCands)
+    {
+      // Check if this candidate is within the isolation cone
+      float dR=deltaR(photon_directionWrtVtx.Eta(),photon_directionWrtVtx.Phi(),
+      candidate.eta(), candidate.phi());
+      if( dR > coneSizeDR ) continue;
+
+      // Check if this candidate is not in the footprint
+
+      //bool inFootprint = false;
+      //for (auto itr : pho.associatedPackedPFCandidates()) {
+      //if ( &(*itr) == &candidate) {
+      //inFootprint = true;
+      //  }
+      //}
+      //if( inFootprint ) continue;
+
+      // Find candidate type
+      reco::PFCandidate::ParticleType thisCandidateType = reco::PFCandidate::X;
+
+      // the neutral hadrons and charged hadrons can be of pdgId types
+      // only 130 (K0L) and +-211 (pi+-) in packed candidates
+      const int pdgId = candidate.pdgId();
+      if( pdgId == 22 )
+      thisCandidateType = reco::PFCandidate::gamma;
+      else if( abs(pdgId) == 130) // PDG ID for K0L
+      thisCandidateType = reco::PFCandidate::h0;
+      else if( abs(pdgId) == 211) // PDG ID for pi+-
+      thisCandidateType = reco::PFCandidate::h;
+
+
+      // Increment the appropriate isolation sum
+      if( thisCandidateType == reco::PFCandidate::h ){
+        // for charged hadrons, additionally check consistency
+        // with the PV
+        float dxy = -999, dz = -999;
+
+        //For the primary vertex
+        dz = candidate.trackRef()->dz(myPV->position());
+        dxy =candidate.trackRef()->dxy(myPV->position());
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax) {
+          chargedIsoSum += candidate.pt();
+        }
+
+        //loop over all vertices
+        for(int q = 0; q < nPVAll; q++){
+          if(!(vertices->at(q).isValid() && !vertices->at(q).isFake())) continue;
+
+          dz = candidate.trackRef()->dz(vertices->at(q).position());
+          dxy =candidate.trackRef()->dxy(vertices->at(q).position());
+          if (fabs(dz) > dzMax) continue;
+          if(fabs(dxy) > dxyMax) continue;
+          // The candidate is eligible, increment the isolation
+          chargedIsoSumAllVertices[q] += candidate.pt();
+        }
+      }
+      if( thisCandidateType == reco::PFCandidate::h0 )
+      neutralHadronIsoSum += candidate.pt();
+      if( thisCandidateType == reco::PFCandidate::gamma )
+      photonIsoSum += candidate.pt();
+    }
+
+
+    std::cout << "debug photons 6 " <<  std::endl;
+    /*
+    //PROBLEM WITH myPV_GenMatch->position()
+    // new PV, Loop over all PF candidates
+    for (const reco::PFCandidate &candidate : *pfCands)
+    {
+      // Check if this candidate is within the isolation cone
+      //float dR=deltaR(photon_directionWrtVtx_GenMatch.Eta(),photon_directionWrtVtx_GenMatch.Phi(),
+      //candidate.eta(), candidate.phi());
+      //if( dR > coneSizeDR ) continue;
+
+      // Check if this candidate is not in the footprint
+
+      //bool inFootprint = false;
+      //for (auto itr : pho.associatedPackedPFCandidates()) {
+      //if ( &(*itr) == &candidate) {
+      //inFootprint = true;
+      //  }
+      //}
+      //if( inFootprint ) continue;
+
+      // Find candidate type
+      reco::PFCandidate::ParticleType thisCandidateType = reco::PFCandidate::X;
+      std::cout << "debug photons 6.1 " <<  std::endl;
+      // the neutral hadrons and charged hadrons can be of pdgId types
+      // only 130 (K0L) and +-211 (pi+-) in packed candidates
+      const int pdgId = candidate.pdgId();
+      if( pdgId == 22 )
+      thisCandidateType = reco::PFCandidate::gamma;
+      else if( abs(pdgId) == 130) // PDG ID for K0L
+      thisCandidateType = reco::PFCandidate::h0;
+      else if( abs(pdgId) == 211) // PDG ID for pi+-
+      thisCandidateType = reco::PFCandidate::h;
+
+      std::cout << "debug photons 6.2 " <<  std::endl;
+      // Increment the appropriate isolation sum
+      if( thisCandidateType == reco::PFCandidate::h )
+      {
+        //charged hadrons, additionally check consistency with PV
+        float dxy = -999, dz = -999;
+        //For the primary vertex
+        dz = candidate.trackRef()->dz(myPV_GenMatch->position());
+        dxy =candidate.trackRef()->dxy(myPV_GenMatch->position());
+        float dt_TrkVtx = (*times)[candidate.trackRef()] - myPV_GenMatch->t();
+        std::cout << "debug photons 6.3 " <<  std::endl;
+        //photon time is the time extrapolated to (0,0,0)
+        float CmToNs = 0.1/2.99792458;
+        float globalOffset = 0.0111;//global offset of 0.0111 ns
+        float pho_000_mag = sqrt(pow(pho_superClusterSeedX[nPhotons],2.0)+pow(pho_superClusterSeedY[nPhotons],2.0)+pow(pho_superClusterSeedZ[nPhotons],2.0));
+        float photrk_mag = sqrt(pow(pho_superClusterSeedX[nPhotons] - candidate.trackRef()->vx(),2.0) + pow(pho_superClusterSeedY[nPhotons] - candidate.trackRef()->vy(),2.0) + pow(pho_superClusterSeedZ[nPhotons] - candidate.trackRef()->vz(),2.0) );
+        TRandom3 randomPhotonTime(1111);
+        float phoTime_m = randomPhotonTime.Gaus(pho_superClusterSeedT[nPhotons] + CmToNs*pho_000_mag - globalOffset, 0.03);
+        float phoTime_track = (*times)[candidate.trackRef()] + CmToNs*photrk_mag;
+        float dt_TrkPho = phoTime_track - phoTime_m;
+        std::cout << "debug photons 6.4 " <<  std::endl;
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax)
+        {
+          chargedIsoSum_NewPV_NoTiming += candidate.pt();
+        }
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkVtx)<0.05 )
+        {
+          chargedIsoSum_NewPV_Timing50_TrkVtx += candidate.pt();
+        }
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkVtx)<0.08 )
+        {
+          chargedIsoSum_NewPV_Timing80_TrkVtx += candidate.pt();
+        }
+
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkVtx)<0.10 ) {
+          chargedIsoSum_NewPV_Timing100_TrkVtx += candidate.pt();
+        }
+
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkVtx)<0.12 ) {
+          chargedIsoSum_NewPV_Timing120_TrkVtx += candidate.pt();
+        }
+
+        std::cout << "debug photons 6.5 " <<  std::endl;
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkPho)<0.05 ) {
+          chargedIsoSum_NewPV_Timing50_TrkPho += candidate.pt();
+        }
+
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkPho)<0.08 ) {
+          chargedIsoSum_NewPV_Timing80_TrkPho += candidate.pt();
+        }
+
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkPho)<0.10 ) {
+          chargedIsoSum_NewPV_Timing100_TrkPho += candidate.pt();
+        }
+
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkPho)<0.12 ) {
+          chargedIsoSum_NewPV_Timing120_TrkPho += candidate.pt();
+        }
+
+      }
+    }
+*/
+std::cout << "debug photons 7 " <<  std::endl;
+    //fill the proper variables
+    for(int q = 0; q < nPVAll; q++) {
+      pho_sumChargedHadronPtAllVertices[nPhotons][q] = chargedIsoSumAllVertices[q];
+    }
+    pho_sumChargedHadronPt[nPhotons] = chargedIsoSum;
+
+    pho_sumChargedHadronPt_NewPV_NoTiming[nPhotons] = chargedIsoSum_NewPV_NoTiming;
+
+    pho_sumChargedHadronPt_NewPV_Timing50_TrkVtx[nPhotons] = chargedIsoSum_NewPV_Timing50_TrkVtx;
+    pho_sumChargedHadronPt_NewPV_Timing80_TrkVtx[nPhotons] = chargedIsoSum_NewPV_Timing80_TrkVtx;
+    pho_sumChargedHadronPt_NewPV_Timing100_TrkVtx[nPhotons] = chargedIsoSum_NewPV_Timing100_TrkVtx;
+    pho_sumChargedHadronPt_NewPV_Timing120_TrkVtx[nPhotons] = chargedIsoSum_NewPV_Timing120_TrkVtx;
+
+    pho_sumChargedHadronPt_NewPV_Timing50_TrkPho[nPhotons] = chargedIsoSum_NewPV_Timing50_TrkPho;
+    pho_sumChargedHadronPt_NewPV_Timing80_TrkPho[nPhotons] = chargedIsoSum_NewPV_Timing80_TrkPho;
+    pho_sumChargedHadronPt_NewPV_Timing100_TrkPho[nPhotons] = chargedIsoSum_NewPV_Timing100_TrkPho;
+    pho_sumChargedHadronPt_NewPV_Timing120_TrkPho[nPhotons] = chargedIsoSum_NewPV_Timing120_TrkPho;
+
+    pho_sumNeutralHadronEt[nPhotons] = neutralHadronIsoSum;
+    pho_sumPhotonEt[nPhotons] = photonIsoSum;
+
+
+    //*****************************************************************
+    //Compute Worst Isolation Looping over all vertices
+    //*****************************************************************
+    const double ptMin = 0.0;
+    const float dRvetoBarrel = 0.0;
+    const float dRvetoEndcap = 0.0;
+    float dRveto = 0;
+    if (pho.isEB()) dRveto = dRvetoBarrel;
+    else dRveto = dRvetoEndcap;
+
+    float worstIsolation = 999;
+    std::vector<float> allIsolations;
+    std::cout << "debug photons 8 " <<  std::endl;
+    for(unsigned int ivtx=0; ivtx<vertices->size(); ++ivtx) {
+
+      // Shift the photon according to the vertex
+      reco::VertexRef vtx(vertices, ivtx);
+      math::XYZVector photon_directionWrtVtx(pho.superCluster()->x() - vtx->x(),
+      pho.superCluster()->y() - vtx->y(),
+      pho.superCluster()->z() - vtx->z());
+
+      float sum = 0;
+      // Loop over all PF candidates
+      for (const reco::PFCandidate &candidate : *pfCands) {
+
+        //require that PFCandidate is a charged hadron
+        const int pdgId = candidate.pdgId();
+        if( abs(pdgId) != 211) continue;
+
+        if (candidate.pt() < ptMin)
+        continue;
+
+        float dxy = -999, dz = -999;
+        dz = candidate.trackRef()->dz(myPV->position());
+        dxy =candidate.trackRef()->dxy(myPV->position());
+        if( fabs(dxy) > dxyMax) continue;
+        if ( fabs(dz) > dzMax) continue;
+
+        float dR = deltaR(photon_directionWrtVtx.Eta(), photon_directionWrtVtx.Phi(),
+        candidate.eta(),      candidate.phi());
+        if(dR > coneSizeDR || dR < dRveto) continue;
+
+        sum += candidate.pt();
+      }
+
+      allIsolations.push_back(sum);
+    }
+
+    if( allIsolations.size()>0 )
+    worstIsolation = * std::max_element( allIsolations.begin(), allIsolations.end() );
+
+    pho_sumWorstVertexChargedHadronPt[nPhotons] = worstIsolation;
+
+    //*****************************************************************
+    //Photon ID MVA variable
+    //*****************************************************************
+    //pho_IDMVA[nPhotons] = myPhotonMVA->mvaValue( pho,  *rhoAll, photonIsoSum, chargedIsoSum, worstIsolation,lazyToolnoZS, false);
+
+    //pho_RegressionE[nPhotons] = pho.getCorrectedEnergy(reco::Photon::P4type::regression1);
+    //pho_RegressionEUncertainty[nPhotons] = pho.getCorrectedEnergyError(reco::Photon::P4type::regression1);
+
+    //---------------------
+    //Use Latest Regression
+    //---------------------
+    pho_RegressionE[nPhotons]            = pho.getCorrectedEnergy( pho.getCandidateP4type() );
+    pho_RegressionEUncertainty[nPhotons] = pho.getCorrectedEnergyError( pho.getCandidateP4type() );
+
+
+    //conversion matching for beamspot pointing
+    const reco::Conversion *convmatch = 0;
+    double drmin = std::numeric_limits<double>::max();
+    //double leg conversions
+    for (const reco::Conversion &conv : *conversions) {
+      if (conv.refittedPairMomentum().rho()<10.) continue;
+      if (!conv.conversionVertex().isValid()) continue;
+      if (TMath::Prob(conv.conversionVertex().chi2(),  conv.conversionVertex().ndof())<1e-6) continue;
+
+      math::XYZVector mom(conv.refittedPairMomentum());
+      math::XYZPoint scpos(pho.superCluster()->position());
+      math::XYZPoint cvtx(conv.conversionVertex().position());
+      math::XYZVector cscvector = scpos - cvtx;
+
+      double dr = reco::deltaR(mom,cscvector);
+
+      if (dr<drmin && dr<0.1) {
+        drmin = dr;
+        convmatch = &conv;
+      }
+    }
+    if (!convmatch) {
+      drmin = std::numeric_limits<double>::max();
+      //single leg conversions
+      for (const reco::Conversion &conv : *singleLegConversions) {
+        math::XYZVector mom(conv.tracksPin()[0]);
+        math::XYZPoint scpos(pho.superCluster()->position());
+        math::XYZPoint cvtx(conv.conversionVertex().position());
+        math::XYZVector cscvector = scpos - cvtx;
+
+        double dr = reco::deltaR(mom,cscvector);
+
+        if (dr<drmin && dr<0.1) {
+          drmin = dr;
+          convmatch = &conv;
+        }
+      }
+    }
+
+    //matched conversion, compute conversion type
+    //and extrapolation to beamline
+    //FIXME Both of these additional two requirements are inconsistent and make the conversion
+    //selection depend on poorly defined criteria, but we keep them for sync purposes
+    //if (convmatch && pho.hasConversionTracks() && conversions->size()>0) {
+    if (convmatch){// && pho.hasConversionTracks() && conversions->size()>0) {
+      int ntracks = convmatch->nTracks();
+
+      math::XYZVector mom(ntracks==2 ? convmatch->refittedPairMomentum() : convmatch->tracksPin()[0]);
+      math::XYZPoint scpos(pho.superCluster()->position());
+      math::XYZPoint cvtx(convmatch->conversionVertex().position());
+      math::XYZVector cscvector = scpos - cvtx;
+
+      double z = cvtx.z();
+      double rho = cvtx.rho();
+
+      int legtype = ntracks==2 ? 0 : 1;
+      int dettype = pho.isEB() ? 0 : 1;
+      int postype =0;
+
+      if (pho.isEB()) {
+        if (rho<15.) {
+          postype = 0;
+        }
+        else if (rho>=15. && rho<60.) {
+          postype = 1;
+        }
+        else {
+          postype = 2;
+        }
+      }
+      else {
+        if (std::abs(z) < 50.) {
+          postype = 0;
+        }
+        else if (std::abs(z) >= 50. && std::abs(z) < 100.) {
+          postype = 1;
+        }
+        else {
+          postype = 2;
+        }
+      }
+
+      pho_convType[nPhotons] = legtype + 2*dettype + 4*postype;
+      pho_convTrkZ[nPhotons] = cvtx.z() - ((cvtx.x()-beamSpot->x0())*mom.x()+(cvtx.y()-beamSpot->y0())*mom.y())/mom.rho() * mom.z()/mom.rho();
+      pho_convTrkClusZ[nPhotons] = cvtx.z() - ((cvtx.x()-beamSpot->x0())*cscvector.x()+(cvtx.y()-beamSpot->y0())*cscvector.y())/cscvector.rho() * cscvector.z()/cscvector.rho();
+    }
+
     nPhotons++;
   }
-delete lazyToolnoZS;
-return true;
+
+  /*
+  //CRASHING MEMORY, I THINK
+  std::cout << "debug photons 9 " <<  std::endl;
+  double pho_vtxSumPxD[OBJECTARRAYSIZE][MAX_NPV];
+  double pho_vtxSumPyD[OBJECTARRAYSIZE][MAX_NPV];
+
+  std::cout << "debug photons 10 " <<  std::endl;
+  for (int ipho = 0; ipho<nPhotons; ++ipho) {
+    for (int ipv = 0; ipv<MAX_NPV; ++ipv) {
+      pho_vtxSumPxD[ipho][ipv] = 0.;
+      pho_vtxSumPyD[ipho][ipv] = 0.;
+
+    }
+  }
+
+  std::cout << "debug photons 11 " <<  std::endl;
+  //fill information on tracks to exclude around photons for vertex selection purposes
+  for (const reco::PFCandidate &pfcand : *pfCands) {
+    if (pfcand.charge()==0) continue;
+    double mindz = std::numeric_limits<double>::max();
+    int ipvmin = -1;
+    for (int ipv = 0; ipv < nPVAll; ++ipv) {
+      const reco::Vertex &vtx = vertices->at(ipv);
+      //double dz = std::abs(pfcand.dz(vtx.position()));
+      double dz = std::abs(pfcand.vz()-vtx.z());
+      if (dz<mindz) {
+        mindz = dz;
+        ipvmin = ipv;
+      }
+    }
+
+    std::cout << "debug photons 12 " <<  std::endl;
+    if (mindz<0.2 && ipvmin>=0 && ipvmin<MAX_NPV) {
+      const reco::Vertex &vtx = vertices->at(ipvmin);
+      for (int ipho = 0; ipho < nPhotons; ++ipho) {
+        const reco::Photon &pho = photons->at(ipho);
+        math::XYZVector phodir(pho.superCluster()->x()-vtx.x(),pho.superCluster()->y()-vtx.y(),pho.superCluster()->z()-vtx.z());
+        double dr = reco::deltaR(phodir, pfcand);
+        if (dr<0.05) {
+          pho_vtxSumPxD[ipho][ipvmin] += pfcand.px();
+          pho_vtxSumPyD[ipho][ipvmin] += pfcand.py();
+        }
+        //add addition dt cut here:
+        //
+      }
+    }
+  }
+  std::cout << "debug photons 13 " <<  std::endl;
+  for (int ipho = 0; ipho<nPhotons; ++ipho) {
+    for (int ipv = 0; ipv<nPVAll; ++ipv) {
+      pho_vtxSumPx[ipho][ipv] = pho_vtxSumPxD[ipho][ipv];
+      pho_vtxSumPy[ipho][ipv] = pho_vtxSumPyD[ipho][ipv];
+
+    }
+  }
+  */
+  delete lazyToolnoZS;
+  return true;
+
 };
 
 bool llp_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
