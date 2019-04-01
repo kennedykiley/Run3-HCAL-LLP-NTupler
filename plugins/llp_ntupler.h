@@ -187,8 +187,9 @@ public:
   bool fillPileUp();
   bool fillMuons(const edm::Event& iEvent);
   bool fillElectrons(const edm::Event& iEvent);
-  bool fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillTaus();
+  bool fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup);
+  bool fillJets(const edm::EventSetup& iSetup);
   bool fillMC();
   bool fillGenParticles();
   bool fillTrigger(const edm::Event& iEvent);
@@ -664,7 +665,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float jetPtWeightedDZ[OBJECTARRAYSIZE];
  int   jetNRechits[OBJECTARRAYSIZE];
  float jetRechitE[OBJECTARRAYSIZE];
- float jetRechitTime[OBJECTARRAYSIZE];
+ float jetRechitT[OBJECTARRAYSIZE];
 
  //AK8 Jets
  int nFatJets;

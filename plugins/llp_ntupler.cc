@@ -126,9 +126,9 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
     EGammaMvaPhotonEstimator::kPhotonMVATypeDefault);
 
 */
-  //*****************************************************************************************
+  //------------------------------------------------------------------
   //Read in HLT Trigger Path List from config file
-  //*****************************************************************************************
+  //------------------------------------------------------------------
   for (int i = 0; i<NTriggersMAX; ++i) triggerPathNames[i] = "";
   ifstream myfile (edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str()) ;
   if (myfile.is_open())
@@ -498,6 +498,10 @@ void llp_ntupler::enableJetBranches()
   llpTree->Branch("jetAllMuonPhi", jetAllMuonPhi,"jetAllMuonPhi[nJets]/F");
   llpTree->Branch("jetAllMuonM", jetAllMuonM,"jetAllMuonM[nJets]/F");
   llpTree->Branch("jetPtWeightedDZ", jetPtWeightedDZ,"jetPtWeightedDZ[nJets]/F");
+  llpTree->Branch("jetNRechits", jetNRechits,"jetNRechits[nJets]/I");
+  llpTree->Branch("jetRechitE", jetRechitE,"jetRechitE[nJets]/F");
+  llpTree->Branch("jetRechitT", jetRechitT,"jetRechitT[nJets]/F");
+
 };
 
 void llp_ntupler::enableJetAK8Branches()
@@ -917,6 +921,9 @@ void llp_ntupler::resetJetBranches()
     jetAllMuonPhi[i] = 0.0;
     jetAllMuonM[i] = 0.0;
     jetPtWeightedDZ[i] = 0.0;
+    jetNRechits[i] = 0;
+    jetRechitE[i] = 0.0;
+    jetRechitT[i] = 0.0;
   }
   return;
 };
@@ -1003,209 +1010,16 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   //resetting output tree branches
   resetBranches();
 
-  std::cout << "fill event" << std::endl;
   fillEventInfo(iEvent);
-  std::cout << "fill PV" << std::endl;
   fillPVAll();
-  std::cout << "fill PU" << std::endl;
   fillPileUp();
-  std::cout << "fill muons" << std::endl;
   fillMuons(iEvent);
-  std::cout << "fill electrons" << std::endl;
   fillElectrons(iEvent);
-  std::cout << "fill photons" << std::endl;
   fillPhotons(iEvent, iSetup);
-  std::cout << "fill taus" << std::endl;
   fillTaus();
-  //*************************************
-  //Fill Event-Level Info
-  //*************************************
-  //store basic event info
-  //isData = isData_;
-  //isFourJet = isFourJet_;
-  //isQCD = isQCD_;
-  //runNum = iEvent.id().run();
-  //lumiNum = iEvent.luminosityBlock();
-  //eventNum = iEvent.id().event();
-
-  //select the primary vertex, if any
-  //nPV = 0;
-  //myPV = &(vertices->front());
-
-  //bool foundPV = false;
-  /*for(unsigned int i = 0; i < vertices->size(); i++)
-  {
-    if(vertices->at(i).isValid() && !vertices->at(i).isFake())
-    {
-      if (!foundPV)
-      {
-        myPV = &(vertices->at(i));
-        foundPV = true;
-      }
-      nPV++;
-    }
-  }
-
-  pvX = myPV->x();
-  pvY = myPV->y();
-  pvZ = myPV->z();
-
-  //get rho
-  //Rho = *rhoFastjetAll;
-*/
-  //Fill Pileup info
-  /*
-  if (!isData)
-  {
-    for(const PileupSummaryInfo &pu : *puInfo)
-    {
-      if ( pu.getBunchCrossing() == 0)
-      {
-        nPU = pu.getPU_NumInteractions();
-        nPUmean = pu.getTrueNumInteractions();
-      }
-    }
-  }
-*/
-
-  int i_jet = 0;
-  for (const reco::PFJet &j : *jets)
-  {
-    //resetBranches();
-    if (j.pt() < 20) continue;
-    if (fabs(j.eta()) > 2.4) continue;
-    //*************************************
-    //Fill Jet-Level Info
-    //*************************************
-    jetE[i_jet] = j.energy();
-    jetPt[i_jet] = j.pt();
-    jetEta[i_jet] = j.eta();
-    jetPhi[i_jet] = j.phi();
-    jetMass[i_jet] = j.mass();
-
-    TLorentzVector thisJet;
-    thisJet.SetPtEtaPhiE(jetPt[i_jet], jetEta[i_jet], jetPhi[i_jet], jetE[i_jet]);
-    //jetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-
-    jetJetArea[i_jet] = j.jetArea();
-    jetPileupE[i_jet] = j.pileup();
-
-    jetPileupIdFlag[i_jet] = 0;
-    jetPassIDLoose[i_jet] = passJetID(&j, 0);
-    jetPassIDTight[i_jet] = passJetID(&j, 1);
-    jetPassMuFrac[i_jet]  = ( j.muonEnergyFraction() < 0.80 );
-    jetPassEleFrac[i_jet]  = ( j.electronEnergyFraction() < 0.90 );
-
-
-    // if (useGen_) {
-    //   jetPartonFlavor = j.partonFlavour();
-    //   jetHadronFlavor = j.hadronFlavour();
-    // }
-
-    jetChargedEMEnergyFraction[i_jet] = j.chargedEmEnergyFraction();
-    jetNeutralEMEnergyFraction[i_jet] = j.neutralEmEnergyFraction();
-    jetChargedHadronEnergyFraction[i_jet] = j.chargedHadronEnergyFraction();
-    jetNeutralHadronEnergyFraction[i_jet] = j.neutralHadronEnergyFraction();
-    //jet_charged_hadron_multiplicity[i_jet] = j.chargedHadronMultiplicity();
-    //jet_neutral_hadron_multiplicity[i_jet] = j.neutralHadronMultiplicity();
-    //jet_photon_multiplicity[i_jet] = j.photonMultiplicity();
-    //jet_electron_multiplicity[i_jet] = j.electronMultiplicity();
-    //jet_muon_multiplicity[i_jet] = j.muonMultiplicity();
-    //jet_HF_hadron_multiplicity[i_jet] = j.HFHadronMultiplicity();
-    //jet_HF_em_multiplicity[i_jet] = j.HFEMMultiplicity();
-    //jet_charged_multiplicity[i_jet] = j.chargedMultiplicity();
-    //jet_neutral_multiplicity[i_jet] = j.neutralMultiplicity();
-
-
-    //*************************************
-    //find photons inside the jet
-    //*************************************
-    /*
-    for (const reco::Photon &pho : *photons) {
-      //cout << "Nphoton: " << fJetNPhotons << "\n";
-
-      if (!(deltaR(pho.eta(), pho.phi() , j.eta(), j.phi()) < 0.5)) continue;
-
-
-      fJetPhotonPt[fJetNPhotons]  = pho.pt();
-      fJetPhotonEta[fJetNPhotons] = pho.eta(); //correct this for the vertex
-      fJetPhotonPhi[fJetNPhotons] = pho.phi(); //correct this for the vertex
-
-      fJetPhotonSeedRecHitE[fJetNPhotons]      = pho.superCluster()->seed()->x();
-      fJetPhotonSeedRecHitEta[fJetNPhotons]      = pho.superCluster()->seed()->y();
-      fJetPhotonSeedRecHitPhi[fJetNPhotons]      = pho.superCluster()->seed()->z();
-      fJetPhotonSeedRecHitTime[fJetNPhotons]      = pho.superCluster()->seed()->energy();
-
-      // //get time coordinate for the seed
-      // for (const reco::PFCluster &pfcluster : *pfClusters) {
-      // 	if(pfcluster.seed() == pho.superCluster()->seed()->seed())
-      // 	  {
-      // 	    pho_superClusterSeedT[fJetNPhotons] = pfcluster.time();
-      // 	    pho_pfClusterSeedE[fJetNPhotons]      = pfcluster.energy();
-      // 	  }
-      // }
-
-      //*************************************
-      //fill all rechits inside photons
-      //*************************************
-
-      fJetNPhotons++;
-
-    }
-    */
-
-    //***************************
-    //Find RecHits Inside the Jet
-    //***************************
-    // geometry (from ECAL ELF)
-
-    edm::ESHandle<CaloGeometry> geoHandle;
-    iSetup.get<CaloGeometryRecord>().get(geoHandle);
-    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
-    double ecal_radius = 129.0;
-    int n_matched_rechits = 0;
-    for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
-    {
-      if ( recHit->checkFlag(0) )
-      {
-        const DetId recHitId = recHit->detid();
-        const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
-        if ( deltaR(jetEta[i_jet], jetPhi[i_jet], recHitPos.eta(), recHitPos.phi())  < 0.4)
-        {
-          double rechit_x = ecal_radius * cos(recHitPos.phi());
-    	    double rechit_y = ecal_radius * sin(recHitPos.phi());
-    	    double rechit_z = ecal_radius * sinh(recHitPos.eta());
-    	    double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
-
-          if (recHit->energy() > 1.0)
-    	    {
-    		    jetRechitE[i_jet] += recHit->energy();
-    		    jetRechitTime[i_jet] += recHit->time()*recHit->energy();
-          }
-          n_matched_rechits++;
-        }
-      }
-    }
-    //cout << "Last Nphoton: " << fJetNPhotons << "\n";
-    //std::cout << "n: " << n_matched_rechits << std::endl;
-    jetNRechits[i_jet] = n_matched_rechits;
-    jetRechitTime[i_jet] = jetRechitTime[i_jet]/jetRechitE[i_jet];
-    nJets++;
-    i_jet++;
-
-  } //loop over jets
-
-  //MC AND GEN LEVEL INFO
+  fillJets(iSetup);
   fillMC();
   fillGenParticles();
-    //fill_fat_jet( iSetup );
-  /*if(readGenVertexTime_)
-  {
-    genVertexT = *genParticles_t0; //std::cout << genVertexT << std::endl;
-  }
-  */
-  //fillMC();
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
   llpTree->Fill();
 };
@@ -1228,9 +1042,9 @@ bool llp_ntupler::fill_fat_jet(const edm::EventSetup& iSetup)
     //resetBranches();
     if (j.pt() < 20) continue;
     if (fabs(j.eta()) > 2.4) continue;
-    //*************************************
+    //--------------------
     //Fill Jet-Level Info
-    //*************************************
+    //-------------------
     fat_jetE[i_fat_jet] = j.energy();
     fat_jetPt[i_fat_jet] = j.pt();
     fat_jetEta[i_fat_jet] = j.eta();
@@ -1270,9 +1084,9 @@ bool llp_ntupler::fill_fat_jet(const edm::EventSetup& iSetup)
     fat_jet_charged_multiplicity[i_fat_jet] = j.chargedMultiplicity();
     fat_jet_neutral_multiplicity[i_fat_jet] = j.neutralMultiplicity();
 
-    //***************************
+    //---------------------------
     //Find RecHits Inside the Jet
-    //***************************
+    //---------------------------
     // geometry (from ECAL ELF)
 
     edm::ESHandle<CaloGeometry> geoHandle;
@@ -1551,9 +1365,9 @@ bool llp_ntupler::fillMuons(const edm::Event& iEvent)
     muon_segmentCompatability[nMuons] = muon::segmentCompatibility(mu);
     bool isGoodGlobal = mu.isGlobalMuon() && mu.globalTrack()->normalizedChi2() < 3 && mu.combinedQuality().chi2LocalPosition < 12 && mu.combinedQuality().trkKink < 20;
     muonIsICHEPMedium[nMuons] = muon::isLooseMuon(mu) && muon_validFractionTrackerHits[nMuons] > 0.49 && muon::segmentCompatibility(mu) > (isGoodGlobal ? 0.303 : 0.451);
-    //*************************************************
+    //-----------------------
     //Trigger Object Matching
-    //*************************************************
+    //-----------------------
     bool passTagMuonFilter = false;
     /*for (pat::TriggerObjectStandAlone trigObject : *triggerObjects) {
       std::cout << "muon debug 18 " << nMuons << std::endl;
@@ -1603,28 +1417,27 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
   for(const pat::Electron &ele : *electrons){
   //for (size_t i = 0; i < electrons->size(); ++i){
     //const auto ele = electrons->ptrAt(i);
-    //std::cout << "debug ele -1 " << nElectrons << std::endl;
     if(ele.pt() < 5) continue;
-    //std::cout << "debug ele 0 " << nElectrons << std::endl;
     eleE[nElectrons] = ele.energy();
     elePt[nElectrons] = ele.pt();
     eleEta[nElectrons] = ele.eta();
     elePhi[nElectrons] = ele.phi();
     eleCharge[nElectrons] = ele.charge();
+
     eleE_SC[nElectrons] = ele.superCluster()->energy();
-    //std::cout << "debug ele 1 " << nElectrons << std::endl;
     eleEta_SC[nElectrons] = ele.superCluster()->eta();
     elePhi_SC[nElectrons] = ele.superCluster()->phi();
+
     eleSigmaIetaIeta[nElectrons] = ele.sigmaIetaIeta();
     eleFull5x5SigmaIetaIeta[nElectrons] = ele.full5x5_sigmaIetaIeta();
     eleR9[nElectrons] = ele.r9();
     ele_dEta[nElectrons] = ele.deltaEtaSuperClusterTrackAtVtx() - ele.superCluster()->eta() + ele.superCluster()->seed()->eta();
-    //std::cout << "debug ele 2 " << nElectrons << std::endl;
+
     ele_dPhi[nElectrons] = ele.deltaPhiSuperClusterTrackAtVtx();
     ele_HoverE[nElectrons] = ele.hcalOverEcal();
     ele_d0[nElectrons] = -ele.gsfTrack().get()->dxy(myPV->position());
     ele_dZ[nElectrons] = ele.gsfTrack().get()->dz(myPV->position());
-    //std::cout << "debug ele 3 " << nElectrons << std::endl;
+
     //ele_ip3d[nElectrons] = ((edm::Ptr<pat::Electron>)(ele))->dB(pat::Electron::PV3D);
     //ele_ip3dSignificance[nElectrons] = ((edm::Ptr<pat::Electron>)(ele))->dB(pat::Electron::PV3D)/((edm::Ptr<pat::Electron>)(ele))->edB(pat::Electron::PV3D);
     ele_pileupIso[nElectrons] = ele.pfIsolationVariables().sumPUPt;
@@ -1632,11 +1445,10 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     ele_photonIso[nElectrons] = ele.pfIsolationVariables().sumPhotonEt;
     ele_neutralHadIso[nElectrons] = ele.pfIsolationVariables().sumNeutralHadronEt;
     ele_MissHits[nElectrons] = ele.gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS);
-    //std::cout << "debug ele 4 " << nElectrons << std::endl;
 
-    //*************************************************
+    //---------------
     //Conversion Veto
-    //*************************************************
+    //---------------
     ele_PassConvVeto[nElectrons] = false;
     if( beamSpot.isValid() && conversions.isValid() )
     {
@@ -1653,10 +1465,9 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     } else {
     ele_OneOverEminusOneOverP[nElectrons] = 1./ele.ecalEnergy()  -  ele.eSuperClusterOverP()/ele.ecalEnergy();
     }
-    //std::cout << "debug ele 6 " << nElectrons << std::endl;
-    //*************************************************
+    //----------------------
     //ID MVA
-    //*************************************************
+    //----------------------
     //ele_IDMVAGeneralPurpose[nElectrons] = (*mvaGeneralPurposeValues)[ele];
     //ele_IDMVACategoryGeneralPurpose[nElectrons] = (*mvaGeneralPurposeCategories)[ele];
     //ele_IDMVAHZZ[nElectrons] = (*mvaHZZValues)[ele];
@@ -1673,9 +1484,9 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     //ele_chargedPileupMiniIso[nElectrons] = std::get<2>(PFMiniIso);
     //ele_activityMiniIsoAnnulus[nElectrons] = ActivityPFMiniIsolationAnnulus( packedPFCands, dynamic_cast<const reco::Candidate *>(&(*ele)), 0.4, 0.05, 0.2, 10.);
 
-    //*************************************************
+    //-----------------------
     //Trigger Object Matching
-    //*************************************************
+    //-----------------------
     bool passSingleEleTagFilter = false;
     bool passTPOneTagFilter= false;
     bool passTPTwoTagFilter= false;
@@ -1721,9 +1532,9 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     if (enableEcalRechits_)
     {
       ele_SeedRechitID.push_back(ele.superCluster()->seed()->seed().rawId());
-      //*************************************************
+      //---------------------
       //Find relevant rechits
-      //*************************************************
+      //---------------------
       std::vector<uint> rechits; rechits.clear();
       const std::vector< std::pair<DetId, float>>& v_id =ele.superCluster()->seed()->hitsAndFractions();
       for ( size_t i = 0; i < v_id.size(); ++i )
@@ -1816,12 +1627,10 @@ bool llp_ntupler::fillTaus(){
 
 bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  std::cout << "debug photons -1 " <<  std::endl;
   noZS::EcalClusterLazyTools *lazyToolnoZS = new noZS::EcalClusterLazyTools(iEvent, iSetup, ebRecHitsToken_, eeRecHitsToken_);
   for (const reco::Photon &pho : *photons) {
     //if (pho.pt() < 20) continue;
     std::vector<float> vCov = lazyToolnoZS->localCovariances( *(pho.superCluster()->seed()) );
-    std::cout << "debug photons 0 " <<  std::endl;
     //-------------------------------------------------
     //default photon 4-mometum already vertex corrected
     //-------------------------------------------------
@@ -1830,13 +1639,10 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
     phoPt[nPhotons]  = pho.pt();
     phoEta[nPhotons] = pho.eta(); //correct this for the vertex
     phoPhi[nPhotons] = pho.phi(); //correct this for the vertex
-    std::cout << "debug photons 1 " <<  std::endl;
-    std::cout << "phoE: " << pho.energy() << " phoCorr En:" << pho.getCorrectedEnergy(reco::Photon::P4type::regression2) << " un: "
+    /*std::cout << "phoE: " << pho.energy() << " phoCorr En:" << pho.getCorrectedEnergy(reco::Photon::P4type::regression2) << " un: "
     << pho.getCorrectedEnergyError(reco::Photon::P4type::regression2) << " "
-    << pho.getCorrectedEnergyError( pho.getCandidateP4type() ) << std::endl;
+    << pho.getCorrectedEnergyError( pho.getCandidateP4type() ) << std::endl;*/
 
-
-    std::cout << "debug photons 2 " <<  std::endl;
     phoSigmaIetaIeta[nPhotons] = pho.sigmaIetaIeta();
     phoFull5x5SigmaIetaIeta[nPhotons] = pho.full5x5_sigmaIetaIeta();
 
@@ -1846,17 +1652,16 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
     pho_HoverE[nPhotons] = pho.hadTowOverEm();
     pho_isConversion[nPhotons] = pho.hasConversionTracks();
     //pho_passEleVeto[nPhotons] = !hasMatchedPromptElectron(pho.superCluster(),electrons,conversions, beamSpot->position());
-    std::cout << "debug photons 3 " <<  std::endl;
-    //**********************************************************
+
+    //------------------------------------------
     // Fill default miniAOD isolation quantities
-    //**********************************************************
+    //------------------------------------------
     pho_pfIsoChargedHadronIso[nPhotons] = pho.chargedHadronIso();
     pho_pfIsoChargedHadronIsoWrongVtx[nPhotons] = pho.chargedHadronIsoWrongVtx();
     pho_pfIsoNeutralHadronIso[nPhotons] = pho.neutralHadronIso();
     pho_pfIsoPhotonIso[nPhotons] = pho.photonIso();
     pho_pfIsoModFrixione[nPhotons] = pho.getPflowIsolationVariables().modFrixione;
     pho_pfIsoSumPUPt[nPhotons] = pho.sumPUPt();
-    std::cout << "debug photons 4 " <<  std::endl;
     //-----------------------
     // super cluster position and time
     //-----------------------
@@ -1887,10 +1692,10 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
     //std::cout<<"finished searching for seed cluster for photon #"<<nPhotons<<std::endl;
 
 
-    //**********************************************************
+    //------------------------------------------------------
     //Compute PF isolation
     //absolute uncorrected isolations with footprint removal
-    //**********************************************************
+    //------------------------------------------------------
     const float coneSizeDR = 0.3;
     const float dxyMax = 0.1;
     const float dzMax = 0.2;
@@ -1909,12 +1714,9 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
 
     float neutralHadronIsoSum = 0;
     float photonIsoSum = 0;
-    std::cout << "debug photons 4.1 " <<  std::endl;
     // First, find photon direction with respect to the good PV
     math::XYZVector photon_directionWrtVtx(pho.superCluster()->x() - myPV->x(),pho.superCluster()->y() - myPV->y(),pho.superCluster()->z() - myPV->z());
-    std::cout << "debug photons 4.2 " <<  std::endl;
     //math::XYZVector photon_directionWrtVtx_GenMatch(pho.superCluster()->x() - myPV_GenMatch->x(),pho.superCluster()->y() - myPV_GenMatch->y(),pho.superCluster()->z() - myPV_GenMatch->z());
-    std::cout << "debug photons 5 " <<  std::endl;
 
     // old PV, Loop over all PF candidates
     for (const reco::PFCandidate &candidate : *pfCands)
@@ -1979,8 +1781,6 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
       photonIsoSum += candidate.pt();
     }
 
-
-    std::cout << "debug photons 6 " <<  std::endl;
     /*
     //PROBLEM WITH myPV_GenMatch->position()
     // new PV, Loop over all PF candidates
@@ -2076,7 +1876,6 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
       }
     }
 */
-std::cout << "debug photons 7 " <<  std::endl;
     //fill the proper variables
     for(int q = 0; q < nPVAll; q++) {
       pho_sumChargedHadronPtAllVertices[nPhotons][q] = chargedIsoSumAllVertices[q];
@@ -2099,9 +1898,9 @@ std::cout << "debug photons 7 " <<  std::endl;
     pho_sumPhotonEt[nPhotons] = photonIsoSum;
 
 
-    //*****************************************************************
+    //-------------------------------------------------
     //Compute Worst Isolation Looping over all vertices
-    //*****************************************************************
+    //-------------------------------------------------
     const double ptMin = 0.0;
     const float dRvetoBarrel = 0.0;
     const float dRvetoEndcap = 0.0;
@@ -2111,7 +1910,6 @@ std::cout << "debug photons 7 " <<  std::endl;
 
     float worstIsolation = 999;
     std::vector<float> allIsolations;
-    std::cout << "debug photons 8 " <<  std::endl;
     for(unsigned int ivtx=0; ivtx<vertices->size(); ++ivtx) {
 
       // Shift the photon according to the vertex
@@ -2152,9 +1950,9 @@ std::cout << "debug photons 7 " <<  std::endl;
 
     pho_sumWorstVertexChargedHadronPt[nPhotons] = worstIsolation;
 
-    //*****************************************************************
+    //-----------------------
     //Photon ID MVA variable
-    //*****************************************************************
+    //-----------------------
     //pho_IDMVA[nPhotons] = myPhotonMVA->mvaValue( pho,  *rhoAll, photonIsoSum, chargedIsoSum, worstIsolation,lazyToolnoZS, false);
 
     //pho_RegressionE[nPhotons] = pho.getCorrectedEnergy(reco::Photon::P4type::regression1);
@@ -2316,6 +2114,137 @@ std::cout << "debug photons 7 " <<  std::endl;
   delete lazyToolnoZS;
   return true;
 
+};
+
+
+bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
+{
+  for (const reco::PFJet &j : *jets)
+  {
+    //resetBranches();
+    if (j.pt() < 20) continue;
+    if (fabs(j.eta()) > 2.4) continue;
+    //-------------------
+    //Fill Jet-Level Info
+    //-------------------
+    jetE[nJets] = j.energy();
+    jetPt[nJets] = j.pt();
+    jetEta[nJets] = j.eta();
+    jetPhi[nJets] = j.phi();
+    jetMass[nJets] = j.mass();
+
+    TLorentzVector thisJet;
+    thisJet.SetPtEtaPhiE(jetPt[nJets], jetEta[nJets], jetPhi[nJets], jetE[nJets]);
+    //jetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+
+    jetJetArea[nJets] = j.jetArea();
+    jetPileupE[nJets] = j.pileup();
+
+    jetPileupIdFlag[nJets] = 0;
+    jetPassIDLoose[nJets] = passJetID(&j, 0);
+    jetPassIDTight[nJets] = passJetID(&j, 1);
+    jetPassMuFrac[nJets]  = ( j.muonEnergyFraction() < 0.80 );
+    jetPassEleFrac[nJets]  = ( j.electronEnergyFraction() < 0.90 );
+
+
+    // if (useGen_) {
+    //   jetPartonFlavor = j.partonFlavour();
+    //   jetHadronFlavor = j.hadronFlavour();
+    // }
+
+    jetChargedEMEnergyFraction[nJets] = j.chargedEmEnergyFraction();
+    jetNeutralEMEnergyFraction[nJets] = j.neutralEmEnergyFraction();
+    jetChargedHadronEnergyFraction[nJets] = j.chargedHadronEnergyFraction();
+    jetNeutralHadronEnergyFraction[nJets] = j.neutralHadronEnergyFraction();
+    //jet_charged_hadron_multiplicity[nJets] = j.chargedHadronMultiplicity();
+    //jet_neutral_hadron_multiplicity[nJets] = j.neutralHadronMultiplicity();
+    //jet_photon_multiplicity[nJets] = j.photonMultiplicity();
+    //jet_electron_multiplicity[nJets] = j.electronMultiplicity();
+    //jet_muon_multiplicity[nJets] = j.muonMultiplicity();
+    //jet_HF_hadron_multiplicity[nJets] = j.HFHadronMultiplicity();
+    //jet_HF_em_multiplicity[nJets] = j.HFEMMultiplicity();
+    //jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
+    //jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
+
+
+    //---------------------------
+    //find photons inside the jet
+    //---------------------------
+    /*
+    for (const reco::Photon &pho : *photons) {
+      //cout << "Nphoton: " << fJetNPhotons << "\n";
+
+      if (!(deltaR(pho.eta(), pho.phi() , j.eta(), j.phi()) < 0.5)) continue;
+
+
+      fJetPhotonPt[fJetNPhotons]  = pho.pt();
+      fJetPhotonEta[fJetNPhotons] = pho.eta(); //correct this for the vertex
+      fJetPhotonPhi[fJetNPhotons] = pho.phi(); //correct this for the vertex
+
+      fJetPhotonSeedRecHitE[fJetNPhotons]      = pho.superCluster()->seed()->x();
+      fJetPhotonSeedRecHitEta[fJetNPhotons]      = pho.superCluster()->seed()->y();
+      fJetPhotonSeedRecHitPhi[fJetNPhotons]      = pho.superCluster()->seed()->z();
+      fJetPhotonSeedRecHitTime[fJetNPhotons]      = pho.superCluster()->seed()->energy();
+
+      // //get time coordinate for the seed
+      // for (const reco::PFCluster &pfcluster : *pfClusters) {
+      // 	if(pfcluster.seed() == pho.superCluster()->seed()->seed())
+      // 	  {
+      // 	    pho_superClusterSeedT[fJetNPhotons] = pfcluster.time();
+      // 	    pho_pfClusterSeedE[fJetNPhotons]      = pfcluster.energy();
+      // 	  }
+      // }
+
+      //-------------------------------
+      //fill all rechits inside photons
+      //-------------------------------
+
+      fJetNPhotons++;
+
+    }
+    */
+
+    //---------------------------
+    //Find RecHits Inside the Jet
+    //---------------------------
+    // geometry (from ECAL ELF)
+
+    edm::ESHandle<CaloGeometry> geoHandle;
+    iSetup.get<CaloGeometryRecord>().get(geoHandle);
+    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
+    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+    //double ecal_radius = 129.0;
+    int n_matched_rechits = 0;
+    for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
+    {
+      if ( recHit->checkFlag(0) )
+      {
+        const DetId recHitId = recHit->detid();
+        const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
+        if ( deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.4)
+        {
+          //double rechit_x = ecal_radius * cos(recHitPos.phi());
+          //double rechit_y = ecal_radius * sin(recHitPos.phi());
+          //double rechit_z = ecal_radius * sinh(recHitPos.eta());
+          //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
+
+          if (recHit->energy() > 1.0)
+          {
+            jetRechitE[nJets] += recHit->energy();
+            jetRechitT[nJets] += recHit->time()*recHit->energy();
+          }
+          n_matched_rechits++;
+        }
+      }
+    }
+    //cout << "Last Nphoton: " << fJetNPhotons << "\n";
+    //std::cout << "n: " << n_matched_rechits << std::endl;
+    jetNRechits[nJets] = n_matched_rechits;
+    jetRechitT[nJets] = jetRechitT[nJets]/jetRechitE[nJets];
+    nJets++;
+  } //loop over jets
+
+  return true;
 };
 
 bool llp_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
@@ -2677,9 +2606,9 @@ bool llp_ntupler::fillGenParticles(){
       gParticleMotherIndex[i] = -1;
     }
 
-    //***************************************
+    //---------------------------------------
     //Find LLPs production and decay vertices
-    //***************************************
+    //---------------------------------------
     if ( (gParticleId[i] == llp_id || gParticleId[i] == llp_id+1) && gParticleStatus[i] == 22 )
     {
       if (gParticleId[i] == llp_id)
@@ -2882,9 +2811,9 @@ bool llp_ntupler::fillGenParticles(){
     	    double radius = sqrt( pow(gLLP_decay_vertex_x[1],2) + pow(gLLP_decay_vertex_y[1],2) );
     	    double ecal_radius = 129.0;
           double hcal_radius = 179.0;
-    	    //***************
+    	    //--------------------------------------------------
     	    //Second two LLP daughters belong to LLP->pdgID()=36
-          //************
+          //--------------------------------------------------
     	    for (unsigned int id = 0; id < tmpParticle->numberOfDaughters(); id++ )
     	    {
     	      //std::cout << " -> "<< tmpParticle->daughter(id)->pdgId() << std::endl;
@@ -3014,9 +2943,9 @@ bool llp_ntupler::fillGenParticles(){
     	  }//if particle ID = 36
     	}//if found daughters
     }
-    //******************************
+    //----------------------
     //QCD Matching
-    //******************************
+    //----------------------
     if (isQCD_) {
       if (abs(gParticleId[i])  <= 6 || abs(gParticleId[i]) == 21)
       {
@@ -3068,10 +2997,10 @@ bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
   //fill trigger information
   const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
   // std::cout << "\n === TRIGGER PATHS === " << std::endl;
-  //********************************************************************
+  //------------------------------------------------------------------
   //Option to save all HLT path names in the ntuple per event
   //Expensive option in terms of ntuple size
-  //********************************************************************
+  //------------------------------------------------------------------
   nameHLT->clear();
   for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i)
   {
@@ -3094,9 +3023,9 @@ bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
   //{
   //  std::cout << i << " -> " << nameHLT->at(i) << std::endl;
   //}
-  //********************************************************************
+  //------------------------------------------------------------------
   // Save trigger decisions in array of booleans
-  //********************************************************************
+  //------------------------------------------------------------------
   for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i)
   {
     string hltPathNameReq = "HLT_";
@@ -3115,9 +3044,9 @@ bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
       }
     }
   }
-  //********************************************************************
+  //------------------------------------------------------------------
   // Print Trigger Objects
-  //********************************************************************
+  //------------------------------------------------------------------
 /*
   for (pat::TriggerObjectStandAlone trigObject : *triggerObjects)
   {
