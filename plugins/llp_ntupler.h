@@ -104,13 +104,13 @@ using namespace std;
 //#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
 
 //------ Array Size Constants ------//
-#define OBJECTARRAYSIZE 2000
+#define OBJECTARRAYSIZE 1000
 #define RECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
-#define MAX_NPV 600
+#define MAX_NPV 1000
 #define MAX_NTRACK 2000
-#define MAX_NPU 600
-#define MAX_NBX 40
+#define MAX_NPU 1000
+#define MAX_NBX 1000
 #define LLP_ARRAY_SIZE 2
 #define LLP_DAUGHTER_ARRAY_SIZE 4
 
@@ -151,35 +151,21 @@ public:
   void resetMuonBranches();
   void resetElectronBranches();
   void resetTauBranches();
-  void resetIsoPFCandidateBranches();
+  void resetIsoPFCandidateBranches();//need to implement yet
   void resetPhotonBranches();
-  void resetEcalRechitBranches();
+  void resetEcalRechitBranches();//need to implement yet
   void resetJetBranches();
-  void resetJetAK8Branches();
-  void resetMetBranches();
-  void resetTriggerBranches();
+  void resetJetAK8Branches();//need to implement yet
+  void resetMetBranches();//need to implement yet
   void resetMCBranches();
   void resetGenParticleBranches();
-  /*
-  void resetEventInfoVariables();
-  void resetPhotonVariable();
-  void resetJetVariables();
-  void reset_fat_jet_variables();
-  void reset_gen_llp_variable();
-  void reset_mc_variable();
-  void reset_qcd_variables();
-  */
+  void resetTriggerBranches();
+
   //------ HELPER FUNCTIONS ------//
   bool passJetID( const reco::PFJet *jet, int cutLevel);
   double deltaPhi(double phi1, double phi2);
   double deltaR(double eta1, double phi1, double eta2, double phi2);
-  /*
-  void enableFatJetBranches();
-  void enableMCBranches();
-  void enableGenParticleBranches();
-  void enableTriggerBranches();
-  void enableQCDBranches();
-  */
+
 
   //bool fill_fat_jet(const edm::EventSetup& iSetup);
   bool fillEventInfo(const edm::Event& iEvent);
@@ -190,6 +176,7 @@ public:
   bool fillTaus();
   bool fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillJets(const edm::EventSetup& iSetup);
+  bool fillMet(const edm::Event& iEvent);
   bool fillMC();
   bool fillGenParticles();
   bool fillTrigger(const edm::Event& iEvent);
@@ -400,7 +387,7 @@ protected:
 
   //PVAll (full list of primary vertices for analysis-level vtx selection)
   int nPVAll;
- float pvAllX[MAX_NPV];
+  float pvAllX[MAX_NPV];
  float pvAllY[MAX_NPV];
  float pvAllZ[MAX_NPV];
  float pvAllLogSumPtSq[MAX_NPV];
@@ -409,9 +396,9 @@ protected:
 
  //PU
  int nBunchXing;
- int BunchXing[OBJECTARRAYSIZE];
- int nPU[OBJECTARRAYSIZE];
- float nPUmean[OBJECTARRAYSIZE];
+ int BunchXing[MAX_NBX];
+ int nPU[MAX_NBX];
+ float nPUmean[MAX_NBX];
 
  //Muons
  int nMuons;

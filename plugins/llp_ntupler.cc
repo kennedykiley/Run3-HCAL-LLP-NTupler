@@ -704,13 +704,17 @@ void llp_ntupler::resetBranches()
 {
     //reset tree variables
     resetEventInfoBranches();
+    resetPVAllBranches();
+    resetPileUpBranches();
     resetMuonBranches();
     resetElectronBranches();
+    resetTauBranches();
     resetPhotonBranches();
     resetJetBranches();
+    resetMetBranches();
     resetGenParticleBranches();
     resetMCBranches();
-    //reset_qcd_variables();
+    resetTriggerBranches();
 };
 
 void llp_ntupler::resetEventInfoBranches()
@@ -732,6 +736,30 @@ void llp_ntupler::resetEventInfoBranches()
   fixedGridRhoFastjetCentralChargedPileUp = -999.0;
   fixedGridRhoFastjetCentralNeutral = -999.0;
   return;
+};
+
+void llp_ntupler::resetPVAllBranches()
+{
+  nPVAll = 0;
+  for(int i = 0; i < MAX_NPV; i++)
+  {
+    pvAllX[i] = -999.;
+    pvAllY[i] = -999.;
+    pvAllZ[i] = -999.;
+    pvAllLogSumPtSq[i] = -999.;
+    pvAllSumPx[i] = -999.;
+    pvAllSumPy[i] = -999.;
+  }
+};
+void llp_ntupler::resetPileUpBranches()
+{
+  nBunchXing = 0;
+  for(int i = 0; i < MAX_NBX; i++)
+  {
+    BunchXing[i] = -999;
+    nPU[i]       = -999;
+    nPUmean[i]   = -999.;
+  }
 };
 
 void llp_ntupler::resetMuonBranches()
@@ -822,6 +850,41 @@ void llp_ntupler::resetElectronBranches()
     for (int q=0;q<MAX_ElectronHLTFilters;q++) ele_passHLTFilter[i][q] = false;
   }
 
+};
+
+void llp_ntupler::resetTauBranches()
+{
+  nTaus = 0;
+  for(int i = 0; i < OBJECTARRAYSIZE; i++)
+  {
+    tauE[i] = -999.;
+    tauPt[i] = -999.;
+    tauEta[i] = -999.;
+    tauPhi[i] = -999.;
+    tau_IsLoose[i] = false;
+    tau_IsMedium[i] = false;
+    tau_IsTight[i] = false;
+    tau_passEleVetoLoose[i] = false;
+    tau_passEleVetoMedium[i] = false;
+    tau_passEleVetoTight[i] = false;
+    tau_passMuVetoLoose[i] = false;
+    tau_passMuVetoMedium[i] = false;
+    tau_passMuVetoTight[i] = false;
+    tau_ID[i] = 0;//tauID Bits
+    tau_combinedIsoDeltaBetaCorr3Hits[i] = -999.;;
+    tau_chargedIsoPtSum[i] = -999.;;
+    tau_neutralIsoPtSum[i] = -999.;;
+    tau_puCorrPtSum[i] = -999.;;
+    tau_eleVetoMVA[i] = -999.;;
+    tau_eleVetoCategory[i] = -999.;;
+    tau_muonVetoMVA[i] = -999.;;
+    tau_isoMVAnewDMwLT[i] = -999.;;
+    tau_isoMVAnewDMwoLT[i] = -999.;;
+    tau_leadCandPt[i] = -999.;;
+    tau_leadCandID[i] = -999.;;
+    tau_leadChargedHadrCandPt[i] = -999.;;
+    tau_leadChargedHadrCandID[i] = -999.;;
+  }
 };
 
 void llp_ntupler::resetPhotonBranches()
@@ -928,6 +991,95 @@ void llp_ntupler::resetJetBranches()
   return;
 };
 
+void llp_ntupler::resetMetBranches()
+{
+  metPt = -999;
+  metPhi = -999;
+  sumMET = -99.0;
+  UncMETdpx = -99.0;
+  UncMETdpy = -99.0;
+  UncMETdSumEt = -99.0;
+  metType0Pt = -99.0;
+  metType0Phi = -99.0;
+  metType1Pt_raw = -99.0;
+  metType1Pt = -99.0;
+  metType1Px = -99.0;
+  metType1Py = -99.0;
+  metType1Eta = -99.0;
+  metType1Phi = -99.0;
+  metType1Phi_raw = -99.0;
+  metType0Plus1Pt = -99.0;
+  metType0Plus1Phi = -99.0;
+  metPtRecomputed = -99.0;
+  metPhiRecomputed = -99.0;
+  metNoHFPt = -99.0;
+  metNoHFPhi = -99.0;
+  metPuppiPt = -99.0;
+  metPuppiPhi = -99.0;
+  metCaloPt = -999;
+  metCaloPhi = -999;
+  Flag_HBHENoiseFilter = false;
+  Flag_HBHETightNoiseFilter = false;
+  Flag_HBHEIsoNoiseFilter = false;
+  Flag_badChargedCandidateFilter = false;
+  Flag_badMuonFilter = false;
+  Flag_badGlobalMuonFilter = false;
+  Flag_duplicateMuonFilter = false;
+  Flag_CSCTightHaloFilter = false;
+  Flag_hcalLaserEventFilter = false;
+  Flag_EcalDeadCellTriggerPrimitiveFilter = false;
+  Flag_EcalDeadCellBoundaryEnergyFilter = false;
+  Flag_goodVertices = false;
+  Flag_trackingFailureFilter = false;
+  Flag_eeBadScFilter = false;
+  Flag_ecalLaserCorrFilter = false;
+  Flag_trkPOGFilters = false;
+  Flag_trkPOG_manystripclus53X = false;
+  Flag_trkPOG_toomanystripclus53X = false;
+  Flag_trkPOG_logErrorTooManyClusters = false;
+  Flag_BadPFMuonFilter = false;
+  Flag_BadChargedCandidateFilter = false;
+  Flag_ecalBadCalibFilter = false;
+  Flag_METFilters = false;
+
+  metType1PtJetResUp=-999.;
+  metType1PtJetResDown=-999.;
+  metType1PtJetEnUp=-999.;
+  metType1PtJetEnDown=-999.;
+  metType1PtMuonEnUp=-999.;
+  metType1PtMuonEnDown=-999.;
+  metType1PtElectronEnUp=-999.;
+  metType1PtElectronEnDown=-999.;
+  metType1PtTauEnUp=-999.;
+  metType1PtTauEnDown=-999.;
+  metType1PtUnclusteredEnUp=-999.;
+  metType1PtUnclusteredEnDown=-999.;
+  metType1PtPhotonEnUp=-999.;
+  metType1PtPhotonEnDown=-999.;
+  metType1PtMETUncertaintySize=-999.;
+  metType1PtJetResUpSmear=-999.;
+  metType1PtJetResDownSmear=-999.;
+  metType1PtMETFullUncertaintySize=-999.;
+
+  metType1PhiJetResUp=-999.;
+  metType1PhiJetResDown=-999.;
+  metType1PhiJetEnUp=-999.;
+  metType1PhiJetEnDown=-999.;
+  metType1PhiMuonEnUp=-999.;
+  metType1PhiMuonEnDown=-999.;
+  metType1PhiElectronEnUp=-999.;
+  metType1PhiElectronEnDown=-999.;
+  metType1PhiTauEnUp=-999.;
+  metType1PhiTauEnDown=-999.;
+  metType1PhiUnclusteredEnUp=-999.;
+  metType1PhiUnclusteredEnDown=-999.;
+  metType1PhiPhotonEnUp=-999.;
+  metType1PhiPhotonEnDown=-999.;
+  metType1PhiMETUncertaintySize=-999.;
+  metType1PhiJetResUpSmear=-999.;
+  metType1PhiJetResDownSmear=-999.;
+  metType1PhiMETFullUncertaintySize=-999.;
+};
 void llp_ntupler::resetGenParticleBranches()
 {
   for(int i = 0; i < GENPARTICLEARRAYSIZE; i++)
@@ -985,6 +1137,14 @@ void llp_ntupler::resetMCBranches()
   return;
 };
 
+void llp_ntupler::resetTriggerBranches()
+{
+  for( int i = 0; i < NTriggersMAX; i++ )
+  {
+    triggerDecision[i] = false;
+    triggerHLTPrescale[i] = 0;
+  }
+};
 //------ Method called for each run ------//
 
 void llp_ntupler::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
@@ -1007,9 +1167,9 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   //initialize
   loadEvent(iEvent); //loads objects and resets tree branches
   NEvents->Fill(0); //increment event count
+
   //resetting output tree branches
   resetBranches();
-
   fillEventInfo(iEvent);
   fillPVAll();
   fillPileUp();
@@ -1018,6 +1178,7 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   fillPhotons(iEvent, iSetup);
   fillTaus();
   fillJets(iSetup);
+  fillMet(iEvent);
   fillMC();
   fillGenParticles();
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
@@ -1025,169 +1186,15 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 };
 
 //------ Method called once each job just before starting event loop ------//
-void llp_ntupler::beginJob(){
+void llp_ntupler::beginJob()
+{
   setBranches();
 }
 
 //------ Method called once each job just after ending the event loop ------//
-void llp_ntupler::endJob(){
-}
-
-/*
-bool llp_ntupler::fill_fat_jet(const edm::EventSetup& iSetup)
-{
-  int i_fat_jet = 0;
-  for (const reco::PFJet &j : *jetsAK8)
-  {
-    //resetBranches();
-    if (j.pt() < 20) continue;
-    if (fabs(j.eta()) > 2.4) continue;
-    //--------------------
-    //Fill Jet-Level Info
-    //-------------------
-    fat_jetE[i_fat_jet] = j.energy();
-    fat_jetPt[i_fat_jet] = j.pt();
-    fat_jetEta[i_fat_jet] = j.eta();
-    fat_jetPhi[i_fat_jet] = j.phi();
-    fat_jetMass[i_fat_jet] = j.mass();
-
-    TLorentzVector thisJet;
-    thisJet.SetPtEtaPhiE(fat_jetPt[i_fat_jet], fat_jetEta[i_fat_jet], fat_jetPhi[i_fat_jet], fat_jetE[i_fat_jet]);
-    //jetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-
-    fat_jetJetArea[i_fat_jet] = j.jetArea();
-    fat_jetPileupE[i_fat_jet] = j.pileup();
-
-    fat_jetPileupIdFlag[i_fat_jet] = 0;
-    fat_jetPassIDLoose[i_fat_jet] = passJetID(&j, 0);
-    fat_jetPassIDTight[i_fat_jet] = passJetID(&j, 1);
-    fat_jetPassMuFrac[i_fat_jet]  = ( j.muonEnergyFraction() < 0.80 );
-    fat_jetPassEleFrac[i_fat_jet]  = ( j.electronEnergyFraction() < 0.90 );
+void llp_ntupler::endJob(){};
 
 
-    // if (useGen_) {
-    //   fat_jetPartonFlavor = j.partonFlavour();
-    //   fat_jetHadronFlavor = j.hadronFlavour();
-    // }
-
-    fat_jetChargedEMEnergyFraction[i_fat_jet] = j.chargedEmEnergyFraction();
-    fat_jetNeutralEMEnergyFraction[i_fat_jet] = j.neutralEmEnergyFraction();
-    fat_jetChargedHadronEnergyFraction[i_fat_jet] = j.chargedHadronEnergyFraction();
-    fat_jetNeutralHadronEnergyFraction[i_fat_jet] = j.neutralHadronEnergyFraction();
-    fat_jet_charged_hadron_multiplicity[i_fat_jet] = j.chargedHadronMultiplicity();
-    fat_jet_neutral_hadron_multiplicity[i_fat_jet] = j.neutralHadronMultiplicity();
-    fat_jet_photon_multiplicity[i_fat_jet] = j.photonMultiplicity();
-    fat_jet_electron_multiplicity[i_fat_jet] = j.electronMultiplicity();
-    fat_jet_muon_multiplicity[i_fat_jet] = j.muonMultiplicity();
-    fat_jet_HF_hadron_multiplicity[i_fat_jet] = j.HFHadronMultiplicity();
-    fat_jet_HF_em_multiplicity[i_fat_jet] = j.HFEMMultiplicity();
-    fat_jet_charged_multiplicity[i_fat_jet] = j.chargedMultiplicity();
-    fat_jet_neutral_multiplicity[i_fat_jet] = j.neutralMultiplicity();
-
-    //---------------------------
-    //Find RecHits Inside the Jet
-    //---------------------------
-    // geometry (from ECAL ELF)
-
-    edm::ESHandle<CaloGeometry> geoHandle;
-    iSetup.get<CaloGeometryRecord>().get(geoHandle);
-    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
-    double ecal_radius = 129.0;
-    int n_matched_rechits = 0;
-    for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
-    {
-      if ( recHit->checkFlag(0) )
-      {
-        const DetId recHitId = recHit->detid();
-        const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
-        if ( deltaR(fat_jetEta[i_fat_jet], fat_jetPhi[i_fat_jet], recHitPos.eta(), recHitPos.phi())  < 0.4)
-        {
-          fat_jet_rechit_E[i_fat_jet] += recHit->energy();
-          fat_jet_rechit_T[i_fat_jet] += recHit->time()*recHit->energy();
-          fat_jet_rechits_E[i_fat_jet][n_matched_rechits] = recHit->energy();
-          fat_jet_rechits_T[i_fat_jet][n_matched_rechits] = recHit->time();
-          double rechit_x = ecal_radius * cos(recHitPos.phi());
-          double rechit_y = ecal_radius * sin(recHitPos.phi());
-          double rechit_z = ecal_radius * sinh(recHitPos.eta());
-          double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
-          fat_jet_pv_rechits_T[i_fat_jet][n_matched_rechits] = recHit->time()+(1./30)*ecal_radius*cosh(recHitPos.eta()) - photon_pv_travel_time;
-          fat_jet_pv_rechit_T[i_fat_jet] += recHit->energy()*fat_jet_pv_rechits_T[i_fat_jet][n_matched_rechits];
-          // std::cout << fat_jet_pv_rechits_T[i_fat_jet][n_matched_rechits] << fat_jet_rechits_T[i_fat_jet][n_matched_rechits] << std::endl;
-          if (recHit->energy() > 0.5)
-          {
-            fat_jet_rechit_E_Ecut0p5[i_fat_jet] += recHit->energy();
-            fat_jet_rechit_T_Ecut0p5[i_fat_jet] += recHit->time()*recHit->energy();
-            fat_jet_pv_rechit_T_Ecut0p5[i_fat_jet] += fat_jet_pv_rechits_T[i_fat_jet][n_matched_rechits] *recHit->energy();
-          }
-          if (recHit->energy() > 1.0)
-          {
-            fat_jet_rechit_E_Ecut1[i_fat_jet] += recHit->energy();
-            fat_jet_rechit_T_Ecut1[i_fat_jet] += recHit->time()*recHit->energy();
-            fat_jet_pv_rechit_T_Ecut1[i_fat_jet] += fat_jet_pv_rechits_T[i_fat_jet][n_matched_rechits] *recHit->energy();
-            // std::cout << "rechit time, with pv"<<fat_jet_rechit_T_Ecut1[i_fat_jet]<< fat_jet_pv_rechit_T_Ecut1[i_fat_jet]<< std::endl;
-            // std::cout << "rechits with pv, without" <<fat_jet_pv_rechits_T[i_fat_jet][n_matched_rechits] << fat_jet_rechits_T[i_fat_jet][n_matched_rechits] << std::endl;
-            // std::cout << "rechit energy and time"<<recHit->energy()<< recHit->time()<< std::endl;
-
-
-          }
-          if (recHit->energy() > 1.5)
-          {
-            fat_jet_rechit_E_Ecut1p5[i_fat_jet] += recHit->energy();
-            fat_jet_rechit_T_Ecut1p5[i_fat_jet] += recHit->time()*recHit->energy();
-            fat_jet_pv_rechit_T_Ecut1p5[i_fat_jet] += fat_jet_pv_rechits_T[i_fat_jet][n_matched_rechits] *recHit->energy();
-
-          }
-          if (recHit->energy() > 2.0)
-          {
-            fat_jet_rechit_E_Ecut2[i_fat_jet] += recHit->energy();
-            fat_jet_rechit_T_Ecut2[i_fat_jet] += recHit->time()*recHit->energy();
-            fat_jet_pv_rechit_T_Ecut2[i_fat_jet] += fat_jet_pv_rechits_T[i_fat_jet][n_matched_rechits] *recHit->energy();
-
-          }
-          if (recHit->energy() > 3.0)
-          {
-            fat_jet_rechit_E_Ecut3[i_fat_jet] += recHit->energy();
-            fat_jet_rechit_T_Ecut3[i_fat_jet] += recHit->time()*recHit->energy();
-            fat_jet_pv_rechit_T_Ecut3[i_fat_jet] += fat_jet_pv_rechits_T[i_fat_jet][n_matched_rechits] *recHit->energy();
-
-          }
-
-          if (recHit->energy() > 4.0)
-          {
-            fat_jet_rechit_E_Ecut4[i_fat_jet] += recHit->energy();
-            fat_jet_rechit_T_Ecut4[i_fat_jet] += recHit->time()*recHit->energy();
-            fat_jet_pv_rechit_T_Ecut4[i_fat_jet] += fat_jet_pv_rechits_T[i_fat_jet][n_matched_rechits] *recHit->energy();
-
-          }
-          n_matched_rechits++;
-        }
-      }
-    }
-    //cout << "Last Nphoton: " << fJetNPhotons << "\n";
-    //std::cout << "n: " << n_matched_rechits << std::endl;
-    fat_jet_n_rechits[i_fat_jet] = n_matched_rechits;
-    fat_jet_rechit_T[i_fat_jet] = fat_jet_rechit_T[i_fat_jet]/fat_jet_rechit_E[i_fat_jet];
-    fat_jet_rechit_T_Ecut4[i_fat_jet] = fat_jet_rechit_T_Ecut4[i_fat_jet]/fat_jet_rechit_E_Ecut4[i_fat_jet];
-    fat_jet_rechit_T_Ecut3[i_fat_jet] = fat_jet_rechit_T_Ecut3[i_fat_jet]/fat_jet_rechit_E_Ecut3[i_fat_jet];
-    fat_jet_rechit_T_Ecut2[i_fat_jet] = fat_jet_rechit_T_Ecut2[i_fat_jet]/fat_jet_rechit_E_Ecut2[i_fat_jet];
-    fat_jet_rechit_T_Ecut1p5[i_fat_jet] = fat_jet_rechit_T_Ecut1p5[i_fat_jet]/fat_jet_rechit_E_Ecut1p5[i_fat_jet];
-    fat_jet_rechit_T_Ecut1[i_fat_jet] =  fat_jet_rechit_T_Ecut1[i_fat_jet]/fat_jet_rechit_E_Ecut1[i_fat_jet];
-    fat_jet_rechit_T_Ecut0p5[i_fat_jet] = fat_jet_rechit_T_Ecut0p5[i_fat_jet]/fat_jet_rechit_E_Ecut0p5[i_fat_jet]; //incrementing fat_jet counter
-    fat_jet_pv_rechit_T[i_fat_jet] = fat_jet_pv_rechit_T[i_fat_jet]/fat_jet_rechit_E[i_fat_jet];
-    fat_jet_pv_rechit_T_Ecut4[i_fat_jet] = fat_jet_pv_rechit_T_Ecut4[i_fat_jet]/fat_jet_rechit_E_Ecut4[i_fat_jet];
-    fat_jet_pv_rechit_T_Ecut3[i_fat_jet] = fat_jet_pv_rechit_T_Ecut3[i_fat_jet]/fat_jet_rechit_E_Ecut3[i_fat_jet];
-    fat_jet_pv_rechit_T_Ecut2[i_fat_jet] =  fat_jet_pv_rechit_T_Ecut2[i_fat_jet]/fat_jet_rechit_E_Ecut2[i_fat_jet];
-    fat_jet_pv_rechit_T_Ecut1p5[i_fat_jet] = fat_jet_pv_rechit_T_Ecut1p5[i_fat_jet]/fat_jet_rechit_E_Ecut1p5[i_fat_jet];
-    fat_jet_pv_rechit_T_Ecut1[i_fat_jet] = fat_jet_pv_rechit_T_Ecut1[i_fat_jet]/fat_jet_rechit_E_Ecut1[i_fat_jet];
-    fat_jet_pv_rechit_T_Ecut0p5[i_fat_jet] = fat_jet_pv_rechit_T_Ecut0p5[i_fat_jet]/fat_jet_rechit_E_Ecut0p5[i_fat_jet]; //incrementing fat_jet counter
-    n_fat_Jets++;
-    i_fat_jet++;
-
-  } //loop over jets
-  return true;
-};
-*/
 
 //------ Methods to fill tree variables ------//
 bool llp_ntupler::fillEventInfo(const edm::Event& iEvent)
@@ -1346,7 +1353,6 @@ bool llp_ntupler::fillMuons(const edm::Event& iEvent)
     + muon::isGoodMuon(mu,muon::TMLastStationOptimizedBarrelLowPtLoose)
     + muon::isGoodMuon(mu,muon::TMLastStationOptimizedBarrelLowPtTight)
     + muon::isGoodMuon(mu,muon::RPCMuLoose);
-
     muon_pileupIso[nMuons] = mu.pfIsolationR04().sumPUPt;
     muon_chargedIso[nMuons] = mu.pfIsolationR04().sumChargedHadronPt;
     muon_photonIso[nMuons] = mu.pfIsolationR04().sumPhotonEt;
@@ -2121,7 +2127,6 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
 {
   for (const reco::PFJet &j : *jets)
   {
-    //resetBranches();
     if (j.pt() < 20) continue;
     if (fabs(j.eta()) > 2.4) continue;
     //-------------------
@@ -2243,6 +2248,133 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
     jetRechitT[nJets] = jetRechitT[nJets]/jetRechitE[nJets];
     nJets++;
   } //loop over jets
+
+  return true;
+};
+
+bool llp_ntupler::fillMet(const edm::Event& iEvent)
+{
+  const reco::PFMET &Met = mets->front();
+
+  //metPt = Met.uncorPt();
+  //metPhi = Met.uncorPhi();
+  sumMET = Met.sumEt();
+  metType0Pt = 0;
+  metType0Phi = 0;
+  metType1Pt_raw = Met.pt();
+  metType1Pt = Met.pt();
+  metType1Px = Met.px();
+  metType1Py = Met.py();
+  metType1Eta = Met.eta();
+  metType1Phi_raw = Met.phi();
+  metType1Phi = Met.phi();
+  metType0Plus1Pt = 0;
+  metType0Plus1Phi = 0;
+  //metCaloPt = Met.caloMETPt();
+  //metCaloPhi = Met.caloMETPhi();
+
+/*
+  if(!isData_)
+    {
+      metType1PtJetResUp           = Met.shiftedPt(reco::PFMET::METUncertainty::JetResUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtJetResDown         = Met.shiftedPt(reco::PFMET::METUncertainty::JetResDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtJetEnUp            = Met.shiftedPt(reco::PFMET::METUncertainty::JetEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtJetEnDown          = Met.shiftedPt(reco::PFMET::METUncertainty::JetEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtMuonEnUp           = Met.shiftedPt(reco::PFMET::METUncertainty::MuonEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtMuonEnDown         = Met.shiftedPt(reco::PFMET::METUncertainty::MuonEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtElectronEnUp       = Met.shiftedPt(reco::PFMET::METUncertainty::ElectronEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtElectronEnDown     = Met.shiftedPt(reco::PFMET::METUncertainty::ElectronEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtTauEnUp	           = Met.shiftedPt(reco::PFMET::METUncertainty::TauEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtTauEnDown          = Met.shiftedPt(reco::PFMET::METUncertainty::TauEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtUnclusteredEnUp    = Met.shiftedPt(reco::PFMET::METUncertainty::UnclusteredEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtUnclusteredEnDown  = Met.shiftedPt(reco::PFMET::METUncertainty::UnclusteredEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtPhotonEnUp         = Met.shiftedPt(reco::PFMET::METUncertainty::PhotonEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PtPhotonEnDown       = Met.shiftedPt(reco::PFMET::METUncertainty::PhotonEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      // metType1PtMETUncertaintySize = Met.shiftedPt(reco::PFMET::METUncertainty::METUncertaintySize, reco::PFMET::METCorrectionLevel::Type1);
+      // metType1PtJetResUpSmear     = Met.shiftedPt(reco::PFMET::METUncertainty::JetResUpSmear, reco::PFMET::METCorrectionLevel::Type1);
+      // metType1PtJetResDownSmear   = Met.shiftedPt(reco::PFMET::METUncertainty::JetResDownSmear, reco::PFMET::METCorrectionLevel::Type1);
+      // metType1PtMETFullUncertaintySize = Met.shiftedPt(reco::PFMET::METUncertainty::METFullUncertaintySize, reco::PFMET::METCorrectionLevel::Type1);
+
+      metType1PhiJetResUp          = Met.shiftedPhi(reco::PFMET::METUncertainty::JetResUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiJetResDown        = Met.shiftedPhi(reco::PFMET::METUncertainty::JetResDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiJetEnUp           = Met.shiftedPhi(reco::PFMET::METUncertainty::JetEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiJetEnDown         = Met.shiftedPhi(reco::PFMET::METUncertainty::JetEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiMuonEnUp          = Met.shiftedPhi(reco::PFMET::METUncertainty::MuonEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiMuonEnDown        = Met.shiftedPhi(reco::PFMET::METUncertainty::MuonEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiElectronEnUp      = Met.shiftedPhi(reco::PFMET::METUncertainty::ElectronEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiElectronEnDown    = Met.shiftedPhi(reco::PFMET::METUncertainty::ElectronEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiTauEnUp           = Met.shiftedPhi(reco::PFMET::METUncertainty::TauEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiTauEnDown         = Met.shiftedPhi(reco::PFMET::METUncertainty::TauEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiUnclusteredEnUp   = Met.shiftedPhi(reco::PFMET::METUncertainty::UnclusteredEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiUnclusteredEnDown = Met.shiftedPhi(reco::PFMET::METUncertainty::UnclusteredEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiPhotonEnUp        = Met.shiftedPhi(reco::PFMET::METUncertainty::PhotonEnUp, reco::PFMET::METCorrectionLevel::Type1);
+      metType1PhiPhotonEnDown      = Met.shiftedPhi(reco::PFMET::METUncertainty::PhotonEnDown, reco::PFMET::METCorrectionLevel::Type1);
+      // metType1PhiMETUncertaintySize = Met.shiftedPhi(reco::PFMET::METUncertainty::METUncertaintySize, reco::PFMET::METCorrectionLevel::Type1);
+      // metType1PhiJetResUpSmear     = Met.shiftedPhi(reco::PFMET::METUncertainty::JetResUpSmear, reco::PFMET::METCorrectionLevel::Type1);
+      // metType1PhiJetResDownSmear   = Met.shiftedPhi(reco::PFMET::METUncertainty::JetResDownSmear, reco::PFMET::METCorrectionLevel::Type1);
+      // metType1PhiMETFullUncertaintySize = Met.shiftedPhi(reco::PFMET::METUncertainty::METFullUncertaintySize, reco::PFMET::METCorrectionLevel::Type1);
+    }
+ */
+
+  const reco::PFMET &MetPuppi = metsPuppi->front();
+  //const reco::PFMET &MetNoHF = metsNoHF->front();
+  metPuppiPt = MetPuppi.pt();
+  metPuppiPhi = MetPuppi.phi();
+  //metNoHFPt = MetNoHF.pt();
+  //metNoHFPhi = MetNoHF.phi();
+
+  //MET filters
+  if (!isFastsim_) {
+    const edm::TriggerNames &metNames = iEvent.triggerNames(*metFilterBits);
+
+    //----------------------------
+    //For Debug printout
+    //----------------------------
+    // for (unsigned int i = 0, n = metFilterBits->size(); i < n; ++i) {
+    // 	std::cout << "MET Filter " << metNames.triggerName(i).c_str() << "\n";
+    // }
+
+    for(unsigned int i = 0, n = metFilterBits->size(); i < n; ++i)
+    {
+      if(strcmp(metNames.triggerName(i).c_str(), "Flag_trackingFailureFilter") == 0)
+      Flag_trackingFailureFilter = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_goodVertices") == 0)
+      Flag_goodVertices = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalTightHalo2016Filter") == 0)
+      Flag_CSCTightHaloFilter = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOGFilters") == 0)
+      Flag_trkPOGFilters = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_logErrorTooManyClusters") == 0)
+      Flag_trkPOG_logErrorTooManyClusters = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_EcalDeadCellTriggerPrimitiveFilter") == 0)
+      Flag_EcalDeadCellTriggerPrimitiveFilter = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_EcalDeadCellBoundaryEnergyFilter") == 0)
+      Flag_EcalDeadCellBoundaryEnergyFilter = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_ecalLaserCorrFilter") == 0)
+      Flag_ecalLaserCorrFilter = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_manystripclus53X") == 0)
+      Flag_trkPOG_manystripclus53X = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_eeBadScFilter") == 0)
+      Flag_eeBadScFilter = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_METFilters") == 0)
+      Flag_METFilters = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_HBHENoiseFilter") == 0)
+      Flag_HBHENoiseFilter = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_HBHENoiseIsoFilter") == 0)
+      Flag_HBHEIsoNoiseFilter = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_toomanystripclus53X") == 0)
+      Flag_trkPOG_toomanystripclus53X = metFilterBits->accept(i);
+      else if(strcmp(metNames.triggerName(i).c_str(), "Flag_hcalLaserEventFilter") == 0)
+      Flag_hcalLaserEventFilter = metFilterBits->accept(i);
+    } //loop over met filters
+
+    //use custom hbhefilter, because miniAOD filters are problematic.
+    //Flag_HBHENoiseFilter = *hbheNoiseFilter;
+    //Flag_HBHETightNoiseFilter = *hbheTightNoiseFilter;
+    //Flag_HBHEIsoNoiseFilter = *hbheIsoNoiseFilter;
+    //Flag_badChargedCandidateFilter = *badChargedCandidateFilter;
+    //Flag_badMuonFilter = *badMuonFilter;
+  }
 
   return true;
 };
