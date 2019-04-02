@@ -630,9 +630,9 @@ void llp_ntupler::enableGenParticleBranches()
   llpTree->Branch("gParticlePz", gParticlePz, "gParticlePz[nGenParticle]/F");
   llpTree->Branch("gParticleEta", gParticleEta, "gParticleEta[nGenParticle]/F");
   llpTree->Branch("gParticlePhi", gParticlePhi, "gParticlePhi[nGenParticle]/F");
-  llpTree->Branch("gParticleDecayVertexX", gParticleDecayVertexX, "gParticleDecayVertexX[nGenParticle]/F");
-  llpTree->Branch("gParticleDecayVertexY", gParticleDecayVertexY, "gParticleDecayVertexY[nGenParticle]/F");
-  llpTree->Branch("gParticleDecayVertexZ", gParticleDecayVertexZ, "gParticleDecayVertexZ[nGenParticle]/F");
+  llpTree->Branch("gParticleProdVertexX", gParticleProdVertexX, "gParticleProdVertexX[nGenParticle]/F");
+  llpTree->Branch("gParticleProdVertexY", gParticleProdVertexY, "gParticleProdVertexY[nGenParticle]/F");
+  llpTree->Branch("gParticleProdVertexZ", gParticleProdVertexZ, "gParticleProdVertexZ[nGenParticle]/F");
 };
 
 //------ Load the miniAOD objects and reset tree variables for each event ------//
@@ -944,9 +944,9 @@ void llp_ntupler::resetGenParticleBranches()
     gParticleEta[i] = -99999.0;
     gParticlePhi[i] = -99999.0;
 
-    gParticleDecayVertexX[i] = -99999.0;
-    gParticleDecayVertexY[i] = -99999.0;
-    gParticleDecayVertexZ[i] = -99999.0;
+    gParticleProdVertexX[i] = -99999.0;
+    gParticleProdVertexY[i] = -99999.0;
+    gParticleProdVertexZ[i] = -99999.0;
 
   }
   return;
@@ -2494,17 +2494,17 @@ bool llp_ntupler::fillMC()
     return true;
 };
 
-bool llp_ntupler::fillGenParticles()
+/*bool llp_ntupler::fillGenParticles()
 {
   return true;
-};
-/*
+};*/
+
 bool llp_ntupler::fillGenParticles(){
   std::vector<const reco::Candidate*> prunedV;//Allows easier comparison for mother finding
   //Fills selected gen particles
   //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
   const double pt_cut = 0.0;
-  int llp_id = isFourJet ? 35:9000006;
+  //int llp_id = isFourJet ? 35:9000006;
 
   for(size_t i=0; i<genParticles->size();i++)
   {
@@ -2538,9 +2538,13 @@ bool llp_ntupler::fillGenParticles(){
     gParticlePz[i] = prunedV[i]->pz();
     gParticleEta[i] = prunedV[i]->eta();
     gParticlePhi[i] = prunedV[i]->phi();
+    gParticleProdVertexX[i] = prunedV[i]->vx();
+    gParticleProdVertexY[i] = prunedV[i]->vy();
+    gParticleProdVertexZ[i] = prunedV[i]->vz();
     gParticleMotherId[i] = 0;
     gParticleMotherIndex[i] = -1;
 
+    /*
     //For Neutralinos we try to find the decay vertex locaton.
     //Algorithm: Find the first daughter particle that is not a neutralino,
     //and call that the daughter. get the creation vertex of that daughter.
@@ -2576,7 +2580,7 @@ bool llp_ntupler::fillGenParticles(){
         gParticleDecayVertexZ[i] = dau->vz();
       }
     }
-
+*/
 
     if(prunedV[i]->numberOfMothers() > 0)
     {
@@ -2585,9 +2589,9 @@ bool llp_ntupler::fillGenParticles(){
       if (firstMotherWithDifferentID)
       {
         gParticleMotherId[i] = firstMotherWithDifferentID->pdgId();
-        gParticleDecayVertexX[i] = firstMotherWithDifferentID->vx();
-        gParticleDecayVertexY[i] = firstMotherWithDifferentID->vy();
-        gParticleDecayVertexZ[i] = firstMotherWithDifferentID->vz();
+        //gParticleDecayVertexX[i] = firstMotherWithDifferentID->vx();
+        //gParticleDecayVertexY[i] = firstMotherWithDifferentID->vy();
+        //gParticleDecayVertexZ[i] = firstMotherWithDifferentID->vz();
       }
 
       //find the mother and keep going up the mother chain if the ID's are the same
@@ -2605,7 +2609,7 @@ bool llp_ntupler::fillGenParticles(){
     {
       gParticleMotherIndex[i] = -1;
     }
-
+/*
     //---------------------------------------
     //Find LLPs production and decay vertices
     //---------------------------------------
@@ -2943,6 +2947,9 @@ bool llp_ntupler::fillGenParticles(){
     	  }//if particle ID = 36
     	}//if found daughters
     }
+
+  */
+    /*
     //----------------------
     //QCD Matching
     //----------------------
@@ -2979,17 +2986,13 @@ bool llp_ntupler::fillGenParticles(){
           nGenQCDParticles ++;
         }
       }
-
-
-
-
-
     }
+    */
   }// for loop of genParticles
   return true;
 };
 
-*/
+
 
 bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
 {

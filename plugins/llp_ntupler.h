@@ -833,9 +833,9 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float gParticleEta[GENPARTICLEARRAYSIZE];
  float gParticlePhi[GENPARTICLEARRAYSIZE];
 
- float gParticleDecayVertexX[GENPARTICLEARRAYSIZE];
- float gParticleDecayVertexY[GENPARTICLEARRAYSIZE];
- float gParticleDecayVertexZ[GENPARTICLEARRAYSIZE];
+ float gParticleProdVertexX[GENPARTICLEARRAYSIZE];
+ float gParticleProdVertexY[GENPARTICLEARRAYSIZE];
+ float gParticleProdVertexZ[GENPARTICLEARRAYSIZE];
 
 
  //razor variables
