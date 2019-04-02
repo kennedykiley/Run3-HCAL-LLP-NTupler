@@ -1170,18 +1170,32 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   //resetting output tree branches
   resetBranches();
+  cout << "here1\n";
   fillEventInfo(iEvent);
+  cout << "here2\n";
   fillPVAll();
-  fillPileUp();
+  cout << "here3\n";
   fillMuons(iEvent);
+  cout << "here5\n";
   fillElectrons(iEvent);
+  cout << "here6\n";
   fillPhotons(iEvent, iSetup);
+  cout << "here7\n";
   fillTaus();
+  cout << "here8\n";
   fillJets(iSetup);
+  cout << "here9\n";
   fillMet(iEvent);
-  fillMC();
-  fillGenParticles();
+  cout << "here10\n";
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
+  cout << "here10\n";
+  if (!isData) {
+    fillPileUp();
+    fillMC();
+    fillGenParticles();
+  }
+
+  cout << "here13\n";
   llpTree->Fill();
 };
 
@@ -2626,10 +2640,6 @@ bool llp_ntupler::fillMC()
     return true;
 };
 
-/*bool llp_ntupler::fillGenParticles()
-{
-  return true;
-};*/
 
 bool llp_ntupler::fillGenParticles(){
   std::vector<const reco::Candidate*> prunedV;//Allows easier comparison for mother finding
