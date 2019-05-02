@@ -842,6 +842,8 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  bool triggerDecision[NTriggersMAX];
  int  triggerHLTPrescale[NTriggersMAX];
 
+ static const float pvTrack_pt_cut = 1.0; 
+
  //pdf weight helper
  //RazorPDFWeightsHelper pdfweightshelper;
 
