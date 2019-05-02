@@ -2,19 +2,6 @@ import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 #------ Setup ------#
 
-#Options
-#options = VarParsing ('analysis')
-#options.register('isdata',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,"")
-#options.register('isfourjet',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,"")
-#options.register('isqcd',False,VarParsing.multiplicity.singleton,VarParsing.varType.bool,"")
-#options.outputFile = 'jetNtuple.root'
-#options.inputFiles = 'file:/mnt/hadoop/store/group/phys_llp/RunIISummer17_QCD/RunIISummer17DRPremix_QCD_HT300-500_AODSIM_100.txt'
-#options.inputFiles = '/store/mc/RunIISummer17DRPremix/QCD_HT500to700_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/AODSIM/92X_upgrade2017_realistic_v10-v2/00000/BCA5EDA1-50AC-E711-BAB8-0CC47A4C8E8A.root'
-#options.maxEvents = -1
-
-#options.parseArguments()
-
-
 #initialize the process
 process = cms.Process("LLPNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -23,20 +10,12 @@ process.load("Configuration.EventContent.EventContent_cff")
 
 #load input files
 process.source = cms.Source("PoolSource",
-   # fileNames = cms.untracked.vstring(options.inputFiles),
     fileNames = cms.untracked.vstring(
-	#'/store/mc/RunIISummer17DRPremix/QCD_HT300to500_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/AODSIM/92X_upgrade2017_realistic_v10-v2/00000/FED6864A-CEAB-E711-81CF-008CFAE45308.root',
-	#'/store/mc/RunIISummer17DRStdmix/XXTo4J_M-500_CTau-1000mm_TuneCUETP8M1_13TeV_pythia8/AODSIM/NZSFlatPU28to62_92X_upgrade2017_realistic_v10-v1/00000/143C8F1C-D3B0-E711-87D6-FA163EA92854.root',
-        'file:/eos/cms/store/mc/RunIIFall17DRPremix/WJetsToLNu_1J_TuneCP5_13TeV-amcatnloFXFX-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11_ext1-v1/60001/864EAE66-6854-E911-B81C-FA163E319630.root'
-    #'file:/mnt/hadoop/store/mc/RunIISummer17DRStdmix/XXTo4J_M-500_CTau-1000mm_TuneCUETP8M1_13TeV_pythia8/AODSIM/NZSFlatPU28to62_92X_upgrade2017_realistic_v10-v1/00000/FCCC0FEA-D4B0-E711-BCEB-0CC47AD98BF0.root'
-	#'file:/mnt/hadoop/store/mc/RunIISummer17DRStdmix/XXTo4J_M-500_CTau-3mm_TuneCUETP8M1_13TeV_pythia8/AODSIM/NZSFlatPU28to62_92X_upgrade2017_realistic_v10-v1/00000/DCAA63C0-C3AC-E711-89BC-0CC47A13D3A8.root'
-    #'file:/data/cpena/DCAA63C0-C3AC-E711-89BC-0CC47A13D3A8.root'
-	#'file:/mnt/hadoop/store/user/christiw/RunII2016/ppTohToSS1SS2_SS1Tobb_SS2Toveve-ppTojhToSS1SS2_SS1Tobb_SS2Toveve_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Toveve_with_ISR_run_m50_pl100_ev10000/crab_CMSSW_8_0_31_ppTohToSS1SS2_SS1Tobb_SS2Toveve_with_ISR_run_m50_pl100_ev10000_DR-AODSIM_CaltechT2/190219_065458/0000/ppTohToSS1SS2_SS1Tobb_SS2Toveve-ppTojhToSS1SS2_SS1Tobb_SS2Toveve_step2_1.root',
+        '/store/mc/RunIIFall17DRPremix/WJetsToLNu_1J_TuneCP5_13TeV-amcatnloFXFX-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11_ext1-v1/60001/864EAE66-6854-E911-B81C-FA163E319630.root'
     )
 )
 
-#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1001) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 #TFileService for output
@@ -54,24 +33,10 @@ process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 
 
 process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_v3'
-#process.GlobalTag.globaltag = '92X_upgrade2017_realistic_v10'
 
 #------ If we add any inputs beyond standard miniAOD event content, import them here ------#
 
-#process.load('CommonTools.RecoAlgos.HBHENoiseFilterResultProducer_cfi')
-#process.HBHENoiseFilterResultProducer.minZeros = cms.int32(99999)
-#process.HBHENoiseFilterResultProducer.IgnoreTS4TS5ifJetInLowBVRegion=cms.bool(False)
-#process.HBHENoiseFilterResultProducer.defaultDecision = cms.string("HBHENoiseFilterResultRun2Loose")
-
-#process.load('RecoMET.METFilters.BadChargedCandidateFilter_cfi')
-#process.BadChargedCandidateFilter.muons = cms.InputTag("slimmedMuons")
-#process.BadChargedCandidateFilter.PFCandidates = cms.InputTag("packedPFCandidates")
-#process.BadChargedCandidateFilter.taggingMode = cms.bool(True)
-
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
-#process.BadPFMuonFilter.muons = cms.InputTag("slimmedMuons")
-#process.BadPFMuonFilter.PFCandidates = cms.InputTag("packedPFCandidates")
-#process.BadPFMuonFilter.taggingMode = cms.bool(True)
 
 #------ Analyzer ------#
 
@@ -82,9 +47,7 @@ process.ntuples = cms.EDAnalyzer('llp_ntupler',
     isFastsim = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableRecHitInfo = cms.bool(False),
-    readGenVertexTime = cms.bool(False),#need to be false for gluBall samples
-    isQCD = cms.bool(False),
-    isFourJet = cms.bool(True), #false means glueball model, true means four-jet model
+    readGenVertexTime = cms.bool(True),#need to be false for gluBall samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v1.dat"),
     eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
@@ -176,7 +139,4 @@ process.ntuples = cms.EDAnalyzer('llp_ntupler',
 )
 
 #run
-process.p = cms.Path( #process.HBHENoiseFilterResultProducer*
-                      #process.BadChargedCandidateFilter*
-                      #process.BadPFMuonFilter*
-                      process.ntuples)
+process.p = cms.Path( process.ntuples)
