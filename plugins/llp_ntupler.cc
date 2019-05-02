@@ -233,9 +233,9 @@ void llp_ntupler::enablePVAllBranches()
 void llp_ntupler::enablePVTracksBranches()
 {
   llpTree->Branch("nPVTracks", &nPVTracks,"nPVTracks/I");
-  llpTree->Branch("pvTrackPt", pvTrackPt,"pvTrackPt[Tracks]/F");
-  llpTree->Branch("pvTrackEta", pvTrackEta,"pvTrackEta[Tracks]/F");
-  llpTree->Branch("pvTrackPhi", pvTrackPhi,"pvTrackPhi[Tracks]/F");
+  llpTree->Branch("pvTrackPt", pvTrackPt,"pvTrackPt[nPVTracks]/F");
+  llpTree->Branch("pvTrackEta", pvTrackEta,"pvTrackEta[nPVTracks]/F");
+  llpTree->Branch("pvTrackPhi", pvTrackPhi,"pvTrackPhi[nPVTracks]/F");
 };
 
 void llp_ntupler::enablePileUpBranches()
@@ -767,7 +767,7 @@ void llp_ntupler::resetPVTracksBranches()
   nPVTracks = 0;
   for(int i = 0; i < OBJECTARRAYSIZE; i++)
   {
-    pvTrackPt[i] = -999.;
+    pvTrackPt[i]  = -999.;
     pvTrackEta[i] = -999.;
     pvTrackPhi[i] = -999.;
   }
@@ -1196,6 +1196,7 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   fillEventInfo(iEvent);
   cout << "here2\n";
   fillPVAll();
+  fillPVTracks();
   cout << "here3\n";
   fillMuons(iEvent);
   cout << "here5\n";
@@ -1326,6 +1327,32 @@ bool llp_ntupler::fillPVAll()
     pvAllLogSumPtSq[ipv] = log(pvAllSumPtSqD[ipv]);
     pvAllSumPx[ipv] = pvAllSumPxD[ipv];
     pvAllSumPy[ipv] = pvAllSumPyD[ipv];
+  }
+
+  return true;
+};
+
+bool llp_ntupler::fillPVTracks()
+{
+  //select the primary vertex, if any
+  //myPV = &(vertices->front());
+  //bool foundPV = false;
+  for(unsigned int i = 0; i < vertices->size(); i++)
+  {
+    if(vertices->at(i).isValid() && !vertices->at(i).isFake())
+    {
+      myPV = &(vertices->at(i));
+      for(auto pvTrack = myPV->tracks_begin(); pvTrack != myPV->tracks_end(); pvTrack++)
+      {
+        if( (*pvTrack)->pt() > 1.0 )
+        {
+          pvTrackPt[nPVTracks]  = (*pvTrack)->pt();
+          pvTrackEta[nPVTracks] = (*pvTrack)->eta();
+          pvTrackPhi[nPVTracks] = (*pvTrack)->phi();
+          nPVTracks++;
+        }
+      }
+    }
   }
 
   return true;
