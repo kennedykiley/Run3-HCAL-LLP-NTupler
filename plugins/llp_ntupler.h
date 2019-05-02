@@ -128,6 +128,7 @@ public:
   virtual void setBranches();
   void enableEventInfoBranches();
   void enablePVAllBranches();
+  void enablePVTracksBranches();
   void enablePileUpBranches();
   void enableMuonBranches();
   void enableElectronBranches();
@@ -147,6 +148,7 @@ public:
   virtual void resetBranches();
   void resetEventInfoBranches();
   void resetPVAllBranches();
+  void resetPVTracksBranches();
   void resetPileUpBranches();
   void resetMuonBranches();
   void resetElectronBranches();
@@ -184,6 +186,7 @@ public:
   //bool fill_fat_jet(const edm::EventSetup& iSetup);
   bool fillEventInfo(const edm::Event& iEvent);
   bool fillPVAll();
+  bool fillPVTracks();
   bool fillPileUp();
   bool fillMuons(const edm::Event& iEvent);
   bool fillElectrons(const edm::Event& iEvent);
@@ -398,13 +401,19 @@ protected:
   float fixedGridRhoFastjetCentralNeutral;
 
   //PVAll (full list of primary vertices for analysis-level vtx selection)
-  int nPVAll;
+ int   nPVAll;
  float pvAllX[MAX_NPV];
  float pvAllY[MAX_NPV];
  float pvAllZ[MAX_NPV];
  float pvAllLogSumPtSq[MAX_NPV];
  float pvAllSumPx[MAX_NPV];
  float pvAllSumPy[MAX_NPV];
+
+//PV-Tacks (list of tracks associated with primary vertex with pt>10)
+int   nPVTracks;
+float pvTrackPt[OBJECTARRAYSIZE];
+float pvTrackEta[OBJECTARRAYSIZE];
+float pvTrackPhi[OBJECTARRAYSIZE];
 
  //PU
  int nBunchXing;

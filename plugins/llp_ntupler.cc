@@ -183,6 +183,7 @@ void llp_ntupler::setBranches()
 {
   enableEventInfoBranches();
   enablePVAllBranches();
+  enablePVTracksBranches();
   enablePileUpBranches();
   enableMuonBranches();
   enableElectronBranches();
@@ -227,6 +228,14 @@ void llp_ntupler::enablePVAllBranches()
   llpTree->Branch("pvAllLogSumPtSq", pvAllLogSumPtSq,"pvAllLogSumPtSq[nPVAll]/F");
   llpTree->Branch("pvAllSumPx", pvAllSumPx,"pvAllSumPx[nPVAll]/F");
   llpTree->Branch("pvAllSumPy", pvAllSumPy,"pvAllSumPy[nPVAll]/F");
+};
+
+void llp_ntupler::enablePVTracksBranches()
+{
+  llpTree->Branch("nPVTracks", &nPVTracks,"nPVTracks/I");
+  llpTree->Branch("pvTrackPt", pvTrackPt,"pvTrackPt[Tracks]/F");
+  llpTree->Branch("pvTrackEta", pvTrackEta,"pvTrackEta[Tracks]/F");
+  llpTree->Branch("pvTrackPhi", pvTrackPhi,"pvTrackPhi[Tracks]/F");
 };
 
 void llp_ntupler::enablePileUpBranches()
