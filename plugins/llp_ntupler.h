@@ -598,22 +598,19 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
 
 
  //Ecal RecHits
- vector<uint> ecalRechitID_ToBeSaved;
- vector<pair<double,double> > ecalRechitEtaPhi_ToBeSaved;
- vector<pair<double,double> > ecalRechitJetEtaPhi_ToBeSaved;
- vector<float> *ecalRechit_Eta;
- vector<float> *ecalRechit_Phi;
- vector<float> *ecalRechit_X;
- vector<float> *ecalRechit_Y;
- vector<float> *ecalRechit_Z;
- vector<float> *ecalRechit_E;
- vector<float> *ecalRechit_T;
- vector<uint> *ecalRechit_ID;
- vector<bool> *ecalRechit_FlagOOT;
- vector<bool> *ecalRechit_GainSwitch1;
- vector<bool> *ecalRechit_GainSwitch6;
- vector<float> *ecalRechit_transpCorr;
-
+ const float Rechit_cut = 1.0;
+ int nRechits;
+ float ecalRechit_Eta[RECHITARRAYSIZE];
+ float ecalRechit_Phi[RECHITARRAYSIZE];
+ float ecalRechit_E[RECHITARRAYSIZE];
+ float ecalRechit_T[RECHITARRAYSIZE];
+ float ecalRechit_E_Error[RECHITARRAYSIZE];
+ float ecalRechit_T_Error[RECHITARRAYSIZE];
+ bool ecalRechit_kSaturatedflag[RECHITARRAYSIZE];
+ bool ecalRechit_kLeadingEdgeRecoveredflag[RECHITARRAYSIZE];
+ bool ecalRechit_kPoorRecoflag[RECHITARRAYSIZE];
+ bool ecalRechit_kWeirdflag[RECHITARRAYSIZE];
+ bool ecalRechit_kDiWeirdflag[RECHITARRAYSIZE];
  //AK4 Jets
  int nJets;
  float jetE[OBJECTARRAYSIZE];
@@ -653,6 +650,8 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  int   jetNRechits[OBJECTARRAYSIZE];
  float jetRechitE[OBJECTARRAYSIZE];
  float jetRechitT[OBJECTARRAYSIZE];
+ float jetRechitE_Error[OBJECTARRAYSIZE];
+ float jetRechitT_Error[OBJECTARRAYSIZE];
 
  //AK8 Jets
  int nFatJets;

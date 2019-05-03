@@ -16,7 +16,7 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   isFastsim_(iConfig.getParameter<bool> ("isFastsim")),
   //isQCD_(iConfig.getParameter<bool> ("isQCD")),
   enableTriggerInfo_(iConfig.getParameter<bool> ("enableTriggerInfo")),
-  //enableRecHitInfo_(iConfig.getParameter<bool> ("enableRecHitInfo")),
+  enableEcalRechits_(iConfig.getParameter<bool> ("enableEcalRechits")),
   readGenVertexTime_(iConfig.getParameter<bool> ("readGenVertexTime")),
   triggerPathNamesFile_(iConfig.getParameter<string> ("triggerPathNamesFile")),
   eleHLTFilterNamesFile_(iConfig.getParameter<string> ("eleHLTFilterNamesFile")),
@@ -319,12 +319,7 @@ void llp_ntupler::enableElectronBranches()
   llpTree->Branch("ele_passTPOneProbeFilter", ele_passTPOneProbeFilter, "ele_passTPOneProbeFilter[nElectrons]/O");
   llpTree->Branch("ele_passTPTwoProbeFilter", ele_passTPTwoProbeFilter, "ele_passTPTwoProbeFilter[nElectrons]/O");
   llpTree->Branch("ele_passHLTFilter", &ele_passHLTFilter, Form("ele_passHLTFilter[nElectrons][%d]/O",MAX_ElectronHLTFilters));
-  if (enableEcalRechits_) {
-    ele_EcalRechitIndex = new std::vector<std::vector<uint> >; ele_EcalRechitIndex->clear();
-    llpTree->Branch("ele_EcalRechitIndex", "std::vector<std::vector<uint> >",&ele_EcalRechitIndex);
-    ele_SeedRechitIndex = new std::vector<uint>; ele_SeedRechitIndex->clear();
-    llpTree->Branch("ele_SeedRechitIndex", "std::vector<uint>",&ele_SeedRechitIndex);
-  }
+
 };
 
 void llp_ntupler::enableTauBranches()
@@ -422,42 +417,24 @@ void llp_ntupler::enablePhotonBranches()
   llpTree->Branch("pho_seedRecHitSwitchToGain1", pho_seedRecHitSwitchToGain1, "pho_seedRecHitSwitchToGain1[nPhotons]/F");
   llpTree->Branch("pho_anyRecHitSwitchToGain6", pho_anyRecHitSwitchToGain6, "pho_anyRecHitSwitchToGain6[nPhotons]/F");
   llpTree->Branch("pho_anyRecHitSwitchToGain1", pho_anyRecHitSwitchToGain1, "pho_anyRecHitSwitchToGain1[nPhotons]/F");
-  if (enableEcalRechits_) {
-    pho_EcalRechitIndex = new std::vector<std::vector<uint> >; pho_EcalRechitIndex->clear();
-    llpTree->Branch("pho_EcalRechitIndex", "std::vector<std::vector<uint> >",&pho_EcalRechitIndex);
-    pho_SeedRechitIndex = new std::vector<uint>; pho_SeedRechitIndex->clear();
-    llpTree->Branch("pho_SeedRechitIndex", "std::vector<uint>",&pho_SeedRechitIndex);
-  }
+
 
 };
 
 void llp_ntupler::enableEcalRechitBranches()
 {
-  ecalRechit_Eta = new std::vector<float>; ecalRechit_Eta->clear();
-  ecalRechit_Phi = new std::vector<float>; ecalRechit_Phi->clear();
-  ecalRechit_X = new std::vector<float>; ecalRechit_X->clear();
-  ecalRechit_Y = new std::vector<float>; ecalRechit_Y->clear();
-  ecalRechit_Z = new std::vector<float>; ecalRechit_Z->clear();
-  ecalRechit_E = new std::vector<float>; ecalRechit_E->clear();
-  ecalRechit_T = new std::vector<float>; ecalRechit_T->clear();
-  ecalRechit_ID = new std::vector<uint>; ecalRechit_ID->clear();
-  ecalRechit_FlagOOT = new std::vector<bool>; ecalRechit_FlagOOT->clear();
-  ecalRechit_GainSwitch1 = new std::vector<bool>; ecalRechit_GainSwitch1->clear();
-  ecalRechit_GainSwitch6 = new std::vector<bool>; ecalRechit_GainSwitch6->clear();
-  ecalRechit_transpCorr = new std::vector<float>; ecalRechit_transpCorr->clear();
-
-  llpTree->Branch("ecalRechit_Eta", "std::vector<float>",&ecalRechit_Eta);
-  llpTree->Branch("ecalRechit_Phi", "std::vector<float>",&ecalRechit_Phi);
-  llpTree->Branch("ecalRechit_X", "std::vector<float>",&ecalRechit_X);
-  llpTree->Branch("ecalRechit_Y", "std::vector<float>",&ecalRechit_Y);
-  llpTree->Branch("ecalRechit_Z", "std::vector<float>",&ecalRechit_Z);
-  llpTree->Branch("ecalRechit_E", "std::vector<float>",&ecalRechit_E);
-  llpTree->Branch("ecalRechit_T", "std::vector<float>",&ecalRechit_T);
-  llpTree->Branch("ecalRechit_ID", "std::vector<uint>",&ecalRechit_ID);
-  llpTree->Branch("ecalRechit_FlagOOT", "std::vector<bool>",&ecalRechit_FlagOOT);
-  llpTree->Branch("ecalRechit_GainSwitch1", "std::vector<bool>",&ecalRechit_GainSwitch1);
-  llpTree->Branch("ecalRechit_GainSwitch6", "std::vector<bool>",&ecalRechit_GainSwitch6);
-  llpTree->Branch("ecalRechit_transpCorr", "std::vector<float>",&ecalRechit_transpCorr);
+  llpTree->Branch("nRechits", &nRechits,"nRechits/I");
+  llpTree->Branch("ecalRechit_Eta", ecalRechit_Eta,"ecalRechit_Eta[nRechits]/F");
+  llpTree->Branch("ecalRechit_Phi",ecalRechit_Phi, "ecalRechit_Phi[nRechits]/F");
+  llpTree->Branch("ecalRechit_E", ecalRechit_E, "ecalRechit_E[nRechits]/F");
+  llpTree->Branch("ecalRechit_T", ecalRechit_T, "ecalRechit_T[nRechits]/F");
+  llpTree->Branch("ecalRechit_E_Error", ecalRechit_E_Error, "ecalRechit_E_Error[nRechits]/F");
+  llpTree->Branch("ecalRechit_T_Error", ecalRechit_T_Error, "ecalRechit_T_Error[nRechits]/F");
+  llpTree->Branch("ecalRechit_kSaturatedflag", ecalRechit_kSaturatedflag, "ecalRechit_kSaturatedflag[nRechits]/O");
+  llpTree->Branch("ecalRechit_kLeadingEdgeRecoveredflag", ecalRechit_kLeadingEdgeRecoveredflag, "ecalRechit_kLeadingEdgeRecoveredflag[nRechits]/O");
+  llpTree->Branch("ecalRechit_kPoorRecoflag", ecalRechit_kPoorRecoflag, "ecalRechit_kPoorRecoflag[nRechits]/O");
+  llpTree->Branch("ecalRechit_kWeirdflag", ecalRechit_kWeirdflag, "ecalRechit_kWeirdflag[nRechits]/O");
+  llpTree->Branch("ecalRechit_kDiWeirdflag", ecalRechit_kDiWeirdflag, "ecalRechit_kDiWeirdflag[nRechits]/O");
 
 };
 
@@ -501,6 +478,8 @@ void llp_ntupler::enableJetBranches()
   llpTree->Branch("jetNRechits", jetNRechits,"jetNRechits[nJets]/I");
   llpTree->Branch("jetRechitE", jetRechitE,"jetRechitE[nJets]/F");
   llpTree->Branch("jetRechitT", jetRechitT,"jetRechitT[nJets]/F");
+  llpTree->Branch("jetRechitE_Error", jetRechitE_Error,"jetRechitE_Error[nJets]/F");
+  llpTree->Branch("jetRechitT_Error", jetRechitT_Error,"jetRechitT_Error[nJets]/F");
 
 };
 
@@ -715,6 +694,8 @@ void llp_ntupler::resetBranches()
     resetGenParticleBranches();
     resetMCBranches();
     resetTriggerBranches();
+    resetEcalRechitBranches();
+
 };
 
 void llp_ntupler::resetEventInfoBranches()
@@ -987,10 +968,32 @@ void llp_ntupler::resetJetBranches()
     jetNRechits[i] = 0;
     jetRechitE[i] = 0.0;
     jetRechitT[i] = 0.0;
+    jetRechitE_Error[i] = 0.0;
+    jetRechitT_Error[i] = 0.0;
   }
   return;
 };
+void llp_ntupler::resetEcalRechitBranches()
+{
+  nRechits = 0;
+  for ( int i = 0; i < RECHITARRAYSIZE; i++)
+  {
 
+    ecalRechit_Eta[i] = -999.;
+    ecalRechit_Phi[i] = -999.;
+    ecalRechit_E[i] = -999.;
+    ecalRechit_T[i] = -999.;
+    ecalRechit_E_Error[i] = -999.;
+    ecalRechit_T_Error[i] = -999.;
+    ecalRechit_kSaturatedflag[i] = false;
+    ecalRechit_kLeadingEdgeRecoveredflag[i] = false;
+    ecalRechit_kPoorRecoflag[i] = false;
+    ecalRechit_kWeirdflag[i] = false;
+    ecalRechit_kDiWeirdflag[i] = false;
+
+  }
+  return;
+};
 void llp_ntupler::resetMetBranches()
 {
   metPt = -999;
@@ -1170,32 +1173,21 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   //resetting output tree branches
   resetBranches();
-  cout << "here1\n";
   fillEventInfo(iEvent);
-  cout << "here2\n";
   fillPVAll();
-  cout << "here3\n";
   fillMuons(iEvent);
-  cout << "here5\n";
   fillElectrons(iEvent);
-  cout << "here6\n";
   fillPhotons(iEvent, iSetup);
-  cout << "here7\n";
   fillTaus();
-  cout << "here8\n";
   fillJets(iSetup);
-  cout << "here9\n";
   fillMet(iEvent);
-  cout << "here10\n";
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
-  cout << "here10\n";
   if (!isData) {
     fillPileUp();
     fillMC();
     fillGenParticles();
   }
 
-  cout << "here13\n";
   llpTree->Fill();
 };
 
@@ -1549,22 +1541,7 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     ele_passTPOneProbeFilter[nElectrons] = passTPOneProbeFilter;
     ele_passTPTwoProbeFilter[nElectrons] = passTPTwoProbeFilter;
 
-    if (enableEcalRechits_)
-    {
-      ele_SeedRechitID.push_back(ele.superCluster()->seed()->seed().rawId());
-      //---------------------
-      //Find relevant rechits
-      //---------------------
-      std::vector<uint> rechits; rechits.clear();
-      const std::vector< std::pair<DetId, float>>& v_id =ele.superCluster()->seed()->hitsAndFractions();
-      for ( size_t i = 0; i < v_id.size(); ++i )
-      {
-        ecalRechitID_ToBeSaved.push_back(v_id[i].first);
-        rechits.push_back(v_id[i].first.rawId());
-      }
-      ecalRechitEtaPhi_ToBeSaved.push_back( pair<double,double>( ele.superCluster()->eta(), ele.superCluster()->phi() ));
-      ele_EcalRechitID.push_back(rechits);
-    }
+
     //std::cout << "debug ele 10 " << nElectrons << std::endl;
     nElectrons++;
   }
@@ -2139,6 +2116,7 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
 
 bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
 {
+
   for (const reco::PFJet &j : *jets)
   {
     if (j.pt() < 20) continue;
@@ -2236,31 +2214,55 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
     int n_matched_rechits = 0;
     for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
     {
-      if ( recHit->checkFlag(0) )
-      {
-        const DetId recHitId = recHit->detid();
-        const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
-        if ( deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.4)
-        {
-          //double rechit_x = ecal_radius * cos(recHitPos.phi());
-          //double rechit_y = ecal_radius * sin(recHitPos.phi());
-          //double rechit_z = ecal_radius * sinh(recHitPos.eta());
-          //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
+      const DetId recHitId = recHit->detid();
+      const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
 
-          if (recHit->energy() > 1.0)
-          {
-            jetRechitE[nJets] += recHit->energy();
-            jetRechitT[nJets] += recHit->time()*recHit->energy();
-          }
-          n_matched_rechits++;
+      if (enableEcalRechits_ && recHit->energy() > 0.5 && recHit->timeError() > 0.0 && recHit->timeError() < 100.0)
+      {
+        ecalRechit_Eta[nRechits] = recHitPos.eta();
+        ecalRechit_Phi[nRechits] = recHitPos.phi();
+        ecalRechit_E[nRechits] = recHit->energy();
+        ecalRechit_T[nRechits] = recHit->time();
+        ecalRechit_E_Error[nRechits] = recHit->energyError();
+        ecalRechit_T_Error[nRechits] = recHit->timeError();
+        ecalRechit_kSaturatedflag[nRechits] = recHit->checkFlag(EcalRecHit::kSaturated);
+        ecalRechit_kLeadingEdgeRecoveredflag[nRechits] = recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered);
+        ecalRechit_kPoorRecoflag[nRechits] = recHit->checkFlag(EcalRecHit::kPoorReco);
+        ecalRechit_kWeirdflag[nRechits]= recHit->checkFlag(EcalRecHit::kWeird);
+        ecalRechit_kDiWeirdflag[nRechits] = recHit->checkFlag(EcalRecHit::kDiWeird);
+        nRechits ++;
+
+      }
+
+      if (recHit->checkFlag(EcalRecHit::kSaturated) || recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit->checkFlag(EcalRecHit::kPoorReco) || recHit->checkFlag(EcalRecHit::kWeird) || recHit->checkFlag(EcalRecHit::kDiWeird)) continue;
+      if (recHit->timeError() < 0 || recHit->timeError() > 100) continue;
+
+      if ( deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.4)
+      {
+        //double rechit_x = ecal_radius * cos(recHitPos.phi());
+        //double rechit_y = ecal_radius * sin(recHitPos.phi());
+        //double rechit_z = ecal_radius * sinh(recHitPos.eta());
+        //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
+
+        if (recHit->energy() > Rechit_cut)
+        {
+    	    // jetRechitT_Error[nJets] += 0.0;
+          jetRechitE_Error[nJets] += recHit->energyError() * recHit->energyError();
+          jetRechitE[nJets] += recHit->energy();
+          jetRechitT[nJets] += recHit->time()*recHit->energy();
         }
+        n_matched_rechits++;
       }
     }
     //cout << "Last Nphoton: " << fJetNPhotons << "\n";
-    //std::cout << "n: " << n_matched_rechits << std::endl;
-    jetNRechits[nJets] = n_matched_rechits;
-    jetRechitT[nJets] = jetRechitT[nJets]/jetRechitE[nJets];
-    nJets++;
+
+    if (jetRechitE[nJets] > 0.0 ){
+      jetRechitT[nJets] = jetRechitT[nJets]/jetRechitE[nJets];
+      jetNRechits[nJets] = n_matched_rechits;
+      jetRechitE_Error[nJets] = sqrt(jetRechitE_Error[nJets]);
+      // jetRechitT_Error[nJets] = 0.0; // not set
+      nJets++;
+    }
   } //loop over jets
 
   return true;
