@@ -782,6 +782,7 @@ void llp_ntupler::loadEvent(const edm::Event& iEvent)//load all miniAOD objects 
   iEvent.getByToken(photonsToken_, photons);
   iEvent.getByToken(tausToken_, taus);
   iEvent.getByToken(jetsCaloToken_, jetsCalo);
+  iEvent.getByToken(jetsPFToken_, jetsPF);
   iEvent.getByToken(jetsToken_, jets);
   iEvent.getByToken(jetsPuppiToken_, jetsPuppi);
   iEvent.getByToken(jetsAK8Token_, jetsAK8);
@@ -2809,7 +2810,7 @@ bool llp_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
 
 bool llp_ntupler::fillPFJets(const edm::EventSetup& iSetup)
 {
-  for (const reco::PFJet &j : *jets)
+  for (const reco::PFJet &j : *jetsPF)
   {
     if (j.pt() < 20) continue;
     if (fabs(j.eta()) > 2.4) continue;
