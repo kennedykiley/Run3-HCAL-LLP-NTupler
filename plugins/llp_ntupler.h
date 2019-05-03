@@ -226,12 +226,13 @@ protected:
   bool    isData_;
   bool    useGen_;
   bool    isFastsim_;
-  bool enableTriggerInfo_;
-  bool enableCaloJet_;
-  bool enablePFJet_;
-  bool enableEcalRechits_;
-  bool readGenVertexTime_;
-  bool enableAK8Jets_;
+  bool    enableTriggerInfo_;
+  bool    enablePFJet_;
+  bool    enableEcalRechits_;
+  bool    readGenVertexTime_;
+  bool    enableAK8Jets_;
+  bool    enableCaloJet_;
+
   //bool isFourJet_;
   //bool isQCD_;
 
