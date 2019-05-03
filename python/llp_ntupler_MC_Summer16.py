@@ -11,8 +11,7 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        #'/store/mc/RunIIFall17DRPremix/WJetsToLNu_1J_TuneCP5_13TeV-amcatnloFXFX-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11_ext1-v1/60001/864EAE66-6854-E911-B81C-FA163E319630.root'
-	'/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2/190411_060810/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_4.root'
+        '/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2/190411_060810/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_4.root'
     )
 )
 

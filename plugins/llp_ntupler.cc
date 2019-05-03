@@ -26,6 +26,9 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   photonHLTFilterNamesFile_(iConfig.getParameter<string> ("photonHLTFilterNamesFile")),
   verticesToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   tracksTag_(consumes<edm::View<reco::Track> >(iConfig.getParameter<edm::InputTag>("tracks"))),
+  cscSegmentInputToken_(consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"))),
+  dtSegmentInputToken_(consumes<DTRecSegment4DCollection>(edm::InputTag("dt4DCosmicSegments"))),
+  rpcRecHitInputToken_(consumes<RPCRecHitCollection>(edm::InputTag("rpcRecHits"))),
   muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
   electronsToken_(consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
   tausToken_(consumes<reco::PFTauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
@@ -187,12 +190,14 @@ void llp_ntupler::setBranches()
 {
   enableEventInfoBranches();
   enablePVAllBranches();
+  enablePVTracksBranches();
   enablePileUpBranches();
   enableMuonBranches();
   enableElectronBranches();
   enableTauBranches();
   enableIsoPFCandidateBranches();
   enablePhotonBranches();
+  enableMuonSystemBranches();
   enableEcalRechitBranches();
   enableJetBranches();
   enableCaloJetBranches();
@@ -233,6 +238,14 @@ void llp_ntupler::enablePVAllBranches()
   llpTree->Branch("pvAllLogSumPtSq", pvAllLogSumPtSq,"pvAllLogSumPtSq[nPVAll]/F");
   llpTree->Branch("pvAllSumPx", pvAllSumPx,"pvAllSumPx[nPVAll]/F");
   llpTree->Branch("pvAllSumPy", pvAllSumPy,"pvAllSumPy[nPVAll]/F");
+};
+
+void llp_ntupler::enablePVTracksBranches()
+{
+  llpTree->Branch("nPVTracks", &nPVTracks,"nPVTracks/I");
+  llpTree->Branch("pvTrackPt", pvTrackPt,"pvTrackPt[nPVTracks]/F");
+  llpTree->Branch("pvTrackEta", pvTrackEta,"pvTrackEta[nPVTracks]/F");
+  llpTree->Branch("pvTrackPhi", pvTrackPhi,"pvTrackPhi[nPVTracks]/F");
 };
 
 void llp_ntupler::enablePileUpBranches()
@@ -435,6 +448,50 @@ void llp_ntupler::enablePhotonBranches()
     llpTree->Branch("pho_SeedRechitIndex", "std::vector<uint>",&pho_SeedRechitIndex);
   }
 
+};
+
+void llp_ntupler::enableMuonSystemBranches()
+{
+
+    // csc_Phi = new std::vector<float>; 
+    // csc_Eta = new std::vector<float>;
+    // csc_X = new std::vector<float>;
+    // csc_Y = new std::vector<float>;
+    // csc_Z = new std::vector<float>;
+    // csc_NRecHits = new std::vector<float>;
+    // csc_T = new std::vector<float>;
+    // csc_Chi2 = new std::vector<float>;
+
+    llpTree->Branch("nCsc",&nCsc,"nCsc/I"); 
+    llpTree->Branch("cscPhi",cscPhi,"cscPhi[nCsc]");
+    llpTree->Branch("cscEta",cscEta,"cscEta[nCsc]"); 
+    llpTree->Branch("cscX",cscX,"cscX[nCsc]"); 
+    llpTree->Branch("cscY",cscY,"cscY[nCsc]"); 
+    llpTree->Branch("cscZ",cscZ,"cscZ[nCsc]"); 
+    llpTree->Branch("cscNRecHits",cscNRecHits,"cscNRecHits[nCsc]");
+    llpTree->Branch("cscT",cscT,"cscT[nCsc]"); 
+    llpTree->Branch("cscChi2",cscChi2,"cscChi2[nCsc]");
+
+    llpTree->Branch("nRpc",&nRpc,"nRpc/I"); 
+    llpTree->Branch("rpcPhi",rpcPhi,"rpcPhi[nRpc]");
+    llpTree->Branch("rpcEta",rpcEta,"rpcEta[nRpc]"); 
+    llpTree->Branch("rpcX",rpcX,"rpcX[nRpc]"); 
+    llpTree->Branch("rpcY",rpcY,"rpcY[nRpc]"); 
+    llpTree->Branch("rpcZ",rpcZ,"rpcZ[nRpc]"); 
+    llpTree->Branch("rpcT",rpcT,"rpcT[nRpc]"); 
+    llpTree->Branch("rpcTError",rpcTError,"rpcTError[nRpc]");
+
+    llpTree->Branch("nDt",&nDt,"nDt/I"); 
+    llpTree->Branch("dtPhi",dtPhi,"dtPhi[nDt]");
+    llpTree->Branch("dtEta",dtEta,"dtEta[nDt]"); 
+    llpTree->Branch("dtX",dtX,"dtX[nDt]"); 
+    llpTree->Branch("dtY",dtY,"dtY[nDt]"); 
+    llpTree->Branch("dtZ",dtZ,"dtZ[nDt]"); 
+    llpTree->Branch("dtDirX",dtDirX,"dtDirX[nDt]"); 
+    llpTree->Branch("dtDirY",dtDirY,"dtDirY[nDt]"); 
+    llpTree->Branch("dtDirZ",dtDirZ,"dtDirZ[nDt]"); 
+    llpTree->Branch("dtT",dtT,"dtT[nDt]"); 
+    llpTree->Branch("dtTError",dtTError,"dtTError[nDt]");
 };
 
 void llp_ntupler::enableEcalRechitBranches()
@@ -735,6 +792,9 @@ void llp_ntupler::loadEvent(const edm::Event& iEvent)//load all miniAOD objects 
   iEvent.getByToken(triggerBitsToken_, triggerBits);
   iEvent.getByToken(metFilterBitsToken_, metFilterBits);
   iEvent.getByToken(verticesToken_, vertices);
+  iEvent.getByToken(cscSegmentInputToken_,cscSegments);
+  iEvent.getByToken(dtSegmentInputToken_,dtSegments);
+  iEvent.getByToken(rpcRecHitInputToken_,rpcRecHits);
   iEvent.getByToken(tracksTag_,tracks);
   iEvent.getByToken(PFCandsToken_, pfCands);
   iEvent.getByToken(PFClustersToken_, pfClusters);
@@ -798,6 +858,7 @@ void llp_ntupler::resetBranches()
     //reset tree variables
     resetEventInfoBranches();
     resetPVAllBranches();
+    resetPVTracksBranches();
     resetPileUpBranches();
     resetMuonBranches();
     resetElectronBranches();
@@ -806,6 +867,7 @@ void llp_ntupler::resetBranches()
     resetJetBranches();
     resetCaloJetBranches();
     resetPFJetBranches();
+    resetMuonSystemBranches();
     resetMetBranches();
     resetGenParticleBranches();
     resetMCBranches();
@@ -846,6 +908,18 @@ void llp_ntupler::resetPVAllBranches()
     pvAllSumPy[i] = -999.;
   }
 };
+
+void llp_ntupler::resetPVTracksBranches()
+{
+  nPVTracks = 0;
+  for(int i = 0; i < OBJECTARRAYSIZE; i++)
+  {
+    pvTrackPt[i]  = -999.;
+    pvTrackEta[i] = -999.;
+    pvTrackPhi[i] = -999.;
+  }
+};
+
 void llp_ntupler::resetPileUpBranches()
 {
   nBunchXing = 0;
@@ -1044,6 +1118,47 @@ void llp_ntupler::resetPhotonBranches()
   return;
 };
 
+void llp_ntupler::resetMuonSystemBranches()
+{
+    nCsc = 0;
+    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+    {
+      cscPhi[i] = 0.0;
+      cscEta[i] = 0.0;
+      cscX[i] = 0.0;
+      cscY[i] = 0.0;
+      cscZ[i] = 0.0;
+      cscNRecHits[i] = 0.0;
+      cscT[i] = 0.0;
+      cscChi2[i] = 0.0;
+    }
+    nRpc = 0;
+    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+    {
+      rpcPhi[i] = 0.0;
+      rpcEta[i] = 0.0;
+      rpcX[i] = 0.0;
+      rpcY[i] = 0.0;
+      rpcZ[i] = 0.0;
+      rpcT[i] = 0.0;
+      rpcTError[i] = 0.0;
+    }
+    nDt = 0;
+    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+    {
+      dtPhi[i] = 0.0;
+      dtEta[i] = 0.0;
+      dtX[i] = 0.0;
+      dtY[i] = 0.0;
+      dtZ[i] = 0.0;
+      dtDirX[i] = 0.0;
+      dtDirY[i] = 0.0;
+      dtDirZ[i] = 0.0;
+      dtT[i] = 0.0;
+      dtTError[i] = 0.0;
+    }
+    return;
+};
 void llp_ntupler::resetJetBranches()
 {
   nJets = 0;
@@ -1353,9 +1468,12 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   fillEventInfo(iEvent);
   cout << "here2\n";
   fillPVAll();
+  fillPVTracks();
   cout << "here3\n";
   fillMuons(iEvent);
-  cout << "here5\n";
+    //cout << "here4\n";
+    fillMuonSystem(iEvent, iSetup);
+    //cout << "here5\n";
   fillElectrons(iEvent);
   cout << "here6\n";
   fillPhotons(iEvent, iSetup);
@@ -1494,6 +1612,32 @@ bool llp_ntupler::fillPVAll()
   return true;
 };
 
+bool llp_ntupler::fillPVTracks()
+{
+  //select the primary vertex, if any
+  //myPV = &(vertices->front());
+  //bool foundPV = false;
+  for(unsigned int i = 0; i < vertices->size(); i++)
+  {
+    if(vertices->at(i).isValid() && !vertices->at(i).isFake())
+    {
+      myPV = &(vertices->at(i));
+      for(auto pvTrack = myPV->tracks_begin(); pvTrack != myPV->tracks_end(); pvTrack++)
+      {
+        if( (*pvTrack)->pt() > pvTrack_pt_cut )
+        {
+          pvTrackPt[nPVTracks]  = (*pvTrack)->pt();
+          pvTrackEta[nPVTracks] = (*pvTrack)->eta();
+          pvTrackPhi[nPVTracks] = (*pvTrack)->phi();
+          nPVTracks++;
+        }
+      }
+    }
+  }
+
+  return true;
+};
+
 bool llp_ntupler::fillPileUp()
 {
   for(const PileupSummaryInfo &pu : *puInfo)
@@ -1506,6 +1650,92 @@ bool llp_ntupler::fillPileUp()
   return true;
 };
 
+bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+    edm::ESHandle<CSCGeometry> cscG;
+    edm::ESHandle<DTGeometry> dtG;
+    edm::ESHandle<RPCGeometry> rpcG;
+
+    iSetup.get<MuonGeometryRecord>().get(cscG); 
+    iSetup.get<MuonGeometryRecord>().get(dtG); 
+    iSetup.get<MuonGeometryRecord>().get(rpcG); 
+
+    for (const CSCSegment cscSegment : *cscSegments) {
+	float globPhi   = 0.;
+	float globX = 0.;
+	float globY = 0.;
+	float globZ = 0.;
+	float globEta = 0.;
+	CSCDetId id  = (CSCDetId)(cscSegment).cscDetId();
+	LocalPoint segPos = (cscSegment).localPosition();
+	const CSCChamber* cscchamber = cscG->chamber(id);
+	if (cscchamber) {
+	    GlobalPoint globalPosition = cscchamber->toGlobal(segPos);
+	    globPhi   = globalPosition.phi();
+	    globEta   = globalPosition.eta();
+	    globX = globalPosition.x();
+	    globY = globalPosition.y();
+	    globZ = globalPosition.z();
+	    // globR = pow(globX*globX+globY*globY,0.5);
+	    cscNRecHits[nCsc] = cscSegment.nRecHits();
+	    cscX[nCsc] = globX;
+	    cscY[nCsc] = globY;
+	    cscZ[nCsc] = globZ;
+	    cscPhi[nCsc] = globPhi;
+	    cscEta[nCsc] = globEta;
+	    cscT[nCsc] = cscSegment.time();
+	    cscChi2[nCsc] = cscSegment.chi2();
+	    nCsc++;
+	}
+    }
+    for (const RPCRecHit rpcRecHit : *rpcRecHits){
+	LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
+	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
+	DetId geoid = rpcRecHit.geographicalId();
+	RPCDetId rpcdetid = RPCDetId(geoid);
+	const RPCChamber * rpcchamber = rpcG->chamber(rpcdetid);
+	if (rpcchamber) {
+	    GlobalPoint globalPosition = rpcchamber->toGlobal(rpcRecHitLocalPosition);
+	    rpcX[nRpc] = globalPosition.x();
+	    rpcY[nRpc] = globalPosition.y();
+	    rpcZ[nRpc] = globalPosition.z();
+	    rpcPhi[nRpc] = globalPosition.phi();
+	    rpcEta[nRpc] = globalPosition.eta();
+	    rpcT[nRpc] = rpcRecHit.time();
+	    rpcTError[nRpc] = rpcRecHit.timeError();
+	    nRpc++;
+	}
+    }      
+    for(DTRecSegment4D dtSegment : *dtSegments){
+	LocalPoint  segmentLocalPosition       = dtSegment.localPosition();
+	LocalVector segmentLocalDirection      = dtSegment.localDirection();
+	// LocalError  segmentLocalPositionError  = iDT->localPositionError();
+	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
+	DetId geoid = dtSegment.geographicalId();
+	DTChamberId dtdetid = DTChamberId(geoid);
+	const DTChamber * dtchamber = dtG->chamber(dtdetid);
+	if (dtchamber) {
+	    GlobalPoint globalPosition = dtchamber->toGlobal(segmentLocalPosition);
+	    GlobalVector globalDirection = dtchamber->toGlobal(segmentLocalDirection);
+
+	    dtPhi[nDt] = globalPosition.phi();
+	    dtEta[nDt] = globalPosition.eta();
+	    dtX[nDt] = globalPosition.x();
+	    dtY[nDt] = globalPosition.y();
+	    dtZ[nDt] = globalPosition.z();
+	    dtDirX[nDt] = globalDirection.x();
+	    dtDirY[nDt] = globalDirection.y();
+	    dtDirZ[nDt] = globalDirection.z();
+	    dtT[nDt] = 0;//dtSegment.time();
+	    dtTError[nDt] = -1;//dtSegment.timeError();
+	    nDt++;
+	}
+
+    }
+
+
+    return true;
+}
 
 bool llp_ntupler::fillMuons(const edm::Event& iEvent)
 {

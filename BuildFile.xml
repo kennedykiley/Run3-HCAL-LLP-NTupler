@@ -15,9 +15,13 @@
 <use   name="DataFormats/PatCandidates"/>
 <use   name="DataFormats/EgammaReco"/>
 <use   name="DataFormats/TrackReco"/>
+<use   name="DataFormats/RPCRecHit"/>
 <use   name="TrackingTools/IPTools"/>
 <use   name="PhysicsTools/UtilAlgos"/>
 <use   name="PhysicsTools/SelectorUtils"/>
+<use   name="Geometry/CSCGeometry"/>
+<use   name="Geometry/DTGeometry"/>
+<use   name="Geometry/RPCGeometry"/>
 <export>
   <lib   name="1"/>
 </export>
