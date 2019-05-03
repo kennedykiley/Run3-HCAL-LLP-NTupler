@@ -1439,7 +1439,7 @@ bool llp_ntupler::fillPVTracks()
       myPV = &(vertices->at(i));
       for(auto pvTrack = myPV->tracks_begin(); pvTrack != myPV->tracks_end(); pvTrack++)
       {
-        if( (*pvTrack)->pt() > 1.0 )
+        if( (*pvTrack)->pt() > pvTrack_pt_cut )
         {
           pvTrackPt[nPVTracks]  = (*pvTrack)->pt();
           pvTrackEta[nPVTracks] = (*pvTrack)->eta();
