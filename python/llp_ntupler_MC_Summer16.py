@@ -11,11 +11,12 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/mc/RunIIFall17DRPremix/WJetsToLNu_1J_TuneCP5_13TeV-amcatnloFXFX-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11_ext1-v1/60001/864EAE66-6854-E911-B81C-FA163E319630.root'
+        #'/store/mc/RunIIFall17DRPremix/WJetsToLNu_1J_TuneCP5_13TeV-amcatnloFXFX-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11_ext1-v1/60001/864EAE66-6854-E911-B81C-FA163E319630.root'
+	'/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2/190411_060810/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_4.root'
     )
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 #TFileService for output
@@ -46,6 +47,8 @@ process.ntuples = cms.EDAnalyzer('llp_ntupler',
     useGen = cms.bool(True),
     isFastsim = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
+    enableCaloJet = cms.bool(True),
+    enablePFJet = cms.bool(True),
     enableRecHitInfo = cms.bool(False),
     readGenVertexTime = cms.bool(True),#need to be false for gluBall samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
@@ -60,6 +63,9 @@ process.ntuples = cms.EDAnalyzer('llp_ntupler',
     electrons = cms.InputTag("gedGsfElectrons"),
     taus = cms.InputTag("hpsPFTauProducer"),
     photons = cms.InputTag("gedPhotons"),
+    jetsCalo = cms.InputTag("ak4CaloJets","","RECO"),
+    #jetsCalo = cms.InputTag("ak4PFJetsCHS"),
+    jetsPF = cms.InputTag("ak4PFJets"),
     jets = cms.InputTag("ak4PFJetsCHS"),
     jetsPuppi = cms.InputTag("ak4PFJets"),
     jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
