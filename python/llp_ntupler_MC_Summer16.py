@@ -15,7 +15,7 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 #TFileService for output
@@ -47,6 +47,8 @@ process.ntuples = cms.EDAnalyzer('llp_ntupler',
     isFastsim = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(True),
+    enableCaloJet = cms.bool(True),
+    enablePFJet = cms.bool(True),
     readGenVertexTime = cms.bool(True),#need to be false for gluBall samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v1.dat"),
@@ -60,6 +62,9 @@ process.ntuples = cms.EDAnalyzer('llp_ntupler',
     electrons = cms.InputTag("gedGsfElectrons"),
     taus = cms.InputTag("hpsPFTauProducer"),
     photons = cms.InputTag("gedPhotons"),
+    jetsCalo = cms.InputTag("ak4CaloJets","","RECO"),
+    #jetsCalo = cms.InputTag("ak4PFJetsCHS"),
+    jetsPF = cms.InputTag("ak4PFJets"),
     jets = cms.InputTag("ak4PFJetsCHS"),
     jetsPuppi = cms.InputTag("ak4PFJets"),
     jetsAK8 = cms.InputTag("ak8PFJetsCHS"),

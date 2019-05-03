@@ -60,12 +60,14 @@ using namespace std;
 
 #include "DataFormats/METReco/interface/GenMETCollection.h"
 #include "DataFormats/METReco/interface/GenMET.h"
+#include "DataFormats/JetReco/interface/CaloJetCollection.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
 #include "DataFormats/METReco/interface/PFMET.h"
 #include "DataFormats/ParticleFlowReco/interface/PFCluster.h"
 #include "DataFormats/ParticleFlowReco/interface/PFClusterFwd.h"
 #include "DataFormats/METReco/interface/PFMETCollection.h"
 #include "DataFormats/TauReco/interface/PFTau.h"
+#include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/BasicJetCollection.h"
@@ -91,6 +93,19 @@ using namespace std;
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloCellGeometry.h"
+
+#include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
+#include "Geometry/CSCGeometry/interface/CSCGeometry.h"
+#include "Geometry/DTGeometry/interface/DTGeometry.h"
+#include "Geometry/RPCGeometry/interface/RPCGeometry.h"
+#include "DataFormats/MuonDetId/interface/CSCDetId.h"
+
+#include "Geometry/Records/interface/MuonGeometryRecord.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "DataFormats/DTRecHit/interface/DTRecHitCollection.h"
+#include "DataFormats/DTRecHit/interface/DTRecSegment4DCollection.h"
+#include "DataFormats/RPCRecHit/interface/RPCRecHit.h"
+#include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
 
 //ROOT includes
 #include "TTree.h"
@@ -128,14 +143,18 @@ public:
   virtual void setBranches();
   void enableEventInfoBranches();
   void enablePVAllBranches();
+  void enablePVTracksBranches();
   void enablePileUpBranches();
   void enableMuonBranches();
   void enableElectronBranches();
   void enableTauBranches();
   void enableIsoPFCandidateBranches();
   void enablePhotonBranches();
+  void enableMuonSystemBranches();
   void enableEcalRechitBranches();
   void enableJetBranches();
+  void enableCaloJetBranches();
+  void enablePFJetBranches();
   void enableJetAK8Branches();
   void enableMetBranches();
   void enableTriggerBranches();
@@ -147,6 +166,7 @@ public:
   virtual void resetBranches();
   void resetEventInfoBranches();
   void resetPVAllBranches();
+  void resetPVTracksBranches();
   void resetPileUpBranches();
   void resetMuonBranches();
   void resetElectronBranches();
@@ -155,6 +175,9 @@ public:
   void resetPhotonBranches();
   void resetEcalRechitBranches();//need to implement yet
   void resetJetBranches();
+  void resetCaloJetBranches();
+  void resetPFJetBranches();
+  void resetMuonSystemBranches();
   void resetJetAK8Branches();//need to implement yet
   void resetMetBranches();//need to implement yet
   void resetMCBranches();
@@ -162,6 +185,8 @@ public:
   void resetTriggerBranches();
 
   //------ HELPER FUNCTIONS ------//
+  bool passCaloJetID( const reco::CaloJet *jetCalo, int cutLevel);
+  bool passPFJetID( const reco::PFJet *jetPF, int cutLevel);
   bool passJetID( const reco::PFJet *jet, int cutLevel);
   double deltaPhi(double phi1, double phi2);
   double deltaR(double eta1, double phi1, double eta2, double phi2);
@@ -170,12 +195,16 @@ public:
   //bool fill_fat_jet(const edm::EventSetup& iSetup);
   bool fillEventInfo(const edm::Event& iEvent);
   bool fillPVAll();
+  bool fillPVTracks();
   bool fillPileUp();
   bool fillMuons(const edm::Event& iEvent);
+  bool fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillElectrons(const edm::Event& iEvent);
   bool fillTaus();
   bool fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillJets(const edm::EventSetup& iSetup);
+  bool fillCaloJets(const edm::EventSetup& iSetup);
+  bool fillPFJets(const edm::EventSetup& iSetup);
   bool fillMet(const edm::Event& iEvent);
   bool fillMC();
   bool fillGenParticles();
@@ -198,6 +227,8 @@ protected:
   bool    useGen_;
   bool    isFastsim_;
   bool enableTriggerInfo_;
+  bool enableCaloJet_;
+  bool enablePFJet_;
   bool enableEcalRechits_;
   bool readGenVertexTime_;
   bool enableAK8Jets_;
@@ -227,10 +258,16 @@ protected:
   edm::EDGetTokenT<edm::ValueMap<float> > trackTimeTag_;
   edm::EDGetTokenT<edm::ValueMap<float>> trackTimeResoTag_;
 
+  edm::EDGetTokenT<CSCSegmentCollection> cscSegmentInputToken_;
+  edm::EDGetTokenT<DTRecSegment4DCollection> dtSegmentInputToken_;
+  edm::EDGetTokenT<RPCRecHitCollection> rpcRecHitInputToken_;
+
   edm::EDGetTokenT<reco::MuonCollection> muonsToken_;
   edm::EDGetTokenT<reco::GsfElectronCollection> electronsToken_;
   edm::EDGetTokenT<reco::PFTauCollection> tausToken_;
   edm::EDGetTokenT<reco::PhotonCollection> photonsToken_;
+  edm::EDGetTokenT<reco::CaloJetCollection> jetsCaloToken_;
+  edm::EDGetTokenT<reco::PFJetCollection> jetsPFToken_;
   edm::EDGetTokenT<reco::PFJetCollection> jetsToken_;
   edm::EDGetTokenT<reco::PFJetCollection> jetsPuppiToken_;
   edm::EDGetTokenT<reco::PFJetCollection> jetsAK8Token_;
@@ -299,6 +336,8 @@ protected:
   edm::Handle<reco::GsfElectronCollection> electrons;
   edm::Handle<reco::PhotonCollection> photons;
   edm::Handle<reco::PFTauCollection> taus;
+  edm::Handle<reco::CaloJetCollection> jetsCalo;
+  edm::Handle<reco::PFJetCollection> jetsPF;
   edm::Handle<reco::PFJetCollection> jets;
   edm::Handle<reco::PFJetCollection> jetsPuppi;
   edm::Handle<reco::PFJetCollection> jetsAK8;
@@ -341,6 +380,9 @@ protected:
   //  edm::Handle<vector<reco::SuperCluster> > superClusters;
   //  edm::Handle<vector<reco::PFCandidate> > lostTracks;
   edm::Handle<float> genParticles_t0;
+  edm::Handle<CSCSegmentCollection> cscSegments;
+  edm::Handle<DTRecSegment4DCollection> dtSegments;
+  edm::Handle<RPCRecHitCollection> rpcRecHits;
 
 
 
@@ -386,13 +428,19 @@ protected:
   float fixedGridRhoFastjetCentralNeutral;
 
   //PVAll (full list of primary vertices for analysis-level vtx selection)
-  int nPVAll;
-  float pvAllX[MAX_NPV];
+ int   nPVAll;
+ float pvAllX[MAX_NPV];
  float pvAllY[MAX_NPV];
  float pvAllZ[MAX_NPV];
  float pvAllLogSumPtSq[MAX_NPV];
  float pvAllSumPx[MAX_NPV];
  float pvAllSumPy[MAX_NPV];
+
+//PV-Tacks (list of tracks associated with primary vertex with pt>10)
+int   nPVTracks;
+float pvTrackPt[OBJECTARRAYSIZE];
+float pvTrackEta[OBJECTARRAYSIZE];
+float pvTrackPhi[OBJECTARRAYSIZE];
 
  //PU
  int nBunchXing;
@@ -611,6 +659,39 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  bool ecalRechit_kPoorRecoflag[RECHITARRAYSIZE];
  bool ecalRechit_kWeirdflag[RECHITARRAYSIZE];
  bool ecalRechit_kDiWeirdflag[RECHITARRAYSIZE];
+
+  //Muon system
+  int nCsc;
+  float cscPhi[OBJECTARRAYSIZE];
+  float cscEta[OBJECTARRAYSIZE];
+  float cscX[OBJECTARRAYSIZE];
+  float cscY[OBJECTARRAYSIZE];
+  float cscZ[OBJECTARRAYSIZE];
+  float cscNRecHits[OBJECTARRAYSIZE];
+  float cscT[OBJECTARRAYSIZE];
+  float cscChi2[OBJECTARRAYSIZE];
+
+  int nRpc;
+  float rpcPhi[OBJECTARRAYSIZE];
+  float rpcEta[OBJECTARRAYSIZE];
+  float rpcX[OBJECTARRAYSIZE];
+  float rpcY[OBJECTARRAYSIZE];
+  float rpcZ[OBJECTARRAYSIZE];
+  float rpcT[OBJECTARRAYSIZE];
+  float rpcTError[OBJECTARRAYSIZE];
+
+  int nDt;
+  float dtPhi[OBJECTARRAYSIZE];
+  float dtEta[OBJECTARRAYSIZE];
+  float dtX[OBJECTARRAYSIZE];
+  float dtY[OBJECTARRAYSIZE];
+  float dtZ[OBJECTARRAYSIZE];
+  float dtDirX[OBJECTARRAYSIZE];
+  float dtDirY[OBJECTARRAYSIZE];
+  float dtDirZ[OBJECTARRAYSIZE];
+  float dtT[OBJECTARRAYSIZE];
+  float dtTError[OBJECTARRAYSIZE];
+
  //AK4 Jets
  int nJets;
  float jetE[OBJECTARRAYSIZE];
@@ -652,6 +733,86 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float jetRechitT[OBJECTARRAYSIZE];
  float jetRechitE_Error[OBJECTARRAYSIZE];
  float jetRechitT_Error[OBJECTARRAYSIZE];
+
+ //Calo Jets
+ int nCaloJets;
+ float calojetE[OBJECTARRAYSIZE];
+ float calojetPt[OBJECTARRAYSIZE];
+ float calojetEta[OBJECTARRAYSIZE];
+ float calojetPhi[OBJECTARRAYSIZE];
+ float calojetCSV[OBJECTARRAYSIZE];
+ float calojetCISV[OBJECTARRAYSIZE];
+ float calojetProbb[OBJECTARRAYSIZE];
+ float calojetProbc[OBJECTARRAYSIZE];
+ float calojetProbudsg[OBJECTARRAYSIZE];
+ float calojetProbbb[OBJECTARRAYSIZE];
+ float calojetMass[OBJECTARRAYSIZE];
+ float calojetJetArea[OBJECTARRAYSIZE];
+ float calojetPileupE[OBJECTARRAYSIZE];
+ float calojetPileupId[OBJECTARRAYSIZE];
+ int   calojetPileupIdFlag[OBJECTARRAYSIZE];
+ bool  calojetPassIDLoose[OBJECTARRAYSIZE];
+ bool  calojetPassIDTight[OBJECTARRAYSIZE];
+ bool  calojetPassMuFrac[OBJECTARRAYSIZE];
+ bool  calojetPassEleFrac[OBJECTARRAYSIZE];
+ int   calojetPartonFlavor[OBJECTARRAYSIZE];
+ int   calojetHadronFlavor[OBJECTARRAYSIZE];
+ float calojetChargedEMEnergyFraction[OBJECTARRAYSIZE];
+ float calojetNeutralEMEnergyFraction[OBJECTARRAYSIZE];
+ float calojetChargedHadronEnergyFraction[OBJECTARRAYSIZE];
+ float calojetNeutralHadronEnergyFraction[OBJECTARRAYSIZE];
+ float calojetMuonEnergyFraction[OBJECTARRAYSIZE];
+ float calojetHOEnergyFraction[OBJECTARRAYSIZE];
+ float calojetHFHadronEnergyFraction[OBJECTARRAYSIZE];
+ float calojetHFEMEnergyFraction[OBJECTARRAYSIZE];
+ float calojetAllMuonPt[OBJECTARRAYSIZE];
+ float calojetAllMuonEta[OBJECTARRAYSIZE];
+ float calojetAllMuonPhi[OBJECTARRAYSIZE];
+ float calojetAllMuonM[OBJECTARRAYSIZE];
+ float calojetPtWeightedDZ[OBJECTARRAYSIZE];
+ int   calojetNRechits[OBJECTARRAYSIZE];
+ float calojetRechitE[OBJECTARRAYSIZE];
+ float calojetRechitT[OBJECTARRAYSIZE];
+
+ //PF Jets
+ int nPFJets;
+ float pfjetE[OBJECTARRAYSIZE];
+ float pfjetPt[OBJECTARRAYSIZE];
+ float pfjetEta[OBJECTARRAYSIZE];
+ float pfjetPhi[OBJECTARRAYSIZE];
+ float pfjetCSV[OBJECTARRAYSIZE];
+ float pfjetCISV[OBJECTARRAYSIZE];
+ float pfjetProbb[OBJECTARRAYSIZE];
+ float pfjetProbc[OBJECTARRAYSIZE];
+ float pfjetProbudsg[OBJECTARRAYSIZE];
+ float pfjetProbbb[OBJECTARRAYSIZE];
+ float pfjetMass[OBJECTARRAYSIZE];
+ float pfjetJetArea[OBJECTARRAYSIZE];
+ float pfjetPileupE[OBJECTARRAYSIZE];
+ float pfjetPileupId[OBJECTARRAYSIZE];
+ int   pfjetPileupIdFlag[OBJECTARRAYSIZE];
+ bool  pfjetPassIDLoose[OBJECTARRAYSIZE];
+ bool  pfjetPassIDTight[OBJECTARRAYSIZE];
+ bool  pfjetPassMuFrac[OBJECTARRAYSIZE];
+ bool  pfjetPassEleFrac[OBJECTARRAYSIZE];
+ int   pfjetPartonFlavor[OBJECTARRAYSIZE];
+ int   pfjetHadronFlavor[OBJECTARRAYSIZE];
+ float pfjetChargedEMEnergyFraction[OBJECTARRAYSIZE];
+ float pfjetNeutralEMEnergyFraction[OBJECTARRAYSIZE];
+ float pfjetChargedHadronEnergyFraction[OBJECTARRAYSIZE];
+ float pfjetNeutralHadronEnergyFraction[OBJECTARRAYSIZE];
+ float pfjetMuonEnergyFraction[OBJECTARRAYSIZE];
+ float pfjetHOEnergyFraction[OBJECTARRAYSIZE];
+ float pfjetHFHadronEnergyFraction[OBJECTARRAYSIZE];
+ float pfjetHFEMEnergyFraction[OBJECTARRAYSIZE];
+ float pfjetAllMuonPt[OBJECTARRAYSIZE];
+ float pfjetAllMuonEta[OBJECTARRAYSIZE];
+ float pfjetAllMuonPhi[OBJECTARRAYSIZE];
+ float pfjetAllMuonM[OBJECTARRAYSIZE];
+ float pfjetPtWeightedDZ[OBJECTARRAYSIZE];
+ int   pfjetNRechits[OBJECTARRAYSIZE];
+ float pfjetRechitE[OBJECTARRAYSIZE];
+ float pfjetRechitT[OBJECTARRAYSIZE];
 
  //AK8 Jets
  int nFatJets;
@@ -831,6 +992,8 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  std::vector<std::string>  *nameHLT;
  bool triggerDecision[NTriggersMAX];
  int  triggerHLTPrescale[NTriggersMAX];
+
+ const float pvTrack_pt_cut = 1.0;
 
  //pdf weight helper
  //RazorPDFWeightsHelper pdfweightshelper;

@@ -17,6 +17,8 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   //isQCD_(iConfig.getParameter<bool> ("isQCD")),
   enableTriggerInfo_(iConfig.getParameter<bool> ("enableTriggerInfo")),
   enableEcalRechits_(iConfig.getParameter<bool> ("enableEcalRechits")),
+  enableCaloJet_(iConfig.getParameter<bool> ("enableCaloJet")),
+  enablePFJet_(iConfig.getParameter<bool> ("enablePFJet")),
   readGenVertexTime_(iConfig.getParameter<bool> ("readGenVertexTime")),
   triggerPathNamesFile_(iConfig.getParameter<string> ("triggerPathNamesFile")),
   eleHLTFilterNamesFile_(iConfig.getParameter<string> ("eleHLTFilterNamesFile")),
@@ -24,10 +26,15 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   photonHLTFilterNamesFile_(iConfig.getParameter<string> ("photonHLTFilterNamesFile")),
   verticesToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
   tracksTag_(consumes<edm::View<reco::Track> >(iConfig.getParameter<edm::InputTag>("tracks"))),
+  cscSegmentInputToken_(consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"))),
+  dtSegmentInputToken_(consumes<DTRecSegment4DCollection>(edm::InputTag("dt4DCosmicSegments"))),
+  rpcRecHitInputToken_(consumes<RPCRecHitCollection>(edm::InputTag("rpcRecHits"))),
   muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
   electronsToken_(consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
   tausToken_(consumes<reco::PFTauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
   photonsToken_(consumes<reco::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
+  jetsCaloToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("jetsCalo"))),
+  jetsPFToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsPF"))),
   jetsToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
   jetsPuppiToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsPuppi"))),
   jetsAK8Token_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsAK8"))),
@@ -183,14 +190,18 @@ void llp_ntupler::setBranches()
 {
   enableEventInfoBranches();
   enablePVAllBranches();
+  enablePVTracksBranches();
   enablePileUpBranches();
   enableMuonBranches();
   enableElectronBranches();
   enableTauBranches();
   enableIsoPFCandidateBranches();
   enablePhotonBranches();
+  enableMuonSystemBranches();
   enableEcalRechitBranches();
   enableJetBranches();
+  enableCaloJetBranches();
+  enablePFJetBranches();
   enableJetAK8Branches();
   enableMetBranches();
   enableTriggerBranches();
@@ -227,6 +238,14 @@ void llp_ntupler::enablePVAllBranches()
   llpTree->Branch("pvAllLogSumPtSq", pvAllLogSumPtSq,"pvAllLogSumPtSq[nPVAll]/F");
   llpTree->Branch("pvAllSumPx", pvAllSumPx,"pvAllSumPx[nPVAll]/F");
   llpTree->Branch("pvAllSumPy", pvAllSumPy,"pvAllSumPy[nPVAll]/F");
+};
+
+void llp_ntupler::enablePVTracksBranches()
+{
+  llpTree->Branch("nPVTracks", &nPVTracks,"nPVTracks/I");
+  llpTree->Branch("pvTrackPt", pvTrackPt,"pvTrackPt[nPVTracks]/F");
+  llpTree->Branch("pvTrackEta", pvTrackEta,"pvTrackEta[nPVTracks]/F");
+  llpTree->Branch("pvTrackPhi", pvTrackPhi,"pvTrackPhi[nPVTracks]/F");
 };
 
 void llp_ntupler::enablePileUpBranches()
@@ -421,6 +440,50 @@ void llp_ntupler::enablePhotonBranches()
 
 };
 
+void llp_ntupler::enableMuonSystemBranches()
+{
+
+    // csc_Phi = new std::vector<float>; 
+    // csc_Eta = new std::vector<float>;
+    // csc_X = new std::vector<float>;
+    // csc_Y = new std::vector<float>;
+    // csc_Z = new std::vector<float>;
+    // csc_NRecHits = new std::vector<float>;
+    // csc_T = new std::vector<float>;
+    // csc_Chi2 = new std::vector<float>;
+
+    llpTree->Branch("nCsc",&nCsc,"nCsc/I"); 
+    llpTree->Branch("cscPhi",cscPhi,"cscPhi[nCsc]");
+    llpTree->Branch("cscEta",cscEta,"cscEta[nCsc]"); 
+    llpTree->Branch("cscX",cscX,"cscX[nCsc]"); 
+    llpTree->Branch("cscY",cscY,"cscY[nCsc]"); 
+    llpTree->Branch("cscZ",cscZ,"cscZ[nCsc]"); 
+    llpTree->Branch("cscNRecHits",cscNRecHits,"cscNRecHits[nCsc]");
+    llpTree->Branch("cscT",cscT,"cscT[nCsc]"); 
+    llpTree->Branch("cscChi2",cscChi2,"cscChi2[nCsc]");
+
+    llpTree->Branch("nRpc",&nRpc,"nRpc/I"); 
+    llpTree->Branch("rpcPhi",rpcPhi,"rpcPhi[nRpc]");
+    llpTree->Branch("rpcEta",rpcEta,"rpcEta[nRpc]"); 
+    llpTree->Branch("rpcX",rpcX,"rpcX[nRpc]"); 
+    llpTree->Branch("rpcY",rpcY,"rpcY[nRpc]"); 
+    llpTree->Branch("rpcZ",rpcZ,"rpcZ[nRpc]"); 
+    llpTree->Branch("rpcT",rpcT,"rpcT[nRpc]"); 
+    llpTree->Branch("rpcTError",rpcTError,"rpcTError[nRpc]");
+
+    llpTree->Branch("nDt",&nDt,"nDt/I"); 
+    llpTree->Branch("dtPhi",dtPhi,"dtPhi[nDt]");
+    llpTree->Branch("dtEta",dtEta,"dtEta[nDt]"); 
+    llpTree->Branch("dtX",dtX,"dtX[nDt]"); 
+    llpTree->Branch("dtY",dtY,"dtY[nDt]"); 
+    llpTree->Branch("dtZ",dtZ,"dtZ[nDt]"); 
+    llpTree->Branch("dtDirX",dtDirX,"dtDirX[nDt]"); 
+    llpTree->Branch("dtDirY",dtDirY,"dtDirY[nDt]"); 
+    llpTree->Branch("dtDirZ",dtDirZ,"dtDirZ[nDt]"); 
+    llpTree->Branch("dtT",dtT,"dtT[nDt]"); 
+    llpTree->Branch("dtTError",dtTError,"dtTError[nDt]");
+};
+
 void llp_ntupler::enableEcalRechitBranches()
 {
   llpTree->Branch("nRechits", &nRechits,"nRechits/I");
@@ -480,6 +543,92 @@ void llp_ntupler::enableJetBranches()
   llpTree->Branch("jetRechitT", jetRechitT,"jetRechitT[nJets]/F");
   llpTree->Branch("jetRechitE_Error", jetRechitE_Error,"jetRechitE_Error[nJets]/F");
   llpTree->Branch("jetRechitT_Error", jetRechitT_Error,"jetRechitT_Error[nJets]/F");
+
+};
+
+void llp_ntupler::enableCaloJetBranches()
+{
+  llpTree->Branch("nCaloJets", &nCaloJets,"nCaloJets/I");
+  llpTree->Branch("calojetE", calojetE,"calojetE[nCaloJets]/F");
+  llpTree->Branch("calojetPt", calojetPt,"calojetPt[nCaloJets]/F");
+  llpTree->Branch("calojetEta", calojetEta,"calojetEta[nCaloJets]/F");
+  llpTree->Branch("calojetPhi", calojetPhi,"calojetPhi[nCaloJets]/F");
+  llpTree->Branch("calojetCSV", calojetCSV,"calojetCSV[nCaloJets]/F");
+  llpTree->Branch("calojetCISV", calojetCISV,"calojetCISV[nCaloJets]/F");
+  llpTree->Branch("calojetProbb", calojetProbb,"calojetProbb[nCaloJets]/F");
+  llpTree->Branch("calojetProbc", calojetProbc,"calojetProbc[nCaloJets]/F");
+  llpTree->Branch("calojetProbudsg", calojetProbudsg,"calojetProbudsg[nCaloJets]/F");
+  llpTree->Branch("calojetProbbb", calojetProbbb,"calojetProbbb[nCaloJets]/F");
+  llpTree->Branch("calojetMass", calojetMass, "calojetMass[nCaloJets]/F");
+  llpTree->Branch("calojetJetArea", calojetJetArea, "calojetJetArea[nCaloJets]/F");
+  llpTree->Branch("calojetPileupE", calojetPileupE, "calojetPileupE[nCaloJets]/F");
+  llpTree->Branch("calojetPileupId", calojetPileupId, "calojetPileupId[nCaloJets]/F");
+  llpTree->Branch("calojetPileupIdFlag", calojetPileupIdFlag, "calojetPileupIdFlag[nCaloJets]/I");
+  llpTree->Branch("calojetPassIDLoose", calojetPassIDLoose, "calojetPassIDLoose[nCaloJets]/O");
+  llpTree->Branch("calojetPassIDTight", calojetPassIDTight, "calojetPassIDTight[nCaloJets]/O");
+  llpTree->Branch("calojetPassMuFrac", calojetPassMuFrac, "calojetPassMuFrac[nCaloJets]/O");
+  llpTree->Branch("calojetPassEleFrac", calojetPassEleFrac, "calojetPassEleFrac[nCaloJets]/O");
+  llpTree->Branch("calojetPartonFlavor", calojetPartonFlavor, "calojetPartonFlavor[nCaloJets]/I");
+  llpTree->Branch("calojetHadronFlavor", calojetHadronFlavor, "calojetHadronFlavor[nCaloJets]/I");
+  llpTree->Branch("calojetChargedEMEnergyFraction", calojetChargedEMEnergyFraction, "calojetChargedEMEnergyFraction[nCaloJets]/F");
+  llpTree->Branch("calojetNeutralEMEnergyFraction", calojetNeutralEMEnergyFraction, "calojetNeutralEMEnergyFraction[nCaloJets]/F");
+  llpTree->Branch("calojetChargedHadronEnergyFraction", calojetChargedHadronEnergyFraction, "calojetChargedHadronEnergyFraction[nCaloJets]/F");
+  llpTree->Branch("calojetNeutralHadronEnergyFraction", calojetNeutralHadronEnergyFraction, "calojetNeutralHadronEnergyFraction[nCaloJets]/F");
+  llpTree->Branch("calojetMuonEnergyFraction", calojetMuonEnergyFraction, "calojetMuonEnergyFraction[nCaloJets]/F");
+  llpTree->Branch("calojetHOEnergyFraction", calojetHOEnergyFraction, "calojetHOEnergyFraction[nCaloJets]/F");
+  llpTree->Branch("calojetHFHadronEnergyFraction", calojetHFHadronEnergyFraction, "calojetHFHadronEnergyFraction[nCaloJets]/F");
+  llpTree->Branch("calojetHFEMEnergyFraction",calojetHFEMEnergyFraction, "calojetHFEMEnergyFraction[nCaloJets]/F");
+  llpTree->Branch("calojetAllMuonPt", calojetAllMuonPt,"calojetAllMuonPt[nCaloJets]/F");
+  llpTree->Branch("calojetAllMuonEta", calojetAllMuonEta,"calojetAllMuonEta[nCaloJets]/F");
+  llpTree->Branch("calojetAllMuonPhi", calojetAllMuonPhi,"calojetAllMuonPhi[nCaloJets]/F");
+  llpTree->Branch("calojetAllMuonM", calojetAllMuonM,"calojetAllMuonM[nCaloJets]/F");
+  llpTree->Branch("calojetPtWeightedDZ", calojetPtWeightedDZ,"calojetPtWeightedDZ[nCaloJets]/F");
+  llpTree->Branch("calojetNRechits", calojetNRechits,"calojetNRechits[nCaloJets]/I");
+  llpTree->Branch("calojetRechitE", calojetRechitE,"calojetRechitE[nCaloJets]/F");
+  llpTree->Branch("calojetRechitT", calojetRechitT,"calojetRechitT[nCaloJets]/F");
+
+};
+
+void llp_ntupler::enablePFJetBranches()
+{
+  llpTree->Branch("nPFJets", &nPFJets,"nPFJets/I");
+  llpTree->Branch("pfjetE", pfjetE,"pfjetE[nPFJets]/F");
+  llpTree->Branch("pfjetPt", pfjetPt,"pfjetPt[nPFJets]/F");
+  llpTree->Branch("pfjetEta", pfjetEta,"pfjetEta[nPFJets]/F");
+  llpTree->Branch("pfjetPhi", pfjetPhi,"pfjetPhi[nPFJets]/F");
+  llpTree->Branch("pfjetCSV", pfjetCSV,"pfjetCSV[nPFJets]/F");
+  llpTree->Branch("pfjetCISV", pfjetCISV,"pfjetCISV[nPFJets]/F");
+  llpTree->Branch("pfjetProbb", pfjetProbb,"pfjetProbb[nPFJets]/F");
+  llpTree->Branch("pfjetProbc", pfjetProbc,"pfjetProbc[nPFJets]/F");
+  llpTree->Branch("pfjetProbudsg", pfjetProbudsg,"pfjetProbudsg[nPFJets]/F");
+  llpTree->Branch("pfjetProbbb", pfjetProbbb,"pfjetProbbb[nPFJets]/F");
+  llpTree->Branch("pfjetMass", pfjetMass, "pfjetMass[nPFJets]/F");
+  llpTree->Branch("pfjetJetArea", pfjetJetArea, "pfjetJetArea[nPFJets]/F");
+  llpTree->Branch("pfjetPileupE", pfjetPileupE, "pfjetPileupE[nPFJets]/F");
+  llpTree->Branch("pfjetPileupId", pfjetPileupId, "pfjetPileupId[nPFJets]/F");
+  llpTree->Branch("pfjetPileupIdFlag", pfjetPileupIdFlag, "pfjetPileupIdFlag[nPFJets]/I");
+  llpTree->Branch("pfjetPassIDLoose", pfjetPassIDLoose, "pfjetPassIDLoose[nPFJets]/O");
+  llpTree->Branch("pfjetPassIDTight", pfjetPassIDTight, "pfjetPassIDTight[nPFJets]/O");
+  llpTree->Branch("pfjetPassMuFrac", pfjetPassMuFrac, "pfjetPassMuFrac[nPFJets]/O");
+  llpTree->Branch("pfjetPassEleFrac", pfjetPassEleFrac, "pfjetPassEleFrac[nPFJets]/O");
+  llpTree->Branch("pfjetPartonFlavor", pfjetPartonFlavor, "pfjetPartonFlavor[nPFJets]/I");
+  llpTree->Branch("pfjetHadronFlavor", pfjetHadronFlavor, "pfjetHadronFlavor[nPFJets]/I");
+  llpTree->Branch("pfjetChargedEMEnergyFraction", pfjetChargedEMEnergyFraction, "pfjetChargedEMEnergyFraction[nPFJets]/F");
+  llpTree->Branch("pfjetNeutralEMEnergyFraction", pfjetNeutralEMEnergyFraction, "pfjetNeutralEMEnergyFraction[nPFJets]/F");
+  llpTree->Branch("pfjetChargedHadronEnergyFraction", pfjetChargedHadronEnergyFraction, "pfjetChargedHadronEnergyFraction[nPFJets]/F");
+  llpTree->Branch("pfjetNeutralHadronEnergyFraction", pfjetNeutralHadronEnergyFraction, "pfjetNeutralHadronEnergyFraction[nPFJets]/F");
+  llpTree->Branch("pfjetMuonEnergyFraction", pfjetMuonEnergyFraction, "pfjetMuonEnergyFraction[nPFJets]/F");
+  llpTree->Branch("pfjetHOEnergyFraction", pfjetHOEnergyFraction, "pfjetHOEnergyFraction[nPFJets]/F");
+  llpTree->Branch("pfjetHFHadronEnergyFraction", pfjetHFHadronEnergyFraction, "pfjetHFHadronEnergyFraction[nPFJets]/F");
+  llpTree->Branch("pfjetHFEMEnergyFraction",pfjetHFEMEnergyFraction, "pfjetHFEMEnergyFraction[nPFJets]/F");
+  llpTree->Branch("pfjetAllMuonPt", pfjetAllMuonPt,"pfjetAllMuonPt[nPFJets]/F");
+  llpTree->Branch("pfjetAllMuonEta", pfjetAllMuonEta,"pfjetAllMuonEta[nPFJets]/F");
+  llpTree->Branch("pfjetAllMuonPhi", pfjetAllMuonPhi,"pfjetAllMuonPhi[nPFJets]/F");
+  llpTree->Branch("pfjetAllMuonM", pfjetAllMuonM,"pfjetAllMuonM[nPFJets]/F");
+  llpTree->Branch("pfjetPtWeightedDZ", pfjetPtWeightedDZ,"pfjetPtWeightedDZ[nPFJets]/F");
+  llpTree->Branch("pfjetNRechits", pfjetNRechits,"pfjetNRechits[nPFJets]/I");
+  llpTree->Branch("pfjetRechitE", pfjetRechitE,"pfjetRechitE[nPFJets]/F");
+  llpTree->Branch("pfjetRechitT", pfjetRechitT,"pfjetRechitT[nPFJets]/F");
 
 };
 
@@ -622,6 +771,9 @@ void llp_ntupler::loadEvent(const edm::Event& iEvent)//load all miniAOD objects 
   iEvent.getByToken(triggerBitsToken_, triggerBits);
   iEvent.getByToken(metFilterBitsToken_, metFilterBits);
   iEvent.getByToken(verticesToken_, vertices);
+  iEvent.getByToken(cscSegmentInputToken_,cscSegments);
+  iEvent.getByToken(dtSegmentInputToken_,dtSegments);
+  iEvent.getByToken(rpcRecHitInputToken_,rpcRecHits);
   iEvent.getByToken(tracksTag_,tracks);
   iEvent.getByToken(PFCandsToken_, pfCands);
   iEvent.getByToken(PFClustersToken_, pfClusters);
@@ -629,6 +781,7 @@ void llp_ntupler::loadEvent(const edm::Event& iEvent)//load all miniAOD objects 
   iEvent.getByToken(electronsToken_, electrons);
   iEvent.getByToken(photonsToken_, photons);
   iEvent.getByToken(tausToken_, taus);
+  iEvent.getByToken(jetsCaloToken_, jetsCalo);
   iEvent.getByToken(jetsToken_, jets);
   iEvent.getByToken(jetsPuppiToken_, jetsPuppi);
   iEvent.getByToken(jetsAK8Token_, jetsAK8);
@@ -684,12 +837,16 @@ void llp_ntupler::resetBranches()
     //reset tree variables
     resetEventInfoBranches();
     resetPVAllBranches();
+    resetPVTracksBranches();
     resetPileUpBranches();
     resetMuonBranches();
     resetElectronBranches();
     resetTauBranches();
     resetPhotonBranches();
     resetJetBranches();
+    resetCaloJetBranches();
+    resetPFJetBranches();
+    resetMuonSystemBranches();
     resetMetBranches();
     resetGenParticleBranches();
     resetMCBranches();
@@ -732,6 +889,18 @@ void llp_ntupler::resetPVAllBranches()
     pvAllSumPy[i] = -999.;
   }
 };
+
+void llp_ntupler::resetPVTracksBranches()
+{
+  nPVTracks = 0;
+  for(int i = 0; i < OBJECTARRAYSIZE; i++)
+  {
+    pvTrackPt[i]  = -999.;
+    pvTrackEta[i] = -999.;
+    pvTrackPhi[i] = -999.;
+  }
+};
+
 void llp_ntupler::resetPileUpBranches()
 {
   nBunchXing = 0;
@@ -930,6 +1099,47 @@ void llp_ntupler::resetPhotonBranches()
   return;
 };
 
+void llp_ntupler::resetMuonSystemBranches()
+{
+    nCsc = 0;
+    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+    {
+      cscPhi[i] = 0.0;
+      cscEta[i] = 0.0;
+      cscX[i] = 0.0;
+      cscY[i] = 0.0;
+      cscZ[i] = 0.0;
+      cscNRecHits[i] = 0.0;
+      cscT[i] = 0.0;
+      cscChi2[i] = 0.0;
+    }
+    nRpc = 0;
+    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+    {
+      rpcPhi[i] = 0.0;
+      rpcEta[i] = 0.0;
+      rpcX[i] = 0.0;
+      rpcY[i] = 0.0;
+      rpcZ[i] = 0.0;
+      rpcT[i] = 0.0;
+      rpcTError[i] = 0.0;
+    }
+    nDt = 0;
+    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+    {
+      dtPhi[i] = 0.0;
+      dtEta[i] = 0.0;
+      dtX[i] = 0.0;
+      dtY[i] = 0.0;
+      dtZ[i] = 0.0;
+      dtDirX[i] = 0.0;
+      dtDirY[i] = 0.0;
+      dtDirZ[i] = 0.0;
+      dtT[i] = 0.0;
+      dtTError[i] = 0.0;
+    }
+    return;
+};
 void llp_ntupler::resetJetBranches()
 {
   nJets = 0;
@@ -994,6 +1204,90 @@ void llp_ntupler::resetEcalRechitBranches()
   }
   return;
 };
+void llp_ntupler::resetCaloJetBranches()
+{
+  nCaloJets = 0;
+  for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+  {
+    calojetE[i] = 0.0;
+    calojetPt[i] = 0.0;
+    calojetEta[i] = 0.0;
+    calojetPhi[i] = 0.0;
+    calojetCSV[i] = 0.0;
+    calojetCISV[i] = 0.0;
+    calojetMass[i] =  -99.0;
+    calojetJetArea[i] = -99.0;
+    calojetPileupE[i] = -99.0;
+    calojetPileupId[i] = -99.0;
+    calojetPileupIdFlag[i] = -1;
+    calojetPassIDLoose[i] = false;
+    calojetPassIDTight[i] = false;
+    calojetPassMuFrac[i] = false;
+    calojetPassEleFrac[i] = false;
+    calojetPartonFlavor[i] = 0;
+    calojetHadronFlavor[i] = 0;
+    calojetChargedEMEnergyFraction[i] = -99.0;
+    calojetNeutralEMEnergyFraction[i] = -99.0;
+    calojetChargedHadronEnergyFraction[i] = -99.0;
+    calojetNeutralHadronEnergyFraction[i] = -99.0;
+    calojetMuonEnergyFraction[i] = -99.0;
+    calojetHOEnergyFraction[i] = -99.0;
+    calojetHFHadronEnergyFraction[i] = -99.0;
+    calojetHFEMEnergyFraction[i] = -99.0;
+    calojetAllMuonPt[i] = 0.0;
+    calojetAllMuonEta[i] = 0.0;
+    calojetAllMuonPhi[i] = 0.0;
+    calojetAllMuonM[i] = 0.0;
+    calojetPtWeightedDZ[i] = 0.0;
+    calojetNRechits[i] = 0;
+    calojetRechitE[i] = 0.0;
+    calojetRechitT[i] = 0.0;
+  }
+  return;
+};
+
+void llp_ntupler::resetPFJetBranches()
+{
+  nPFJets = 0;
+  for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+  {
+    pfjetE[i] = 0.0;
+    pfjetPt[i] = 0.0;
+    pfjetEta[i] = 0.0;
+    pfjetPhi[i] = 0.0;
+    pfjetCSV[i] = 0.0;
+    pfjetCISV[i] = 0.0;
+    pfjetMass[i] =  -99.0;
+    pfjetJetArea[i] = -99.0;
+    pfjetPileupE[i] = -99.0;
+    pfjetPileupId[i] = -99.0;
+    pfjetPileupIdFlag[i] = -1;
+    pfjetPassIDLoose[i] = false;
+    pfjetPassIDTight[i] = false;
+    pfjetPassMuFrac[i] = false;
+    pfjetPassEleFrac[i] = false;
+    pfjetPartonFlavor[i] = 0;
+    pfjetHadronFlavor[i] = 0;
+    pfjetChargedEMEnergyFraction[i] = -99.0;
+    pfjetNeutralEMEnergyFraction[i] = -99.0;
+    pfjetChargedHadronEnergyFraction[i] = -99.0;
+    pfjetNeutralHadronEnergyFraction[i] = -99.0;
+    pfjetMuonEnergyFraction[i] = -99.0;
+    pfjetHOEnergyFraction[i] = -99.0;
+    pfjetHFHadronEnergyFraction[i] = -99.0;
+    pfjetHFEMEnergyFraction[i] = -99.0;
+    pfjetAllMuonPt[i] = 0.0;
+    pfjetAllMuonEta[i] = 0.0;
+    pfjetAllMuonPhi[i] = 0.0;
+    pfjetAllMuonM[i] = 0.0;
+    pfjetPtWeightedDZ[i] = 0.0;
+    pfjetNRechits[i] = 0;
+    pfjetRechitE[i] = 0.0;
+    pfjetRechitT[i] = 0.0;
+  }
+  return;
+};
+
 void llp_ntupler::resetMetBranches()
 {
   metPt = -999;
@@ -1175,13 +1469,17 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   resetBranches();
   fillEventInfo(iEvent);
   fillPVAll();
+  fillPVTracks();
   fillMuons(iEvent);
+  fillMuonSystem(iEvent, iSetup);
   fillElectrons(iEvent);
   fillPhotons(iEvent, iSetup);
   fillTaus();
   fillJets(iSetup);
   fillMet(iEvent);
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
+  if ( enableCaloJet_ ) fillCaloJets( iSetup );
+  if ( enablePFJet_ ) fillPFJets( iSetup );
   if (!isData) {
     fillPileUp();
     fillMC();
@@ -1301,6 +1599,32 @@ bool llp_ntupler::fillPVAll()
   return true;
 };
 
+bool llp_ntupler::fillPVTracks()
+{
+  //select the primary vertex, if any
+  //myPV = &(vertices->front());
+  //bool foundPV = false;
+  for(unsigned int i = 0; i < vertices->size(); i++)
+  {
+    if(vertices->at(i).isValid() && !vertices->at(i).isFake())
+    {
+      myPV = &(vertices->at(i));
+      for(auto pvTrack = myPV->tracks_begin(); pvTrack != myPV->tracks_end(); pvTrack++)
+      {
+        if( (*pvTrack)->pt() > pvTrack_pt_cut )
+        {
+          pvTrackPt[nPVTracks]  = (*pvTrack)->pt();
+          pvTrackEta[nPVTracks] = (*pvTrack)->eta();
+          pvTrackPhi[nPVTracks] = (*pvTrack)->phi();
+          nPVTracks++;
+        }
+      }
+    }
+  }
+
+  return true;
+};
+
 bool llp_ntupler::fillPileUp()
 {
   for(const PileupSummaryInfo &pu : *puInfo)
@@ -1313,6 +1637,92 @@ bool llp_ntupler::fillPileUp()
   return true;
 };
 
+bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+    edm::ESHandle<CSCGeometry> cscG;
+    edm::ESHandle<DTGeometry> dtG;
+    edm::ESHandle<RPCGeometry> rpcG;
+
+    iSetup.get<MuonGeometryRecord>().get(cscG); 
+    iSetup.get<MuonGeometryRecord>().get(dtG); 
+    iSetup.get<MuonGeometryRecord>().get(rpcG); 
+
+    for (const CSCSegment cscSegment : *cscSegments) {
+	float globPhi   = 0.;
+	float globX = 0.;
+	float globY = 0.;
+	float globZ = 0.;
+	float globEta = 0.;
+	CSCDetId id  = (CSCDetId)(cscSegment).cscDetId();
+	LocalPoint segPos = (cscSegment).localPosition();
+	const CSCChamber* cscchamber = cscG->chamber(id);
+	if (cscchamber) {
+	    GlobalPoint globalPosition = cscchamber->toGlobal(segPos);
+	    globPhi   = globalPosition.phi();
+	    globEta   = globalPosition.eta();
+	    globX = globalPosition.x();
+	    globY = globalPosition.y();
+	    globZ = globalPosition.z();
+	    // globR = pow(globX*globX+globY*globY,0.5);
+	    cscNRecHits[nCsc] = cscSegment.nRecHits();
+	    cscX[nCsc] = globX;
+	    cscY[nCsc] = globY;
+	    cscZ[nCsc] = globZ;
+	    cscPhi[nCsc] = globPhi;
+	    cscEta[nCsc] = globEta;
+	    cscT[nCsc] = cscSegment.time();
+	    cscChi2[nCsc] = cscSegment.chi2();
+	    nCsc++;
+	}
+    }
+    for (const RPCRecHit rpcRecHit : *rpcRecHits){
+	LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
+	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
+	DetId geoid = rpcRecHit.geographicalId();
+	RPCDetId rpcdetid = RPCDetId(geoid);
+	const RPCChamber * rpcchamber = rpcG->chamber(rpcdetid);
+	if (rpcchamber) {
+	    GlobalPoint globalPosition = rpcchamber->toGlobal(rpcRecHitLocalPosition);
+	    rpcX[nRpc] = globalPosition.x();
+	    rpcY[nRpc] = globalPosition.y();
+	    rpcZ[nRpc] = globalPosition.z();
+	    rpcPhi[nRpc] = globalPosition.phi();
+	    rpcEta[nRpc] = globalPosition.eta();
+	    rpcT[nRpc] = rpcRecHit.time();
+	    rpcTError[nRpc] = rpcRecHit.timeError();
+	    nRpc++;
+	}
+    }      
+    for(DTRecSegment4D dtSegment : *dtSegments){
+	LocalPoint  segmentLocalPosition       = dtSegment.localPosition();
+	LocalVector segmentLocalDirection      = dtSegment.localDirection();
+	// LocalError  segmentLocalPositionError  = iDT->localPositionError();
+	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
+	DetId geoid = dtSegment.geographicalId();
+	DTChamberId dtdetid = DTChamberId(geoid);
+	const DTChamber * dtchamber = dtG->chamber(dtdetid);
+	if (dtchamber) {
+	    GlobalPoint globalPosition = dtchamber->toGlobal(segmentLocalPosition);
+	    GlobalVector globalDirection = dtchamber->toGlobal(segmentLocalDirection);
+
+	    dtPhi[nDt] = globalPosition.phi();
+	    dtEta[nDt] = globalPosition.eta();
+	    dtX[nDt] = globalPosition.x();
+	    dtY[nDt] = globalPosition.y();
+	    dtZ[nDt] = globalPosition.z();
+	    dtDirX[nDt] = globalDirection.x();
+	    dtDirY[nDt] = globalDirection.y();
+	    dtDirZ[nDt] = globalDirection.z();
+	    dtT[nDt] = 0;//dtSegment.time();
+	    dtTError[nDt] = -1;//dtSegment.timeError();
+	    nDt++;
+	}
+
+    }
+
+
+    return true;
+}
 
 bool llp_ntupler::fillMuons(const edm::Event& iEvent)
 {
@@ -2268,6 +2678,264 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
   return true;
 };
 
+bool llp_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
+{
+  for (const reco::CaloJet &j : *jetsCalo)
+  {
+    if (j.pt() < 20) continue;
+    if (fabs(j.eta()) > 2.4) continue;
+    //-------------------
+    //Fill Jet-Level Info
+    //-------------------
+    calojetE[nCaloJets] = j.energy();
+    calojetPt[nCaloJets] = j.pt();
+    calojetEta[nCaloJets] = j.eta();
+    calojetPhi[nCaloJets] = j.phi();
+    calojetMass[nCaloJets] = j.mass();
+
+    TLorentzVector thisJet;
+    thisJet.SetPtEtaPhiE(calojetPt[nCaloJets], calojetEta[nCaloJets], calojetPhi[nCaloJets], calojetE[nCaloJets]);
+    //calojetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+
+    calojetJetArea[nCaloJets] = j.jetArea();
+    calojetPileupE[nCaloJets] = j.pileup();
+
+    calojetPileupIdFlag[nCaloJets] = 0;
+    calojetPassIDLoose[nCaloJets] = passCaloJetID(&j, 0);
+    calojetPassIDTight[nCaloJets] = passCaloJetID(&j, 1);
+    //calojetPassMuFrac[nCaloJets]  = ( j.muonEnergyFraction() < 0.80 );
+    //calojetPassEleFrac[nCaloJets]  = ( j.electronEnergyFraction() < 0.90 );
+
+
+    // if (useGen_) {
+    //   calojetPartonFlavor = j.partonFlavour();
+    //   calojetHadronFlavor = j.hadronFlavour();
+    // }
+
+    //calojetChargedEMEnergyFraction[nCaloJets] = j.chargedEmEnergyFraction();
+    //calojetNeutralEMEnergyFraction[nCaloJets] = j.neutralEmEnergyFraction();
+    //calojetChargedHadronEnergyFraction[nCaloJets] = j.chargedHadronEnergyFraction();
+    //calojetNeutralHadronEnergyFraction[nCaloJets] = j.neutralHadronEnergyFraction();
+    //calojet_charged_hadron_multiplicity[nCaloJets] = j.chargedHadronMultiplicity();
+    //calojet_neutral_hadron_multiplicity[nCaloJets] = j.neutralHadronMultiplicity();
+    //calojet_photon_multiplicity[nCaloJets] = j.photonMultiplicity();
+    //calojet_electron_multiplicity[nCaloJets] = j.electronMultiplicity();
+    //calojet_muon_multiplicity[nCaloJets] = j.muonMultiplicity();
+    //calojet_HF_hadron_multiplicity[nCaloJets] = j.HFHadronMultiplicity();
+    //calojet_HF_em_multiplicity[nCaloJets] = j.HFEMMultiplicity();
+    //calojet_charged_multiplicity[nCaloJets] = j.chargedMultiplicity();
+    //calojet_neutral_multiplicity[nCaloJets] = j.neutralMultiplicity();
+
+
+    //---------------------------
+    //find photons inside the calojet
+    //---------------------------
+    /*
+    for (const reco::Photon &pho : *photons) {
+      //cout << "Nphoton: " << fJetNPhotons << "\n";
+
+      if (!(deltaR(pho.eta(), pho.phi() , j.eta(), j.phi()) < 0.5)) continue;
+
+
+      fJetPhotonPt[fJetNPhotons]  = pho.pt();
+      fJetPhotonEta[fJetNPhotons] = pho.eta(); //correct this for the vertex
+      fJetPhotonPhi[fJetNPhotons] = pho.phi(); //correct this for the vertex
+
+      fJetPhotonSeedRecHitE[fJetNPhotons]      = pho.superCluster()->seed()->x();
+      fJetPhotonSeedRecHitEta[fJetNPhotons]      = pho.superCluster()->seed()->y();
+      fJetPhotonSeedRecHitPhi[fJetNPhotons]      = pho.superCluster()->seed()->z();
+      fJetPhotonSeedRecHitTime[fJetNPhotons]      = pho.superCluster()->seed()->energy();
+
+      // //get time coordinate for the seed
+      // for (const reco::PFCluster &pfcluster : *pfClusters) {
+      // 	if(pfcluster.seed() == pho.superCluster()->seed()->seed())
+      // 	  {
+      // 	    pho_superClusterSeedT[fJetNPhotons] = pfcluster.time();
+      // 	    pho_pfClusterSeedE[fJetNPhotons]      = pfcluster.energy();
+      // 	  }
+      // }
+
+      //-------------------------------
+      //fill all rechits inside photons
+      //-------------------------------
+
+      fJetNPhotons++;
+
+    }
+    */
+
+    //---------------------------
+    //Find RecHits Inside the Jet
+    //---------------------------
+    // geometry (from ECAL ELF)
+
+    edm::ESHandle<CaloGeometry> geoHandle;
+    iSetup.get<CaloGeometryRecord>().get(geoHandle);
+    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
+    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+    //double ecal_radius = 129.0;
+    int n_matched_rechits = 0;
+    for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
+    {
+      if ( recHit->checkFlag(0) )
+      {
+        const DetId recHitId = recHit->detid();
+        const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
+        if ( deltaR(calojetEta[nCaloJets], calojetPhi[nCaloJets], recHitPos.eta(), recHitPos.phi())  < 0.4)
+        {
+          //double rechit_x = ecal_radius * cos(recHitPos.phi());
+          //double rechit_y = ecal_radius * sin(recHitPos.phi());
+          //double rechit_z = ecal_radius * sinh(recHitPos.eta());
+          //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
+
+          if (recHit->energy() > 1.0)
+          {
+            calojetRechitE[nCaloJets] += recHit->energy();
+            calojetRechitT[nCaloJets] += recHit->time()*recHit->energy();
+          }
+          n_matched_rechits++;
+        }
+      }
+    }
+    //cout << "Last Nphoton: " << fJetNPhotons << "\n";
+    //std::cout << "n: " << n_matched_rechits << std::endl;
+    calojetNRechits[nCaloJets] = n_matched_rechits;
+    calojetRechitT[nCaloJets] = calojetRechitT[nCaloJets]/calojetRechitE[nCaloJets];
+    nCaloJets++;
+  } //loop over calojets
+
+  return true;
+};
+
+bool llp_ntupler::fillPFJets(const edm::EventSetup& iSetup)
+{
+  for (const reco::PFJet &j : *jets)
+  {
+    if (j.pt() < 20) continue;
+    if (fabs(j.eta()) > 2.4) continue;
+    //-------------------
+    //Fill Jet-Level Info
+    //-------------------
+    pfjetE[nPFJets] = j.energy();
+    pfjetPt[nPFJets] = j.pt();
+    pfjetEta[nPFJets] = j.eta();
+    pfjetPhi[nPFJets] = j.phi();
+    pfjetMass[nPFJets] = j.mass();
+
+    TLorentzVector thisJet;
+    thisJet.SetPtEtaPhiE(pfjetPt[nPFJets], pfjetEta[nPFJets], pfjetPhi[nPFJets], pfjetE[nPFJets]);
+    //pfjetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+
+    pfjetJetArea[nPFJets] = j.jetArea();
+    pfjetPileupE[nPFJets] = j.pileup();
+
+    pfjetPileupIdFlag[nPFJets] = 0;
+    pfjetPassIDLoose[nPFJets] = passPFJetID(&j, 0);
+    pfjetPassIDTight[nPFJets] = passPFJetID(&j, 1);
+    pfjetPassMuFrac[nPFJets]  = ( j.muonEnergyFraction() < 0.80 );
+    pfjetPassEleFrac[nPFJets]  = ( j.electronEnergyFraction() < 0.90 );
+
+
+    // if (useGen_) {
+    //   pfjetPartonFlavor = j.partonFlavour();
+    //   pfjetHadronFlavor = j.hadronFlavour();
+    // }
+
+    pfjetChargedEMEnergyFraction[nPFJets] = j.chargedEmEnergyFraction();
+    pfjetNeutralEMEnergyFraction[nPFJets] = j.neutralEmEnergyFraction();
+    pfjetChargedHadronEnergyFraction[nPFJets] = j.chargedHadronEnergyFraction();
+    pfjetNeutralHadronEnergyFraction[nPFJets] = j.neutralHadronEnergyFraction();
+    //pfjet_charged_hadron_multiplicity[nPFJets] = j.chargedHadronMultiplicity();
+    //pfjet_neutral_hadron_multiplicity[nPFJets] = j.neutralHadronMultiplicity();
+    //pfjet_photon_multiplicity[nPFJets] = j.photonMultiplicity();
+    //pfjet_electron_multiplicity[nPFJets] = j.electronMultiplicity();
+    //pfjet_muon_multiplicity[nPFJets] = j.muonMultiplicity();
+    //pfjet_HF_hadron_multiplicity[nPFJets] = j.HFHadronMultiplicity();
+    //pfjet_HF_em_multiplicity[nPFJets] = j.HFEMMultiplicity();
+    //pfjet_charged_multiplicity[nPFJets] = j.chargedMultiplicity();
+    //pfjet_neutral_multiplicity[nPFJets] = j.neutralMultiplicity();
+
+
+    //---------------------------
+    //find photons inside the pfjet
+    //---------------------------
+    /*
+    for (const reco::Photon &pho : *photons) {
+      //cout << "Nphoton: " << fJetNPhotons << "\n";
+
+      if (!(deltaR(pho.eta(), pho.phi() , j.eta(), j.phi()) < 0.5)) continue;
+
+
+      fJetPhotonPt[fJetNPhotons]  = pho.pt();
+      fJetPhotonEta[fJetNPhotons] = pho.eta(); //correct this for the vertex
+      fJetPhotonPhi[fJetNPhotons] = pho.phi(); //correct this for the vertex
+
+      fJetPhotonSeedRecHitE[fJetNPhotons]      = pho.superCluster()->seed()->x();
+      fJetPhotonSeedRecHitEta[fJetNPhotons]      = pho.superCluster()->seed()->y();
+      fJetPhotonSeedRecHitPhi[fJetNPhotons]      = pho.superCluster()->seed()->z();
+      fJetPhotonSeedRecHitTime[fJetNPhotons]      = pho.superCluster()->seed()->energy();
+
+      // //get time coordinate for the seed
+      // for (const reco::PFCluster &pfcluster : *pfClusters) {
+      // 	if(pfcluster.seed() == pho.superCluster()->seed()->seed())
+      // 	  {
+      // 	    pho_superClusterSeedT[fJetNPhotons] = pfcluster.time();
+      // 	    pho_pfClusterSeedE[fJetNPhotons]      = pfcluster.energy();
+      // 	  }
+      // }
+
+      //-------------------------------
+      //fill all rechits inside photons
+      //-------------------------------
+
+      fJetNPhotons++;
+
+    }
+    */
+
+    //---------------------------
+    //Find RecHits Inside the Jet
+    //---------------------------
+    // geometry (from ECAL ELF)
+
+    edm::ESHandle<CaloGeometry> geoHandle;
+    iSetup.get<CaloGeometryRecord>().get(geoHandle);
+    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
+    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+    //double ecal_radius = 129.0;
+    int n_matched_rechits = 0;
+    for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
+    {
+      if ( recHit->checkFlag(0) )
+      {
+        const DetId recHitId = recHit->detid();
+        const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
+        if ( deltaR(pfjetEta[nPFJets], pfjetPhi[nPFJets], recHitPos.eta(), recHitPos.phi())  < 0.4)
+        {
+          //double rechit_x = ecal_radius * cos(recHitPos.phi());
+          //double rechit_y = ecal_radius * sin(recHitPos.phi());
+          //double rechit_z = ecal_radius * sinh(recHitPos.eta());
+          //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
+
+          if (recHit->energy() > 1.0)
+          {
+            pfjetRechitE[nPFJets] += recHit->energy();
+            pfjetRechitT[nPFJets] += recHit->time()*recHit->energy();
+          }
+          n_matched_rechits++;
+        }
+      }
+    }
+    //cout << "Last Nphoton: " << fJetNPhotons << "\n";
+    //std::cout << "n: " << n_matched_rechits << std::endl;
+    pfjetNRechits[nPFJets] = n_matched_rechits;
+    pfjetRechitT[nPFJets] = pfjetRechitT[nPFJets]/pfjetRechitE[nPFJets];
+    nPFJets++;
+  } //loop over pfjets
+
+  return true;
+};
+
 bool llp_ntupler::fillMet(const edm::Event& iEvent)
 {
   const reco::PFMET &Met = mets->front();
@@ -2395,6 +3063,18 @@ bool llp_ntupler::fillMet(const edm::Event& iEvent)
   return true;
 };
 
+bool llp_ntupler::passCaloJetID( const reco::CaloJet *jetCalo, int cutLevel) {
+  bool result = false;
+
+  return result;
+}//passJetID CaloJet
+
+bool llp_ntupler::passPFJetID( const reco::PFJet *jetPF, int cutLevel) {
+  bool result = false;
+
+  return result;
+}//passJetID PFJet
+
 bool llp_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
   bool result = false;
 
@@ -2444,7 +3124,7 @@ bool llp_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
   }
 
   return result;
-}
+}//passJetID PFJet
 
 double llp_ntupler::deltaPhi(double phi1, double phi2)
 {
