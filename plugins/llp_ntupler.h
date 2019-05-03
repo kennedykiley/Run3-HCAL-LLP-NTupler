@@ -92,6 +92,19 @@ using namespace std;
 #include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloCellGeometry.h"
 
+#include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
+#include "Geometry/CSCGeometry/interface/CSCGeometry.h"
+#include "Geometry/DTGeometry/interface/DTGeometry.h"
+#include "Geometry/RPCGeometry/interface/RPCGeometry.h"
+#include "DataFormats/MuonDetId/interface/CSCDetId.h"
+
+#include "Geometry/Records/interface/MuonGeometryRecord.h"
+#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "DataFormats/DTRecHit/interface/DTRecHitCollection.h"
+#include "DataFormats/DTRecHit/interface/DTRecSegment4DCollection.h"
+#include "DataFormats/RPCRecHit/interface/RPCRecHit.h"
+#include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
+
 //ROOT includes
 #include "TTree.h"
 #include "TFile.h"
@@ -135,6 +148,7 @@ public:
   void enableTauBranches();
   void enableIsoPFCandidateBranches();
   void enablePhotonBranches();
+  void enableMuonSystemBranches();
   void enableEcalRechitBranches();
   void enableJetBranches();
   void enableJetAK8Branches();
@@ -157,6 +171,7 @@ public:
   void resetPhotonBranches();
   void resetEcalRechitBranches();//need to implement yet
   void resetJetBranches();
+  void resetMuonSystemBranches();
   void resetJetAK8Branches();//need to implement yet
   void resetMetBranches();//need to implement yet
   void resetMCBranches();
@@ -175,6 +190,7 @@ public:
   bool fillPVTracks();
   bool fillPileUp();
   bool fillMuons(const edm::Event& iEvent);
+  bool fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillElectrons(const edm::Event& iEvent);
   bool fillTaus();
   bool fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup);
@@ -229,6 +245,10 @@ protected:
   edm::EDGetTokenT<edm::View<reco::Track> > tracksTag_;
   edm::EDGetTokenT<edm::ValueMap<float> > trackTimeTag_;
   edm::EDGetTokenT<edm::ValueMap<float>> trackTimeResoTag_;
+
+  edm::EDGetTokenT<CSCSegmentCollection> cscSegmentInputToken_;
+  edm::EDGetTokenT<DTRecSegment4DCollection> dtSegmentInputToken_;
+  edm::EDGetTokenT<RPCRecHitCollection> rpcRecHitInputToken_;
 
   edm::EDGetTokenT<reco::MuonCollection> muonsToken_;
   edm::EDGetTokenT<reco::GsfElectronCollection> electronsToken_;
@@ -344,6 +364,9 @@ protected:
   //  edm::Handle<vector<reco::SuperCluster> > superClusters;
   //  edm::Handle<vector<reco::PFCandidate> > lostTracks;
   edm::Handle<float> genParticles_t0;
+  edm::Handle<CSCSegmentCollection> cscSegments;
+  edm::Handle<DTRecSegment4DCollection> dtSegments;
+  edm::Handle<RPCRecHitCollection> rpcRecHits;
 
 
 
@@ -622,6 +645,38 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  vector<bool> *ecalRechit_GainSwitch1;
  vector<bool> *ecalRechit_GainSwitch6;
  vector<float> *ecalRechit_transpCorr;
+
+  //Muon system
+  int nCsc;
+  float cscPhi[OBJECTARRAYSIZE];
+  float cscEta[OBJECTARRAYSIZE];
+  float cscX[OBJECTARRAYSIZE];
+  float cscY[OBJECTARRAYSIZE];
+  float cscZ[OBJECTARRAYSIZE];
+  float cscNRecHits[OBJECTARRAYSIZE];
+  float cscT[OBJECTARRAYSIZE];
+  float cscChi2[OBJECTARRAYSIZE];
+
+  int nRpc;
+  float rpcPhi[OBJECTARRAYSIZE];
+  float rpcEta[OBJECTARRAYSIZE];
+  float rpcX[OBJECTARRAYSIZE];
+  float rpcY[OBJECTARRAYSIZE];
+  float rpcZ[OBJECTARRAYSIZE];
+  float rpcT[OBJECTARRAYSIZE];
+  float rpcTError[OBJECTARRAYSIZE];
+
+  int nDt;
+  float dtPhi[OBJECTARRAYSIZE];
+  float dtEta[OBJECTARRAYSIZE];
+  float dtX[OBJECTARRAYSIZE];
+  float dtY[OBJECTARRAYSIZE];
+  float dtZ[OBJECTARRAYSIZE];
+  float dtDirX[OBJECTARRAYSIZE];
+  float dtDirY[OBJECTARRAYSIZE];
+  float dtDirZ[OBJECTARRAYSIZE];
+  float dtT[OBJECTARRAYSIZE];
+  float dtTError[OBJECTARRAYSIZE];
 
  //AK4 Jets
  int nJets;
