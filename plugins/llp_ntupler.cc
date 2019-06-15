@@ -17,7 +17,6 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   //isQCD_(iConfig.getParameter<bool> ("isQCD")),
   enableTriggerInfo_(iConfig.getParameter<bool> ("enableTriggerInfo")),
   enableCaloJet_(iConfig.getParameter<bool> ("enableCaloJet")),
-  enablePFJet_(iConfig.getParameter<bool> ("enablePFJet")),
   enableEcalRechits_(iConfig.getParameter<bool> ("enableEcalRechits")),
   readGenVertexTime_(iConfig.getParameter<bool> ("readGenVertexTime")),
   triggerPathNamesFile_(iConfig.getParameter<string> ("triggerPathNamesFile")),
@@ -82,9 +81,14 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   conversionsToken_(consumes<vector<reco::Conversion> >(iConfig.getParameter<edm::InputTag>("conversions"))),
   singleLegConversionsToken_(consumes<vector<reco::Conversion> >(iConfig.getParameter<edm::InputTag>("singleLegConversions"))),
   gedGsfElectronCoresToken_(consumes<vector<reco::GsfElectronCore> >(iConfig.getParameter<edm::InputTag>("gedGsfElectronCores"))),
-  gedPhotonCoresToken_(consumes<vector<reco::PhotonCore> >(iConfig.getParameter<edm::InputTag>("gedPhotonCores")))
+  gedPhotonCoresToken_(consumes<vector<reco::PhotonCore> >(iConfig.getParameter<edm::InputTag>("gedPhotonCores"))),
+  generalTrackToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks")))
   //superClustersToken_(consumes<vector<reco::SuperCluster> >(iConfig.getParameter<edm::InputTag>("superClusters"))),
   //  lostTracksToken_(consumes<vector<reco::PFCandidate> >(iConfig.getParameter<edm::InputTag>("lostTracks")))
+  // mvaGeneralPurposeValuesMapToken_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaGeneralPurposeValuesMap"))),
+  // mvaGeneralPurposeCategoriesMapToken_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaGeneralPurposeCategoriesMap"))),
+  // mvaHZZValuesMapToken_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaHZZValuesMap"))),
+  // mvaHZZCategoriesMapToken_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaHZZCategoriesMap")))
 {
   //declare the TFileService for output
   edm::Service<TFileService> fs;
@@ -201,7 +205,6 @@ void llp_ntupler::setBranches()
   enableEcalRechitBranches();
   enableJetBranches();
   enableCaloJetBranches();
-  enablePFJetBranches();
   enableJetAK8Branches();
   enableMetBranches();
   enableTriggerBranches();
@@ -543,7 +546,17 @@ void llp_ntupler::enableJetBranches()
   llpTree->Branch("jetRechitT", jetRechitT,"jetRechitT[nJets]/F");
   llpTree->Branch("jetRechitE_Error", jetRechitE_Error,"jetRechitE_Error[nJets]/F");
   llpTree->Branch("jetRechitT_Error", jetRechitT_Error,"jetRechitT_Error[nJets]/F");
-
+  llpTree->Branch("jetAlphaMax",jetAlphaMax,"jetAlphaMax[nJets]/F");
+  llpTree->Branch("jetBetaMax",jetBetaMax,"jetBetaMax[nJets]/F");
+  llpTree->Branch("jetGammaMax_EM",jetGammaMax_EM,"jetGammaMax_EM[nJets]/F");
+  llpTree->Branch("jetGammaMax_Hadronic",jetGammaMax_Hadronic,"jetGammaMax_Hadronic[nJets]/F");
+  llpTree->Branch("jetGammaMax",jetGammaMax,"jetGammaMax[nJets]/F");
+  llpTree->Branch("jetPtAllTracks",jetPtAllTracks,"jetPtAllTracks[nJets]/F");
+  llpTree->Branch("jetPtAllPVTracks",jetPtAllPVTracks,"jetPtAllPVTracks[nJets]/F");
+  llpTree->Branch("jetMedianTheta2D",jetMedianTheta2D,"jetMedianTheta2D[nJets]/F");
+  llpTree->Branch("jetMedianIP",jetMedianIP,"jetMedianIP[nJets]/F");
+  llpTree->Branch("jetMinDeltaRAllTracks",jetMinDeltaRAllTracks,"jetMinDeltaRAllTracks[nJets]/F");
+  llpTree->Branch("jetMinDeltaRPVTracks",jetMinDeltaRPVTracks,"jetMinDeltaRPVTracks[nJets]/F");
 };
 
 void llp_ntupler::enableCaloJetBranches()
@@ -553,12 +566,6 @@ void llp_ntupler::enableCaloJetBranches()
   llpTree->Branch("calojetPt", calojetPt,"calojetPt[nCaloJets]/F");
   llpTree->Branch("calojetEta", calojetEta,"calojetEta[nCaloJets]/F");
   llpTree->Branch("calojetPhi", calojetPhi,"calojetPhi[nCaloJets]/F");
-  llpTree->Branch("calojetCSV", calojetCSV,"calojetCSV[nCaloJets]/F");
-  llpTree->Branch("calojetCISV", calojetCISV,"calojetCISV[nCaloJets]/F");
-  llpTree->Branch("calojetProbb", calojetProbb,"calojetProbb[nCaloJets]/F");
-  llpTree->Branch("calojetProbc", calojetProbc,"calojetProbc[nCaloJets]/F");
-  llpTree->Branch("calojetProbudsg", calojetProbudsg,"calojetProbudsg[nCaloJets]/F");
-  llpTree->Branch("calojetProbbb", calojetProbbb,"calojetProbbb[nCaloJets]/F");
   llpTree->Branch("calojetMass", calojetMass, "calojetMass[nCaloJets]/F");
   llpTree->Branch("calojetJetArea", calojetJetArea, "calojetJetArea[nCaloJets]/F");
   llpTree->Branch("calojetPileupE", calojetPileupE, "calojetPileupE[nCaloJets]/F");
@@ -566,71 +573,24 @@ void llp_ntupler::enableCaloJetBranches()
   llpTree->Branch("calojetPileupIdFlag", calojetPileupIdFlag, "calojetPileupIdFlag[nCaloJets]/I");
   llpTree->Branch("calojetPassIDLoose", calojetPassIDLoose, "calojetPassIDLoose[nCaloJets]/O");
   llpTree->Branch("calojetPassIDTight", calojetPassIDTight, "calojetPassIDTight[nCaloJets]/O");
-  llpTree->Branch("calojetPassMuFrac", calojetPassMuFrac, "calojetPassMuFrac[nCaloJets]/O");
-  llpTree->Branch("calojetPassEleFrac", calojetPassEleFrac, "calojetPassEleFrac[nCaloJets]/O");
-  llpTree->Branch("calojetPartonFlavor", calojetPartonFlavor, "calojetPartonFlavor[nCaloJets]/I");
-  llpTree->Branch("calojetHadronFlavor", calojetHadronFlavor, "calojetHadronFlavor[nCaloJets]/I");
-  llpTree->Branch("calojetChargedEMEnergyFraction", calojetChargedEMEnergyFraction, "calojetChargedEMEnergyFraction[nCaloJets]/F");
-  llpTree->Branch("calojetNeutralEMEnergyFraction", calojetNeutralEMEnergyFraction, "calojetNeutralEMEnergyFraction[nCaloJets]/F");
-  llpTree->Branch("calojetChargedHadronEnergyFraction", calojetChargedHadronEnergyFraction, "calojetChargedHadronEnergyFraction[nCaloJets]/F");
-  llpTree->Branch("calojetNeutralHadronEnergyFraction", calojetNeutralHadronEnergyFraction, "calojetNeutralHadronEnergyFraction[nCaloJets]/F");
-  llpTree->Branch("calojetMuonEnergyFraction", calojetMuonEnergyFraction, "calojetMuonEnergyFraction[nCaloJets]/F");
-  llpTree->Branch("calojetHOEnergyFraction", calojetHOEnergyFraction, "calojetHOEnergyFraction[nCaloJets]/F");
-  llpTree->Branch("calojetHFHadronEnergyFraction", calojetHFHadronEnergyFraction, "calojetHFHadronEnergyFraction[nCaloJets]/F");
-  llpTree->Branch("calojetHFEMEnergyFraction",calojetHFEMEnergyFraction, "calojetHFEMEnergyFraction[nCaloJets]/F");
-  llpTree->Branch("calojetAllMuonPt", calojetAllMuonPt,"calojetAllMuonPt[nCaloJets]/F");
-  llpTree->Branch("calojetAllMuonEta", calojetAllMuonEta,"calojetAllMuonEta[nCaloJets]/F");
-  llpTree->Branch("calojetAllMuonPhi", calojetAllMuonPhi,"calojetAllMuonPhi[nCaloJets]/F");
-  llpTree->Branch("calojetAllMuonM", calojetAllMuonM,"calojetAllMuonM[nCaloJets]/F");
-  llpTree->Branch("calojetPtWeightedDZ", calojetPtWeightedDZ,"calojetPtWeightedDZ[nCaloJets]/F");
   llpTree->Branch("calojetNRechits", calojetNRechits,"calojetNRechits[nCaloJets]/I");
   llpTree->Branch("calojetRechitE", calojetRechitE,"calojetRechitE[nCaloJets]/F");
   llpTree->Branch("calojetRechitT", calojetRechitT,"calojetRechitT[nCaloJets]/F");
-
+  llpTree->Branch("calojetAlphaMax",calojetAlphaMax,"calojetAlphaMax[nCaloJets]/F");
+  llpTree->Branch("calojetBetaMax",calojetBetaMax,"calojetBetaMax[nCaloJets]/F");
+  llpTree->Branch("calojetGammaMax_EM",calojetGammaMax_EM,"calojetGammaMax_EM[nCaloJets]/F");
+  llpTree->Branch("calojetGammaMax_Hadronic",calojetGammaMax_Hadronic,"calojetGammaMax_Hadronic[nCaloJets]/F");
+  llpTree->Branch("calojetGammaMax",calojetGammaMax,"calojetGammaMax[nCaloJets]/F");
+  llpTree->Branch("calojet_HadronicEnergyFraction", calojet_HadronicEnergyFraction,"calojet_HadronicEnergyFraction[nCaloJets]/F");
+  llpTree->Branch("calojet_EMEnergyFraction", calojet_EMEnergyFraction,"calojet_EMEnergyFraction[nCaloJets]/F");
+  llpTree->Branch("calojetPtAllTracks",calojetPtAllTracks,"calojetPtAllTracks[nCaloJets]/F");
+  llpTree->Branch("calojetPtAllPVTracks",calojetPtAllPVTracks,"calojetPtAllPVTracks[nCaloJets]/F");
+  llpTree->Branch("calojetMedianTheta2D",calojetMedianTheta2D,"calojetMedianTheta2D[nCaloJets]/F");
+  llpTree->Branch("calojetMedianIP",calojetMedianIP,"calojetMedianIP[nCaloJets]/F");
+  llpTree->Branch("calojetMinDeltaRAllTracks",calojetMinDeltaRAllTracks,"calojetMinDeltaRAllTracks[nCaloJets]/F");
+  llpTree->Branch("calojetMinDeltaRPVTracks",calojetMinDeltaRPVTracks,"calojetMinDeltaRPVTracks[nCaloJets]/F");
 };
 
-void llp_ntupler::enablePFJetBranches()
-{
-  llpTree->Branch("nPFJets", &nPFJets,"nPFJets/I");
-  llpTree->Branch("pfjetE", pfjetE,"pfjetE[nPFJets]/F");
-  llpTree->Branch("pfjetPt", pfjetPt,"pfjetPt[nPFJets]/F");
-  llpTree->Branch("pfjetEta", pfjetEta,"pfjetEta[nPFJets]/F");
-  llpTree->Branch("pfjetPhi", pfjetPhi,"pfjetPhi[nPFJets]/F");
-  llpTree->Branch("pfjetCSV", pfjetCSV,"pfjetCSV[nPFJets]/F");
-  llpTree->Branch("pfjetCISV", pfjetCISV,"pfjetCISV[nPFJets]/F");
-  llpTree->Branch("pfjetProbb", pfjetProbb,"pfjetProbb[nPFJets]/F");
-  llpTree->Branch("pfjetProbc", pfjetProbc,"pfjetProbc[nPFJets]/F");
-  llpTree->Branch("pfjetProbudsg", pfjetProbudsg,"pfjetProbudsg[nPFJets]/F");
-  llpTree->Branch("pfjetProbbb", pfjetProbbb,"pfjetProbbb[nPFJets]/F");
-  llpTree->Branch("pfjetMass", pfjetMass, "pfjetMass[nPFJets]/F");
-  llpTree->Branch("pfjetJetArea", pfjetJetArea, "pfjetJetArea[nPFJets]/F");
-  llpTree->Branch("pfjetPileupE", pfjetPileupE, "pfjetPileupE[nPFJets]/F");
-  llpTree->Branch("pfjetPileupId", pfjetPileupId, "pfjetPileupId[nPFJets]/F");
-  llpTree->Branch("pfjetPileupIdFlag", pfjetPileupIdFlag, "pfjetPileupIdFlag[nPFJets]/I");
-  llpTree->Branch("pfjetPassIDLoose", pfjetPassIDLoose, "pfjetPassIDLoose[nPFJets]/O");
-  llpTree->Branch("pfjetPassIDTight", pfjetPassIDTight, "pfjetPassIDTight[nPFJets]/O");
-  llpTree->Branch("pfjetPassMuFrac", pfjetPassMuFrac, "pfjetPassMuFrac[nPFJets]/O");
-  llpTree->Branch("pfjetPassEleFrac", pfjetPassEleFrac, "pfjetPassEleFrac[nPFJets]/O");
-  llpTree->Branch("pfjetPartonFlavor", pfjetPartonFlavor, "pfjetPartonFlavor[nPFJets]/I");
-  llpTree->Branch("pfjetHadronFlavor", pfjetHadronFlavor, "pfjetHadronFlavor[nPFJets]/I");
-  llpTree->Branch("pfjetChargedEMEnergyFraction", pfjetChargedEMEnergyFraction, "pfjetChargedEMEnergyFraction[nPFJets]/F");
-  llpTree->Branch("pfjetNeutralEMEnergyFraction", pfjetNeutralEMEnergyFraction, "pfjetNeutralEMEnergyFraction[nPFJets]/F");
-  llpTree->Branch("pfjetChargedHadronEnergyFraction", pfjetChargedHadronEnergyFraction, "pfjetChargedHadronEnergyFraction[nPFJets]/F");
-  llpTree->Branch("pfjetNeutralHadronEnergyFraction", pfjetNeutralHadronEnergyFraction, "pfjetNeutralHadronEnergyFraction[nPFJets]/F");
-  llpTree->Branch("pfjetMuonEnergyFraction", pfjetMuonEnergyFraction, "pfjetMuonEnergyFraction[nPFJets]/F");
-  llpTree->Branch("pfjetHOEnergyFraction", pfjetHOEnergyFraction, "pfjetHOEnergyFraction[nPFJets]/F");
-  llpTree->Branch("pfjetHFHadronEnergyFraction", pfjetHFHadronEnergyFraction, "pfjetHFHadronEnergyFraction[nPFJets]/F");
-  llpTree->Branch("pfjetHFEMEnergyFraction",pfjetHFEMEnergyFraction, "pfjetHFEMEnergyFraction[nPFJets]/F");
-  llpTree->Branch("pfjetAllMuonPt", pfjetAllMuonPt,"pfjetAllMuonPt[nPFJets]/F");
-  llpTree->Branch("pfjetAllMuonEta", pfjetAllMuonEta,"pfjetAllMuonEta[nPFJets]/F");
-  llpTree->Branch("pfjetAllMuonPhi", pfjetAllMuonPhi,"pfjetAllMuonPhi[nPFJets]/F");
-  llpTree->Branch("pfjetAllMuonM", pfjetAllMuonM,"pfjetAllMuonM[nPFJets]/F");
-  llpTree->Branch("pfjetPtWeightedDZ", pfjetPtWeightedDZ,"pfjetPtWeightedDZ[nPFJets]/F");
-  llpTree->Branch("pfjetNRechits", pfjetNRechits,"pfjetNRechits[nPFJets]/I");
-  llpTree->Branch("pfjetRechitE", pfjetRechitE,"pfjetRechitE[nPFJets]/F");
-  llpTree->Branch("pfjetRechitT", pfjetRechitT,"pfjetRechitT[nPFJets]/F");
-
-};
 
 void llp_ntupler::enableJetAK8Branches()
 {
@@ -809,6 +769,7 @@ void llp_ntupler::loadEvent(const edm::Event& iEvent)//load all miniAOD objects 
   iEvent.getByToken(singleLegConversionsToken_,singleLegConversions);
   iEvent.getByToken(gedGsfElectronCoresToken_,gedGsfElectronCores);
   iEvent.getByToken(gedPhotonCoresToken_, gedPhotonCores);
+  iEvent.getByToken(generalTrackToken_,generalTracks);
 //  iEvent.getByToken(superClustersToken_,superClusters);
 //  iEvent.getByToken(lostTracksToken_,lostTracks);
 //  iEvent.getByToken(hbheNoiseFilterToken_, hbheNoiseFilter);
@@ -846,7 +807,6 @@ void llp_ntupler::resetBranches()
     resetPhotonBranches();
     resetJetBranches();
     resetCaloJetBranches();
-    resetPFJetBranches();
     resetMuonSystemBranches();
     resetMetBranches();
     resetGenParticleBranches();
@@ -1181,6 +1141,19 @@ void llp_ntupler::resetJetBranches()
     jetRechitT[i] = 0.0;
     jetRechitE_Error[i] = 0.0;
     jetRechitT_Error[i] = 0.0;
+    jetGammaMax[i] = -99.0;
+    jetGammaMax_EM[i] = -99.0;
+    jetGammaMax_Hadronic[i] = -99.0;
+    jetAlphaMax[i] = -99.0;
+    jetBetaMax[i] = -99.0;
+    jetPtAllTracks[i] = -99.0;
+    jetPtAllPVTracks[i] = -99.0;
+    jetMedianTheta2D[i] = -99.0;
+    jetMedianIP[i] = -99.0;
+    jetMinDeltaRAllTracks[i] =-99.0;
+    jetMinDeltaRPVTracks[i] = -99.0;
+
+
   }
   return;
 };
@@ -1214,8 +1187,6 @@ void llp_ntupler::resetCaloJetBranches()
     calojetPt[i] = 0.0;
     calojetEta[i] = 0.0;
     calojetPhi[i] = 0.0;
-    calojetCSV[i] = 0.0;
-    calojetCISV[i] = 0.0;
     calojetMass[i] =  -99.0;
     calojetJetArea[i] = -99.0;
     calojetPileupE[i] = -99.0;
@@ -1223,71 +1194,30 @@ void llp_ntupler::resetCaloJetBranches()
     calojetPileupIdFlag[i] = -1;
     calojetPassIDLoose[i] = false;
     calojetPassIDTight[i] = false;
-    calojetPassMuFrac[i] = false;
-    calojetPassEleFrac[i] = false;
-    calojetPartonFlavor[i] = 0;
-    calojetHadronFlavor[i] = 0;
-    calojetChargedEMEnergyFraction[i] = -99.0;
-    calojetNeutralEMEnergyFraction[i] = -99.0;
-    calojetChargedHadronEnergyFraction[i] = -99.0;
-    calojetNeutralHadronEnergyFraction[i] = -99.0;
-    calojetMuonEnergyFraction[i] = -99.0;
-    calojetHOEnergyFraction[i] = -99.0;
-    calojetHFHadronEnergyFraction[i] = -99.0;
-    calojetHFEMEnergyFraction[i] = -99.0;
-    calojetAllMuonPt[i] = 0.0;
-    calojetAllMuonEta[i] = 0.0;
-    calojetAllMuonPhi[i] = 0.0;
-    calojetAllMuonM[i] = 0.0;
-    calojetPtWeightedDZ[i] = 0.0;
+
     calojetNRechits[i] = 0;
     calojetRechitE[i] = 0.0;
     calojetRechitT[i] = 0.0;
+
+    calojetAlphaMax[i] = -99.0;
+    calojetBetaMax[i] = -99.0;
+    calojetGammaMax[i] = -99.0;
+    calojetGammaMax_EM[i] = -99.0;
+    calojetGammaMax_Hadronic[i] = -99.0;
+
+    calojetPtAllTracks[i] = -99.0;
+    calojetPtAllPVTracks[i] = -99.0;
+    calojetMedianTheta2D[i] = -99.0;
+    calojetMedianIP[i] = -99.0;
+    calojetMinDeltaRAllTracks[i] =-99.0;
+    calojetMinDeltaRPVTracks[i] = -99.0;
+
+    calojet_HadronicEnergyFraction[i] = -666.;
+    calojet_EMEnergyFraction[i] = -666.;
   }
   return;
 };
 
-void llp_ntupler::resetPFJetBranches()
-{
-  nPFJets = 0;
-  for ( int i = 0; i < OBJECTARRAYSIZE; i++)
-  {
-    pfjetE[i] = 0.0;
-    pfjetPt[i] = 0.0;
-    pfjetEta[i] = 0.0;
-    pfjetPhi[i] = 0.0;
-    pfjetCSV[i] = 0.0;
-    pfjetCISV[i] = 0.0;
-    pfjetMass[i] =  -99.0;
-    pfjetJetArea[i] = -99.0;
-    pfjetPileupE[i] = -99.0;
-    pfjetPileupId[i] = -99.0;
-    pfjetPileupIdFlag[i] = -1;
-    pfjetPassIDLoose[i] = false;
-    pfjetPassIDTight[i] = false;
-    pfjetPassMuFrac[i] = false;
-    pfjetPassEleFrac[i] = false;
-    pfjetPartonFlavor[i] = 0;
-    pfjetHadronFlavor[i] = 0;
-    pfjetChargedEMEnergyFraction[i] = -99.0;
-    pfjetNeutralEMEnergyFraction[i] = -99.0;
-    pfjetChargedHadronEnergyFraction[i] = -99.0;
-    pfjetNeutralHadronEnergyFraction[i] = -99.0;
-    pfjetMuonEnergyFraction[i] = -99.0;
-    pfjetHOEnergyFraction[i] = -99.0;
-    pfjetHFHadronEnergyFraction[i] = -99.0;
-    pfjetHFEMEnergyFraction[i] = -99.0;
-    pfjetAllMuonPt[i] = 0.0;
-    pfjetAllMuonEta[i] = 0.0;
-    pfjetAllMuonPhi[i] = 0.0;
-    pfjetAllMuonM[i] = 0.0;
-    pfjetPtWeightedDZ[i] = 0.0;
-    pfjetNRechits[i] = 0;
-    pfjetRechitE[i] = 0.0;
-    pfjetRechitT[i] = 0.0;
-  }
-  return;
-};
 
 void llp_ntupler::resetMetBranches()
 {
@@ -1480,7 +1410,6 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   fillMet(iEvent);
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
   if ( enableCaloJet_ ) fillCaloJets( iSetup );
-  if ( enablePFJet_ ) fillPFJets( iSetup );
   if (!isData) {
     fillPileUp();
     fillMC();
@@ -1828,18 +1757,19 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
 {
 
   // Get MVA values and categories (optional)
-  edm::Handle<edm::ValueMap<float> > mvaGeneralPurposeValues;
-  edm::Handle<edm::ValueMap<int> > mvaGeneralPurposeCategories;
-  edm::Handle<edm::ValueMap<float> > mvaHZZValues;
-  edm::Handle<edm::ValueMap<int> > mvaHZZCategories;
-  //iEvent.getByToken(mvaGeneralPurposeValuesMapToken_,mvaGeneralPurposeValues);
-  //iEvent.getByToken(mvaGeneralPurposeCategoriesMapToken_,mvaGeneralPurposeCategories);
-  //iEvent.getByToken(mvaHZZValuesMapToken_,mvaHZZValues);
-  //iEvent.getByToken(mvaHZZCategoriesMapToken_,mvaHZZCategories);
+  // edm::Handle<edm::ValueMap<float> > mvaGeneralPurposeValues;
+  // edm::Handle<edm::ValueMap<int> > mvaGeneralPurposeCategories;
+  // edm::Handle<edm::ValueMap<float> > mvaHZZValues;
+  // edm::Handle<edm::ValueMap<int> > mvaHZZCategories;
+  // iEvent.getByToken(mvaGeneralPurposeValuesMapToken_,mvaGeneralPurposeValues);
+  // iEvent.getByToken(mvaGeneralPurposeCategoriesMapToken_,mvaGeneralPurposeCategories);
+  // iEvent.getByToken(mvaHZZValuesMapToken_,mvaHZZValues);
+  // iEvent.getByToken(mvaHZZCategoriesMapToken_,mvaHZZCategories);
 
-  for(const pat::Electron &ele : *electrons){
-  //for (size_t i = 0; i < electrons->size(); ++i){
-    //const auto ele = electrons->ptrAt(i);
+  // setupEgammaPostRecoSeq
+
+
+  for(const pat::Electron &ele : *electrons) {
     if(ele.pt() < 5) continue;
     eleE[nElectrons] = ele.energy();
     elePt[nElectrons] = ele.pt();
@@ -1869,17 +1799,18 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     ele_neutralHadIso[nElectrons] = ele.pfIsolationVariables().sumNeutralHadronEt;
     ele_MissHits[nElectrons] = ele.gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS);
 
+
     //---------------
     //Conversion Veto
     //---------------
+
     ele_PassConvVeto[nElectrons] = false;
     if( beamSpot.isValid() && conversions.isValid() )
     {
-      //ele_PassConvVeto[nElectrons] = !ConversionTools::hasMatchedConversion(*ele,conversions,beamSpot->position());
+      ele_PassConvVeto[nElectrons] = !ConversionTools::hasMatchedConversion(ele,conversions,beamSpot->position());
     } else {
       cout << "\n\nERROR!!! conversions not found!!!\n";
     }
-    //std::cout << "debug ele 5 " << nElectrons << std::endl;
     // 1/E - 1/P
     if( ele.ecalEnergy() == 0 ){
       ele_OneOverEminusOneOverP[nElectrons] = 1e30;
@@ -1891,21 +1822,20 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     //----------------------
     //ID MVA
     //----------------------
-    //ele_IDMVAGeneralPurpose[nElectrons] = (*mvaGeneralPurposeValues)[ele];
-    //ele_IDMVACategoryGeneralPurpose[nElectrons] = (*mvaGeneralPurposeCategories)[ele];
-    //ele_IDMVAHZZ[nElectrons] = (*mvaHZZValues)[ele];
-    //ele_IDMVACategoryHZZ[nElectrons] = (*mvaHZZCategories)[ele];
+    // ele_IDMVAGeneralPurpose[nElectrons] = (*mvaGeneralPurposeValues)[ele];
+    // ele_IDMVACategoryGeneralPurpose[nElectrons] = (*mvaGeneralPurposeCategories)[ele];
+    // ele_IDMVAHZZ[nElectrons] = (*mvaHZZValues)[ele];
+    // ele_IDMVACategoryHZZ[nElectrons] = (*mvaHZZCategories)[ele];
 
-
-    //ele_RegressionE[nElectrons] = ((edm::Ptr<pat::Electron>)(ele))->ecalRegressionEnergy();
-    //ele_CombineP4[nElectrons]   = ((edm::Ptr<pat::Electron>)(ele))->ecalTrackRegressionEnergy();
-
-    //ele_ptrel[nElectrons]   = getLeptonPtRel( jets, &(*ele) );
-    //tuple<double,double,double> PFMiniIso = getPFMiniIsolation(packedPFCands, dynamic_cast<const reco::Candidate *>(&(*ele)), 0.05, 0.2, 10., false, false);
-    //ele_chargedMiniIso[nElectrons] = std::get<0>(PFMiniIso);
-    //ele_photonAndNeutralHadronMiniIso[nElectrons] = std::get<1>(PFMiniIso);
-    //ele_chargedPileupMiniIso[nElectrons] = std::get<2>(PFMiniIso);
-    //ele_activityMiniIsoAnnulus[nElectrons] = ActivityPFMiniIsolationAnnulus( packedPFCands, dynamic_cast<const reco::Candidate *>(&(*ele)), 0.4, 0.05, 0.2, 10.);
+    // ele_RegressionE[nElectrons] = ((edm::Ptr<pat::Electron>)(ele))->ecalRegressionEnergy();
+    // ele_CombineP4[nElectrons]   = ((edm::Ptr<pat::Electron>)(ele))->ecalTrackRegressionEnergy();
+    //
+    // ele_ptrel[nElectrons]   = getLeptonPtRel( jets, &(*ele) );
+    // tuple<double,double,double> PFMiniIso = getPFMiniIsolation(packedPFCands, dynamic_cast<const reco::Candidate *>(&(*ele)), 0.05, 0.2, 10., false, false);
+    // ele_chargedMiniIso[nElectrons] = std::get<0>(PFMiniIso);
+    // ele_photonAndNeutralHadronMiniIso[nElectrons] = std::get<1>(PFMiniIso);
+    // ele_chargedPileupMiniIso[nElectrons] = std::get<2>(PFMiniIso);
+    // ele_activityMiniIsoAnnulus[nElectrons] = ActivityPFMiniIsolationAnnulus( packedPFCands, dynamic_cast<const reco::Candidate *>(&(*ele)), 0.4, 0.05, 0.2, 10.);
 
     //-----------------------
     //Trigger Object Matching
@@ -2564,16 +2494,34 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
     jetNeutralEMEnergyFraction[nJets] = j.neutralEmEnergyFraction();
     jetChargedHadronEnergyFraction[nJets] = j.chargedHadronEnergyFraction();
     jetNeutralHadronEnergyFraction[nJets] = j.neutralHadronEnergyFraction();
-    //jet_charged_hadron_multiplicity[nJets] = j.chargedHadronMultiplicity();
-    //jet_neutral_hadron_multiplicity[nJets] = j.neutralHadronMultiplicity();
+    // jet_charged_hadron_multiplicity[nJets] = j.chargedHadronMultiplicity();
+    // jet_neutral_hadron_multiplicity[nJets] = j.neutralHadronMultiplicity();
     //jet_photon_multiplicity[nJets] = j.photonMultiplicity();
     //jet_electron_multiplicity[nJets] = j.electronMultiplicity();
     //jet_muon_multiplicity[nJets] = j.muonMultiplicity();
     //jet_HF_hadron_multiplicity[nJets] = j.HFHadronMultiplicity();
     //jet_HF_em_multiplicity[nJets] = j.HFEMMultiplicity();
-    //jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
-    //jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
+    // jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
+    // jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
 
+    //---------------------------
+    //Trackless variables
+    //---------------------------
+    float alphaMax(0.0),medianTheta2D(0.0),medianIP(0.0),minDeltaRAllTracks(0.0),minDeltaRPVTracks(0.0),ptAllTracks(0.0), ptAllPVTracks(0.0);
+    int nTracksPV(0);
+    findTrackingVariables(thisJet,iSetup,alphaMax,medianTheta2D,medianIP,nTracksPV,ptAllPVTracks,ptAllTracks, minDeltaRAllTracks, minDeltaRPVTracks);
+    //jetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    jetAlphaMax[nJets] = alphaMax;
+    jetBetaMax[nJets] = alphaMax * ptAllTracks/(j.pt());
+    jetGammaMax[nJets] = alphaMax * ptAllTracks/(j.energy());
+    jetGammaMax_EM[nJets] = alphaMax * ptAllTracks/(j.energy()*(j.chargedEmEnergyFraction()+j.neutralEmEnergyFraction()));
+    jetGammaMax_Hadronic[nJets] = alphaMax * ptAllTracks/(j.energy()*(j.chargedHadronEnergyFraction()+j.neutralHadronEnergyFraction()));
+    jetMedianTheta2D[nJets] = medianTheta2D;
+    jetMedianIP[nJets] = medianIP;
+    jetPtAllPVTracks[nJets] = ptAllPVTracks;
+    jetPtAllTracks[nJets] = ptAllTracks;
+    jetMinDeltaRAllTracks[nJets] = minDeltaRAllTracks;
+    jetMinDeltaRPVTracks[nJets] = minDeltaRPVTracks;
 
     //---------------------------
     //find photons inside the jet
@@ -2693,10 +2641,27 @@ bool llp_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
     calojetEta[nCaloJets] = j.eta();
     calojetPhi[nCaloJets] = j.phi();
     calojetMass[nCaloJets] = j.mass();
+    calojet_HadronicEnergyFraction[nCaloJets] = j.energyFractionHadronic();
+    calojet_EMEnergyFraction[nCaloJets] = j.emEnergyFraction();
 
     TLorentzVector thisJet;
     thisJet.SetPtEtaPhiE(calojetPt[nCaloJets], calojetEta[nCaloJets], calojetPhi[nCaloJets], calojetE[nCaloJets]);
     //calojetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    float alphaMax(0.0),medianTheta2D(0.0),medianIP(0.0),minDeltaRAllTracks(0.0),minDeltaRPVTracks(0.0),ptAllTracks(0.0), ptAllPVTracks(0.0);
+    int nTracksPV(0);
+    findTrackingVariables(thisJet,iSetup,alphaMax,medianTheta2D,medianIP,nTracksPV,ptAllPVTracks,ptAllTracks, minDeltaRAllTracks, minDeltaRPVTracks);
+    //jetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    calojetAlphaMax[nCaloJets] = alphaMax;
+    calojetBetaMax[nCaloJets] = alphaMax * ptAllTracks/j.pt();
+    calojetGammaMax[nCaloJets] = alphaMax * ptAllTracks/(j.energy());
+    calojetGammaMax_EM[nCaloJets] = alphaMax * ptAllTracks/(j.energy()*j.emEnergyFraction());
+    calojetGammaMax_Hadronic[nCaloJets] =  alphaMax * ptAllTracks/(j.energy()*j.energyFractionHadronic());
+    calojetMedianTheta2D[nCaloJets] = medianTheta2D;
+    calojetMedianIP[nCaloJets] = medianIP;
+    calojetPtAllPVTracks[nCaloJets] = ptAllPVTracks;
+    calojetPtAllTracks[nCaloJets] = ptAllTracks;
+    calojetMinDeltaRAllTracks[nCaloJets] = minDeltaRAllTracks;
+    calojetMinDeltaRPVTracks[nCaloJets] = minDeltaRPVTracks;
 
     calojetJetArea[nCaloJets] = j.jetArea();
     calojetPileupE[nCaloJets] = j.pileup();
@@ -2704,66 +2669,7 @@ bool llp_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
     calojetPileupIdFlag[nCaloJets] = 0;
     calojetPassIDLoose[nCaloJets] = passCaloJetID(&j, 0);
     calojetPassIDTight[nCaloJets] = passCaloJetID(&j, 1);
-    //calojetPassMuFrac[nCaloJets]  = ( j.muonEnergyFraction() < 0.80 );
-    //calojetPassEleFrac[nCaloJets]  = ( j.electronEnergyFraction() < 0.90 );
 
-
-    // if (useGen_) {
-    //   calojetPartonFlavor = j.partonFlavour();
-    //   calojetHadronFlavor = j.hadronFlavour();
-    // }
-
-    //calojetChargedEMEnergyFraction[nCaloJets] = j.chargedEmEnergyFraction();
-    //calojetNeutralEMEnergyFraction[nCaloJets] = j.neutralEmEnergyFraction();
-    //calojetChargedHadronEnergyFraction[nCaloJets] = j.chargedHadronEnergyFraction();
-    //calojetNeutralHadronEnergyFraction[nCaloJets] = j.neutralHadronEnergyFraction();
-    //calojet_charged_hadron_multiplicity[nCaloJets] = j.chargedHadronMultiplicity();
-    //calojet_neutral_hadron_multiplicity[nCaloJets] = j.neutralHadronMultiplicity();
-    //calojet_photon_multiplicity[nCaloJets] = j.photonMultiplicity();
-    //calojet_electron_multiplicity[nCaloJets] = j.electronMultiplicity();
-    //calojet_muon_multiplicity[nCaloJets] = j.muonMultiplicity();
-    //calojet_HF_hadron_multiplicity[nCaloJets] = j.HFHadronMultiplicity();
-    //calojet_HF_em_multiplicity[nCaloJets] = j.HFEMMultiplicity();
-    //calojet_charged_multiplicity[nCaloJets] = j.chargedMultiplicity();
-    //calojet_neutral_multiplicity[nCaloJets] = j.neutralMultiplicity();
-
-
-    //---------------------------
-    //find photons inside the calojet
-    //---------------------------
-    /*
-    for (const reco::Photon &pho : *photons) {
-      //cout << "Nphoton: " << fJetNPhotons << "\n";
-
-      if (!(deltaR(pho.eta(), pho.phi() , j.eta(), j.phi()) < 0.5)) continue;
-
-
-      fJetPhotonPt[fJetNPhotons]  = pho.pt();
-      fJetPhotonEta[fJetNPhotons] = pho.eta(); //correct this for the vertex
-      fJetPhotonPhi[fJetNPhotons] = pho.phi(); //correct this for the vertex
-
-      fJetPhotonSeedRecHitE[fJetNPhotons]      = pho.superCluster()->seed()->x();
-      fJetPhotonSeedRecHitEta[fJetNPhotons]      = pho.superCluster()->seed()->y();
-      fJetPhotonSeedRecHitPhi[fJetNPhotons]      = pho.superCluster()->seed()->z();
-      fJetPhotonSeedRecHitTime[fJetNPhotons]      = pho.superCluster()->seed()->energy();
-
-      // //get time coordinate for the seed
-      // for (const reco::PFCluster &pfcluster : *pfClusters) {
-      // 	if(pfcluster.seed() == pho.superCluster()->seed()->seed())
-      // 	  {
-      // 	    pho_superClusterSeedT[fJetNPhotons] = pfcluster.time();
-      // 	    pho_pfClusterSeedE[fJetNPhotons]      = pfcluster.energy();
-      // 	  }
-      // }
-
-      //-------------------------------
-      //fill all rechits inside photons
-      //-------------------------------
-
-      fJetNPhotons++;
-
-    }
-    */
 
     //---------------------------
     //Find RecHits Inside the Jet
@@ -2778,6 +2684,8 @@ bool llp_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
     int n_matched_rechits = 0;
     for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
     {
+      if (recHit->checkFlag(EcalRecHit::kSaturated) || recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit->checkFlag(EcalRecHit::kPoorReco) || recHit->checkFlag(EcalRecHit::kWeird) || recHit->checkFlag(EcalRecHit::kDiWeird)) continue;
+      if (recHit->timeError() < 0 || recHit->timeError() > 100) continue;
       if ( recHit->checkFlag(0) )
       {
         const DetId recHitId = recHit->detid();
@@ -2789,7 +2697,7 @@ bool llp_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
           //double rechit_z = ecal_radius * sinh(recHitPos.eta());
           //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
 
-          if (recHit->energy() > 1.0)
+          if (recHit->energy() > 0.5)
           {
             calojetRechitE[nCaloJets] += recHit->energy();
             calojetRechitT[nCaloJets] += recHit->time()*recHit->energy();
@@ -2808,134 +2716,6 @@ bool llp_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
   return true;
 };
 
-bool llp_ntupler::fillPFJets(const edm::EventSetup& iSetup)
-{
-  for (const reco::PFJet &j : *jetsPF)
-  {
-    if (j.pt() < 20) continue;
-    if (fabs(j.eta()) > 2.4) continue;
-    //-------------------
-    //Fill Jet-Level Info
-    //-------------------
-    pfjetE[nPFJets] = j.energy();
-    pfjetPt[nPFJets] = j.pt();
-    pfjetEta[nPFJets] = j.eta();
-    pfjetPhi[nPFJets] = j.phi();
-    pfjetMass[nPFJets] = j.mass();
-
-    TLorentzVector thisJet;
-    thisJet.SetPtEtaPhiE(pfjetPt[nPFJets], pfjetEta[nPFJets], pfjetPhi[nPFJets], pfjetE[nPFJets]);
-    //pfjetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-
-    pfjetJetArea[nPFJets] = j.jetArea();
-    pfjetPileupE[nPFJets] = j.pileup();
-
-    pfjetPileupIdFlag[nPFJets] = 0;
-    pfjetPassIDLoose[nPFJets] = passPFJetID(&j, 0);
-    pfjetPassIDTight[nPFJets] = passPFJetID(&j, 1);
-    pfjetPassMuFrac[nPFJets]  = ( j.muonEnergyFraction() < 0.80 );
-    pfjetPassEleFrac[nPFJets]  = ( j.electronEnergyFraction() < 0.90 );
-
-
-    // if (useGen_) {
-    //   pfjetPartonFlavor = j.partonFlavour();
-    //   pfjetHadronFlavor = j.hadronFlavour();
-    // }
-
-    pfjetChargedEMEnergyFraction[nPFJets] = j.chargedEmEnergyFraction();
-    pfjetNeutralEMEnergyFraction[nPFJets] = j.neutralEmEnergyFraction();
-    pfjetChargedHadronEnergyFraction[nPFJets] = j.chargedHadronEnergyFraction();
-    pfjetNeutralHadronEnergyFraction[nPFJets] = j.neutralHadronEnergyFraction();
-    //pfjet_charged_hadron_multiplicity[nPFJets] = j.chargedHadronMultiplicity();
-    //pfjet_neutral_hadron_multiplicity[nPFJets] = j.neutralHadronMultiplicity();
-    //pfjet_photon_multiplicity[nPFJets] = j.photonMultiplicity();
-    //pfjet_electron_multiplicity[nPFJets] = j.electronMultiplicity();
-    //pfjet_muon_multiplicity[nPFJets] = j.muonMultiplicity();
-    //pfjet_HF_hadron_multiplicity[nPFJets] = j.HFHadronMultiplicity();
-    //pfjet_HF_em_multiplicity[nPFJets] = j.HFEMMultiplicity();
-    //pfjet_charged_multiplicity[nPFJets] = j.chargedMultiplicity();
-    //pfjet_neutral_multiplicity[nPFJets] = j.neutralMultiplicity();
-
-
-    //---------------------------
-    //find photons inside the pfjet
-    //---------------------------
-    /*
-    for (const reco::Photon &pho : *photons) {
-      //cout << "Nphoton: " << fJetNPhotons << "\n";
-
-      if (!(deltaR(pho.eta(), pho.phi() , j.eta(), j.phi()) < 0.5)) continue;
-
-
-      fJetPhotonPt[fJetNPhotons]  = pho.pt();
-      fJetPhotonEta[fJetNPhotons] = pho.eta(); //correct this for the vertex
-      fJetPhotonPhi[fJetNPhotons] = pho.phi(); //correct this for the vertex
-
-      fJetPhotonSeedRecHitE[fJetNPhotons]      = pho.superCluster()->seed()->x();
-      fJetPhotonSeedRecHitEta[fJetNPhotons]      = pho.superCluster()->seed()->y();
-      fJetPhotonSeedRecHitPhi[fJetNPhotons]      = pho.superCluster()->seed()->z();
-      fJetPhotonSeedRecHitTime[fJetNPhotons]      = pho.superCluster()->seed()->energy();
-
-      // //get time coordinate for the seed
-      // for (const reco::PFCluster &pfcluster : *pfClusters) {
-      // 	if(pfcluster.seed() == pho.superCluster()->seed()->seed())
-      // 	  {
-      // 	    pho_superClusterSeedT[fJetNPhotons] = pfcluster.time();
-      // 	    pho_pfClusterSeedE[fJetNPhotons]      = pfcluster.energy();
-      // 	  }
-      // }
-
-      //-------------------------------
-      //fill all rechits inside photons
-      //-------------------------------
-
-      fJetNPhotons++;
-
-    }
-    */
-
-    //---------------------------
-    //Find RecHits Inside the Jet
-    //---------------------------
-    // geometry (from ECAL ELF)
-
-    edm::ESHandle<CaloGeometry> geoHandle;
-    iSetup.get<CaloGeometryRecord>().get(geoHandle);
-    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
-    //double ecal_radius = 129.0;
-    int n_matched_rechits = 0;
-    for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
-    {
-      if ( recHit->checkFlag(0) )
-      {
-        const DetId recHitId = recHit->detid();
-        const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
-        if ( deltaR(pfjetEta[nPFJets], pfjetPhi[nPFJets], recHitPos.eta(), recHitPos.phi())  < 0.4)
-        {
-          //double rechit_x = ecal_radius * cos(recHitPos.phi());
-          //double rechit_y = ecal_radius * sin(recHitPos.phi());
-          //double rechit_z = ecal_radius * sinh(recHitPos.eta());
-          //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
-
-          if (recHit->energy() > 1.0)
-          {
-            pfjetRechitE[nPFJets] += recHit->energy();
-            pfjetRechitT[nPFJets] += recHit->time()*recHit->energy();
-          }
-          n_matched_rechits++;
-        }
-      }
-    }
-    //cout << "Last Nphoton: " << fJetNPhotons << "\n";
-    //std::cout << "n: " << n_matched_rechits << std::endl;
-    pfjetNRechits[nPFJets] = n_matched_rechits;
-    pfjetRechitT[nPFJets] = pfjetRechitT[nPFJets]/pfjetRechitE[nPFJets];
-    nPFJets++;
-  } //loop over pfjets
-
-  return true;
-};
 
 bool llp_ntupler::fillMet(const edm::Event& iEvent)
 {
@@ -3070,11 +2850,6 @@ bool llp_ntupler::passCaloJetID( const reco::CaloJet *jetCalo, int cutLevel) {
   return result;
 }//passJetID CaloJet
 
-bool llp_ntupler::passPFJetID( const reco::PFJet *jetPF, int cutLevel) {
-  bool result = false;
-
-  return result;
-}//passJetID PFJet
 
 bool llp_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
   bool result = false;
@@ -3147,6 +2922,91 @@ double dphi = deltaPhi(phi1,phi2);
 double deta = eta1 - eta2;
 return sqrt( dphi*dphi + deta*deta);
 };
+void llp_ntupler::findTrackingVariables(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks)
+{
+    int nTracksAll = 0;
+    //Displaced jet stuff
+    double ptPVTracksMax = 0.;
+    minDeltaRAllTracks = 15;
+    minDeltaRPVTracks = 15;
+    reco::Vertex primaryVertex = vertices->at(0);
+    std::vector<double> theta2Ds;
+    std::vector<double> IP2Ds;
+    for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
+	reco::Track generalTrack = generalTracks->at(iTrack);
+	TLorentzVector generalTrackVecTemp;
+	generalTrackVecTemp.SetPtEtaPhiM(generalTrack.pt(),generalTrack.eta(),generalTrack.phi(),0);
+
+	if (generalTrack.pt() > 1) {
+	    if (minDeltaRAllTracks > generalTrackVecTemp.DeltaR(jetVec))
+	    {
+		minDeltaRAllTracks =  generalTrackVecTemp.DeltaR(jetVec);
+	    }
+	    if (generalTrackVecTemp.DeltaR(jetVec) < 0.4){
+		nTracksAll ++;
+		//tot pt for alpha
+		ptAllTracks += generalTrack.pt();
+
+		// theta 2d
+		// ROOT::Math::XYZPoint innerPos = generalTrack.innerPosition();
+		// ROOT::Math::XYZPoint vertexPos = primaryVertex.position();
+		// ROOT::Math::XYZVector deltaPos = innerPos - vertexPos;
+		// ROOT::Math::XYZVector momentum = generalTrack.innerMomentum();
+		// double mag2DeltaPos = TMath::Sqrt((deltaPos.x()*deltaPos.x()) + (deltaPos.y()*deltaPos.y()));
+		// double mag2Mom = TMath::Sqrt((momentum.x()*momentum.x()) + (momentum.y()*momentum.y()));
+		// double theta2D = TMath::ACos((deltaPos.x()*momentum.x()+deltaPos.y()*momentum.y())/(mag2Mom*mag2DeltaPos));
+		// theta2Ds.push_back(theta2D);
+
+		//IP sig
+		edm::ESHandle<TransientTrackBuilder> theB;
+		iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",theB);
+		reco::TransientTrack transTrack = theB->build(generalTrack);
+		TrajectoryStateClosestToBeamLine traj = transTrack.stateAtBeamLine();
+		Measurement1D meas = traj.transverseImpactParameter();
+		std::pair<bool, Measurement1D> ip2d = IPTools::absoluteTransverseImpactParameter(transTrack,primaryVertex);
+		IP2Ds.push_back(ip2d.second.value()/ip2d.second.error());
+	    }
+	}
+    }
+    if (ptAllTracks > 0.9){
+	//No matched jets
+	for (auto vertex = vertices->begin(); vertex != vertices->end(); vertex++){
+	    double ptPVTracks = 0.;
+	    int nTracksPVTemp = 0;
+	    for(auto pvTrack=vertex->tracks_begin(); pvTrack!=vertex->tracks_end(); pvTrack++){
+		TLorentzVector pvTrackVecTemp;
+		pvTrackVecTemp.SetPtEtaPhiM((*pvTrack)->pt(),(*pvTrack)->eta(),(*pvTrack)->phi(),0);
+		//If pv track associated with jet add pt to ptPVTracks
+		if ((*pvTrack)->pt() > 1) {
+		    if (minDeltaRPVTracks > pvTrackVecTemp.DeltaR(jetVec))
+		    {
+			minDeltaRPVTracks =  pvTrackVecTemp.DeltaR(jetVec);
+		    }
+		    if (pvTrackVecTemp.DeltaR(jetVec) < 0.4){
+			ptPVTracks += (*pvTrack)->pt();
+			ptAllPVTracks += (*pvTrack)->pt();
+			nTracksPVTemp++;
+		    }
+		}
+	    }
+	    if (ptPVTracks > ptPVTracksMax) {
+		ptPVTracksMax = ptPVTracks;
+		nTracksPV = nTracksPVTemp;
+	    }
+	    alphaMax = ptPVTracksMax/ptAllTracks;
+	}
+    }
+    std::sort(IP2Ds.begin(),IP2Ds.end());
+    if (IP2Ds.size() > 0){
+	medianIP = IP2Ds[IP2Ds.size()/2];
+    }
+    std::sort(theta2Ds.begin(),theta2Ds.end());
+    if (theta2Ds.size() > 0){
+	medianTheta2D = theta2Ds[theta2Ds.size()/2];
+    }
+};
+
+
 
 bool llp_ntupler::fillMC()
 {
