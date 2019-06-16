@@ -1406,12 +1406,12 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   resetBranches();
   fillEventInfo(iEvent);
   fillPVAll();
-  fillPVTracks();
+  // fillPVTracks();
   fillMuons(iEvent);
-  fillMuonSystem(iEvent, iSetup);
+  // fillMuonSystem(iEvent, iSetup);
   fillElectrons(iEvent);
-  fillPhotons(iEvent, iSetup);
-  fillTaus();
+  // fillPhotons(iEvent, iSetup);
+  // fillTaus();
   fillJets(iSetup);
   fillMet(iEvent);
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
