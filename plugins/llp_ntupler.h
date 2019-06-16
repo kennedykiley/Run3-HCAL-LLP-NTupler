@@ -702,6 +702,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  //AK4 Jets
  int nJets;
  float jetE[OBJECTARRAYSIZE];
+ float jetEt[OBJECTARRAYSIZE];
  float jetPt[OBJECTARRAYSIZE];
  float jetEta[OBJECTARRAYSIZE];
  float jetPhi[OBJECTARRAYSIZE];
@@ -743,6 +744,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float jetRechitT_Error[OBJECTARRAYSIZE];
 
  float jetGammaMax[OBJECTARRAYSIZE];
+ float jetGammaMax_ET[OBJECTARRAYSIZE];
  float jetGammaMax_EM[OBJECTARRAYSIZE];
  float jetGammaMax_Hadronic[OBJECTARRAYSIZE];
  float jetAlphaMax[OBJECTARRAYSIZE];
@@ -761,6 +763,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  //Calo Jets
  int nCaloJets;
  float calojetE[OBJECTARRAYSIZE];
+ float calojetEt[OBJECTARRAYSIZE];
  float calojetPt[OBJECTARRAYSIZE];
  float calojetEta[OBJECTARRAYSIZE];
  float calojetPhi[OBJECTARRAYSIZE];
@@ -781,6 +784,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float calojetAlphaMax[OBJECTARRAYSIZE];
  float calojetBetaMax[OBJECTARRAYSIZE];
  float calojetGammaMax[OBJECTARRAYSIZE];
+ float calojetGammaMax_ET[OBJECTARRAYSIZE];
  float calojetGammaMax_EM[OBJECTARRAYSIZE];
  float calojetGammaMax_Hadronic[OBJECTARRAYSIZE];
  float calojet_EMEnergyFraction[OBJECTARRAYSIZE];

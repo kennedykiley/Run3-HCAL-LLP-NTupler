@@ -24,7 +24,7 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 #TFileService for output

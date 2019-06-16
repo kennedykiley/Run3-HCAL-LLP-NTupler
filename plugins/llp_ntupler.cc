@@ -510,6 +510,8 @@ void llp_ntupler::enableJetBranches()
   llpTree->Branch("jetE", jetE,"jetE[nJets]/F");
   llpTree->Branch("jetPt", jetPt,"jetPt[nJets]/F");
   llpTree->Branch("jetEta", jetEta,"jetEta[nJets]/F");
+  llpTree->Branch("jetEt", jetEt,"jetEt[nJets]/F");
+
   llpTree->Branch("jetPhi", jetPhi,"jetPhi[nJets]/F");
   llpTree->Branch("jetCSV", jetCSV,"jetCSV[nJets]/F");
   llpTree->Branch("jetCISV", jetCISV,"jetCISV[nJets]/F");
@@ -550,6 +552,7 @@ void llp_ntupler::enableJetBranches()
   llpTree->Branch("jetRechitT_Error", jetRechitT_Error,"jetRechitT_Error[nJets]/F");
   llpTree->Branch("jetAlphaMax",jetAlphaMax,"jetAlphaMax[nJets]/F");
   llpTree->Branch("jetBetaMax",jetBetaMax,"jetBetaMax[nJets]/F");
+  llpTree->Branch("jetGammaMax_ET",jetGammaMax_ET,"jetGammaMax_ET[nJets]/F");
   llpTree->Branch("jetGammaMax_EM",jetGammaMax_EM,"jetGammaMax_EM[nJets]/F");
   llpTree->Branch("jetGammaMax_Hadronic",jetGammaMax_Hadronic,"jetGammaMax_Hadronic[nJets]/F");
   llpTree->Branch("jetGammaMax",jetGammaMax,"jetGammaMax[nJets]/F");
@@ -565,6 +568,7 @@ void llp_ntupler::enableCaloJetBranches()
 {
   llpTree->Branch("nCaloJets", &nCaloJets,"nCaloJets/I");
   llpTree->Branch("calojetE", calojetE,"calojetE[nCaloJets]/F");
+  llpTree->Branch("calojetEt", calojetEt,"calojetEt[nCaloJets]/F");
   llpTree->Branch("calojetPt", calojetPt,"calojetPt[nCaloJets]/F");
   llpTree->Branch("calojetEta", calojetEta,"calojetEta[nCaloJets]/F");
   llpTree->Branch("calojetPhi", calojetPhi,"calojetPhi[nCaloJets]/F");
@@ -581,6 +585,7 @@ void llp_ntupler::enableCaloJetBranches()
   llpTree->Branch("calojetRechitT_rms", calojetRechitT_rms,"calojetRechitT_rms[nCaloJets]/F");
   llpTree->Branch("calojetAlphaMax",calojetAlphaMax,"calojetAlphaMax[nCaloJets]/F");
   llpTree->Branch("calojetBetaMax",calojetBetaMax,"calojetBetaMax[nCaloJets]/F");
+  llpTree->Branch("calojetGammaMax_ET",calojetGammaMax_ET,"calojetGammaMax_ET[nCaloJets]/F");
   llpTree->Branch("calojetGammaMax_EM",calojetGammaMax_EM,"calojetGammaMax_EM[nCaloJets]/F");
   llpTree->Branch("calojetGammaMax_Hadronic",calojetGammaMax_Hadronic,"calojetGammaMax_Hadronic[nCaloJets]/F");
   llpTree->Branch("calojetGammaMax",calojetGammaMax,"calojetGammaMax[nCaloJets]/F");
@@ -1110,6 +1115,7 @@ void llp_ntupler::resetJetBranches()
   for ( int i = 0; i < OBJECTARRAYSIZE; i++)
   {
     jetE[i] = 0.0;
+    jetEt[i] = 0.0;
     jetPt[i] = 0.0;
     jetEta[i] = 0.0;
     jetPhi[i] = 0.0;
@@ -1149,6 +1155,7 @@ void llp_ntupler::resetJetBranches()
     jetGammaMax[i] = -99.0;
     jetGammaMax_EM[i] = -99.0;
     jetGammaMax_Hadronic[i] = -99.0;
+    jetGammaMax_ET[i] = -99.0;
     jetAlphaMax[i] = -99.0;
     jetBetaMax[i] = -99.0;
     jetPtAllTracks[i] = -99.0;
@@ -1189,6 +1196,7 @@ void llp_ntupler::resetCaloJetBranches()
   for ( int i = 0; i < OBJECTARRAYSIZE; i++)
   {
     calojetE[i] = 0.0;
+    calojetEt[i] = 0.0;
     calojetPt[i] = 0.0;
     calojetEta[i] = 0.0;
     calojetPhi[i] = 0.0;
@@ -1210,7 +1218,7 @@ void llp_ntupler::resetCaloJetBranches()
     calojetGammaMax[i] = -99.0;
     calojetGammaMax_EM[i] = -99.0;
     calojetGammaMax_Hadronic[i] = -99.0;
-
+    calojetGammaMax_ET[i] = -99.0;
     calojetPtAllTracks[i] = -99.0;
     calojetPtAllPVTracks[i] = -99.0;
     calojetMedianTheta2D[i] = -99.0;
@@ -2489,6 +2497,7 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
     jetEta[nJets] = j.eta();
     jetPhi[nJets] = j.phi();
     jetMass[nJets] = j.mass();
+    jetEt[nJets] = j.et();
 
     TLorentzVector thisJet;
     thisJet.SetPtEtaPhiE(jetPt[nJets], jetEta[nJets], jetPhi[nJets], jetE[nJets]);
@@ -2535,6 +2544,7 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
     jetGammaMax[nJets] = alphaMax * ptAllTracks/(j.energy());
     jetGammaMax_EM[nJets] = alphaMax * ptAllTracks/(j.energy()*(j.chargedEmEnergyFraction()+j.neutralEmEnergyFraction()));
     jetGammaMax_Hadronic[nJets] = alphaMax * ptAllTracks/(j.energy()*(j.chargedHadronEnergyFraction()+j.neutralHadronEnergyFraction()));
+    jetGammaMax_ET[nJets] = alphaMax * ptAllTracks/j.et();
     jetMedianTheta2D[nJets] = medianTheta2D;
     jetMedianIP[nJets] = medianIP;
     jetPtAllPVTracks[nJets] = ptAllPVTracks;
@@ -2659,6 +2669,7 @@ bool llp_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
     //Fill Jet-Level Info
     //-------------------
     calojetE[nCaloJets] = j.energy();
+    calojetEt[nCaloJets] = j.et();
     calojetPt[nCaloJets] = j.pt();
     calojetEta[nCaloJets] = j.eta();
     calojetPhi[nCaloJets] = j.phi();
@@ -2678,6 +2689,8 @@ bool llp_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
     calojetGammaMax[nCaloJets] = alphaMax * ptAllTracks/(j.energy());
     calojetGammaMax_EM[nCaloJets] = alphaMax * ptAllTracks/(j.energy()*j.emEnergyFraction());
     calojetGammaMax_Hadronic[nCaloJets] =  alphaMax * ptAllTracks/(j.energy()*j.energyFractionHadronic());
+    calojetGammaMax_ET[nCaloJets] = alphaMax * ptAllTracks/j.et();
+
     calojetMedianTheta2D[nCaloJets] = medianTheta2D;
     calojetMedianIP[nCaloJets] = medianIP;
     calojetPtAllPVTracks[nCaloJets] = ptAllPVTracks;
