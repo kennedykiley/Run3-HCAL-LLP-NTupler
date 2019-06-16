@@ -653,7 +653,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
 
 
  //Ecal RecHits
- const float Rechit_cut = 1.0;
+ const float Rechit_cut = 0.5;
  int nRechits;
  float ecalRechit_Eta[RECHITARRAYSIZE];
  float ecalRechit_Phi[RECHITARRAYSIZE];
@@ -738,6 +738,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  int   jetNRechits[OBJECTARRAYSIZE];
  float jetRechitE[OBJECTARRAYSIZE];
  float jetRechitT[OBJECTARRAYSIZE];
+ float jetRechitT_rms[OBJECTARRAYSIZE];
  float jetRechitE_Error[OBJECTARRAYSIZE];
  float jetRechitT_Error[OBJECTARRAYSIZE];
 
@@ -775,6 +776,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  int   calojetNRechits[OBJECTARRAYSIZE];
  float calojetRechitE[OBJECTARRAYSIZE];
  float calojetRechitT[OBJECTARRAYSIZE];
+ float calojetRechitT_rms[OBJECTARRAYSIZE];
 
  float calojetAlphaMax[OBJECTARRAYSIZE];
  float calojetBetaMax[OBJECTARRAYSIZE];

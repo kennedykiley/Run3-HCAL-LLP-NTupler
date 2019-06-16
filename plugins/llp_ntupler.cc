@@ -544,6 +544,8 @@ void llp_ntupler::enableJetBranches()
   llpTree->Branch("jetNRechits", jetNRechits,"jetNRechits[nJets]/I");
   llpTree->Branch("jetRechitE", jetRechitE,"jetRechitE[nJets]/F");
   llpTree->Branch("jetRechitT", jetRechitT,"jetRechitT[nJets]/F");
+  llpTree->Branch("jetRechitT_rms", jetRechitT_rms,"jetRechitT_rms[nJets]/F");
+
   llpTree->Branch("jetRechitE_Error", jetRechitE_Error,"jetRechitE_Error[nJets]/F");
   llpTree->Branch("jetRechitT_Error", jetRechitT_Error,"jetRechitT_Error[nJets]/F");
   llpTree->Branch("jetAlphaMax",jetAlphaMax,"jetAlphaMax[nJets]/F");
@@ -576,6 +578,7 @@ void llp_ntupler::enableCaloJetBranches()
   llpTree->Branch("calojetNRechits", calojetNRechits,"calojetNRechits[nCaloJets]/I");
   llpTree->Branch("calojetRechitE", calojetRechitE,"calojetRechitE[nCaloJets]/F");
   llpTree->Branch("calojetRechitT", calojetRechitT,"calojetRechitT[nCaloJets]/F");
+  llpTree->Branch("calojetRechitT_rms", calojetRechitT_rms,"calojetRechitT_rms[nCaloJets]/F");
   llpTree->Branch("calojetAlphaMax",calojetAlphaMax,"calojetAlphaMax[nCaloJets]/F");
   llpTree->Branch("calojetBetaMax",calojetBetaMax,"calojetBetaMax[nCaloJets]/F");
   llpTree->Branch("calojetGammaMax_EM",calojetGammaMax_EM,"calojetGammaMax_EM[nCaloJets]/F");
@@ -1139,6 +1142,8 @@ void llp_ntupler::resetJetBranches()
     jetNRechits[i] = 0;
     jetRechitE[i] = 0.0;
     jetRechitT[i] = 0.0;
+    jetRechitT_rms[i] = 0.0;
+
     jetRechitE_Error[i] = 0.0;
     jetRechitT_Error[i] = 0.0;
     jetGammaMax[i] = -99.0;
@@ -1198,6 +1203,7 @@ void llp_ntupler::resetCaloJetBranches()
     calojetNRechits[i] = 0;
     calojetRechitE[i] = 0.0;
     calojetRechitT[i] = 0.0;
+    calojetRechitT_rms[i] = 0.0;
 
     calojetAlphaMax[i] = -99.0;
     calojetBetaMax[i] = -99.0;
@@ -1531,15 +1537,29 @@ bool llp_ntupler::fillPVAll()
 
 bool llp_ntupler::fillPVTracks()
 {
-  //select the primary vertex, if any
-  //myPV = &(vertices->front());
-  //bool foundPV = false;
-  for(unsigned int i = 0; i < vertices->size(); i++)
-  {
-    if(vertices->at(i).isValid() && !vertices->at(i).isFake())
+  //
+  // for(unsigned int i = 0; i < vertices->size(); i++)
+  // {
+  //   if(vertices->at(i).isValid() && !vertices->at(i).isFake())
+  //   {
+  //     myPV = &(vertices->at(i));
+  //     for(auto pvTrack = myPV->tracks_begin(); pvTrack != myPV->tracks_end(); pvTrack++)
+  //     {
+  //       if( (*pvTrack)->pt() > pvTrack_pt_cut )
+  //       {
+  //         pvTrackPt[nPVTracks]  = (*pvTrack)->pt();
+  //         pvTrackEta[nPVTracks] = (*pvTrack)->eta();
+  //         pvTrackPhi[nPVTracks] = (*pvTrack)->phi();
+  //         nPVTracks++;
+  //       }
+  //     }
+  //   }
+  // }
+  //
+	for (auto vertex = vertices->begin(); vertex != vertices->end(); vertex++){
+    if(vertex->isValid() && !vertex->isFake())
     {
-      myPV = &(vertices->at(i));
-      for(auto pvTrack = myPV->tracks_begin(); pvTrack != myPV->tracks_end(); pvTrack++)
+      for(auto pvTrack = vertex->tracks_begin(); pvTrack != vertex->tracks_end(); pvTrack++)
       {
         if( (*pvTrack)->pt() > pvTrack_pt_cut )
         {
@@ -1551,7 +1571,6 @@ bool llp_ntupler::fillPVTracks()
       }
     }
   }
-
   return true;
 };
 
@@ -2609,8 +2628,10 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
           jetRechitE_Error[nJets] += recHit->energyError() * recHit->energyError();
           jetRechitE[nJets] += recHit->energy();
           jetRechitT[nJets] += recHit->time()*recHit->energy();
+          jetRechitT_rms[nJets] += recHit->time()*recHit->time();
+          n_matched_rechits++;
         }
-        n_matched_rechits++;
+
       }
     }
     //cout << "Last Nphoton: " << fJetNPhotons << "\n";
@@ -2619,6 +2640,7 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
       jetRechitT[nJets] = jetRechitT[nJets]/jetRechitE[nJets];
       jetNRechits[nJets] = n_matched_rechits;
       jetRechitE_Error[nJets] = sqrt(jetRechitE_Error[nJets]);
+      jetRechitT_rms[nJets] = sqrt(jetRechitT_rms[nJets]);
       // jetRechitT_Error[nJets] = 0.0; // not set
       nJets++;
     }
@@ -2697,20 +2719,26 @@ bool llp_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
           //double rechit_z = ecal_radius * sinh(recHitPos.eta());
           //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
 
-          if (recHit->energy() > 0.5)
+          if (recHit->energy() > Rechit_cut)
           {
             calojetRechitE[nCaloJets] += recHit->energy();
             calojetRechitT[nCaloJets] += recHit->time()*recHit->energy();
+            calojetRechitT_rms[nCaloJets] += recHit->time()*recHit->time();
+
+            n_matched_rechits++;
           }
-          n_matched_rechits++;
+
         }
       }
     }
     //cout << "Last Nphoton: " << fJetNPhotons << "\n";
     //std::cout << "n: " << n_matched_rechits << std::endl;
-    calojetNRechits[nCaloJets] = n_matched_rechits;
-    calojetRechitT[nCaloJets] = calojetRechitT[nCaloJets]/calojetRechitE[nCaloJets];
-    nCaloJets++;
+    if (calojetRechitE[nCaloJets] > 0.0 ){
+      calojetNRechits[nCaloJets] = n_matched_rechits;
+      calojetRechitT[nCaloJets] = calojetRechitT[nCaloJets]/calojetRechitE[nCaloJets];
+      calojetRechitT_rms[nCaloJets] = sqrt(calojetRechitT_rms[nCaloJets]);
+      nCaloJets++;
+    }
   } //loop over calojets
 
   return true;
@@ -2918,92 +2946,94 @@ double llp_ntupler::deltaPhi(double phi1, double phi2)
 
 double llp_ntupler::deltaR(double eta1, double phi1, double eta2, double phi2)
 {
-double dphi = deltaPhi(phi1,phi2);
-double deta = eta1 - eta2;
-return sqrt( dphi*dphi + deta*deta);
+  double dphi = deltaPhi(phi1,phi2);
+  double deta = eta1 - eta2;
+  return sqrt( dphi*dphi + deta*deta);
 };
 void llp_ntupler::findTrackingVariables(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks)
 {
-    int nTracksAll = 0;
-    //Displaced jet stuff
-    double ptPVTracksMax = 0.;
-    minDeltaRAllTracks = 15;
-    minDeltaRPVTracks = 15;
-    reco::Vertex primaryVertex = vertices->at(0);
-    std::vector<double> theta2Ds;
-    std::vector<double> IP2Ds;
-    for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
-	reco::Track generalTrack = generalTracks->at(iTrack);
-	TLorentzVector generalTrackVecTemp;
-	generalTrackVecTemp.SetPtEtaPhiM(generalTrack.pt(),generalTrack.eta(),generalTrack.phi(),0);
+  int nTracksAll = 0;
+  //Displaced jet stuff
+  double ptPVTracksMax = 0.;
+  minDeltaRAllTracks = 15;
+  minDeltaRPVTracks = 15;
+  reco::Vertex primaryVertex = vertices->at(0);
+  std::vector<double> theta2Ds;
+  std::vector<double> IP2Ds;
+  for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
+  	reco::Track generalTrack = generalTracks->at(iTrack);
+  	TLorentzVector generalTrackVecTemp;
+  	generalTrackVecTemp.SetPtEtaPhiM(generalTrack.pt(),generalTrack.eta(),generalTrack.phi(),0);
 
-	if (generalTrack.pt() > 1) {
+  	if (generalTrack.pt() > 1) {
 	    if (minDeltaRAllTracks > generalTrackVecTemp.DeltaR(jetVec))
 	    {
-		minDeltaRAllTracks =  generalTrackVecTemp.DeltaR(jetVec);
+		    minDeltaRAllTracks =  generalTrackVecTemp.DeltaR(jetVec);
 	    }
 	    if (generalTrackVecTemp.DeltaR(jetVec) < 0.4){
-		nTracksAll ++;
-		//tot pt for alpha
-		ptAllTracks += generalTrack.pt();
+    		nTracksAll ++;
+    		//tot pt for alpha
+    		ptAllTracks += generalTrack.pt();
 
-		// theta 2d
-		// ROOT::Math::XYZPoint innerPos = generalTrack.innerPosition();
-		// ROOT::Math::XYZPoint vertexPos = primaryVertex.position();
-		// ROOT::Math::XYZVector deltaPos = innerPos - vertexPos;
-		// ROOT::Math::XYZVector momentum = generalTrack.innerMomentum();
-		// double mag2DeltaPos = TMath::Sqrt((deltaPos.x()*deltaPos.x()) + (deltaPos.y()*deltaPos.y()));
-		// double mag2Mom = TMath::Sqrt((momentum.x()*momentum.x()) + (momentum.y()*momentum.y()));
-		// double theta2D = TMath::ACos((deltaPos.x()*momentum.x()+deltaPos.y()*momentum.y())/(mag2Mom*mag2DeltaPos));
-		// theta2Ds.push_back(theta2D);
+    		// theta 2d
+    		// ROOT::Math::XYZPoint innerPos = generalTrack.innerPosition();
+    		// ROOT::Math::XYZPoint vertexPos = primaryVertex.position();
+    		// ROOT::Math::XYZVector deltaPos = innerPos - vertexPos;
+    		// ROOT::Math::XYZVector momentum = generalTrack.innerMomentum();
+    		// double mag2DeltaPos = TMath::Sqrt((deltaPos.x()*deltaPos.x()) + (deltaPos.y()*deltaPos.y()));
+    		// double mag2Mom = TMath::Sqrt((momentum.x()*momentum.x()) + (momentum.y()*momentum.y()));
+    		// double theta2D = TMath::ACos((deltaPos.x()*momentum.x()+deltaPos.y()*momentum.y())/(mag2Mom*mag2DeltaPos));
+    		// theta2Ds.push_back(theta2D);
 
-		//IP sig
-		edm::ESHandle<TransientTrackBuilder> theB;
-		iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",theB);
-		reco::TransientTrack transTrack = theB->build(generalTrack);
-		TrajectoryStateClosestToBeamLine traj = transTrack.stateAtBeamLine();
-		Measurement1D meas = traj.transverseImpactParameter();
-		std::pair<bool, Measurement1D> ip2d = IPTools::absoluteTransverseImpactParameter(transTrack,primaryVertex);
-		IP2Ds.push_back(ip2d.second.value()/ip2d.second.error());
-	    }
-	}
+    		//IP sig
+    		edm::ESHandle<TransientTrackBuilder> theB;
+    		iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",theB);
+    		reco::TransientTrack transTrack = theB->build(generalTrack);
+    		TrajectoryStateClosestToBeamLine traj = transTrack.stateAtBeamLine();
+    		Measurement1D meas = traj.transverseImpactParameter();
+    		std::pair<bool, Measurement1D> ip2d = IPTools::absoluteTransverseImpactParameter(transTrack,primaryVertex);
+    		IP2Ds.push_back(ip2d.second.value()/ip2d.second.error());
+      }
     }
-    if (ptAllTracks > 0.9){
+  }
+  if (ptAllTracks > 0.9){
 	//No matched jets
-	for (auto vertex = vertices->begin(); vertex != vertices->end(); vertex++){
-	    double ptPVTracks = 0.;
-	    int nTracksPVTemp = 0;
-	    for(auto pvTrack=vertex->tracks_begin(); pvTrack!=vertex->tracks_end(); pvTrack++){
-		TLorentzVector pvTrackVecTemp;
-		pvTrackVecTemp.SetPtEtaPhiM((*pvTrack)->pt(),(*pvTrack)->eta(),(*pvTrack)->phi(),0);
-		//If pv track associated with jet add pt to ptPVTracks
-		if ((*pvTrack)->pt() > 1) {
-		    if (minDeltaRPVTracks > pvTrackVecTemp.DeltaR(jetVec))
-		    {
-			minDeltaRPVTracks =  pvTrackVecTemp.DeltaR(jetVec);
-		    }
-		    if (pvTrackVecTemp.DeltaR(jetVec) < 0.4){
-			ptPVTracks += (*pvTrack)->pt();
-			ptAllPVTracks += (*pvTrack)->pt();
-			nTracksPVTemp++;
-		    }
-		}
-	    }
-	    if (ptPVTracks > ptPVTracksMax) {
-		ptPVTracksMax = ptPVTracks;
-		nTracksPV = nTracksPVTemp;
-	    }
-	    alphaMax = ptPVTracksMax/ptAllTracks;
-	}
-    }
-    std::sort(IP2Ds.begin(),IP2Ds.end());
-    if (IP2Ds.size() > 0){
-	medianIP = IP2Ds[IP2Ds.size()/2];
-    }
-    std::sort(theta2Ds.begin(),theta2Ds.end());
-    if (theta2Ds.size() > 0){
-	medianTheta2D = theta2Ds[theta2Ds.size()/2];
-    }
+  	for (auto vertex = vertices->begin(); vertex != vertices->end(); vertex++){
+      double ptPVTracks = 0.;
+      int nTracksPVTemp = 0;
+      if(!vertex->isValid())continue;
+      if (vertex->isFake())continue;
+      for(auto pvTrack=vertex->tracks_begin(); pvTrack!=vertex->tracks_end(); pvTrack++){
+    		TLorentzVector pvTrackVecTemp;
+    		pvTrackVecTemp.SetPtEtaPhiM((*pvTrack)->pt(),(*pvTrack)->eta(),(*pvTrack)->phi(),0);
+  		//If pv track associated with jet add pt to ptPVTracks
+    		if ((*pvTrack)->pt() > 1) {
+    	    if (minDeltaRPVTracks > pvTrackVecTemp.DeltaR(jetVec))
+    	    {
+    		     minDeltaRPVTracks =  pvTrackVecTemp.DeltaR(jetVec);
+    	    }
+    	    if (pvTrackVecTemp.DeltaR(jetVec) < 0.4){
+        		ptPVTracks += (*pvTrack)->pt();
+        		ptAllPVTracks += (*pvTrack)->pt();
+        		nTracksPVTemp++;
+    	    }
+    		}
+      }
+      if (ptPVTracks > ptPVTracksMax) {
+      	ptPVTracksMax = ptPVTracks;
+      	nTracksPV = nTracksPVTemp;
+      }
+      alphaMax = ptPVTracksMax/ptAllTracks;
+  	}
+  }
+  std::sort(IP2Ds.begin(),IP2Ds.end());
+  if (IP2Ds.size() > 0){
+	   medianIP = IP2Ds[IP2Ds.size()/2];
+  }
+  std::sort(theta2Ds.begin(),theta2Ds.end());
+  if (theta2Ds.size() > 0){
+    medianTheta2D = theta2Ds[theta2Ds.size()/2];
+  }
 };
 
 
