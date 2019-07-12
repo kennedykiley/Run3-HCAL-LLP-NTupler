@@ -230,6 +230,7 @@ protected:
   bool    isFastsim_;
   bool enableTriggerInfo_;
   bool enableCaloJet_;
+  bool enableGenLLPInfo_;
   bool enableEcalRechits_;
   bool readGenVertexTime_;
   bool enableAK8Jets_;
@@ -268,7 +269,7 @@ protected:
   edm::EDGetTokenT<reco::PFTauCollection> tausToken_;
   edm::EDGetTokenT<reco::PhotonCollection> photonsToken_;
   edm::EDGetTokenT<reco::CaloJetCollection> jetsCaloToken_;
-  edm::EDGetTokenT<reco::PFJetCollection> jetsPFToken_;
+  // edm::EDGetTokenT<reco::PFJetCollection> jetsPFToken_;
   edm::EDGetTokenT<reco::PFJetCollection> jetsToken_;
   edm::EDGetTokenT<reco::PFJetCollection> jetsPuppiToken_;
   edm::EDGetTokenT<reco::PFJetCollection> jetsAK8Token_;
@@ -343,7 +344,7 @@ protected:
   edm::Handle<reco::PhotonCollection> photons;
   edm::Handle<reco::PFTauCollection> taus;
   edm::Handle<reco::CaloJetCollection> jetsCalo;
-  edm::Handle<reco::PFJetCollection> jetsPF;
+  // edm::Handle<reco::PFJetCollection> jetsPF;
   edm::Handle<reco::PFJetCollection> jets;
   edm::Handle<reco::PFJetCollection> jetsPuppi;
   edm::Handle<reco::PFJetCollection> jetsAK8;
@@ -966,6 +967,34 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float gParticleProdVertexX[GENPARTICLEARRAYSIZE];
  float gParticleProdVertexY[GENPARTICLEARRAYSIZE];
  float gParticleProdVertexZ[GENPARTICLEARRAYSIZE];
+
+
+ float gLLP_prod_vertex_x[LLP_ARRAY_SIZE];
+ float gLLP_prod_vertex_y[LLP_ARRAY_SIZE];
+ float gLLP_prod_vertex_z[LLP_ARRAY_SIZE];
+ float gLLP_decay_vertex_x[LLP_ARRAY_SIZE];
+ float gLLP_decay_vertex_y[LLP_ARRAY_SIZE];
+ float gLLP_decay_vertex_z[LLP_ARRAY_SIZE];
+ float gLLP_beta[LLP_ARRAY_SIZE];
+ float gLLP_travel_time[LLP_ARRAY_SIZE];
+
+
+ float photon_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
+ float photon_travel_time_pv[LLP_DAUGHTER_ARRAY_SIZE];
+
+ float gen_time[LLP_DAUGHTER_ARRAY_SIZE];
+ float gen_time_pv[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_pt[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_eta[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_phi[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_eta_ecalcorr[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_phi_ecalcorr[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_e[LLP_DAUGHTER_ARRAY_SIZE];
+ unsigned int gLLP_daughter_match_jet_index[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_min_delta_r_match_jet[LLP_DAUGHTER_ARRAY_SIZE];
+ unsigned int gLLP_daughter_match_calojet_index[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_min_delta_r_match_calojet[LLP_DAUGHTER_ARRAY_SIZE];
 
 
  //razor variables
