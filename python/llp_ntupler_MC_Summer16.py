@@ -11,17 +11,8 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-    'file:/mnt/hadoop/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2_v1/190417_225744/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_1.root',
-    'file:/mnt/hadoop/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2_v1/190417_225744/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_2.root',
-    'file:/mnt/hadoop/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2_v1/190417_225744/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_3.root',
-    'file:/mnt/hadoop/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2_v1/190417_225744/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_4.root',
-    'file:/mnt/hadoop/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2_v1/190417_225744/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_5.root',
-    'file:/mnt/hadoop/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2_v1/190417_225744/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_6.root',
-    'file:/mnt/hadoop/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2_v1/190417_225744/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_7.root',
-    'file:/mnt/hadoop/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2_v1/190417_225744/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_8.root',
-    'file:/mnt/hadoop/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2_v1/190417_225744/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_9.root',
-    'file:/mnt/hadoop/store/user/christiw/RunIISummer16_withISR/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_withISR_mh125_mx50_pl1000_ev100000/crab_CMSSW_8_0_21_ppTohToSS1SS2_SS1Tobb_SS2Tobb_vh_ISR_mh125_mx50_pl1000_ev100000_AOD_CaltechT2_v1/190417_225744/0000/ppTohToSS1SS2_SS1Tobb_SS2Tobb_ggh_withISR_step2_10.root',
-    )
+    'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/WminusH_HToSSTobbbb_WToLNu_MH-125_MS-55_ctauS-1000_TuneCUETP8M1_13TeV-powheg-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/120000/C649B854-84D0-E611-BFEF-0CC47A7452DA.root',
+)
 )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
@@ -57,7 +48,8 @@ process.ntuples = cms.EDAnalyzer('llp_ntupler',
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
-    readGenVertexTime = cms.bool(True),#need to be false for displaced samples
+    enableGenLLPInfo = cms.bool(True),
+    readGenVertexTime = cms.bool(False),#need to be false for displaced samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v1.dat"),
     eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
