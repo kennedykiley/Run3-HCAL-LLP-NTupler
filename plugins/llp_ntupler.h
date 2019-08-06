@@ -194,6 +194,7 @@ public:
   double deltaPhi(double phi1, double phi2);
   double deltaR(double eta1, double phi1, double eta2, double phi2);
   void findTrackingVariables(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks);
+  void jet_second_moments(std::vector<double> &et,std::vector<double> &eta,std::vector<double> &phi,double &sig1,double &sig2);
 
   //bool fill_fat_jet(const edm::EventSetup& iSetup);
   bool fillEventInfo(const edm::Event& iEvent);
@@ -758,8 +759,10 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float jetMinDeltaRAllTracks[OBJECTARRAYSIZE];
  float jetMinDeltaRPVTracks[OBJECTARRAYSIZE];
 
-
-
+ float jet_energy_frac[OBJECTARRAYSIZE];
+ float jet_sig_et1[OBJECTARRAYSIZE];
+ float jet_sig_et2[OBJECTARRAYSIZE];
+ bool jet_matched[OBJECTARRAYSIZE];
 
  //Calo Jets
  int nCaloJets;
@@ -977,7 +980,10 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float gLLP_decay_vertex_z[LLP_ARRAY_SIZE];
  float gLLP_beta[LLP_ARRAY_SIZE];
  float gLLP_travel_time[LLP_ARRAY_SIZE];
-
+ float gLLP_pt[LLP_ARRAY_SIZE];
+ float gLLP_e[LLP_ARRAY_SIZE];
+ float gLLP_eta[LLP_ARRAY_SIZE];
+ float gLLP_phi[LLP_ARRAY_SIZE];
 
  float photon_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
  float photon_travel_time_pv[LLP_DAUGHTER_ARRAY_SIZE];
