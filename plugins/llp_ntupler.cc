@@ -463,6 +463,8 @@ void llp_ntupler::enableMuonSystemBranches()
     llpTree->Branch("cscY",cscY,"cscY[nCsc]");
     llpTree->Branch("cscZ",cscZ,"cscZ[nCsc]");
     llpTree->Branch("cscNRecHits",cscNRecHits,"cscNRecHits[nCsc]");
+    llpTree->Branch("cscNRecHits_flag",cscNRecHits_flag,"cscNRecHits_flag[nCsc]");
+
     llpTree->Branch("cscT",cscT,"cscT[nCsc]");
     llpTree->Branch("cscChi2",cscChi2,"cscChi2[nCsc]");
 
@@ -1119,6 +1121,7 @@ void llp_ntupler::resetMuonSystemBranches()
       cscY[i] = 0.0;
       cscZ[i] = 0.0;
       cscNRecHits[i] = 0.0;
+      cscNRecHits_flag[i] = 0.0;
       cscT[i] = 0.0;
       cscChi2[i] = 0.0;
     }
@@ -1491,9 +1494,10 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   NEvents->Fill(0); //increment event count
 
   //resetting output tree branches
+
   resetBranches();
   fillEventInfo(iEvent);
-  fillPVAll();
+  // fillPVAll();
   // fillPVTracks();
   fillMuons(iEvent);
   fillMuonSystem(iEvent, iSetup);
@@ -1511,6 +1515,8 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   }
 
   llpTree->Fill();
+
+
 };
 
 //------ Method called once each job just before starting event loop ------//
@@ -1690,6 +1696,8 @@ bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup
 	float globY = 0.;
 	float globZ = 0.;
 	float globEta = 0.;
+
+
 	CSCDetId id  = (CSCDetId)(cscSegment).cscDetId();
 	LocalPoint segPos = (cscSegment).localPosition();
 	const CSCChamber* cscchamber = cscG->chamber(id);
@@ -1709,9 +1717,24 @@ bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup
 	    cscEta[nCsc] = globEta;
 	    cscT[nCsc] = cscSegment.time();
 	    cscChi2[nCsc] = cscSegment.chi2();
+
+      // look at flags of the rechits
+      const std::vector<CSCRecHit2D> cscrechits2d = cscSegment.specificRecHits();
+      int cscNRecHits_flagged = 0;
+      for (const CSCRecHit2D recHit2d : cscrechits2d) {
+        if (!(recHit2d.quality()==1)) continue;
+        if(recHit2d.badStrip()) continue;
+        if (recHit2d.badWireGroup()) continue;
+
+        // std::cout<<cscSegment.nRecHits()<<", " << recHit2d.quality()<<", "<<recHit2d.badStrip()<<", "<<recHit2d.badWireGroup()<<", "<<recHit2d.errorWithinStrip()<<", "<<recHit2d.energyDepositedInLayer()<<std::endl;
+        cscNRecHits_flagged++;
+      }
+      cscNRecHits_flag[nCsc] = cscNRecHits_flagged;
+
+
 	    nCsc++;
-	}
-    }
+	 }
+  }
     for (const RPCRecHit rpcRecHit : *rpcRecHits){
 	LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
 	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
@@ -2737,21 +2760,18 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
 
       }
     }
-    //cout << "Last Nphoton: " << fJetNPhotons << "\n";
 
-    if (jetRechitE[nJets] > 0.0 ){
-      jetRechitT[nJets] = jetRechitT[nJets]/jetRechitE[nJets];
-      jetNRechits[nJets] = n_matched_rechits;
-      jetRechitE_Error[nJets] = sqrt(jetRechitE_Error[nJets]);
-      jetRechitT_rms[nJets] = sqrt(jetRechitT_rms[nJets]);
-      double sig1(0.0),sig2(0.0);
-      jet_second_moments(rechitet,rechiteta,rechitphi,sig1,sig2);
-      jet_sig_et1[nJets] = sig1;
-      jet_sig_et2[nJets] = sig2;
-      jet_energy_frac[nJets] = jet_energy_frac[nJets]/jetRechitE[nJets];
-      // jetRechitT_Error[nJets] = 0.0; // not set
-      nJets++;
-    }
+    jetRechitT[nJets] = jetRechitT[nJets]/jetRechitE[nJets];
+    jetNRechits[nJets] = n_matched_rechits;
+    jetRechitE_Error[nJets] = sqrt(jetRechitE_Error[nJets]);
+    jetRechitT_rms[nJets] = sqrt(jetRechitT_rms[nJets]);
+    double sig1(0.0),sig2(0.0);
+    jet_second_moments(rechitet,rechiteta,rechitphi,sig1,sig2);
+    jet_sig_et1[nJets] = sig1;
+    jet_sig_et2[nJets] = sig2;
+    jet_energy_frac[nJets] = jet_energy_frac[nJets]/jetRechitE[nJets];
+
+    nJets++;
   } //loop over jets
 
   return true;

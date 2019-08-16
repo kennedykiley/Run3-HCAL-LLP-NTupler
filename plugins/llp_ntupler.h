@@ -677,6 +677,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float cscY[OBJECTARRAYSIZE];
   float cscZ[OBJECTARRAYSIZE];
   float cscNRecHits[OBJECTARRAYSIZE];
+  float cscNRecHits_flag[OBJECTARRAYSIZE];
   float cscT[OBJECTARRAYSIZE];
   float cscChi2[OBJECTARRAYSIZE];
 
