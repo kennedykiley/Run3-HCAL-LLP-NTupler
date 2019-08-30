@@ -470,6 +470,9 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("cscX",cscX,"cscX[nCsc]");
     displacedJetMuonTree->Branch("cscY",cscY,"cscY[nCsc]");
     displacedJetMuonTree->Branch("cscZ",cscZ,"cscZ[nCsc]");
+    displacedJetMuonTree->Branch("cscDirectionX",cscDirectionX,"cscDirectionX[nCsc]");
+    displacedJetMuonTree->Branch("cscDirectionY",cscDirectionY,"cscDirectionY[nCsc]");
+    displacedJetMuonTree->Branch("cscDirectionZ",cscDirectionZ,"cscDirectionZ[nCsc]");
     displacedJetMuonTree->Branch("cscNRecHits",cscNRecHits,"cscNRecHits[nCsc]");
     displacedJetMuonTree->Branch("cscNRecHits_flag",cscNRecHits_flag,"cscNRecHits_flag[nCsc]");
 
@@ -1128,6 +1131,9 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
       cscX[i] = 0.0;
       cscY[i] = 0.0;
       cscZ[i] = 0.0;
+      cscDirectionX[i] = 0.0;
+      cscDirectionY[i] = 0.0;
+      cscDirectionZ[i] = 0.0;
       cscNRecHits[i] = 0.0;
       cscNRecHits_flag[i] = 0.0;
       cscT[i] = 0.0;
@@ -1506,11 +1512,11 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
 
   resetBranches();
   fillEventInfo(iEvent);
-  fillMuonSystem(iEvent, iSetup);
   fillJets(iSetup);
   fillMuons(iEvent);
   fillGenParticles();
-    
+  fillMuonSystem(iEvent, iSetup);
+
   // if (nCsc >= 5 ) {
     displacedJetMuonTree->Fill();
   // }
@@ -1677,6 +1683,29 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     iSetup.get<MuonGeometryRecord>().get(dtG);
     iSetup.get<MuonGeometryRecord>().get(rpcG);
 
+
+    // cout << gLLP_decay_vertex_z[0] << " " << gLLP_eta[0] << " " << sqrt(gLLP_decay_vertex_x[0]*gLLP_decay_vertex_x[0]+gLLP_decay_vertex_y[0]*gLLP_decay_vertex_y[0]) << "\n";
+    // cout << gLLP_decay_vertex_z[1] << " " << gLLP_eta[1] << " " << sqrt(gLLP_decay_vertex_x[1]*gLLP_decay_vertex_x[1]+gLLP_decay_vertex_y[1]*gLLP_decay_vertex_y[1]) << "\n";
+    // cout << "\n\n";
+
+    int LLPInCSC_index = -1;
+    if ( 
+	(fabs(gLLP_decay_vertex_z[0]) > 568 && fabs(gLLP_decay_vertex_z[0]) < 1100 && fabs(gLLP_eta[0]) > 0.9 && fabs(gLLP_eta[0]) < 2.4 && sqrt(gLLP_decay_vertex_x[0]*gLLP_decay_vertex_x[0]+gLLP_decay_vertex_y[0]*gLLP_decay_vertex_y[0]) < 695.5)
+	 ) {
+      LLPInCSC_index = 0;
+    }
+    if (
+	(fabs(gLLP_decay_vertex_z[1]) > 568 && fabs(gLLP_decay_vertex_z[1]) < 1100 && fabs(gLLP_eta[1]) > 0.9 && fabs(gLLP_eta[1]) < 2.4 && sqrt(gLLP_decay_vertex_x[1]*gLLP_decay_vertex_x[1]+gLLP_decay_vertex_y[1]*gLLP_decay_vertex_y[1]) < 695.5)
+	) {
+      LLPInCSC_index = 1;
+    }
+    if (LLPInCSC_index >= 0) {
+      // cout << "Found LLP Decay in CSC: " << gLLP_decay_vertex_x[LLPInCSC_index] << " " << gLLP_decay_vertex_y[LLPInCSC_index] << " " << gLLP_decay_vertex_z[LLPInCSC_index] << " \n";
+    }
+    
+
+    vector<vector<float> > trackSegments;
+
     for (const CSCSegment cscSegment : *cscSegments) {
 	float globPhi   = 0.;
 	float globX = 0.;
@@ -1687,9 +1716,13 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 	CSCDetId id  = (CSCDetId)(cscSegment).cscDetId();
 	LocalPoint segPos = (cscSegment).localPosition();
+	//LocalError segPosError = (cscSegment).localPositionError();
+	LocalVector segDirection = (cscSegment).localDirection();
+	
 	const CSCChamber* cscchamber = cscG->chamber(id);
 	if (cscchamber) {
 	    GlobalPoint globalPosition = cscchamber->toGlobal(segPos);
+	    GlobalVector globalDirection = cscchamber->toGlobal(segDirection);
 	    globPhi   = globalPosition.phi();
 	    globEta   = globalPosition.eta();
 	    globX = globalPosition.x();
@@ -1700,28 +1733,131 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    cscX[nCsc] = globX;
 	    cscY[nCsc] = globY;
 	    cscZ[nCsc] = globZ;
+	    cscDirectionX[nCsc] = globalDirection.x();
+	    cscDirectionY[nCsc] = globalDirection.y();
+	    cscDirectionZ[nCsc] = globalDirection.z();
 	    cscPhi[nCsc] = globPhi;
 	    cscEta[nCsc] = globEta;
 	    cscT[nCsc] = cscSegment.time();
 	    cscChi2[nCsc] = cscSegment.chi2();
 
-      // look at flags of the rechits
-      const std::vector<CSCRecHit2D> cscrechits2d = cscSegment.specificRecHits();
-      int cscNRecHits_flagged = 0;
-      for (const CSCRecHit2D recHit2d : cscrechits2d) {
-        if (!(recHit2d.quality()==1)) continue;
-        if(recHit2d.badStrip()) continue;
-        if (recHit2d.badWireGroup()) continue;
 
-        // std::cout<<cscSegment.nRecHits()<<", " << recHit2d.quality()<<", "<<recHit2d.badStrip()<<", "<<recHit2d.badWireGroup()<<", "<<recHit2d.errorWithinStrip()<<", "<<recHit2d.energyDepositedInLayer()<<std::endl;
-        cscNRecHits_flagged++;
-      }
-      cscNRecHits_flag[nCsc] = cscNRecHits_flagged;
+	    // //if (LLPInCSC_index >= 0) {
+	    //   cout << "Segment: " << globX << " " << globY << " " << globZ << " : "
+	    // 	   << cscSegment.nRecHits() << " " << cscSegment.chi2() << " " 
+	    // 	   << " : " 
+	    // 	   << globalDirection.x() << " " << globalDirection.y() << " " << globalDirection.z() 
+	    // 	   << " : "
+	    // 	   <<  cscSegment.time() << " " 
+	    // 	//<< cscSegment.parameters()[0] << " " << cscSegment.parameters()[1] << " " << cscSegment.parameters()[2] << " " << cscSegment.parameters()[3] << " | " 
+	    // 	//<< cscSegment.parametersError()
+	    // 	   << "\n";
+	    //   if (cscSegment.nRecHits() >= 3) {
+	    // 	vector<float> trackSegment;
+	    // 	trackSegment.push_back( globX );
+	    // 	trackSegment.push_back( globY );
+	    // 	trackSegment.push_back( globZ );
+	    // 	trackSegment.push_back( globX + globalDirection.x() );
+	    // 	trackSegment.push_back( globY + globalDirection.y());
+	    // 	trackSegment.push_back( globZ + globalDirection.z());
+	    // 	trackSegments.push_back(trackSegment);
+	    //   }
+	    //   //}
+
+	    
 
 
+	    // look at flags of the rechits
+	    const std::vector<CSCRecHit2D> cscrechits2d = cscSegment.specificRecHits();
+	    int cscNRecHits_flagged = 0;
+	    for (const CSCRecHit2D recHit2d : cscrechits2d) {
+	      if (!(recHit2d.quality()==1)) continue;
+	      if(recHit2d.badStrip()) continue;
+	      if (recHit2d.badWireGroup()) continue;
+	      
+	      // std::cout<<cscSegment.nRecHits()<<", " << recHit2d.quality()<<", "<<recHit2d.badStrip()<<", "<<recHit2d.badWireGroup()<<", "<<recHit2d.errorWithinStrip()<<", "<<recHit2d.energyDepositedInLayer()<<std::endl;
+
+	      //cout << "---> Rechit : " << recHit2d
+
+	      cscNRecHits_flagged++;
+	    }
+	    cscNRecHits_flag[nCsc] = cscNRecHits_flagged;
+	    	    
 	    nCsc++;
-	 }
-  }
+	}
+    }
+
+    
+    // //Check for distance of closest approach
+    // cout << "nCsc = " << nCsc << "\n";
+    // cout << "\n\n\n Check for closest approach\n";
+    // cout << "Number of Segments: " << trackSegments.size() << "\n";
+    // for (uint i=0; i<trackSegments.size() ;i++) {
+    //   cout << "Track Segment " << i << " : " 
+    // 	   << trackSegments[i][0] << "," << trackSegments[i][1] << "," << trackSegments[i][2] << " | " 
+    // 	   << trackSegments[i][3] - trackSegments[i][0]  << "," << trackSegments[i][4] - trackSegments[i][1]  << "," << trackSegments[i][5] -trackSegments[i][2]  
+    // 	   << "\n";
+    //   for (uint j=0; j<trackSegments.size() ;j++) {
+    // 	if (i==j) continue;
+    // 	cout << "   Closest approach to Track Segment " << j << " : " 
+    // 	     << trackSegments[j][0] << "," << trackSegments[j][1] << "," << trackSegments[j][2] << " | " 
+    // 	     << trackSegments[j][3] - trackSegments[j][0]  << "," << trackSegments[j][4] - trackSegments[j][1]  << "," << trackSegments[j][5] -trackSegments[j][2]  
+    // 	     << " | ";
+	
+    // 	//u is the direction of line i
+    // 	double u_x = trackSegments[i][3] - trackSegments[i][0];
+    // 	double u_y = trackSegments[i][4] - trackSegments[i][1];
+    // 	double u_z = trackSegments[i][5] - trackSegments[i][2];
+    // 	//v is the direction of line j
+    // 	double v_x = trackSegments[j][3] - trackSegments[j][0];
+    // 	double v_y = trackSegments[j][4] - trackSegments[j][1];
+    // 	double v_z = trackSegments[j][5] - trackSegments[j][2];
+    // 	//w is the vector between the anchor points on the two lines
+    // 	double w_x = trackSegments[i][0] - trackSegments[j][0];
+    // 	double w_y = trackSegments[i][1] - trackSegments[j][1];
+    // 	double w_z = trackSegments[i][2] - trackSegments[j][2];
+
+    // 	double a = u_x*u_x + u_y*u_y + u_z*u_z;         // u.u , always >= 0	
+    // 	double b = u_x*v_x + u_y*v_y + u_z*v_z;         // u.v
+    // 	double c = v_x*v_x + v_y*v_y + v_z*u_z;         // v.v , always >= 0
+    // 	double d = u_x*w_x + u_y*w_y + u_z*w_z;         // u.w
+    // 	double e = v_x*w_x + v_y*w_y + v_z*w_z;         // v.w
+    // 	double D = a*c - b*b;        // always >= 0
+    // 	double sc, tc;
+
+    // 	// compute the line parameters of the two closest points
+    // 	if (D < 0.000001) {          // the lines are almost parallel
+    // 	  sc = 0.0;
+    // 	  tc = (b>c ? d/b : e/c);    // use the largest denominator
+    // 	}
+    // 	else {
+    // 	  sc = (b*e - c*d) / D;
+    // 	  tc = (a*e - b*d) / D;
+    // 	}
+	
+    // 	// get the difference of the two closest points : vector DP = L1(sc) - L2(tc)
+    // 	double dP_x = w_x + (sc * u_x) - (tc * v_x);
+    // 	double dP_y = w_y + (sc * u_y) - (tc * v_y);
+    // 	double dP_z = w_z + (sc * u_z) - (tc * v_z);
+    // 	double closestApproach = sqrt(dP_x*dP_x + dP_y*dP_y + dP_z*dP_z); //norm(dP)
+
+    // 	double midPoint_x = 0.5* (trackSegments[i][0] + (sc * u_x) + trackSegments[j][0] + (tc * v_x));
+    // 	double midPoint_y = 0.5* (trackSegments[i][1] + (sc * u_y) + trackSegments[j][1] + (tc * v_y));
+    // 	double midPoint_z = 0.5* (trackSegments[i][2] + (sc * u_z) + trackSegments[j][2] + (tc * v_z));
+
+    // 	cout << closestApproach << " | ";
+    // 	cout << midPoint_x << " , " << midPoint_y << " , " << midPoint_z << " ";
+    // 	cout << "\n";	
+    //   }
+    //   cout << " done \n";     
+    // }
+
+    // cout << "\n******\n\n\n\n";
+
+
+
+
+
     for (const RPCRecHit rpcRecHit : *rpcRecHits){
 	LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
 	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
@@ -1788,8 +1924,8 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
        // || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
        abs((*genParticles)[i].pdgId()) == 13
        // || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
-       // || (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007))
-	)
+       || (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007)	
+	)	
        {
          if ((*genParticles)[i].pt()>pt_cut){
            prunedV.push_back(&(*genParticles)[i]);
