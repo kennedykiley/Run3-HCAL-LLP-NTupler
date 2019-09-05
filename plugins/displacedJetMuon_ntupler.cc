@@ -215,9 +215,9 @@ void displacedJetMuon_ntupler::setBranches()
   enableJetBranches();
   // enableCaloJetBranches();
   // enableJetAK8Branches();
-  // enableMetBranches();
-  // enableTriggerBranches();
-  // enableMCBranches();
+  enableMetBranches();
+  enableTriggerBranches();
+  enableMCBranches();
   enableGenParticleBranches();
 };
 
@@ -704,33 +704,33 @@ void displacedJetMuon_ntupler::enableTriggerBranches()
 
 void displacedJetMuon_ntupler::enableMCBranches()
 {
-  displacedJetMuonTree->Branch("nGenJets", &nGenJets, "nGenJets/I");
-  displacedJetMuonTree->Branch("genJetE", genJetE, "genJetE[nGenJets]/F");
-  displacedJetMuonTree->Branch("genJetPt", genJetPt, "genJetPt[nGenJets]/F");
-  displacedJetMuonTree->Branch("genJetEta", genJetEta, "genJetEta[nGenJets]/F");
-  displacedJetMuonTree->Branch("genJetPhi", genJetPhi, "genJetPhi[nGenJets]/F");
-  displacedJetMuonTree->Branch("genMetPtCalo", &genMetPtCalo, "genMetPtCalo/F");
-  displacedJetMuonTree->Branch("genMetPhiCalo", &genMetPhiCalo, "genMetPhiCalo/F");
-  displacedJetMuonTree->Branch("genMetPtTrue", &genMetPtTrue, "genMetPtTrue/F");
-  displacedJetMuonTree->Branch("genMetPhiTrue", &genMetPhiTrue, "genMetPhiTrue/F");
-  displacedJetMuonTree->Branch("genVertexX", &genVertexX, "genVertexX/F");
-  displacedJetMuonTree->Branch("genVertexY", &genVertexY, "genVertexY/F");
-  displacedJetMuonTree->Branch("genVertexZ", &genVertexZ, "genVertexZ/F");
-  displacedJetMuonTree->Branch("genVertexT", &genVertexT, "genVertexT/F");
+  // displacedJetMuonTree->Branch("nGenJets", &nGenJets, "nGenJets/I");
+  // displacedJetMuonTree->Branch("genJetE", genJetE, "genJetE[nGenJets]/F");
+  // displacedJetMuonTree->Branch("genJetPt", genJetPt, "genJetPt[nGenJets]/F");
+  // displacedJetMuonTree->Branch("genJetEta", genJetEta, "genJetEta[nGenJets]/F");
+  // displacedJetMuonTree->Branch("genJetPhi", genJetPhi, "genJetPhi[nGenJets]/F");
+  // displacedJetMuonTree->Branch("genMetPtCalo", &genMetPtCalo, "genMetPtCalo/F");
+  // displacedJetMuonTree->Branch("genMetPhiCalo", &genMetPhiCalo, "genMetPhiCalo/F");
+  // displacedJetMuonTree->Branch("genMetPtTrue", &genMetPtTrue, "genMetPtTrue/F");
+  // displacedJetMuonTree->Branch("genMetPhiTrue", &genMetPhiTrue, "genMetPhiTrue/F");
+  // displacedJetMuonTree->Branch("genVertexX", &genVertexX, "genVertexX/F");
+  // displacedJetMuonTree->Branch("genVertexY", &genVertexY, "genVertexY/F");
+  // displacedJetMuonTree->Branch("genVertexZ", &genVertexZ, "genVertexZ/F");
+  // displacedJetMuonTree->Branch("genVertexT", &genVertexT, "genVertexT/F");
   displacedJetMuonTree->Branch("genWeight", &genWeight, "genWeight/F");
   displacedJetMuonTree->Branch("genSignalProcessID", &genSignalProcessID, "genSignalProcessID/i");
-  displacedJetMuonTree->Branch("genQScale", &genQScale, "genQScale/F");
-  displacedJetMuonTree->Branch("genAlphaQCD", &genAlphaQCD, "genAlphaQCD/F");
-  displacedJetMuonTree->Branch("genAlphaQED", &genAlphaQED, "genAlphaQED/F");
-  scaleWeights = new std::vector<float>; scaleWeights->clear();
-  pdfWeights = new std::vector<float>; pdfWeights->clear();
-  alphasWeights = new std::vector<float>; alphasWeights->clear();
-  if (isFastsim_) {
-    displacedJetMuonTree->Branch("lheComments", "std::string",&lheComments);
-  }
-  displacedJetMuonTree->Branch("scaleWeights", "std::vector<float>",&scaleWeights);
-  displacedJetMuonTree->Branch("pdfWeights", "std::vector<float>",&pdfWeights);
-  displacedJetMuonTree->Branch("alphasWeights", "std::vector<float>",&alphasWeights);
+  // displacedJetMuonTree->Branch("genQScale", &genQScale, "genQScale/F");
+  // displacedJetMuonTree->Branch("genAlphaQCD", &genAlphaQCD, "genAlphaQCD/F");
+  // displacedJetMuonTree->Branch("genAlphaQED", &genAlphaQED, "genAlphaQED/F");
+  // scaleWeights = new std::vector<float>; scaleWeights->clear();
+  // pdfWeights = new std::vector<float>; pdfWeights->clear();
+  // alphasWeights = new std::vector<float>; alphasWeights->clear();
+  // if (isFastsim_) {
+  //   displacedJetMuonTree->Branch("lheComments", "std::string",&lheComments);
+  // }
+  // displacedJetMuonTree->Branch("scaleWeights", "std::vector<float>",&scaleWeights);
+  // displacedJetMuonTree->Branch("pdfWeights", "std::vector<float>",&pdfWeights);
+  // displacedJetMuonTree->Branch("alphasWeights", "std::vector<float>",&alphasWeights);
 };
 
 void displacedJetMuon_ntupler::enableGenParticleBranches()
@@ -1516,10 +1516,12 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
   fillMuons(iEvent);
   fillGenParticles();
   fillMuonSystem(iEvent, iSetup);
+  fillMet(iEvent);
+  fillMC();
+  if ( enableTriggerInfo_ ) fillTrigger( iEvent );
 
-  // if (nCsc >= 5 ) {
-    displacedJetMuonTree->Fill();
-  // }
+  displacedJetMuonTree->Fill();
+
 
 };
 
@@ -2319,10 +2321,10 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 {
 
-  for (const reco::PFJet &j : *jets)
+  for (const reco::PFJet &j : *jetsPuppi)
   {
-    if (j.pt() < 15) continue;
-    if (fabs(j.eta()) > 2.4) continue;
+    //if (j.pt() < 15) continue;
+    //if (fabs(j.eta()) > 2.4) continue;
     //-------------------
     //Fill Jet-Level Info
     //-------------------
@@ -2813,6 +2815,153 @@ const reco::Candidate* displacedJetMuon_ntupler::findOriginalMotherWithSameID(co
 
   return 0;
 }
+
+bool displacedJetMuon_ntupler::fillMet(const edm::Event& iEvent)
+{
+  const reco::PFMET &Met = mets->front();
+
+  sumMET = Met.sumEt();
+  metType0Pt = 0;
+  metType0Phi = 0;
+  metType1Pt_raw = Met.pt();
+  metType1Pt = Met.pt();
+  metType1Px = Met.px();
+  metType1Py = Met.py();
+  metType1Eta = Met.eta();
+  metType1Phi_raw = Met.phi();
+  metType1Phi = Met.phi();
+  metType0Plus1Pt = 0;
+  metType0Plus1Phi = 0;
+ 
+  return true;
+};
+
+bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
+{
+
+  //fill trigger information
+  const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
+  // std::cout << "\n === TRIGGER PATHS === " << std::endl;
+  //------------------------------------------------------------------
+  //Option to save all HLT path names in the ntuple per event
+  //Expensive option in terms of ntuple size
+  //------------------------------------------------------------------
+  nameHLT->clear();
+  for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i)
+  {
+    string hltPathNameReq = "HLT_";
+    //if (triggerBits->accept(i))
+    if ((names.triggerName(i)).find(hltPathNameReq) != string::npos) nameHLT->push_back(names.triggerName(i));
+    /*
+    std::cout << "Trigger " << names.triggerName(i) <<
+    ", prescale " << triggerPrescales->getPrescaleForIndex(i) <<
+    ": " << (triggerBits->accept(i) ? "PASS" : "fail (or not run)")
+    << std::endl;
+    if ((names.triggerName(i)).find(hltPathNameReq) != string::npos && triggerBits->accept(i)) std::cout << "Trigger " << names.triggerName(i) <<
+    ": " << (triggerBits->accept(i) ? "PASS" : "fail (or not run)")
+    << std::endl;
+    */
+  }
+  //std::cout << "n triggers: " <<  nameHLT->size() << std::endl;
+  //std::cout << "====================" << std::endl;
+  //for ( unsigned int i = 0; i < nameHLT->size(); i++ )
+  //{
+  //  std::cout << i << " -> " << nameHLT->at(i) << std::endl;
+  //}
+  //------------------------------------------------------------------
+  // Save trigger decisions in array of booleans
+  //------------------------------------------------------------------
+  for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i)
+  {
+    string hltPathNameReq = "HLT_";
+    if ((names.triggerName(i)).find(hltPathNameReq) == string::npos) continue;
+    if ((names.triggerName(i)).find_last_of("_") == string::npos) continue;
+    int lastUnderscorePos = (names.triggerName(i)).find_last_of("_");
+    string hltPathNameWithoutVersionNumber = (names.triggerName(i)).substr(0,lastUnderscorePos);
+
+    for (unsigned int j = 0; j < NTriggersMAX; ++j)
+    {
+      if (triggerPathNames[j] == "") continue;
+      if (hltPathNameWithoutVersionNumber == triggerPathNames[j])
+      {
+        triggerDecision[j] = triggerBits->accept(i);
+        //triggerHLTPrescale[j] = triggerPrescales->getPrescaleForIndex(i);
+      }
+    }
+  }
+  //------------------------------------------------------------------
+  // Print Trigger Objects
+  //------------------------------------------------------------------
+/*
+  for (pat::TriggerObjectStandAlone trigObject : *triggerObjects)
+  {
+    //cout << "triggerObj: " << trigObject.pt() << " " << trigObject.eta() << " " << trigObject.phi() << "\n";
+    //bool foundRazor = false;
+    //Need to unpack the filter labels before checking
+    trigObject.unpackFilterLabels(iEvent, *triggerBits);
+    for(int j=0; j<int(trigObject.filterLabels().size());j++)
+    {
+      //if ((trigObject.filterLabels())[j] == "hltRsqMR200Rsq0p0196MR100Calo") foundRazor = true;
+      // trigObject.unpackPathNames(names);
+      // cout << "filter: " << (trigObject.pathNames())[j] << " " << (trigObject.filterLabels())[j] << "\n";
+      //cout << "filter: " << (trigObject.filterLabels())[j] << "\n";
+    }
+  }
+*/
+//define this as a plug-in
+  return true;
+};
+
+bool displacedJetMuon_ntupler::fillMC()
+{
+  for(const reco::GenJet &j : *genJets)
+  {
+    //std::cout << nGenJets << std::endl;
+    genJetE[nGenJets] = j.energy();
+    genJetPt[nGenJets] = j.pt();
+    genJetEta[nGenJets] = j.eta();
+    genJetPhi[nGenJets] = j.phi();
+    genJetMET[nGenJets] = j.invisibleEnergy();
+    nGenJets++;
+  }
+
+  const reco::GenMET &GenMetCalo = genMetsCalo->front();
+  genMetPtCalo  = GenMetCalo.pt();
+  genMetPhiCalo = GenMetCalo.phi();
+
+  const reco::GenMET &GenMetTrue = genMetsTrue->front();
+  genMetPtTrue  = GenMetTrue.pt();
+  genMetPhiTrue = GenMetTrue.phi();
+
+  bool foundGenVertex = false;
+  for(size_t i=0; i<genParticles->size();i++)
+  {
+    if (!foundGenVertex)
+    {
+      for (unsigned int j=0; j<(*genParticles)[i].numberOfDaughters(); ++j)
+      {
+        const reco::Candidate *dau = (*genParticles)[i].daughter(j);
+        if (dau)
+        {
+          genVertexX = dau->vx();
+          genVertexY = dau->vy();
+          genVertexZ = dau->vz();
+          if(readGenVertexTime_) genVertexT = *genParticles_t0;
+          foundGenVertex = true;
+          break;
+        }
+      }
+    }
+  }
+
+  genWeight = genInfo->weight();
+  genSignalProcessID = genInfo->signalProcessID();
+  genQScale = genInfo->qScale();
+  genAlphaQCD = genInfo->alphaQCD();
+  genAlphaQED = genInfo->alphaQED();
+
+  return true;
+};
 
 
 //define this as a plug-in

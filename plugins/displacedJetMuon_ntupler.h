@@ -200,6 +200,9 @@ public:
   bool fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillJets(const edm::EventSetup& iSetup);
   bool fillGenParticles();
+  bool fillMet(const edm::Event& iEvent);
+  bool fillTrigger(const edm::Event& iEvent);
+  bool fillMC();
 
 
 protected:
