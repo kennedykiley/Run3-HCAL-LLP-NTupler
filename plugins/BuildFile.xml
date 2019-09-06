@@ -11,4 +11,5 @@
 <use name="RecoEcal/EgammaCoreTools"/>
 <use name="cms_lpc_llp/llp_ntupler"/>
 <use name="cms_lpc_llp/displacedJetMuon_ntupler"/>
+<use name="cms_lpc_llp/displacedJetMuon_dump"/>
 <flags EDM_PLUGIN="1"/>
