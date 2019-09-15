@@ -3813,12 +3813,14 @@ bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
     << std::endl;
     */
   }
-  //std::cout << "n triggers: " <<  nameHLT->size() << std::endl;
-  //std::cout << "====================" << std::endl;
-  //for ( unsigned int i = 0; i < nameHLT->size(); i++ )
-  //{
-  //  std::cout << i << " -> " << nameHLT->at(i) << std::endl;
-  //}
+  /*
+  std::cout << "n triggers: " <<  nameHLT->size() << std::endl;
+  std::cout << "====================" << std::endl;
+  for ( unsigned int i = 0; i < nameHLT->size(); i++ )
+  {
+    std::cout << i << " -> " << nameHLT->at(i) << std::endl;
+  }
+  */
   //------------------------------------------------------------------
   // Save trigger decisions in array of booleans
   //------------------------------------------------------------------
