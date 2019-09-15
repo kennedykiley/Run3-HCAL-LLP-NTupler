@@ -3531,8 +3531,7 @@ bool llp_ntupler::fillGenParticles(){
           }
         }
 
-	std::cout << i << " gllp " << _found_first_llp << " " << foundDaughter << " " << gParticleId[i] << std::endl;
-        if (foundDaughter)
+	if (foundDaughter)
         {
 	  //_found_first_llp = false;
           if (gParticleId[i] == llp_id && !_found_first_llp)
