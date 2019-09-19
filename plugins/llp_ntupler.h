@@ -235,6 +235,7 @@ protected:
   bool enableEcalRechits_;
   bool readGenVertexTime_;
   bool enableAK8Jets_;
+  int  llpId_;
   //bool isFourJet_;
   //bool isQCD_;
 
@@ -991,6 +992,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
 
  float gen_time[LLP_DAUGHTER_ARRAY_SIZE];
  float gen_time_pv[LLP_DAUGHTER_ARRAY_SIZE];
+ int   gLLP_daughter_id[LLP_DAUGHTER_ARRAY_SIZE];
  float gLLP_daughter_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
  float gLLP_daughter_pt[LLP_DAUGHTER_ARRAY_SIZE];
  float gLLP_daughter_eta[LLP_DAUGHTER_ARRAY_SIZE];

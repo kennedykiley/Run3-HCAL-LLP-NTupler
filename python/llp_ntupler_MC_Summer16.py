@@ -11,7 +11,9 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/D67E96A0-F9BE-E611-A03B-F45214939090.root',
+#'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/D67E96A0-F9BE-E611-A03B-F45214939090.root',
+#'file:/eos/cms//store/group/dpg_bril/comm_bril/lumi/test/MC_test/ggHdddd_AODSIM/ggHdddd_2017/ggHdddd_M55_100mm_CP2_AODSIM/190819_150120/0002/XXTo4J_AODSIM_2757.root'
+'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/HTo2ZdTo2mu2x_MZd-60_Epsilon-7e-09_TuneCUETP8M1_13TeV_madgraph_pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/70000/1A62E7AD-B8A4-E911-991E-0025901AC3F8.root'
 )
 )
 
@@ -50,6 +52,7 @@ process.ntuples = cms.EDAnalyzer('llp_ntupler',
     enableCaloJet = cms.bool(True),
     enableGenLLPInfo = cms.bool(True),
     readGenVertexTime = cms.bool(False),#need to be false for displaced samples
+    llpId = cms.int32(1023),
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v1.dat"),
     eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
