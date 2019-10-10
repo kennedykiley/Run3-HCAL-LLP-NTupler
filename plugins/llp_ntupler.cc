@@ -7,6 +7,8 @@
 //         Created:  Thu, 26 March 2019 15:00:06 GMT
 
 #include "llp_ntupler.h"
+#include "cms_lpc_llp/llp_ntupler/interface/DBSCAN.h"
+
 //------ Constructors and destructor ------//
 llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   //get inputs from config file
@@ -100,45 +102,7 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   //llpTree = new TTree("Jets", "selected AOD information");
   NEvents = fs->make<TH1F>("NEvents",";;NEvents;",1,-0.5,0.5);
 
-  /*
-  //set up electron MVA ID
-  std::vector<std::string> myTrigWeights;
-  myTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/TrigIDMVA_25ns_EB_BDT.weights.xml").fullPath().c_str());
-  myTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/TrigIDMVA_25ns_EE_BDT.weights.xml").fullPath().c_str());
 
-  myMVATrig = new EGammaMvaEleEstimatorCSA14();
-  myMVATrig->initialize("BDT",
-  EGammaMvaEleEstimatorCSA14::kTrig,
-  true,
-  myTrigWeights);
-
-  std::vector<std::string> myNonTrigWeights;
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EB1_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EB2_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EE_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EB1_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EB2_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/EIDmva_EE_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-
-  myMVANonTrig = new ElectronMVAEstimatorRun2NonTrig();
-  myMVANonTrig->initialize("BDTG method",
-  ElectronMVAEstimatorRun2NonTrig::kPHYS14,
-  true,
-  myNonTrigWeights);
-
-  //set up photon MVA ID
-  std::vector<std::string> myPhotonMVAWeights;
-  myPhotonMVAWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/PhotonIDMVA_Spring15_50ns_v0_EB.weights.xml").fullPath().c_str());
-  myPhotonMVAWeights.push_back(edm::FileInPath("cms_lpc_llp/llp_ntupler/data/PhotonIDMVA_Spring15_50ns_v0_EE.weights.xml").fullPath().c_str());
-  std::vector<std::string> myPhotonMVAMethodNames;
-  myPhotonMVAMethodNames.push_back("BDTG photons barrel");
-  myPhotonMVAMethodNames.push_back("BDTG photons endcap");
-
-  myPhotonMVA = new EGammaMvaPhotonEstimator();
-  myPhotonMVA->initialize(myPhotonMVAMethodNames,myPhotonMVAWeights,
-    EGammaMvaPhotonEstimator::kPhotonMVATypeDefault);
-
-*/
   //------------------------------------------------------------------
   //Read in HLT Trigger Path List from config file
   //------------------------------------------------------------------
@@ -176,12 +140,7 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
     std::cout << "\n";
   }
   if(readGenVertexTime_) genParticles_t0_Token_ = consumes<float>(iConfig.getParameter<edm::InputTag>("genParticles_t0"));
-  /*
-  fJetPhotonRecHitEta = new std::vector<float>; fJetPhotonRecHitEta->clear();
-  fJetPhotonRecHitPhi = new std::vector<float>; fJetPhotonRecHitPhi->clear();
-  fJetPhotonRecHitE = new std::vector<float>; fJetPhotonRecHitE->clear();
-  fJetPhotonRecHitTime = new std::vector<float>; fJetPhotonRecHitTime->clear();
-*/
+ 
 }
 
 llp_ntupler::~llp_ntupler()
@@ -195,19 +154,13 @@ llp_ntupler::~llp_ntupler()
 void llp_ntupler::setBranches()
 {
   enableEventInfoBranches();
-  enablePVAllBranches();
-  enablePVTracksBranches();
+  //enablePVAllBranches();
   enablePileUpBranches();
   enableMuonBranches();
   enableElectronBranches();
-  enableTauBranches();
-  enableIsoPFCandidateBranches();
   enablePhotonBranches();
   enableMuonSystemBranches();
-  enableEcalRechitBranches();
   enableJetBranches();
-  enableCaloJetBranches();
-  enableJetAK8Branches();
   enableMetBranches();
   enableTriggerBranches();
   enableMCBranches();
@@ -227,11 +180,11 @@ void llp_ntupler::enableEventInfoBranches()
   llpTree->Branch("pvY", &pvY, "pvY/F");
   llpTree->Branch("pvZ", &pvZ, "pvZ/F");
   llpTree->Branch("fixedGridRhoAll", &fixedGridRhoAll, "fixedGridRhoAll/F");
-  llpTree->Branch("fixedGridRhoFastjetAll", &fixedGridRhoFastjetAll, "fixedGridRhoFastjetAll/F");
-  llpTree->Branch("fixedGridRhoFastjetAllCalo", &fixedGridRhoFastjetAllCalo, "fixedGridRhoFastjetAllCalo/F");
-  llpTree->Branch("fixedGridRhoFastjetCentralCalo", &fixedGridRhoFastjetCentralCalo, "fixedGridRhoFastjetCentralCalo/F");
-  llpTree->Branch("fixedGridRhoFastjetCentralChargedPileUp", &fixedGridRhoFastjetCentralChargedPileUp, "fixedGridRhoFastjetCentralChargedPileUp/F");
-  llpTree->Branch("fixedGridRhoFastjetCentralNeutral", &fixedGridRhoFastjetCentralNeutral, "fixedGridRhoFastjetCentralNeutral/F");
+  //llpTree->Branch("fixedGridRhoFastjetAll", &fixedGridRhoFastjetAll, "fixedGridRhoFastjetAll/F");
+  //llpTree->Branch("fixedGridRhoFastjetAllCalo", &fixedGridRhoFastjetAllCalo, "fixedGridRhoFastjetAllCalo/F");
+  // llpTree->Branch("fixedGridRhoFastjetCentralCalo", &fixedGridRhoFastjetCentralCalo, "fixedGridRhoFastjetCentralCalo/F");
+  // llpTree->Branch("fixedGridRhoFastjetCentralChargedPileUp", &fixedGridRhoFastjetCentralChargedPileUp, "fixedGridRhoFastjetCentralChargedPileUp/F");
+  // llpTree->Branch("fixedGridRhoFastjetCentralNeutral", &fixedGridRhoFastjetCentralNeutral, "fixedGridRhoFastjetCentralNeutral/F");
 }
 
 void llp_ntupler::enablePVAllBranches()
@@ -283,10 +236,6 @@ void llp_ntupler::enableMuonBranches()
   llpTree->Branch("muon_photonIso", muon_photonIso, "muon_photonIso[nMuons]/F");
   llpTree->Branch("muon_neutralHadIso", muon_neutralHadIso, "muon_neutralHadIso[nMuons]/F");
   llpTree->Branch("muon_ptrel", muon_ptrel, "muon_ptrel[nMuons]/F");
-  llpTree->Branch("muon_chargedMiniIso", muon_chargedMiniIso, "muon_chargedMiniIso[nMuons]/F");
-  llpTree->Branch("muon_photonAndNeutralHadronMiniIso", muon_photonAndNeutralHadronMiniIso, "muon_photonAndNeutralHadronMiniIso[nMuons]/F");
-  llpTree->Branch("muon_chargedPileupMiniIso", muon_chargedPileupMiniIso, "muon_chargedPileupMiniIso[nMuons]/F");
-  llpTree->Branch("muon_activityMiniIsoAnnulus", muon_activityMiniIsoAnnulus, "muon_activityMiniIsoAnnulus[nMuons]/F");
   llpTree->Branch("muon_passSingleMuTagFilter", muon_passSingleMuTagFilter, "muon_passSingleMuTagFilter[nMuons]/O");
   llpTree->Branch("muon_passHLTFilter", &muon_passHLTFilter, Form("muon_passHLTFilter[nMuons][%d]/O",MAX_MuonHLTFilters));
   llpTree->Branch("muon_validFractionTrackerHits", muon_validFractionTrackerHits, "muon_validFractionTrackerHits[nMuons]/F");
@@ -306,9 +255,7 @@ void llp_ntupler::enableElectronBranches()
   llpTree->Branch("eleEta", eleEta,"eleEta[nElectrons]/F");
   llpTree->Branch("elePhi", elePhi,"elePhi[nElectrons]/F");
   llpTree->Branch("eleCharge", eleCharge, "eleCharge[nElectrons]/F");
-  //llpTree->Branch("EleE_SC", eleE_SC,"eleE_SC[nElectrons]/F");
   llpTree->Branch("eleEta_SC", eleEta_SC,"eleEta_SC[nElectrons]/F");
-  //llpTree->Branch("elePhi_SC", elePhi_SC,"elePhi_SC[nElectrons]/F");
   llpTree->Branch("eleSigmaIetaIeta", eleSigmaIetaIeta, "eleSigmaIetaIeta[nElectrons]/F");
   llpTree->Branch("eleFull5x5SigmaIetaIeta", eleFull5x5SigmaIetaIeta, "eleFull5x5SigmaIetaIeta[nElectrons]/F");
   llpTree->Branch("eleR9", eleR9, "eleR9[nElectrons]/F");
@@ -330,13 +277,6 @@ void llp_ntupler::enableElectronBranches()
   llpTree->Branch("ele_IDMVACategoryGeneralPurpose", ele_IDMVACategoryGeneralPurpose, "ele_IDMVACategoryGeneralPurpose[nElectrons]/I");
   llpTree->Branch("ele_IDMVAHZZ", ele_IDMVAHZZ, "ele_IDMVAHZZ[nElectrons]/F");
   llpTree->Branch("ele_IDMVACategoryHZZ", ele_IDMVACategoryHZZ, "ele_IDMVACategoryHZZ[nElectrons]/I");
-  llpTree->Branch("ele_RegressionE", ele_RegressionE, "ele_RegressionE[nElectrons]/F");
-  llpTree->Branch("ele_CombineP4", ele_CombineP4, "ele_CombineP4[nElectrons]/F");
-  llpTree->Branch("ele_ptrel", ele_ptrel, "ele_ptrel[nElectrons]/F");
-  llpTree->Branch("ele_chargedMiniIso", ele_chargedMiniIso, "ele_chargedMiniIso[nElectrons]/F");
-  llpTree->Branch("ele_photonAndNeutralHadronMiniIso", ele_photonAndNeutralHadronMiniIso, "ele_photonAndNeutralHadronMiniIso[nElectrons]/F");
-  llpTree->Branch("ele_chargedPileupMiniIso", ele_chargedPileupMiniIso, "ele_chargedPileupMiniIso[nElectrons]/F");
-  llpTree->Branch("ele_activityMiniIsoAnnulus", ele_activityMiniIsoAnnulus, "ele_activityMiniIsoAnnulus[nElectrons]/F");
   llpTree->Branch("ele_passSingleEleTagFilter", ele_passSingleEleTagFilter, "ele_passSingleEleTagFilter[nElectrons]/O");
   llpTree->Branch("ele_passTPOneTagFilter", ele_passTPOneTagFilter, "ele_passTPOneTagFilter[nElectrons]/O");
   llpTree->Branch("ele_passTPTwoTagFilter", ele_passTPTwoTagFilter, "ele_passTPTwoTagFilter[nElectrons]/O");
@@ -448,47 +388,101 @@ void llp_ntupler::enablePhotonBranches()
 void llp_ntupler::enableMuonSystemBranches()
 {
 
-    // csc_Phi = new std::vector<float>;
-    // csc_Eta = new std::vector<float>;
-    // csc_X = new std::vector<float>;
-    // csc_Y = new std::vector<float>;
-    // csc_Z = new std::vector<float>;
-    // csc_NRecHits = new std::vector<float>;
-    // csc_T = new std::vector<float>;
-    // csc_Chi2 = new std::vector<float>;
+    // llpTree->Branch("nCsc",&nCsc,"nCsc/I");
+    // llpTree->Branch("cscPhi",cscPhi,"cscPhi[nCsc]");
+    // llpTree->Branch("cscEta",cscEta,"cscEta[nCsc]");
+    // llpTree->Branch("cscX",cscX,"cscX[nCsc]");
+    // llpTree->Branch("cscY",cscY,"cscY[nCsc]");
+    // llpTree->Branch("cscZ",cscZ,"cscZ[nCsc]");
+    // llpTree->Branch("cscDirectionX",cscDirectionX,"cscDirectionX[nCsc]");
+    // llpTree->Branch("cscDirectionY",cscDirectionY,"cscDirectionY[nCsc]");
+    // llpTree->Branch("cscDirectionZ",cscDirectionZ,"cscDirectionZ[nCsc]");
+    // llpTree->Branch("cscNRecHits",cscNRecHits,"cscNRecHits[nCsc]");
+    // llpTree->Branch("cscNRecHits_flag",cscNRecHits_flag,"cscNRecHits_flag[nCsc]");
+    // llpTree->Branch("cscT",cscT,"cscT[nCsc]");
+    // llpTree->Branch("cscChi2",cscChi2,"cscChi2[nCsc]");
 
-    llpTree->Branch("nCsc",&nCsc,"nCsc/I");
-    llpTree->Branch("cscPhi",cscPhi,"cscPhi[nCsc]");
-    llpTree->Branch("cscEta",cscEta,"cscEta[nCsc]");
-    llpTree->Branch("cscX",cscX,"cscX[nCsc]");
-    llpTree->Branch("cscY",cscY,"cscY[nCsc]");
-    llpTree->Branch("cscZ",cscZ,"cscZ[nCsc]");
-    llpTree->Branch("cscNRecHits",cscNRecHits,"cscNRecHits[nCsc]");
-    llpTree->Branch("cscNRecHits_flag",cscNRecHits_flag,"cscNRecHits_flag[nCsc]");
+  // all csc clusters
+  llpTree->Branch("nCscClusters",             &nCscClusters, "nCscClusters/I");
+  llpTree->Branch("cscClusterX",             cscClusterX,             "cscClusterX[nCscClusters]/F");
+  llpTree->Branch("cscClusterY",             cscClusterY,             "cscClusterY[nCscClusters]/F");
+  llpTree->Branch("cscClusterZ",             cscClusterZ,             "cscClusterZ[nCscClusters]/F");
+  llpTree->Branch("cscClusterTime",             cscClusterTime,             "cscClusterTime[nCscClusters]/F");
+  llpTree->Branch("cscClusterTimeSpread",             cscClusterTimeSpread,             "cscClusterTimeSpread[nCscClusters]/F");
+  llpTree->Branch("cscClusterGenMuonDeltaR",             cscClusterGenMuonDeltaR,             "cscClusterGenMuonDeltaR[nCscClusters]/F");
+  llpTree->Branch("cscClusterMajorAxis",             cscClusterMajorAxis,             "cscClusterMajorAxis[nCscClusters]/F");
+  llpTree->Branch("cscClusterMinorAxis",             cscClusterMinorAxis,             "cscClusterMinorAxis[nCscClusters]/F");
+  llpTree->Branch("cscClusterEtaPhiSpread",             cscClusterEtaPhiSpread,             "cscClusterEtaPhiSpread[nCscClusters]/F");
+  llpTree->Branch("cscClusterPhiSpread",             cscClusterPhiSpread,             "cscClusterPhiSpread[nCscClusters]/F");
+  llpTree->Branch("cscClusterEtaSpread",             cscClusterEtaSpread,             "cscClusterEtaSpread[nCscClusters]/F");
+  llpTree->Branch("cscClusterXSpread",             cscClusterXSpread,             "cscClusterXSpread[nCscClusters]/F");
+  llpTree->Branch("cscClusterYSpread",             cscClusterYSpread,             "cscClusterYSpread[nCscClusters]/F");
+  llpTree->Branch("cscClusterZSpread",             cscClusterZSpread,             "cscClusterZSpread[nCscClusters]/F");
+  llpTree->Branch("cscClusterPhi",             cscClusterPhi,             "cscClusterPhi[nCscClusters]/F");
+  llpTree->Branch("cscClusterEta",             cscClusterEta,             "cscClusterEta[nCscClusters]/F");
+  llpTree->Branch("cscClusterJetVetoPt",       cscClusterJetVetoPt,       "cscClusterJetVetoPt[nCscClusters]/F");
+  llpTree->Branch("cscClusterJetVetoE",        cscClusterJetVetoE,        "cscClusterJetVetoE[nCscClusters]/F");
+  llpTree->Branch("cscClusterMuonVetoPt",      cscClusterMuonVetoPt,      "cscClusterMuonVetoPt[nCscClusters]/F");
+  llpTree->Branch("cscClusterMuonVetoE",       cscClusterMuonVetoE,       "cscClusterMuonVetoE[nCscClusters]/F");
+  llpTree->Branch("cscClusterCaloJetVeto",     cscClusterCaloJetVeto,     "cscClusterCaloJetVeto[nCscClusters]/F");
+  llpTree->Branch("cscClusterSize",            cscClusterSize,            "cscClusterSize[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberPlus11",             cscClusterNSegmentChamberPlus11,             "cscClusterNSegmentChamberPlus11[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberPlus12",             cscClusterNSegmentChamberPlus12,             "cscClusterNSegmentChamberPlus12[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberPlus13",             cscClusterNSegmentChamberPlus13,             "cscClusterNSegmentChamberPlus13[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberPlus21",             cscClusterNSegmentChamberPlus21,             "cscClusterNSegmentChamberPlus21[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberPlus22",             cscClusterNSegmentChamberPlus22,             "cscClusterNSegmentChamberPlus22[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberPlus31",             cscClusterNSegmentChamberPlus31,             "cscClusterNSegmentChamberPlus31[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberPlus32",             cscClusterNSegmentChamberPlus32,             "cscClusterNSegmentChamberPlus32[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberPlus41",             cscClusterNSegmentChamberPlus41,             "cscClusterNSegmentChamberPlus41[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberPlus42",             cscClusterNSegmentChamberPlus42,             "cscClusterNSegmentChamberPlus42[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberMinus11",            cscClusterNSegmentChamberMinus11,            "cscClusterNSegmentChamberMinus11[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberMinus12",            cscClusterNSegmentChamberMinus12,            "cscClusterNSegmentChamberMinus12[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberMinus13",            cscClusterNSegmentChamberMinus13,            "cscClusterNSegmentChamberMinus13[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberMinus21",            cscClusterNSegmentChamberMinus21,            "cscClusterNSegmentChamberMinus21[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberMinus22",            cscClusterNSegmentChamberMinus22,            "cscClusterNSegmentChamberMinus22[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberMinus31",            cscClusterNSegmentChamberMinus31,            "cscClusterNSegmentChamberMinus31[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberMinus32",            cscClusterNSegmentChamberMinus32,            "cscClusterNSegmentChamberMinus32[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberMinus41",            cscClusterNSegmentChamberMinus41,            "cscClusterNSegmentChamberMinus41[nCscClusters]/I");
+  llpTree->Branch("cscClusterNSegmentChamberMinus42",            cscClusterNSegmentChamberMinus42,            "cscClusterNSegmentChamberMinus42[nCscClusters]/I");
+  llpTree->Branch("cscClusterMe11Ratio",             cscClusterMe11Ratio,             "cscClusterMe11Ratio[nCscClusters]/F");
+  llpTree->Branch("cscClusterMe12Ratio",             cscClusterMe12Ratio,             "cscClusterMe12Ratio[nCscClusters]/F");
+  llpTree->Branch("cscClusterNStation",             cscClusterNStation,             "cscClusterNStation[nCscClusters]/I");
+  llpTree->Branch("cscClusterMaxStation",             cscClusterMaxStation,             "cscClusterMaxStation[nCscClusters]/I");
+  llpTree->Branch("cscClusterMaxStationRatio",             cscClusterMaxStationRatio,             "cscClusterMaxStationRatio[nCscClusters]/F");
+  llpTree->Branch("cscClusterNChamber",             cscClusterNChamber,             "cscClusterNChamber[nCscClusters]/I");
+  llpTree->Branch("cscClusterMaxChamber",             cscClusterMaxChamber,             "cscClusterMaxChamber[nCscClusters]/I");
+  llpTree->Branch("cscClusterMaxChamberRatio",             cscClusterMaxChamberRatio,             "cscClusterMaxChamberRatio[nCscClusters]/F");
+  llpTree->Branch("cscClusterVertexR",             cscClusterVertexR,             "cscClusterVertexR[nCscClusters]/F");
+  llpTree->Branch("cscClusterVertexZ",             cscClusterVertexZ,             "cscClusterVertexZ[nCscClusters]/F");
+  llpTree->Branch("cscClusterVertexDis",             cscClusterVertexDis,             "cscClusterVertexDis[nCscClusters]/F");
+  llpTree->Branch("cscClusterVertexChi2",             cscClusterVertexChi2,             "cscClusterVertexChi2[nCscClusters]/F");
+  llpTree->Branch("cscClusterVertexN1",             cscClusterVertexN1,             "cscClusterVertexN1[nCscClusters]/I");
+  llpTree->Branch("cscClusterVertexN5",             cscClusterVertexN5,             "cscClusterVertexN5[nCscClusters]/I");
+  llpTree->Branch("cscClusterVertexN10",             cscClusterVertexN10,             "cscClusterVertexN10[nCscClusters]/I");
+  llpTree->Branch("cscClusterVertexN15",             cscClusterVertexN15,             "cscClusterVertexN15[nCscClusters]/I");
+  llpTree->Branch("cscClusterVertexN20",             cscClusterVertexN20,             "cscClusterVertexN20[nCscClusters]/I");
+  llpTree->Branch("cscClusterVertexN",             cscClusterVertexN,             "cscClusterVertexN[nCscClusters]/I");
 
-    llpTree->Branch("cscT",cscT,"cscT[nCsc]");
-    llpTree->Branch("cscChi2",cscChi2,"cscChi2[nCsc]");
+  // llpTree->Branch("nRpc",&nRpc,"nRpc/I");
+  // llpTree->Branch("rpcPhi",rpcPhi,"rpcPhi[nRpc]");
+  // llpTree->Branch("rpcEta",rpcEta,"rpcEta[nRpc]");
+  // llpTree->Branch("rpcX",rpcX,"rpcX[nRpc]");
+  // llpTree->Branch("rpcY",rpcY,"rpcY[nRpc]");
+  // llpTree->Branch("rpcZ",rpcZ,"rpcZ[nRpc]");
+  // llpTree->Branch("rpcT",rpcT,"rpcT[nRpc]");
+  // llpTree->Branch("rpcTError",rpcTError,"rpcTError[nRpc]");
 
-    llpTree->Branch("nRpc",&nRpc,"nRpc/I");
-    llpTree->Branch("rpcPhi",rpcPhi,"rpcPhi[nRpc]");
-    llpTree->Branch("rpcEta",rpcEta,"rpcEta[nRpc]");
-    llpTree->Branch("rpcX",rpcX,"rpcX[nRpc]");
-    llpTree->Branch("rpcY",rpcY,"rpcY[nRpc]");
-    llpTree->Branch("rpcZ",rpcZ,"rpcZ[nRpc]");
-    llpTree->Branch("rpcT",rpcT,"rpcT[nRpc]");
-    llpTree->Branch("rpcTError",rpcTError,"rpcTError[nRpc]");
-
-    llpTree->Branch("nDt",&nDt,"nDt/I");
-    llpTree->Branch("dtPhi",dtPhi,"dtPhi[nDt]");
-    llpTree->Branch("dtEta",dtEta,"dtEta[nDt]");
-    llpTree->Branch("dtX",dtX,"dtX[nDt]");
-    llpTree->Branch("dtY",dtY,"dtY[nDt]");
-    llpTree->Branch("dtZ",dtZ,"dtZ[nDt]");
-    llpTree->Branch("dtDirX",dtDirX,"dtDirX[nDt]");
-    llpTree->Branch("dtDirY",dtDirY,"dtDirY[nDt]");
-    llpTree->Branch("dtDirZ",dtDirZ,"dtDirZ[nDt]");
-    llpTree->Branch("dtT",dtT,"dtT[nDt]");
-    llpTree->Branch("dtTError",dtTError,"dtTError[nDt]");
+  // llpTree->Branch("nDt",&nDt,"nDt/I");
+  // llpTree->Branch("dtPhi",dtPhi,"dtPhi[nDt]");
+  // llpTree->Branch("dtEta",dtEta,"dtEta[nDt]");
+  // llpTree->Branch("dtX",dtX,"dtX[nDt]");
+  // llpTree->Branch("dtY",dtY,"dtY[nDt]");
+  // llpTree->Branch("dtZ",dtZ,"dtZ[nDt]");
+  // llpTree->Branch("dtDirX",dtDirX,"dtDirX[nDt]");
+  // llpTree->Branch("dtDirY",dtDirY,"dtDirY[nDt]");
+  // llpTree->Branch("dtDirZ",dtDirZ,"dtDirZ[nDt]");
+  // llpTree->Branch("dtT",dtT,"dtT[nDt]");
+  // llpTree->Branch("dtTError",dtTError,"dtTError[nDt]");
 };
 
 void llp_ntupler::enableEcalRechitBranches()
@@ -769,7 +763,7 @@ void llp_ntupler::enableGenParticleBranches()
    llpTree->Branch("gen_time_pv", gen_time_pv, "gen_time_pv[4]/F");
 
    llpTree->Branch("gLLP_min_delta_r_match_calojet", gLLP_min_delta_r_match_calojet, "gLLP_min_delta_r_match_calojet[4]/F");
- llpTree->Branch("gLLP_daughter_match_calojet_index", gLLP_daughter_match_calojet_index, "gLLP_daughter_match_calojet_index[4]/i");
+   llpTree->Branch("gLLP_daughter_match_calojet_index", gLLP_daughter_match_calojet_index, "gLLP_daughter_match_calojet_index[4]/i");
    llpTree->Branch("gLLP_daughter_match_jet_index", gLLP_daughter_match_jet_index, "gLLP_daughter_match_jet_index[4]/i");
    llpTree->Branch("gLLP_min_delta_r_match_jet", gLLP_min_delta_r_match_jet, "gLLP_min_delta_r_match_jet[4]/F");
 
@@ -1122,10 +1116,75 @@ void llp_ntupler::resetMuonSystemBranches()
       cscX[i] = 0.0;
       cscY[i] = 0.0;
       cscZ[i] = 0.0;
+      cscDirectionX[i] = 0.0;
+      cscDirectionY[i] = 0.0;
+      cscDirectionZ[i] = 0.0;
       cscNRecHits[i] = 0.0;
       cscNRecHits_flag[i] = 0.0;
       cscT[i] = 0.0;
       cscChi2[i] = 0.0;
+    }
+    nCscClusters = 0;
+    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+    {
+      cscClusterSize[i] = -999;
+      cscClusterX[i] = -999.;
+      cscClusterY[i] = -999.;
+      cscClusterZ[i] = -999.;
+      cscClusterTime[i] = -999.;
+      cscClusterGenMuonDeltaR[i] = 999.;
+      cscClusterTimeSpread[i] = -999.;
+      cscClusterMajorAxis[i] = -999.;
+      cscClusterMinorAxis[i] = -999.;
+      cscClusterXSpread[i] = -999.;
+      cscClusterYSpread[i] = -999.;
+      cscClusterZSpread[i] = -999.;
+      cscClusterEtaPhiSpread[i] = -999.;
+      cscClusterEtaSpread[i] = -999.;
+      cscClusterPhiSpread[i] = -999.;
+      cscClusterEta[i] = -999.;
+      cscClusterPhi[i] = -999.;
+      cscClusterJetVetoPt[i] = 0.0;
+      cscClusterJetVetoE[i] = 0.0;
+      cscClusterCaloJetVeto[i] = 0.0;
+      cscClusterMuonVetoPt[i] = 0.0;
+      cscClusterMuonVetoE[i] = 0.0;
+      cscClusterNChamber[i] = -999;
+      cscClusterMaxChamberRatio[i] = -999.;
+      cscClusterMaxChamber[i] = -999;
+      cscClusterNStation[i] = -999;
+      cscClusterMaxStationRatio[i] = -999.;
+      cscClusterMaxStation[i] = -999;
+      cscClusterMe11Ratio[i] = -999.;
+      cscClusterMe12Ratio[i] = -999.;
+      cscClusterNSegmentChamberPlus11[i] = -999;
+      cscClusterNSegmentChamberPlus12[i] = -999;
+      cscClusterNSegmentChamberPlus13[i] = -999;
+      cscClusterNSegmentChamberPlus21[i] = -999;
+      cscClusterNSegmentChamberPlus22[i] = -999;
+      cscClusterNSegmentChamberPlus31[i] = -999;
+      cscClusterNSegmentChamberPlus32[i] = -999;
+      cscClusterNSegmentChamberPlus41[i] = -999;
+      cscClusterNSegmentChamberPlus42[i] = -999;
+      cscClusterNSegmentChamberMinus11[i] = -999;
+      cscClusterNSegmentChamberMinus12[i] = -999;
+      cscClusterNSegmentChamberMinus13[i] = -999;
+      cscClusterNSegmentChamberMinus21[i] = -999;
+      cscClusterNSegmentChamberMinus22[i] = -999;
+      cscClusterNSegmentChamberMinus31[i] = -999;
+      cscClusterNSegmentChamberMinus32[i] = -999;
+      cscClusterNSegmentChamberMinus41[i] = -999;
+      cscClusterNSegmentChamberMinus42[i] = -999;
+      cscClusterVertexR[i] = 0.0;
+      cscClusterVertexZ[i] = 0.0;
+      cscClusterVertexDis[i] = 0.0;
+      cscClusterVertexChi2[i] = 0.0;
+      cscClusterVertexN[i] = 0;
+      cscClusterVertexN1[i] = 0;
+      cscClusterVertexN5[i] = 0;
+      cscClusterVertexN10[i] = 0;
+      cscClusterVertexN15[i] = 0;
+      cscClusterVertexN20[i] = 0;
     }
     nRpc = 0;
     for ( int i = 0; i < OBJECTARRAYSIZE; i++)
@@ -1505,8 +1564,7 @@ void llp_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   fillMuons(iEvent);
   fillMuonSystem(iEvent, iSetup);
   fillElectrons(iEvent);
-  // fillPhotons(iEvent, iSetup);
-  // fillTaus();
+  fillPhotons(iEvent, iSetup);
   fillJets(iSetup);
   fillMet(iEvent);
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
@@ -1653,7 +1711,7 @@ bool llp_ntupler::fillPVTracks()
   //   }
   // }
   //
-	for (auto vertex = vertices->begin(); vertex != vertices->end(); vertex++){
+  for (auto vertex = vertices->begin(); vertex != vertices->end(); vertex++){
     if(vertex->isValid() && !vertex->isFake())
     {
       for(auto pvTrack = vertex->tracks_begin(); pvTrack != vertex->tracks_end(); pvTrack++)
@@ -1693,6 +1751,8 @@ bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup
     iSetup.get<MuonGeometryRecord>().get(dtG);
     iSetup.get<MuonGeometryRecord>().get(rpcG);
 
+    vector<Point> points; //vector defined for DBScan Clustering algorithm
+    vector<Point> pointsInTimeOnly; //vector defined for DBScan Clustering algorithm
     for (const CSCSegment cscSegment : *cscSegments) {
 	float globPhi   = 0.;
 	float globX = 0.;
@@ -1703,41 +1763,164 @@ bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup
 
 	CSCDetId id  = (CSCDetId)(cscSegment).cscDetId();
 	LocalPoint segPos = (cscSegment).localPosition();
+	LocalVector segDirection = (cscSegment).localDirection();
 	const CSCChamber* cscchamber = cscG->chamber(id);
 	if (cscchamber) {
-	    GlobalPoint globalPosition = cscchamber->toGlobal(segPos);
-	    globPhi   = globalPosition.phi();
-	    globEta   = globalPosition.eta();
-	    globX = globalPosition.x();
-	    globY = globalPosition.y();
-	    globZ = globalPosition.z();
-	    // globR = pow(globX*globX+globY*globY,0.5);
-	    cscNRecHits[nCsc] = cscSegment.nRecHits();
-	    cscX[nCsc] = globX;
-	    cscY[nCsc] = globY;
-	    cscZ[nCsc] = globZ;
-	    cscPhi[nCsc] = globPhi;
-	    cscEta[nCsc] = globEta;
-	    cscT[nCsc] = cscSegment.time();
-	    cscChi2[nCsc] = cscSegment.chi2();
-
-      // look at flags of the rechits
-      const std::vector<CSCRecHit2D> cscrechits2d = cscSegment.specificRecHits();
-      int cscNRecHits_flagged = 0;
-      for (const CSCRecHit2D recHit2d : cscrechits2d) {
-        if (!(recHit2d.quality()==1)) continue;
-        if(recHit2d.badStrip()) continue;
-        if (recHit2d.badWireGroup()) continue;
-
-        // std::cout<<cscSegment.nRecHits()<<", " << recHit2d.quality()<<", "<<recHit2d.badStrip()<<", "<<recHit2d.badWireGroup()<<", "<<recHit2d.errorWithinStrip()<<", "<<recHit2d.energyDepositedInLayer()<<std::endl;
-        cscNRecHits_flagged++;
-      }
-      cscNRecHits_flag[nCsc] = cscNRecHits_flagged;
-
-
+	  GlobalPoint globalPosition = cscchamber->toGlobal(segPos);
+	  GlobalVector globalDirection = cscchamber->toGlobal(segDirection);
+	  globPhi   = globalPosition.phi();
+	  globEta   = globalPosition.eta();
+	  globX = globalPosition.x();
+	  globY = globalPosition.y();
+	  globZ = globalPosition.z();
+	  // globR = pow(globX*globX+globY*globY,0.5);
+	  cscNRecHits[nCsc] = cscSegment.nRecHits();
+	  cscX[nCsc] = globX;
+	  cscY[nCsc] = globY;
+	  cscZ[nCsc] = globZ;
+	  cscPhi[nCsc] = globPhi;
+	  cscEta[nCsc] = globEta;
+	  cscDirectionX[nCsc] = globalDirection.x();
+	  cscDirectionY[nCsc] = globalDirection.y();
+	  cscDirectionZ[nCsc] = globalDirection.z();
+	  cscT[nCsc] = cscSegment.time();
+	  cscChi2[nCsc] = cscSegment.chi2();
+	  
+	  // look at flags of the rechits
+	  const std::vector<CSCRecHit2D> cscrechits2d = cscSegment.specificRecHits();
+	  int cscNRecHits_flagged = 0;
+	  for (const CSCRecHit2D recHit2d : cscrechits2d) {
+	    if (!(recHit2d.quality()==1)) continue;
+	    if(recHit2d.badStrip()) continue;
+	    if (recHit2d.badWireGroup()) continue;
+	    
+	    // std::cout<<cscSegment.nRecHits()<<", " << recHit2d.quality()<<", "<<recHit2d.badStrip()<<", "<<recHit2d.badWireGroup()<<", "<<recHit2d.errorWithinStrip()<<", "<<recHit2d.energyDepositedInLayer()<<std::endl;
+	    cscNRecHits_flagged++;
+	  }
+	  cscNRecHits_flag[nCsc] = cscNRecHits_flagged;
+	  
+	  // for dbscan
+	    Point p;
+	    p.phi = globPhi;
+	    p.eta = globEta;
+	    p.x = globX;
+	    p.y = globY;
+	    p.z = globZ;
+	    p.t = cscSegment.time();
+	    p.dirX = globalDirection.x();
+	    p.dirY = globalDirection.y();
+	    p.dirZ = globalDirection.z();
+	    p.station = cscStation(globX,globY,globZ);
+	    p.chamber = cscChamber(globX,globY,globZ);
+	    p.clusterID = UNCLASSIFIED;
+	    points.push_back(p);	   	    	    
 	    nCsc++;
-	 }
-  }
+	}
+    }
+
+
+    //Do DBSCAN Clustering
+    int min_point = 10;  //minimum number of segments to call it a cluster
+    float epsilon = 0.2; //cluster radius parameter
+    DBSCAN ds(min_point, epsilon, points);
+    ds.run();
+    ds.result();
+    ds.clusterMoments();
+    ds.vertexing();
+    ds.sort_clusters();
+
+    //Save cluster information
+    for ( auto &tmp : ds.CscCluster ) {
+      cscClusterX[nCscClusters] =tmp.x;
+      cscClusterY[nCscClusters] =tmp.y;
+      cscClusterZ[nCscClusters] =tmp.z;
+      cscClusterTime[nCscClusters] = tmp.t;
+      cscClusterEta[nCscClusters] =tmp.eta;
+      cscClusterPhi[nCscClusters] = tmp.phi;
+      cscClusterMajorAxis[nCscClusters] =tmp.MajorAxis;
+      cscClusterMinorAxis[nCscClusters] =tmp.MinorAxis;
+      cscClusterXSpread[nCscClusters] =tmp.XSpread;
+      cscClusterYSpread[nCscClusters] =tmp.YSpread;
+      cscClusterZSpread[nCscClusters] =tmp.ZSpread;
+      cscClusterEtaPhiSpread[nCscClusters] =tmp.EtaPhiSpread;
+      cscClusterEtaSpread[nCscClusters] =tmp.EtaSpread;
+      cscClusterPhiSpread[nCscClusters] = tmp.PhiSpread;
+      cscClusterTimeSpread[nCscClusters] = tmp.TSpread;
+      cscClusterSize[nCscClusters] = tmp.nCscSegments;
+
+      cscClusterNSegmentChamberPlus11[nCscClusters] = tmp.nCscSegmentChamberPlus11;
+      cscClusterNSegmentChamberPlus12[nCscClusters] = tmp.nCscSegmentChamberPlus12;
+      cscClusterNSegmentChamberPlus13[nCscClusters] = tmp.nCscSegmentChamberPlus13;
+      cscClusterNSegmentChamberPlus21[nCscClusters] = tmp.nCscSegmentChamberPlus21;
+      cscClusterNSegmentChamberPlus22[nCscClusters] = tmp.nCscSegmentChamberPlus22;
+      cscClusterNSegmentChamberPlus31[nCscClusters] = tmp.nCscSegmentChamberPlus31;
+      cscClusterNSegmentChamberPlus32[nCscClusters] = tmp.nCscSegmentChamberPlus32;
+      cscClusterNSegmentChamberPlus41[nCscClusters] = tmp.nCscSegmentChamberPlus41;
+      cscClusterNSegmentChamberPlus42[nCscClusters] = tmp.nCscSegmentChamberPlus42;
+      cscClusterNSegmentChamberMinus11[nCscClusters] = tmp.nCscSegmentChamberMinus11;
+      cscClusterNSegmentChamberMinus12[nCscClusters] = tmp.nCscSegmentChamberMinus12;
+      cscClusterNSegmentChamberMinus13[nCscClusters] = tmp.nCscSegmentChamberMinus13;
+      cscClusterNSegmentChamberMinus21[nCscClusters] = tmp.nCscSegmentChamberMinus21;
+      cscClusterNSegmentChamberMinus22[nCscClusters] = tmp.nCscSegmentChamberMinus22;
+      cscClusterNSegmentChamberMinus31[nCscClusters] = tmp.nCscSegmentChamberMinus31;
+      cscClusterNSegmentChamberMinus32[nCscClusters] = tmp.nCscSegmentChamberMinus32;
+      cscClusterNSegmentChamberMinus41[nCscClusters] = tmp.nCscSegmentChamberMinus41;
+      cscClusterNSegmentChamberMinus42[nCscClusters] = tmp.nCscSegmentChamberMinus42;
+      cscClusterMaxChamber[nCscClusters] = tmp.maxChamber;
+      cscClusterMaxChamberRatio[nCscClusters] = 1.0*tmp.maxChamberSegment/tmp.nCscSegments;
+      cscClusterNChamber[nCscClusters] = tmp.nChamber;
+      cscClusterMaxStation[nCscClusters] = tmp.maxStation;
+      cscClusterMaxStationRatio[nCscClusters] = 1.0*tmp.maxStationSegment/tmp.nCscSegments;
+      cscClusterNStation[nCscClusters] = tmp.nStation;
+
+      cscClusterMe11Ratio[nCscClusters] = tmp.Me11Ratio;
+      cscClusterMe12Ratio[nCscClusters] = tmp.Me12Ratio;
+      cscClusterVertexR[nCscClusters] = tmp.vertex_r;
+      cscClusterVertexZ[nCscClusters] = tmp.vertex_z;
+      cscClusterVertexChi2[nCscClusters] = tmp.vertex_chi2;
+      cscClusterVertexDis[nCscClusters] = tmp.vertex_dis;
+      cscClusterVertexN[nCscClusters] = tmp.vertex_n;
+      cscClusterVertexN1[nCscClusters] = tmp.vertex_n1;
+      cscClusterVertexN5[nCscClusters] = tmp.vertex_n5;
+      cscClusterVertexN15[nCscClusters] = tmp.vertex_n15;
+      cscClusterVertexN20[nCscClusters] = tmp.vertex_n20;
+      cscClusterVertexN10[nCscClusters] = tmp.vertex_n10;
+
+      //Jet veto/ muon veto
+      cscClusterJetVetoPt[nCscClusters] = 0.0;
+      cscClusterJetVetoE[nCscClusters] = 0.0;
+      cscClusterCaloJetVeto[nCscClusters] = 0.0;
+      cscClusterMuonVetoPt[nCscClusters] = 0.0;
+      cscClusterMuonVetoE[nCscClusters] = 0.0;
+
+      for (const reco::PFJet &j : *jets) {
+        //if (j.pt() < 10) continue;
+        if (fabs(j.eta())>3.0) continue;
+        if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscClusterJetVetoPt[nCscClusters] ) {
+          cscClusterJetVetoPt[nCscClusters]  = j.pt();
+        }
+        if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscClusterJetVetoE[nCscClusters] ) {
+          cscClusterJetVetoE[nCscClusters]  = j.energy();
+        }
+      }
+      for(const pat::Muon &mu : *muons) {      
+	//if (mu.pt() < 20.0) continue;
+        if (fabs(mu.eta()) > 3.0) continue;
+        if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > cscClusterMuonVetoPt[nCscClusters]) {
+          cscClusterMuonVetoPt[nCscClusters] = mu.pt();
+        }
+        if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscClusterMuonVetoE[nCscClusters]) {
+          cscClusterMuonVetoE[nCscClusters] = mu.energy();
+        }
+      }
+ 
+      nCscClusters++;
+    }
+
+    
+
+
+
     for (const RPCRecHit rpcRecHit : *rpcRecHits){
 	LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
 	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
@@ -1836,12 +2019,6 @@ bool llp_ntupler::fillMuons(const edm::Event& iEvent)
     muon_chargedIso[nMuons] = mu.pfIsolationR04().sumChargedHadronPt;
     muon_photonIso[nMuons] = mu.pfIsolationR04().sumPhotonEt;
     muon_neutralHadIso[nMuons] = mu.pfIsolationR04().sumNeutralHadronEt;
-    //muon_ptrel[nMuons] = getLeptonPtRel( jets, &mu );
-    //tuple<double,double,double> PFMiniIso = getPFMiniIsolation(packedPFCands, dynamic_cast<const reco::Candidate *>(&mu), 0.05, 0.2, 10., false, false);
-    //muon_chargedMiniIso[nMuons] = std::get<0>(PFMiniIso);
-    //muon_photonAndNeutralHadronMiniIso[nMuons] = std::get<1>(PFMiniIso);
-    //muon_chargedPileupMiniIso[nMuons] = std::get<2>(PFMiniIso);
-    //muon_activityMiniIsoAnnulus[nMuons] = ActivityPFMiniIsolationAnnulus( packedPFCands, dynamic_cast<const reco::Candidate *>(&mu), 0.4, 0.05, 0.2, 10.);
     muon_validFractionTrackerHits[nMuons] = (mu.innerTrack().isNonnull() ? mu.track()->validFraction() : -99.0);
     muon_isGlobal[nMuons] = muon::isGoodMuon(mu,muon::AllGlobalMuons);
     muon_normChi2[nMuons] = ( muon::isGoodMuon(mu,muon::AllGlobalMuons) ? mu.globalTrack()->normalizedChi2() : -99.0);
@@ -1854,30 +2031,7 @@ bool llp_ntupler::fillMuons(const edm::Event& iEvent)
     //Trigger Object Matching
     //-----------------------
     bool passTagMuonFilter = false;
-    /*for (pat::TriggerObjectStandAlone trigObject : *triggerObjects) {
-      std::cout << "muon debug 18 " << nMuons << std::endl;
-      if (deltaR(trigObject.eta(), trigObject.phi(),mu.eta(),mu.phi()) > 0.3) continue;
-      trigObject.unpackFilterLabels(iEvent, *triggerBits);
-      std::cout << "muon debug 19 " << nMuons << std::endl;
-      //check single muon filters
-      if ( trigObject.hasFilterLabel("hltL3fL1sMu25L1f0Tkf27QL3trkIsoFiltered0p09") ||
-    	   trigObject.hasFilterLabel("hltL3fL1sMu20Eta2p1L1f0Tkf24QL3trkIsoFiltered0p09") ||
-    	   trigObject.hasFilterLabel("hltL3fL1sMu16Eta2p1L1f0Tkf20QL3trkIsoFiltered0p09") ||
-    	   trigObject.hasFilterLabel("hltL3fL1sMu16L1f0Tkf20QL3trkIsoFiltered0p09") ||
-    	   trigObject.hasFilterLabel("hltL3crIsoL1sMu25L1f0L2f10QL3f27QL3trkIsoFiltered0p09") ||
-    	   trigObject.hasFilterLabel("hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09") ||
-    	   trigObject.hasFilterLabel("hltL3crIsoL1sMu16Eta2p1L1f0L2f10QL3f20QL3trkIsoFiltered0p09") ||
-    	   trigObject.hasFilterLabel("hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09")
-    	   ) passTagMuonFilter = true;
-         std::cout << "muon debug 20 " << nMuons << std::endl;
-      //check all filters
-      for ( int q=0; q<MAX_MuonHLTFilters;q++) {
-    	if (trigObject.hasFilterLabel(muonHLTFilterNames[q].c_str())) muon_passHLTFilter[nMuons][q] = true;
-      std::cout << "muon debug 21 " << nMuons << std::endl;
-      }
-
-    }*/
-
+ 
     muon_passSingleMuTagFilter[nMuons] = passTagMuonFilter;
     nMuons++;
   }
@@ -1889,17 +2043,6 @@ bool llp_ntupler::fillMuons(const edm::Event& iEvent)
 bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
 {
 
-  // Get MVA values and categories (optional)
-  // edm::Handle<edm::ValueMap<float> > mvaGeneralPurposeValues;
-  // edm::Handle<edm::ValueMap<int> > mvaGeneralPurposeCategories;
-  // edm::Handle<edm::ValueMap<float> > mvaHZZValues;
-  // edm::Handle<edm::ValueMap<int> > mvaHZZCategories;
-  // iEvent.getByToken(mvaGeneralPurposeValuesMapToken_,mvaGeneralPurposeValues);
-  // iEvent.getByToken(mvaGeneralPurposeCategoriesMapToken_,mvaGeneralPurposeCategories);
-  // iEvent.getByToken(mvaHZZValuesMapToken_,mvaHZZValues);
-  // iEvent.getByToken(mvaHZZCategoriesMapToken_,mvaHZZCategories);
-
-  // setupEgammaPostRecoSeq
 
 
   for(const pat::Electron &ele : *electrons) {
@@ -1952,24 +2095,7 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     } else {
     ele_OneOverEminusOneOverP[nElectrons] = 1./ele.ecalEnergy()  -  ele.eSuperClusterOverP()/ele.ecalEnergy();
     }
-    //----------------------
-    //ID MVA
-    //----------------------
-    // ele_IDMVAGeneralPurpose[nElectrons] = (*mvaGeneralPurposeValues)[ele];
-    // ele_IDMVACategoryGeneralPurpose[nElectrons] = (*mvaGeneralPurposeCategories)[ele];
-    // ele_IDMVAHZZ[nElectrons] = (*mvaHZZValues)[ele];
-    // ele_IDMVACategoryHZZ[nElectrons] = (*mvaHZZCategories)[ele];
-
-    // ele_RegressionE[nElectrons] = ((edm::Ptr<pat::Electron>)(ele))->ecalRegressionEnergy();
-    // ele_CombineP4[nElectrons]   = ((edm::Ptr<pat::Electron>)(ele))->ecalTrackRegressionEnergy();
-    //
-    // ele_ptrel[nElectrons]   = getLeptonPtRel( jets, &(*ele) );
-    // tuple<double,double,double> PFMiniIso = getPFMiniIsolation(packedPFCands, dynamic_cast<const reco::Candidate *>(&(*ele)), 0.05, 0.2, 10., false, false);
-    // ele_chargedMiniIso[nElectrons] = std::get<0>(PFMiniIso);
-    // ele_photonAndNeutralHadronMiniIso[nElectrons] = std::get<1>(PFMiniIso);
-    // ele_chargedPileupMiniIso[nElectrons] = std::get<2>(PFMiniIso);
-    // ele_activityMiniIsoAnnulus[nElectrons] = ActivityPFMiniIsolationAnnulus( packedPFCands, dynamic_cast<const reco::Candidate *>(&(*ele)), 0.4, 0.05, 0.2, 10.);
-
+ 
     //-----------------------
     //Trigger Object Matching
     //-----------------------
@@ -1978,36 +2104,7 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     bool passTPTwoTagFilter= false;
     bool passTPOneProbeFilter= false;
     bool passTPTwoProbeFilter= false;
-    /*
-    for (pat::TriggerObjectStandAlone trigObject : *triggerObjects)
-    {
-      if (deltaR(trigObject.eta(), trigObject.phi(),ele.eta(),ele.phi()) > 0.3) continue;
-      trigObject.unpackFilterLabels(iEvent, *triggerBits);
-
-      //check Single ele filters
-      if (trigObject.hasFilterLabel("hltEle23WPLooseGsfTrackIsoFilter")  ||
-    	  trigObject.hasFilterLabel("hltEle27WPLooseGsfTrackIsoFilter")  ||
-    	  trigObject.hasFilterLabel("hltEle27WPTightGsfTrackIsoFilter")  ||
-    	  trigObject.hasFilterLabel("hltEle32WPLooseGsfTrackIsoFilter")  ||
-    	  trigObject.hasFilterLabel("hltEle32WPTightGsfTrackIsoFilter")
-    	  )
-        {
-          passSingleEleTagFilter = true;
-        }
-      std::cout << "debug ele 7 " << nElectrons << std::endl;
-      //check Tag and Probe Filters
-      if (trigObject.hasFilterLabel("hltEle25WP60Ele8TrackIsoFilter")) passTPOneTagFilter = true;
-      if (trigObject.hasFilterLabel("hltEle25WP60SC4TrackIsoFilter")) passTPTwoTagFilter = true;
-      if (trigObject.hasFilterLabel("hltEle25WP60Ele8Mass55Filter")) passTPOneProbeFilter = true;
-      if (trigObject.hasFilterLabel("hltEle25WP60SC4Mass55Filter")) passTPTwoProbeFilter = true;
-      std::cout << "debug ele 8 " << nElectrons << std::endl;
-      //check all filters
-      for ( int q=0; q<MAX_ElectronHLTFilters;q++)
-      {
-        if (trigObject.hasFilterLabel(eleHLTFilterNames[q].c_str())) ele_passHLTFilter[nElectrons][q] = true;
-      }
-    }
-    */
+  
     //std::cout << "debug ele 9 " << nElectrons << std::endl;
     ele_passSingleEleTagFilter[nElectrons] = passSingleEleTagFilter;
     ele_passTPOneTagFilter[nElectrons] = passTPOneTagFilter;
@@ -2030,48 +2127,6 @@ bool llp_ntupler::fillTaus(){
     tauPt[nTaus] = tau.pt();
     tauEta[nTaus] = tau.eta();
     tauPhi[nTaus] = tau.phi();
-
-    //comment here
-    /*
-    tau_IsLoose[nTaus] = bool(tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits"));
-    tau_IsMedium[nTaus] = bool(tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits"));
-    tau_IsTight[nTaus] = bool(tau.tauID("byTightCombinedIsolationDeltaBetaCorr3Hits"));
-    tau_passEleVetoLoose[nTaus] = bool(tau.tauID("againstElectronLooseMVA6"));
-    tau_passEleVetoMedium[nTaus] = bool(tau.tauID("againstElectronMediumMVA6"));
-    tau_passEleVetoTight[nTaus] = bool(tau.tauID("againstElectronTightMVA6"));
-    tau_passMuVetoLoose[nTaus] = bool(tau.tauID("againstMuonLoose3"));
-    //tau_passMuVetoMedium[nTaus] = bool(tau.tauID("")); //doesn't exist anymore in miniAOD 2015 v2
-    tau_passMuVetoTight[nTaus] = bool(tau.tauID("againstMuonTight3") );
-    tau_combinedIsoDeltaBetaCorr3Hits[nTaus] = tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
-    tau_chargedIsoPtSum[nTaus] = tau.tauID("chargedIsoPtSum");
-    tau_neutralIsoPtSum[nTaus] = tau.tauID("neutralIsoPtSum");
-    tau_puCorrPtSum[nTaus] = tau.tauID("puCorrPtSum");
-    tau_eleVetoMVA[nTaus] = tau.tauID("againstElectronMVA6Raw") ;
-    tau_eleVetoCategory[nTaus] = tau.tauID("againstElectronMVA6category");
-    //tau_muonVetoMVA[nTaus] = tau.tauID("againstMuonMVAraw"); //doesn't exist anymore in miniAOD 2015 v2
-    tau_isoMVAnewDMwLT[nTaus] = tau.tauID("byIsolationMVArun2v1DBnewDMwLTraw");
-    //tau_isoMVAnewDMwoLT[nTaus] = tau.tauID("byIsolationMVA3newDMwoLTraw") ; //doesn't exist anymore in miniAOD 2015 v2
-    tau_ID[nTaus] =
-      bool(tau.tauID("decayModeFinding")) +
-      bool(tau.tauID("decayModeFindingNewDMs")) +
-      bool(tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits")) +
-      bool(tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits")) +
-      bool(tau.tauID("byTightCombinedIsolationDeltaBetaCorr3Hits")) +
-      bool(tau.tauID("againstElectronVLooseMVA6")) +
-      bool(tau.tauID("againstElectronLooseMVA6")) +
-      bool(tau.tauID("againstElectronMediumMVA6")) +
-      bool(tau.tauID("againstElectronTightMVA6")) +
-      bool(tau.tauID("againstElectronVTightMVA6")) +
-      bool(tau.tauID("againstMuonLoose3")) +
-      bool(tau.tauID("againstMuonTight3")) +
-      bool(tau.tauID("byVLooseIsolationMVArun2v1DBnewDMwLT")) +
-      bool(tau.tauID("byLooseIsolationMVArun2v1DBnewDMwLT")) +
-      bool(tau.tauID("byMediumIsolationMVArun2v1DBnewDMwLT")) +
-      bool(tau.tauID("byTightIsolationMVArun2v1DBnewDMwLT")) +
-      bool(tau.tauID("byVTightIsolationMVArun2v1DBnewDMwLT")) +
-      bool(tau.tauID("byVVTightIsolationMVArun2v1DBnewDMwLT"));
-      */
-//tohere
     tau_leadCandPt[nTaus] = 0;
     tau_leadCandID[nTaus] = 0;
     tau_leadChargedHadrCandPt[nTaus] = 0;
@@ -2100,7 +2155,7 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
 {
   noZS::EcalClusterLazyTools *lazyToolnoZS = new noZS::EcalClusterLazyTools(iEvent, iSetup, ebRecHitsToken_, eeRecHitsToken_);
   for (const reco::Photon &pho : *photons) {
-    //if (pho.pt() < 20) continue;
+    if (pho.pt() < 20) continue;
     std::vector<float> vCov = lazyToolnoZS->localCovariances( *(pho.superCluster()->seed()) );
     //-------------------------------------------------
     //default photon 4-mometum already vertex corrected
@@ -2151,16 +2206,6 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
 
     pho_superClusterSeedE[nPhotons]      = pho.superCluster()->seed()->energy();
 
-    /*for (const reco::PFCluster &pfcluster : *pfClusters)
-    {
-      if(pfcluster.seed() == pho.superCluster()->seed()->seed())
-      {
-        pho_superClusterSeedT[nPhotons] = pfcluster.time();
-        pho_pfClusterSeedE[nPhotons]      = pfcluster.energy();
-        //std::cout<<"find seed cluster for photon #"<<nPhotons<<std::endl;
-      }
-    }*/
-    //std::cout<<"finished searching for seed cluster for photon #"<<nPhotons<<std::endl;
 
 
     //------------------------------------------------------
@@ -2198,14 +2243,6 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
       if( dR > coneSizeDR ) continue;
 
       // Check if this candidate is not in the footprint
-
-      //bool inFootprint = false;
-      //for (auto itr : pho.associatedPackedPFCandidates()) {
-      //if ( &(*itr) == &candidate) {
-      //inFootprint = true;
-      //  }
-      //}
-      //if( inFootprint ) continue;
 
       // Find candidate type
       reco::PFCandidate::ParticleType thisCandidateType = reco::PFCandidate::X;
@@ -2252,101 +2289,7 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
       photonIsoSum += candidate.pt();
     }
 
-    /*
-    //PROBLEM WITH myPV_GenMatch->position()
-    // new PV, Loop over all PF candidates
-    for (const reco::PFCandidate &candidate : *pfCands)
-    {
-      // Check if this candidate is within the isolation cone
-      //float dR=deltaR(photon_directionWrtVtx_GenMatch.Eta(),photon_directionWrtVtx_GenMatch.Phi(),
-      //candidate.eta(), candidate.phi());
-      //if( dR > coneSizeDR ) continue;
-
-      // Check if this candidate is not in the footprint
-
-      //bool inFootprint = false;
-      //for (auto itr : pho.associatedPackedPFCandidates()) {
-      //if ( &(*itr) == &candidate) {
-      //inFootprint = true;
-      //  }
-      //}
-      //if( inFootprint ) continue;
-
-      // Find candidate type
-      reco::PFCandidate::ParticleType thisCandidateType = reco::PFCandidate::X;
-      std::cout << "debug photons 6.1 " <<  std::endl;
-      // the neutral hadrons and charged hadrons can be of pdgId types
-      // only 130 (K0L) and +-211 (pi+-) in packed candidates
-      const int pdgId = candidate.pdgId();
-      if( pdgId == 22 )
-      thisCandidateType = reco::PFCandidate::gamma;
-      else if( abs(pdgId) == 130) // PDG ID for K0L
-      thisCandidateType = reco::PFCandidate::h0;
-      else if( abs(pdgId) == 211) // PDG ID for pi+-
-      thisCandidateType = reco::PFCandidate::h;
-
-      std::cout << "debug photons 6.2 " <<  std::endl;
-      // Increment the appropriate isolation sum
-      if( thisCandidateType == reco::PFCandidate::h )
-      {
-        //charged hadrons, additionally check consistency with PV
-        float dxy = -999, dz = -999;
-        //For the primary vertex
-        dz = candidate.trackRef()->dz(myPV_GenMatch->position());
-        dxy =candidate.trackRef()->dxy(myPV_GenMatch->position());
-        float dt_TrkVtx = (*times)[candidate.trackRef()] - myPV_GenMatch->t();
-        std::cout << "debug photons 6.3 " <<  std::endl;
-        //photon time is the time extrapolated to (0,0,0)
-        float CmToNs = 0.1/2.99792458;
-        float globalOffset = 0.0111;//global offset of 0.0111 ns
-        float pho_000_mag = sqrt(pow(pho_superClusterSeedX[nPhotons],2.0)+pow(pho_superClusterSeedY[nPhotons],2.0)+pow(pho_superClusterSeedZ[nPhotons],2.0));
-        float photrk_mag = sqrt(pow(pho_superClusterSeedX[nPhotons] - candidate.trackRef()->vx(),2.0) + pow(pho_superClusterSeedY[nPhotons] - candidate.trackRef()->vy(),2.0) + pow(pho_superClusterSeedZ[nPhotons] - candidate.trackRef()->vz(),2.0) );
-        TRandom3 randomPhotonTime(1111);
-        float phoTime_m = randomPhotonTime.Gaus(pho_superClusterSeedT[nPhotons] + CmToNs*pho_000_mag - globalOffset, 0.03);
-        float phoTime_track = (*times)[candidate.trackRef()] + CmToNs*photrk_mag;
-        float dt_TrkPho = phoTime_track - phoTime_m;
-        std::cout << "debug photons 6.4 " <<  std::endl;
-        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax)
-        {
-          chargedIsoSum_NewPV_NoTiming += candidate.pt();
-        }
-        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkVtx)<0.05 )
-        {
-          chargedIsoSum_NewPV_Timing50_TrkVtx += candidate.pt();
-        }
-        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkVtx)<0.08 )
-        {
-          chargedIsoSum_NewPV_Timing80_TrkVtx += candidate.pt();
-        }
-
-        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkVtx)<0.10 ) {
-          chargedIsoSum_NewPV_Timing100_TrkVtx += candidate.pt();
-        }
-
-        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkVtx)<0.12 ) {
-          chargedIsoSum_NewPV_Timing120_TrkVtx += candidate.pt();
-        }
-
-        std::cout << "debug photons 6.5 " <<  std::endl;
-        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkPho)<0.05 ) {
-          chargedIsoSum_NewPV_Timing50_TrkPho += candidate.pt();
-        }
-
-        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkPho)<0.08 ) {
-          chargedIsoSum_NewPV_Timing80_TrkPho += candidate.pt();
-        }
-
-        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkPho)<0.10 ) {
-          chargedIsoSum_NewPV_Timing100_TrkPho += candidate.pt();
-        }
-
-        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax && fabs(dt_TrkPho)<0.12 ) {
-          chargedIsoSum_NewPV_Timing120_TrkPho += candidate.pt();
-        }
-
-      }
-    }
-*/
+ 
     //fill the proper variables
     for(int q = 0; q < nPVAll; q++) {
       pho_sumChargedHadronPtAllVertices[nPhotons][q] = chargedIsoSumAllVertices[q];
@@ -2526,62 +2469,7 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
     nPhotons++;
   }
 
-  /*
-  //CRASHING MEMORY, I THINK
-  std::cout << "debug photons 9 " <<  std::endl;
-  double pho_vtxSumPxD[OBJECTARRAYSIZE][MAX_NPV];
-  double pho_vtxSumPyD[OBJECTARRAYSIZE][MAX_NPV];
 
-  std::cout << "debug photons 10 " <<  std::endl;
-  for (int ipho = 0; ipho<nPhotons; ++ipho) {
-    for (int ipv = 0; ipv<MAX_NPV; ++ipv) {
-      pho_vtxSumPxD[ipho][ipv] = 0.;
-      pho_vtxSumPyD[ipho][ipv] = 0.;
-
-    }
-  }
-
-  std::cout << "debug photons 11 " <<  std::endl;
-  //fill information on tracks to exclude around photons for vertex selection purposes
-  for (const reco::PFCandidate &pfcand : *pfCands) {
-    if (pfcand.charge()==0) continue;
-    double mindz = std::numeric_limits<double>::max();
-    int ipvmin = -1;
-    for (int ipv = 0; ipv < nPVAll; ++ipv) {
-      const reco::Vertex &vtx = vertices->at(ipv);
-      //double dz = std::abs(pfcand.dz(vtx.position()));
-      double dz = std::abs(pfcand.vz()-vtx.z());
-      if (dz<mindz) {
-        mindz = dz;
-        ipvmin = ipv;
-      }
-    }
-
-    std::cout << "debug photons 12 " <<  std::endl;
-    if (mindz<0.2 && ipvmin>=0 && ipvmin<MAX_NPV) {
-      const reco::Vertex &vtx = vertices->at(ipvmin);
-      for (int ipho = 0; ipho < nPhotons; ++ipho) {
-        const reco::Photon &pho = photons->at(ipho);
-        math::XYZVector phodir(pho.superCluster()->x()-vtx.x(),pho.superCluster()->y()-vtx.y(),pho.superCluster()->z()-vtx.z());
-        double dr = reco::deltaR(phodir, pfcand);
-        if (dr<0.05) {
-          pho_vtxSumPxD[ipho][ipvmin] += pfcand.px();
-          pho_vtxSumPyD[ipho][ipvmin] += pfcand.py();
-        }
-        //add addition dt cut here:
-        //
-      }
-    }
-  }
-  std::cout << "debug photons 13 " <<  std::endl;
-  for (int ipho = 0; ipho<nPhotons; ++ipho) {
-    for (int ipv = 0; ipv<nPVAll; ++ipv) {
-      pho_vtxSumPx[ipho][ipv] = pho_vtxSumPxD[ipho][ipv];
-      pho_vtxSumPy[ipho][ipv] = pho_vtxSumPyD[ipho][ipv];
-
-    }
-  }
-  */
   delete lazyToolnoZS;
   return true;
 
@@ -2594,7 +2482,7 @@ bool llp_ntupler::fillJets(const edm::EventSetup& iSetup)
   for (const reco::PFJet &j : *jets)
   {
     if (j.pt() < 20) continue;
-    if (fabs(j.eta()) > 2.4) continue;
+    if (fabs(j.eta()) > 5.0) continue;
     //-------------------
     //Fill Jet-Level Info
     //-------------------
@@ -2883,8 +2771,6 @@ bool llp_ntupler::fillMet(const edm::Event& iEvent)
 {
   const reco::PFMET &Met = mets->front();
 
-  //metPt = Met.uncorPt();
-  //metPhi = Met.uncorPhi();
   sumMET = Met.sumEt();
   metType0Pt = 0;
   metType0Phi = 0;
@@ -2897,58 +2783,10 @@ bool llp_ntupler::fillMet(const edm::Event& iEvent)
   metType1Phi = Met.phi();
   metType0Plus1Pt = 0;
   metType0Plus1Phi = 0;
-  //metCaloPt = Met.caloMETPt();
-  //metCaloPhi = Met.caloMETPhi();
-
-/*
-  if(!isData_)
-    {
-      metType1PtJetResUp           = Met.shiftedPt(reco::PFMET::METUncertainty::JetResUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtJetResDown         = Met.shiftedPt(reco::PFMET::METUncertainty::JetResDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtJetEnUp            = Met.shiftedPt(reco::PFMET::METUncertainty::JetEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtJetEnDown          = Met.shiftedPt(reco::PFMET::METUncertainty::JetEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtMuonEnUp           = Met.shiftedPt(reco::PFMET::METUncertainty::MuonEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtMuonEnDown         = Met.shiftedPt(reco::PFMET::METUncertainty::MuonEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtElectronEnUp       = Met.shiftedPt(reco::PFMET::METUncertainty::ElectronEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtElectronEnDown     = Met.shiftedPt(reco::PFMET::METUncertainty::ElectronEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtTauEnUp	           = Met.shiftedPt(reco::PFMET::METUncertainty::TauEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtTauEnDown          = Met.shiftedPt(reco::PFMET::METUncertainty::TauEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtUnclusteredEnUp    = Met.shiftedPt(reco::PFMET::METUncertainty::UnclusteredEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtUnclusteredEnDown  = Met.shiftedPt(reco::PFMET::METUncertainty::UnclusteredEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtPhotonEnUp         = Met.shiftedPt(reco::PFMET::METUncertainty::PhotonEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PtPhotonEnDown       = Met.shiftedPt(reco::PFMET::METUncertainty::PhotonEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      // metType1PtMETUncertaintySize = Met.shiftedPt(reco::PFMET::METUncertainty::METUncertaintySize, reco::PFMET::METCorrectionLevel::Type1);
-      // metType1PtJetResUpSmear     = Met.shiftedPt(reco::PFMET::METUncertainty::JetResUpSmear, reco::PFMET::METCorrectionLevel::Type1);
-      // metType1PtJetResDownSmear   = Met.shiftedPt(reco::PFMET::METUncertainty::JetResDownSmear, reco::PFMET::METCorrectionLevel::Type1);
-      // metType1PtMETFullUncertaintySize = Met.shiftedPt(reco::PFMET::METUncertainty::METFullUncertaintySize, reco::PFMET::METCorrectionLevel::Type1);
-
-      metType1PhiJetResUp          = Met.shiftedPhi(reco::PFMET::METUncertainty::JetResUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiJetResDown        = Met.shiftedPhi(reco::PFMET::METUncertainty::JetResDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiJetEnUp           = Met.shiftedPhi(reco::PFMET::METUncertainty::JetEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiJetEnDown         = Met.shiftedPhi(reco::PFMET::METUncertainty::JetEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiMuonEnUp          = Met.shiftedPhi(reco::PFMET::METUncertainty::MuonEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiMuonEnDown        = Met.shiftedPhi(reco::PFMET::METUncertainty::MuonEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiElectronEnUp      = Met.shiftedPhi(reco::PFMET::METUncertainty::ElectronEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiElectronEnDown    = Met.shiftedPhi(reco::PFMET::METUncertainty::ElectronEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiTauEnUp           = Met.shiftedPhi(reco::PFMET::METUncertainty::TauEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiTauEnDown         = Met.shiftedPhi(reco::PFMET::METUncertainty::TauEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiUnclusteredEnUp   = Met.shiftedPhi(reco::PFMET::METUncertainty::UnclusteredEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiUnclusteredEnDown = Met.shiftedPhi(reco::PFMET::METUncertainty::UnclusteredEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiPhotonEnUp        = Met.shiftedPhi(reco::PFMET::METUncertainty::PhotonEnUp, reco::PFMET::METCorrectionLevel::Type1);
-      metType1PhiPhotonEnDown      = Met.shiftedPhi(reco::PFMET::METUncertainty::PhotonEnDown, reco::PFMET::METCorrectionLevel::Type1);
-      // metType1PhiMETUncertaintySize = Met.shiftedPhi(reco::PFMET::METUncertainty::METUncertaintySize, reco::PFMET::METCorrectionLevel::Type1);
-      // metType1PhiJetResUpSmear     = Met.shiftedPhi(reco::PFMET::METUncertainty::JetResUpSmear, reco::PFMET::METCorrectionLevel::Type1);
-      // metType1PhiJetResDownSmear   = Met.shiftedPhi(reco::PFMET::METUncertainty::JetResDownSmear, reco::PFMET::METCorrectionLevel::Type1);
-      // metType1PhiMETFullUncertaintySize = Met.shiftedPhi(reco::PFMET::METUncertainty::METFullUncertaintySize, reco::PFMET::METCorrectionLevel::Type1);
-    }
- */
 
   const reco::PFMET &MetPuppi = metsPuppi->front();
-  //const reco::PFMET &MetNoHF = metsNoHF->front();
   metPuppiPt = MetPuppi.pt();
   metPuppiPhi = MetPuppi.phi();
-  //metNoHFPt = MetNoHF.pt();
-  //metNoHFPhi = MetNoHF.phi();
 
   //MET filters
   if (!isFastsim_) {
@@ -2995,12 +2833,6 @@ bool llp_ntupler::fillMet(const edm::Event& iEvent)
       Flag_hcalLaserEventFilter = metFilterBits->accept(i);
     } //loop over met filters
 
-    //use custom hbhefilter, because miniAOD filters are problematic.
-    //Flag_HBHENoiseFilter = *hbheNoiseFilter;
-    //Flag_HBHETightNoiseFilter = *hbheTightNoiseFilter;
-    //Flag_HBHEIsoNoiseFilter = *hbheIsoNoiseFilter;
-    //Flag_badChargedCandidateFilter = *badChargedCandidateFilter;
-    //Flag_badMuonFilter = *badMuonFilter;
   }
 
   return true;
@@ -3243,132 +3075,9 @@ bool llp_ntupler::fillMC()
   genQScale = genInfo->qScale();
   genAlphaQCD = genInfo->alphaQCD();
   genAlphaQED = genInfo->alphaQED();
-  /*
-  for ( int i_genJet = 0; i_genJet < nGenJets; i_genJet++ )
-  {
+ 
 
-    unsigned int match_jet_index = 666;
-    double min_delta_r = 666.;
-
-    for (int i_jet = 0; i_jet < nJets; i_jet++)
-    {
-
-      double current_delta_r = deltaR(genJetEta[i_genJet],genJetPhi[i_genJet] , jetEta[i_jet], jetPhi[i_jet]);
-
-      if ( current_delta_r < min_delta_r )
-      {
-        min_delta_r = current_delta_r;
-        match_jet_index = i_jet;
-      }
-     }//end matching to jets
-     if ( min_delta_r < 0.3 )
-     {
-       genJet_match_jet_index[i_genJet] = match_jet_index;
-       genJet_min_delta_r_match_jet[i_genJet] = min_delta_r;
-     }
-   }
-
-
-*/
-
-
-    /*
-    if (isFastsim_) {
-
-      //get lhe weights for systematic uncertainties:
-      double nomlheweight = genInfo->weights()[0];
-
-      //fill scale variation weights
-      if (genInfo->weights().size()>=10) {
-	for (unsigned int iwgt=1; iwgt<10; ++iwgt) {
-	  //normalize to
-	  double wgtval = genInfo->weights()[iwgt]*genWeight/genInfo->weights()[1];
-	  scaleWeights->push_back(wgtval);
-	}
-      }
-
-      //fill pdf variation weights
-      if (firstPdfWeight>=0 && lastPdfWeight>=0 && lastPdfWeight<int(genInfo->weights().size()) && (lastPdfWeight-firstPdfWeight+1)==100) {
-
-	//fill pdf variation weights after converting with mc2hessian transformation
-	std::array<double, 100> inpdfweights;
-	for (int iwgt=firstPdfWeight, ipdf=0; iwgt<=lastPdfWeight; ++iwgt, ++ipdf) {
-	  inpdfweights[ipdf] = genInfo->weights()[iwgt]/genInfo->weights()[firstPdfWeight-1];
-	}
-
-	std::array<double, 60> outpdfweights;
-	pdfweightshelper.DoMC2Hessian(inpdfweights.data(),outpdfweights.data());
-
-	for (unsigned int iwgt=0; iwgt<60; ++iwgt) {
-	  double wgtval = outpdfweights[iwgt]*genWeight;
-	  pdfWeights->push_back(wgtval);
-	}
-
-	//fill alpha_s variation weights
-	if (firstAlphasWeight>=0 && lastAlphasWeight>=0 && lastAlphasWeight<int(genInfo->weights().size())) {
-	  for (int iwgt = firstAlphasWeight; iwgt<=lastAlphasWeight; ++iwgt) {
-	    double wgtval = genInfo->weights()[iwgt]*genWeight/nomlheweight;
-	    alphasWeights->push_back(wgtval);
-	  }
-	}
-
-      }
-    } else {
-
-      if (lheInfo.isValid() && lheInfo->weights().size()>0) {
-
-	double nomlheweight = lheInfo->weights()[0].wgt;
-
-	//fill scale variation weights
-	if (lheInfo->weights().size()>=9) {
-	  for (unsigned int iwgt=0; iwgt<9; ++iwgt) {
-	    double wgtval = lheInfo->weights()[iwgt].wgt*genWeight/nomlheweight;
-	    scaleWeights->push_back(wgtval);
-	  }
-	}
-
-	//fill pdf variation weights
-	if (firstPdfWeight>=0 && lastPdfWeight>=0 && lastPdfWeight<int(lheInfo->weights().size()) && (lastPdfWeight-firstPdfWeight+1)==100) {
-
-	  //fill pdf variation weights after converting with mc2hessian transformation
-	  std::array<double, 100> inpdfweights;
-	  for (int iwgt=firstPdfWeight, ipdf=0; iwgt<=lastPdfWeight; ++iwgt, ++ipdf) {
-	    inpdfweights[ipdf] = lheInfo->weights()[iwgt].wgt/nomlheweight;
-	  }
-
-	  std::array<double, 60> outpdfweights;
-	  pdfweightshelper.DoMC2Hessian(inpdfweights.data(),outpdfweights.data());
-
-	  for (unsigned int iwgt=0; iwgt<60; ++iwgt) {
-	    double wgtval = outpdfweights[iwgt]*genWeight;
-	    pdfWeights->push_back(wgtval);
-	  }
-
-	  //fill alpha_s variation weights
-	  if (firstAlphasWeight>=0 && lastAlphasWeight>=0 && lastAlphasWeight<int(lheInfo->weights().size())) {
-	    for (int iwgt = firstAlphasWeight; iwgt<=lastAlphasWeight; ++iwgt) {
-	      double wgtval = lheInfo->weights()[iwgt].wgt*genWeight/nomlheweight;
-	      alphasWeights->push_back(wgtval);
-	    }
-	  }
-	}
-      }
-    }
-
-    //fill sum of weights histograms
-    sumWeights->Fill(0.,genWeight);
-
-    for (unsigned int iwgt=0; iwgt<scaleWeights->size(); ++iwgt) {
-      sumScaleWeights->Fill(double(iwgt),(*scaleWeights)[iwgt]);
-    }
-    for (unsigned int iwgt=0; iwgt<pdfWeights->size(); ++iwgt) {
-      sumPdfWeights->Fill(double(iwgt),(*pdfWeights)[iwgt]);
-    }
-    for (unsigned int iwgt=0; iwgt<alphasWeights->size(); ++iwgt) {
-      sumAlphasWeights->Fill(double(iwgt),(*alphasWeights)[iwgt]);
-    }
-*/
-    return true;
+  return true;
 };
 
 
@@ -3387,7 +3096,9 @@ bool llp_ntupler::fillGenParticles(){
        || (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
        || (abs((*genParticles)[i].pdgId()) == 21 && (*genParticles)[i].status() < 30)
 	//|| (abs((*genParticles)[i].pdgId()) >= 22 && abs((*genParticles)[i].pdgId()) <= 25 && ( (*genParticles)[i].status() < 30))
-       || (abs((*genParticles)[i].pdgId()) >= 22 && abs((*genParticles)[i].pdgId()) <= 25)
+	
+	|| (abs((*genParticles)[i].pdgId()) == 22 && (*genParticles)[i].pt() > 10.0)
+       || (abs((*genParticles)[i].pdgId()) >= 23 && abs((*genParticles)[i].pdgId()) <= 25)
        || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
        || (abs((*genParticles)[i].pdgId()) == 1023)
        || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
@@ -3421,44 +3132,7 @@ bool llp_ntupler::fillGenParticles(){
     gParticleMotherId[i] = 0;
     gParticleMotherIndex[i] = -1;
 
-    /*
-    //For Neutralinos we try to find the decay vertex locaton.
-    //Algorithm: Find the first daughter particle that is not a neutralino,
-    //and call that the daughter. get the creation vertex of that daughter.
-    if ( (gParticleId[i] == 1000022 && gParticleStatus[i] == 22) )
-    {
-      const reco::Candidate *dau = 0;
-      bool foundDaughter = false;
-      bool noDaughter = false;
-      const reco::Candidate *tmpParticle = prunedV[i];
-
-      while (!foundDaughter && !noDaughter)
-      {
-        if (tmpParticle->numberOfDaughters() > 0)
-        {
-          dau = tmpParticle->daughter(0);
-          if (dau && dau->pdgId() != 1000022){
-            foundDaughter = true;
-          }
-          else{
-            tmpParticle = dau;
-          }
-        }
-        else
-        {
-          noDaughter = true;
-        }
-      }
-
-      if (foundDaughter)
-      {
-        gParticleDecayVertexX[i] = dau->vx();
-        gParticleDecayVertexY[i] = dau->vy();
-        gParticleDecayVertexZ[i] = dau->vz();
-      }
-    }
-*/
-
+ 
     if(prunedV[i]->numberOfMothers() > 0)
     {
       //find the ID of the first mother that has a different ID than the particle itself
@@ -3466,9 +3140,6 @@ bool llp_ntupler::fillGenParticles(){
       if (firstMotherWithDifferentID)
       {
         gParticleMotherId[i] = firstMotherWithDifferentID->pdgId();
-        //gParticleDecayVertexX[i] = firstMotherWithDifferentID->vx();
-        //gParticleDecayVertexY[i] = firstMotherWithDifferentID->vy();
-        //gParticleDecayVertexZ[i] = firstMotherWithDifferentID->vz();
       }
 
       //find the mother and keep going up the mother chain if the ID's are the same
@@ -3863,4 +3534,47 @@ bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
 //define this as a plug-in
   return true;
 };
+
+
+int llp_ntupler::cscChamber(double x, double y, double z) {
+  double r = sqrt(x*x+y*y);
+  int sign_z = TMath::Sign(1.0, z);
+  // if (r > 80 && r < 283 && abs(z) > 568  && abs(z) < 632) return sign_z*11;
+  // if (r > 255 && r < 465.0 && abs(z) > 668.3 && abs(z) < 724) return sign_z*12;
+  // if (r > 485.5 && r < 695.5 && abs(z) > 686 && abs(z) < 724) return sign_z*13;
+  // if (r > 118.5 && r < 345 && abs(z) > 791 && abs(z) < 849.5) return sign_z*21;
+  // if (r > 337.5 && r < 695.5 && abs(z) > 791 && abs(z) < 849.5) return sign_z*22;
+  // if (r > 140.5 && r < 345 && abs(z) > 911.5 && abs(z) < 970) return sign_z*31;
+  // if (r > 337.5 && r < 695.5 && abs(z) > 911.5 && abs(z) < 970) return sign_z*32;
+  // if (r > 157.5 && r < 345 && abs(z) > 1002 && abs(z) < 1060.5) return sign_z*41;
+  // if (r > 337.5 && r < 695.5 && abs(z) > 1002 && abs(z) < 1060.5) return sign_z*42;
+  if (r < 283 && abs(z) > 568  && abs(z) < 632) return sign_z*11;
+  if (r < 470.0 && abs(z) > 668.3 && abs(z) < 724) return sign_z*12;
+  if (r > 480.0 && abs(z) > 686 && abs(z) < 724) return sign_z*13;
+  if (r < 345 && abs(z) > 791 && abs(z) < 849.5) return sign_z*21;
+  if (r > 337.5 && abs(z) > 791 && abs(z) < 849.5) return sign_z*22;
+  if (r < 345 && abs(z) > 911.5 && abs(z) < 970) return sign_z*31;
+  if (r > 337.5 && abs(z) > 911.5 && abs(z) < 970) return sign_z*32;
+  if (r < 345 && abs(z) > 1002 && abs(z) < 1060.5) return sign_z*41;
+  if (r > 337.5 && abs(z) > 1002 && abs(z) < 1060.5) return sign_z*42;
+  return -999;
+};
+
+int llp_ntupler::cscStation(double x, double y, double z) {
+  double r = sqrt(x*x+y*y);
+  // z = abs(z);
+  int sign_z = TMath::Sign(1.0, z);
+  if (r < 283 && abs(z) > 568  && abs(z) < 632) return sign_z*1;
+  if (r < 470.0 && abs(z) > 668.3 && abs(z) < 724) return sign_z*1;
+  if (r > 480.0 && abs(z) > 686 && abs(z) < 724) return sign_z*1;
+  if (r < 345 && abs(z) > 791 && abs(z) < 849.5) return sign_z*2;
+  if (r > 337.5 && abs(z) > 791 && abs(z) < 849.5) return sign_z*2;
+  if (r < 345 && abs(z) > 911.5 && abs(z) < 970) return sign_z*3;
+  if (r > 337.5 && abs(z) > 911.5 && abs(z) < 970) return sign_z*3;
+  if (r < 345 && abs(z) > 1002 && abs(z) < 1060.5) return sign_z*4;
+  if (r > 337.5 && abs(z) > 1002 && abs(z) < 1060.5) return sign_z*4;
+  return -999;
+};
+
+
 DEFINE_FWK_MODULE(llp_ntupler);
