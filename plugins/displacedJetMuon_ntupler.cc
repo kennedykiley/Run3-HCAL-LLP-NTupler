@@ -204,16 +204,16 @@ void displacedJetMuon_ntupler::setBranches()
   enableEventInfoBranches();
   // enablePVAllBranches();
   // enablePVTracksBranches();
-  // enablePileUpBranches();
+  enablePileUpBranches();
   enableMuonBranches();
-  // enableElectronBranches();
+  enableElectronBranches();
   // enableTauBranches();
   // enableIsoPFCandidateBranches();
   // enablePhotonBranches();
   enableMuonSystemBranches();
   // enableEcalRechitBranches();
   enableJetBranches();
-  // enableCaloJetBranches();
+  enableCaloJetBranches();
   // enableJetAK8Branches();
   enableMetBranches();
   enableTriggerBranches();
@@ -475,7 +475,15 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("cscDirectionZ",cscDirectionZ,"cscDirectionZ[nCsc]");
     displacedJetMuonTree->Branch("cscNRecHits",cscNRecHits,"cscNRecHits[nCsc]");
     displacedJetMuonTree->Branch("cscNRecHits_flag",cscNRecHits_flag,"cscNRecHits_flag[nCsc]");
-
+    displacedJetMuonTree->Branch("cscRechitX",cscRechitX,"cscRechitX[nCsc][6]/F");
+    displacedJetMuonTree->Branch("cscRechitY",cscRechitY,"cscRechitY[nCsc][6]/F");
+    displacedJetMuonTree->Branch("cscRechitZ",cscRechitZ,"cscRechitZ[nCsc][6]/F");
+    displacedJetMuonTree->Branch("cscRechitT",cscRechitT,"cscRechitT[nCsc][6]/F");
+    displacedJetMuonTree->Branch("cscRechitE",cscRechitE,"cscRechitE[nCsc][6]/F");
+    displacedJetMuonTree->Branch("cscRechitBadStrip",cscRechitBadStrip,"cscRechitBadStrip[nCsc][6]/O");
+    displacedJetMuonTree->Branch("cscRechitBadWireGroup",cscRechitBadWireGroup,"cscRechitBadWireGroup[nCsc][6]/O");
+    displacedJetMuonTree->Branch("cscRechitErrorWithinStrip",cscRechitErrorWithinStrip,"cscRechitErrorWithinStrip[nCsc][6]/O");
+    displacedJetMuonTree->Branch("cscRechitQuality",cscRechitQuality,"cscRechitQuality[nCsc][6]/I");
     displacedJetMuonTree->Branch("cscT",cscT,"cscT[nCsc]");
     displacedJetMuonTree->Branch("cscChi2",cscChi2,"cscChi2[nCsc]");
 
@@ -704,11 +712,11 @@ void displacedJetMuon_ntupler::enableTriggerBranches()
 
 void displacedJetMuon_ntupler::enableMCBranches()
 {
-  // displacedJetMuonTree->Branch("nGenJets", &nGenJets, "nGenJets/I");
-  // displacedJetMuonTree->Branch("genJetE", genJetE, "genJetE[nGenJets]/F");
-  // displacedJetMuonTree->Branch("genJetPt", genJetPt, "genJetPt[nGenJets]/F");
-  // displacedJetMuonTree->Branch("genJetEta", genJetEta, "genJetEta[nGenJets]/F");
-  // displacedJetMuonTree->Branch("genJetPhi", genJetPhi, "genJetPhi[nGenJets]/F");
+  displacedJetMuonTree->Branch("nGenJets", &nGenJets, "nGenJets/I");
+  displacedJetMuonTree->Branch("genJetE", genJetE, "genJetE[nGenJets]/F");
+  displacedJetMuonTree->Branch("genJetPt", genJetPt, "genJetPt[nGenJets]/F");
+  displacedJetMuonTree->Branch("genJetEta", genJetEta, "genJetEta[nGenJets]/F");
+  displacedJetMuonTree->Branch("genJetPhi", genJetPhi, "genJetPhi[nGenJets]/F");
   // displacedJetMuonTree->Branch("genMetPtCalo", &genMetPtCalo, "genMetPtCalo/F");
   // displacedJetMuonTree->Branch("genMetPhiCalo", &genMetPhiCalo, "genMetPhiCalo/F");
   // displacedJetMuonTree->Branch("genMetPtTrue", &genMetPtTrue, "genMetPtTrue/F");
@@ -1138,6 +1146,13 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
       cscNRecHits_flag[i] = 0.0;
       cscT[i] = 0.0;
       cscChi2[i] = 0.0;
+      for (int j=0;j<CSCRECHITARRAYSIZE;j++) {
+	cscRechitX[i][j] = -999.0;
+	cscRechitY[i][j] = -999.0;
+	cscRechitZ[i][j] = -999.0;
+	cscRechitT[i][j] = -999.0;
+	cscRechitE[i][j] = -999.0;
+      }
     }
     nRpc = 0;
     for ( int i = 0; i < OBJECTARRAYSIZE; i++)
@@ -1514,14 +1529,21 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
   fillEventInfo(iEvent);
   fillJets(iSetup);
   fillMuons(iEvent);
-  fillGenParticles();
+  fillElectrons(iEvent);
   fillMuonSystem(iEvent, iSetup);
-  fillMet(iEvent);
-  fillMC();
+  fillMet(iEvent); 
+  fillCaloJets(iSetup);
+  if (!isData) {
+    fillPileUp();
+    fillMC();
+    fillGenParticles();
+  }
+  
+
+
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
-
-  displacedJetMuonTree->Fill();
-
+  
+  displacedJetMuonTree->Fill();  
 
 };
 
@@ -1690,20 +1712,20 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     // cout << gLLP_decay_vertex_z[1] << " " << gLLP_eta[1] << " " << sqrt(gLLP_decay_vertex_x[1]*gLLP_decay_vertex_x[1]+gLLP_decay_vertex_y[1]*gLLP_decay_vertex_y[1]) << "\n";
     // cout << "\n\n";
 
-    int LLPInCSC_index = -1;
-    if ( 
-	(fabs(gLLP_decay_vertex_z[0]) > 568 && fabs(gLLP_decay_vertex_z[0]) < 1100 && fabs(gLLP_eta[0]) > 0.9 && fabs(gLLP_eta[0]) < 2.4 && sqrt(gLLP_decay_vertex_x[0]*gLLP_decay_vertex_x[0]+gLLP_decay_vertex_y[0]*gLLP_decay_vertex_y[0]) < 695.5)
-	 ) {
-      LLPInCSC_index = 0;
-    }
-    if (
-	(fabs(gLLP_decay_vertex_z[1]) > 568 && fabs(gLLP_decay_vertex_z[1]) < 1100 && fabs(gLLP_eta[1]) > 0.9 && fabs(gLLP_eta[1]) < 2.4 && sqrt(gLLP_decay_vertex_x[1]*gLLP_decay_vertex_x[1]+gLLP_decay_vertex_y[1]*gLLP_decay_vertex_y[1]) < 695.5)
-	) {
-      LLPInCSC_index = 1;
-    }
-    if (LLPInCSC_index >= 0) {
-      // cout << "Found LLP Decay in CSC: " << gLLP_decay_vertex_x[LLPInCSC_index] << " " << gLLP_decay_vertex_y[LLPInCSC_index] << " " << gLLP_decay_vertex_z[LLPInCSC_index] << " \n";
-    }
+    // int LLPInCSC_index = -1;
+    // if ( 
+    // 	(fabs(gLLP_decay_vertex_z[0]) > 568 && fabs(gLLP_decay_vertex_z[0]) < 1100 && fabs(gLLP_eta[0]) > 0.9 && fabs(gLLP_eta[0]) < 2.4 && sqrt(gLLP_decay_vertex_x[0]*gLLP_decay_vertex_x[0]+gLLP_decay_vertex_y[0]*gLLP_decay_vertex_y[0]) < 695.5)
+    // 	 ) {
+    //   LLPInCSC_index = 0;
+    // }
+    // if (
+    // 	(fabs(gLLP_decay_vertex_z[1]) > 568 && fabs(gLLP_decay_vertex_z[1]) < 1100 && fabs(gLLP_eta[1]) > 0.9 && fabs(gLLP_eta[1]) < 2.4 && sqrt(gLLP_decay_vertex_x[1]*gLLP_decay_vertex_x[1]+gLLP_decay_vertex_y[1]*gLLP_decay_vertex_y[1]) < 695.5)
+    // 	) {
+    //   LLPInCSC_index = 1;
+    // }
+    // if (LLPInCSC_index >= 0) {
+    //   // cout << "Found LLP Decay in CSC: " << gLLP_decay_vertex_x[LLPInCSC_index] << " " << gLLP_decay_vertex_y[LLPInCSC_index] << " " << gLLP_decay_vertex_z[LLPInCSC_index] << " \n";
+    // }
     
 
     vector<vector<float> > trackSegments;
@@ -1772,16 +1794,36 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    // look at flags of the rechits
 	    const std::vector<CSCRecHit2D> cscrechits2d = cscSegment.specificRecHits();
 	    int cscNRecHits_flagged = 0;
+	    int rechitIndex = 0;
 	    for (const CSCRecHit2D recHit2d : cscrechits2d) {
-	      if (!(recHit2d.quality()==1)) continue;
-	      if(recHit2d.badStrip()) continue;
-	      if (recHit2d.badWireGroup()) continue;
 	      
+	      LocalPoint hitLocalPos = recHit2d.localPosition();
+	      GlobalPoint hitGlobalPos = cscchamber->toGlobal(hitLocalPos);
+	      cscRechitBadStrip[nCsc][rechitIndex] = recHit2d.badStrip();
+	      cscRechitBadWireGroup[nCsc][rechitIndex] = recHit2d.badWireGroup();
+	      cscRechitErrorWithinStrip[nCsc][rechitIndex] = recHit2d.errorWithinStrip();
+	      cscRechitQuality[nCsc][rechitIndex] = recHit2d.quality();
+	      cscRechitX[nCsc][rechitIndex] = hitGlobalPos.x();
+	      cscRechitY[nCsc][rechitIndex] = hitGlobalPos.y();
+	      cscRechitZ[nCsc][rechitIndex] = hitGlobalPos.z();
+	      cscRechitT[nCsc][rechitIndex] = recHit2d.tpeak();
+	      cscRechitE[nCsc][rechitIndex] = recHit2d.energyDepositedInLayer();
+	      
+
+	      // if (!(recHit2d.quality()==1)) continue;
+	      // if(recHit2d.badStrip()) continue;
+	      // if (recHit2d.badWireGroup()) continue;
+
+	      // cout << "---> Rechit : " << hitGlobalPos.x() << " " << hitGlobalPos.y() << " " << hitGlobalPos.z() << " | "  
+	      // 	   << recHit2d.tpeak() 
+	      // 	   << "\n";
 	      // std::cout<<cscSegment.nRecHits()<<", " << recHit2d.quality()<<", "<<recHit2d.badStrip()<<", "<<recHit2d.badWireGroup()<<", "<<recHit2d.errorWithinStrip()<<", "<<recHit2d.energyDepositedInLayer()<<std::endl;
+
 
 	      //cout << "---> Rechit : " << recHit2d
 
 	      cscNRecHits_flagged++;
+	      rechitIndex++;
 	    }
 	    cscNRecHits_flag[nCsc] = cscNRecHits_flagged;
 	    	    
@@ -1920,11 +1962,10 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
   {
     if( 
        // (abs((*genParticles)[i].pdgId()) >= 1 && abs((*genParticles)[i].pdgId()) <= 6 && ( (*genParticles)[i].status() < 30 ))
-       // || (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
+        (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
        // || (abs((*genParticles)[i].pdgId()) == 21 && (*genParticles)[i].status() < 30)
        // || (abs((*genParticles)[i].pdgId()) >= 23 && abs((*genParticles)[i].pdgId()) <= 25 && ( (*genParticles)[i].status() < 30))
        // || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
-       abs((*genParticles)[i].pdgId()) == 13
        // || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
        || (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007)	
 	)	
@@ -2321,7 +2362,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 {
 
-  for (const reco::PFJet &j : *jetsPuppi)
+  for (const reco::PFJet &j : *jets)
   {
     //if (j.pt() < 15) continue;
     //if (fabs(j.eta()) > 2.4) continue;
@@ -2606,6 +2647,11 @@ bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
   return true;
 };
 
+bool displacedJetMuon_ntupler::passCaloJetID( const reco::CaloJet *jetCalo, int cutLevel) {
+  bool result = false;
+
+  return result;
+}//passJetID CaloJet
 
 bool displacedJetMuon_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
   bool result = false;
@@ -2963,6 +3009,254 @@ bool displacedJetMuon_ntupler::fillMC()
   return true;
 };
 
+bool displacedJetMuon_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
+{
+  for (const reco::CaloJet &j : *jetsCalo) {
+
+    //if (j.pt() < 20) continue;
+    //if (fabs(j.eta()) > 2.4) continue;
+
+    //-------------------
+    //Fill Jet-Level Info
+    //-------------------
+    calojetE[nCaloJets] = j.energy();
+    calojetEt[nCaloJets] = j.et();
+    calojetPt[nCaloJets] = j.pt();
+    calojetEta[nCaloJets] = j.eta();
+    calojetPhi[nCaloJets] = j.phi();
+    calojetMass[nCaloJets] = j.mass();
+    calojet_HadronicEnergyFraction[nCaloJets] = j.energyFractionHadronic();
+    calojet_EMEnergyFraction[nCaloJets] = j.emEnergyFraction();
+
+    TLorentzVector thisJet;
+    thisJet.SetPtEtaPhiE(calojetPt[nCaloJets], calojetEta[nCaloJets], calojetPhi[nCaloJets], calojetE[nCaloJets]);
+    //calojetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    float alphaMax(0.0),medianTheta2D(0.0),medianIP(0.0),minDeltaRAllTracks(0.0),minDeltaRPVTracks(0.0),ptAllTracks(0.0), ptAllPVTracks(0.0);
+    int nTracksPV(0);
+    findTrackingVariables(thisJet,iSetup,alphaMax,medianTheta2D,medianIP,nTracksPV,ptAllPVTracks,ptAllTracks, minDeltaRAllTracks, minDeltaRPVTracks);
+    //jetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    calojetAlphaMax[nCaloJets] = alphaMax;
+    calojetBetaMax[nCaloJets] = alphaMax * ptAllTracks/j.pt();
+    calojetGammaMax[nCaloJets] = alphaMax * ptAllTracks/(j.energy());
+    calojetGammaMax_EM[nCaloJets] = alphaMax * ptAllTracks/(j.energy()*j.emEnergyFraction());
+    calojetGammaMax_Hadronic[nCaloJets] =  alphaMax * ptAllTracks/(j.energy()*j.energyFractionHadronic());
+    calojetGammaMax_ET[nCaloJets] = alphaMax * ptAllTracks/j.et();
+
+    calojetMedianTheta2D[nCaloJets] = medianTheta2D;
+    calojetMedianIP[nCaloJets] = medianIP;
+    calojetPtAllPVTracks[nCaloJets] = ptAllPVTracks;
+    calojetPtAllTracks[nCaloJets] = ptAllTracks;
+    calojetMinDeltaRAllTracks[nCaloJets] = minDeltaRAllTracks;
+    calojetMinDeltaRPVTracks[nCaloJets] = minDeltaRPVTracks;
+
+    calojetJetArea[nCaloJets] = j.jetArea();
+    calojetPileupE[nCaloJets] = j.pileup();
+
+    calojetPileupIdFlag[nCaloJets] = 0;
+    calojetPassIDLoose[nCaloJets] = passCaloJetID(&j, 0);
+    calojetPassIDTight[nCaloJets] = passCaloJetID(&j, 1);
+
+
+    //---------------------------
+    //Find RecHits Inside the Jet
+    //---------------------------
+    // geometry (from ECAL ELF)
+
+    edm::ESHandle<CaloGeometry> geoHandle;
+    iSetup.get<CaloGeometryRecord>().get(geoHandle);
+    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
+    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+    //double ecal_radius = 129.0;
+    int n_matched_rechits = 0;
+    for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
+    {
+      if (recHit->checkFlag(EcalRecHit::kSaturated) || recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit->checkFlag(EcalRecHit::kPoorReco) || recHit->checkFlag(EcalRecHit::kWeird) || recHit->checkFlag(EcalRecHit::kDiWeird)) continue;
+      if (recHit->timeError() < 0 || recHit->timeError() > 100) continue;
+      if ( recHit->checkFlag(0) )
+      {
+        const DetId recHitId = recHit->detid();
+        const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
+        if ( deltaR(calojetEta[nCaloJets], calojetPhi[nCaloJets], recHitPos.eta(), recHitPos.phi())  < 0.4)
+        {
+          //double rechit_x = ecal_radius * cos(recHitPos.phi());
+          //double rechit_y = ecal_radius * sin(recHitPos.phi());
+          //double rechit_z = ecal_radius * sinh(recHitPos.eta());
+          //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
+
+          if (recHit->energy() > Rechit_cut)
+          {
+            calojetRechitE[nCaloJets] += recHit->energy();
+            calojetRechitT[nCaloJets] += recHit->time()*recHit->energy();
+            calojetRechitT_rms[nCaloJets] += recHit->time()*recHit->time();
+
+            n_matched_rechits++;
+          }
+
+        }
+      }
+    }
+    //cout << "Last Nphoton: " << fJetNPhotons << "\n";
+    //std::cout << "n: " << n_matched_rechits << std::endl;
+    if (calojetRechitE[nCaloJets] > 0.0 ){
+      calojetNRechits[nCaloJets] = n_matched_rechits;
+      calojetRechitT[nCaloJets] = calojetRechitT[nCaloJets]/calojetRechitE[nCaloJets];
+      calojetRechitT_rms[nCaloJets] = sqrt(calojetRechitT_rms[nCaloJets]);
+      nCaloJets++;
+    }
+  } //loop over calojets
+
+  return true;
+};
+
+
+bool displacedJetMuon_ntupler::fillElectrons(const edm::Event& iEvent)
+{
+
+  // Get MVA values and categories (optional)
+  // edm::Handle<edm::ValueMap<float> > mvaGeneralPurposeValues;
+  // edm::Handle<edm::ValueMap<int> > mvaGeneralPurposeCategories;
+  // edm::Handle<edm::ValueMap<float> > mvaHZZValues;
+  // edm::Handle<edm::ValueMap<int> > mvaHZZCategories;
+  // iEvent.getByToken(mvaGeneralPurposeValuesMapToken_,mvaGeneralPurposeValues);
+  // iEvent.getByToken(mvaGeneralPurposeCategoriesMapToken_,mvaGeneralPurposeCategories);
+  // iEvent.getByToken(mvaHZZValuesMapToken_,mvaHZZValues);
+  // iEvent.getByToken(mvaHZZCategoriesMapToken_,mvaHZZCategories);
+
+  // setupEgammaPostRecoSeq
+
+
+  for(const pat::Electron &ele : *electrons) {
+    if(ele.pt() < 5) continue;
+    eleE[nElectrons] = ele.energy();
+    elePt[nElectrons] = ele.pt();
+    eleEta[nElectrons] = ele.eta();
+    elePhi[nElectrons] = ele.phi();
+    eleCharge[nElectrons] = ele.charge();
+
+    eleE_SC[nElectrons] = ele.superCluster()->energy();
+    eleEta_SC[nElectrons] = ele.superCluster()->eta();
+    elePhi_SC[nElectrons] = ele.superCluster()->phi();
+
+    eleSigmaIetaIeta[nElectrons] = ele.sigmaIetaIeta();
+    eleFull5x5SigmaIetaIeta[nElectrons] = ele.full5x5_sigmaIetaIeta();
+    eleR9[nElectrons] = ele.r9();
+    ele_dEta[nElectrons] = ele.deltaEtaSuperClusterTrackAtVtx() - ele.superCluster()->eta() + ele.superCluster()->seed()->eta();
+
+    ele_dPhi[nElectrons] = ele.deltaPhiSuperClusterTrackAtVtx();
+    ele_HoverE[nElectrons] = ele.hcalOverEcal();
+    ele_d0[nElectrons] = -ele.gsfTrack().get()->dxy(myPV->position());
+    ele_dZ[nElectrons] = ele.gsfTrack().get()->dz(myPV->position());
+
+    //ele_ip3d[nElectrons] = ((edm::Ptr<pat::Electron>)(ele))->dB(pat::Electron::PV3D);
+    //ele_ip3dSignificance[nElectrons] = ((edm::Ptr<pat::Electron>)(ele))->dB(pat::Electron::PV3D)/((edm::Ptr<pat::Electron>)(ele))->edB(pat::Electron::PV3D);
+    ele_pileupIso[nElectrons] = ele.pfIsolationVariables().sumPUPt;
+    ele_chargedIso[nElectrons] = ele.pfIsolationVariables().sumChargedHadronPt;
+    ele_photonIso[nElectrons] = ele.pfIsolationVariables().sumPhotonEt;
+    ele_neutralHadIso[nElectrons] = ele.pfIsolationVariables().sumNeutralHadronEt;
+    ele_MissHits[nElectrons] = ele.gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS);
+
+
+    //---------------
+    //Conversion Veto
+    //---------------
+
+    ele_PassConvVeto[nElectrons] = false;
+    if( beamSpot.isValid() && conversions.isValid() )
+    {
+      ele_PassConvVeto[nElectrons] = !ConversionTools::hasMatchedConversion(ele,conversions,beamSpot->position());
+    } else {
+      cout << "\n\nERROR!!! conversions not found!!!\n";
+    }
+    // 1/E - 1/P
+    if( ele.ecalEnergy() == 0 ){
+      ele_OneOverEminusOneOverP[nElectrons] = 1e30;
+    } else if( !std::isfinite(ele.ecalEnergy())){
+      ele_OneOverEminusOneOverP[nElectrons] = 1e30;
+    } else {
+    ele_OneOverEminusOneOverP[nElectrons] = 1./ele.ecalEnergy()  -  ele.eSuperClusterOverP()/ele.ecalEnergy();
+    }
+    //----------------------
+    //ID MVA
+    //----------------------
+    // ele_IDMVAGeneralPurpose[nElectrons] = (*mvaGeneralPurposeValues)[ele];
+    // ele_IDMVACategoryGeneralPurpose[nElectrons] = (*mvaGeneralPurposeCategories)[ele];
+    // ele_IDMVAHZZ[nElectrons] = (*mvaHZZValues)[ele];
+    // ele_IDMVACategoryHZZ[nElectrons] = (*mvaHZZCategories)[ele];
+
+    // ele_RegressionE[nElectrons] = ((edm::Ptr<pat::Electron>)(ele))->ecalRegressionEnergy();
+    // ele_CombineP4[nElectrons]   = ((edm::Ptr<pat::Electron>)(ele))->ecalTrackRegressionEnergy();
+    //
+    // ele_ptrel[nElectrons]   = getLeptonPtRel( jets, &(*ele) );
+    // tuple<double,double,double> PFMiniIso = getPFMiniIsolation(packedPFCands, dynamic_cast<const reco::Candidate *>(&(*ele)), 0.05, 0.2, 10., false, false);
+    // ele_chargedMiniIso[nElectrons] = std::get<0>(PFMiniIso);
+    // ele_photonAndNeutralHadronMiniIso[nElectrons] = std::get<1>(PFMiniIso);
+    // ele_chargedPileupMiniIso[nElectrons] = std::get<2>(PFMiniIso);
+    // ele_activityMiniIsoAnnulus[nElectrons] = ActivityPFMiniIsolationAnnulus( packedPFCands, dynamic_cast<const reco::Candidate *>(&(*ele)), 0.4, 0.05, 0.2, 10.);
+
+    //-----------------------
+    //Trigger Object Matching
+    //-----------------------
+    bool passSingleEleTagFilter = false;
+    bool passTPOneTagFilter= false;
+    bool passTPTwoTagFilter= false;
+    bool passTPOneProbeFilter= false;
+    bool passTPTwoProbeFilter= false;
+    /*
+    for (pat::TriggerObjectStandAlone trigObject : *triggerObjects)
+    {
+      if (deltaR(trigObject.eta(), trigObject.phi(),ele.eta(),ele.phi()) > 0.3) continue;
+      trigObject.unpackFilterLabels(iEvent, *triggerBits);
+
+      //check Single ele filters
+      if (trigObject.hasFilterLabel("hltEle23WPLooseGsfTrackIsoFilter")  ||
+    	  trigObject.hasFilterLabel("hltEle27WPLooseGsfTrackIsoFilter")  ||
+    	  trigObject.hasFilterLabel("hltEle27WPTightGsfTrackIsoFilter")  ||
+    	  trigObject.hasFilterLabel("hltEle32WPLooseGsfTrackIsoFilter")  ||
+    	  trigObject.hasFilterLabel("hltEle32WPTightGsfTrackIsoFilter")
+    	  )
+        {
+          passSingleEleTagFilter = true;
+        }
+      std::cout << "debug ele 7 " << nElectrons << std::endl;
+      //check Tag and Probe Filters
+      if (trigObject.hasFilterLabel("hltEle25WP60Ele8TrackIsoFilter")) passTPOneTagFilter = true;
+      if (trigObject.hasFilterLabel("hltEle25WP60SC4TrackIsoFilter")) passTPTwoTagFilter = true;
+      if (trigObject.hasFilterLabel("hltEle25WP60Ele8Mass55Filter")) passTPOneProbeFilter = true;
+      if (trigObject.hasFilterLabel("hltEle25WP60SC4Mass55Filter")) passTPTwoProbeFilter = true;
+      std::cout << "debug ele 8 " << nElectrons << std::endl;
+      //check all filters
+      for ( int q=0; q<MAX_ElectronHLTFilters;q++)
+      {
+        if (trigObject.hasFilterLabel(eleHLTFilterNames[q].c_str())) ele_passHLTFilter[nElectrons][q] = true;
+      }
+    }
+    */
+    //std::cout << "debug ele 9 " << nElectrons << std::endl;
+    ele_passSingleEleTagFilter[nElectrons] = passSingleEleTagFilter;
+    ele_passTPOneTagFilter[nElectrons] = passTPOneTagFilter;
+    ele_passTPTwoTagFilter[nElectrons] = passTPTwoTagFilter;
+    ele_passTPOneProbeFilter[nElectrons] = passTPOneProbeFilter;
+    ele_passTPTwoProbeFilter[nElectrons] = passTPTwoProbeFilter;
+
+
+    //std::cout << "debug ele 10 " << nElectrons << std::endl;
+    nElectrons++;
+  }
+
+  return true;
+};
+
+bool displacedJetMuon_ntupler::fillPileUp()
+{
+  for(const PileupSummaryInfo &pu : *puInfo)
+  {
+    BunchXing[nBunchXing] = pu.getBunchCrossing();
+    nPU[nBunchXing] = pu.getPU_NumInteractions();
+    nPUmean[nBunchXing] = pu.getTrueNumInteractions();
+    nBunchXing++;
+  }
+  return true;
+};
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(displacedJetMuon_ntupler);

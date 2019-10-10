@@ -20,6 +20,7 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
   enableGenLLPInfo_(iConfig.getParameter<bool> ("enableGenLLPInfo")),
   enableEcalRechits_(iConfig.getParameter<bool> ("enableEcalRechits")),
   readGenVertexTime_(iConfig.getParameter<bool> ("readGenVertexTime")),
+  llpId_(iConfig.getParameter<int> ("llpId")),
   triggerPathNamesFile_(iConfig.getParameter<string> ("triggerPathNamesFile")),
   eleHLTFilterNamesFile_(iConfig.getParameter<string> ("eleHLTFilterNamesFile")),
   muonHLTFilterNamesFile_(iConfig.getParameter<string> ("muonHLTFilterNamesFile")),
@@ -755,6 +756,7 @@ void llp_ntupler::enableGenParticleBranches()
    llpTree->Branch("gLLP_travel_time", gLLP_travel_time, "gLLP_travel_time[2]/F");
 
    llpTree->Branch("gLLP_daughter_travel_time", gLLP_daughter_travel_time, "gLLP_daughter_travel_time[4]/F");
+   llpTree->Branch("gLLP_daughter_id", gLLP_daughter_id, "gLLP_daughter_id[4]/I");
    llpTree->Branch("gLLP_daughter_pt", gLLP_daughter_pt, "gLLP_daughter_pt[4]/F");
    llpTree->Branch("gLLP_daughter_eta", gLLP_daughter_eta, "gLLP_daughter_eta[4]/F");
    llpTree->Branch("gLLP_daughter_phi", gLLP_daughter_phi, "gLLP_daughter_phi[4]/F");
@@ -1407,6 +1409,7 @@ void llp_ntupler::resetGenParticleBranches()
 
   for ( int i = 0; i < LLP_DAUGHTER_ARRAY_SIZE; i++ )
   {
+    gLLP_daughter_id[i] = 0;
     gLLP_daughter_pt[i] = -666.;
     gLLP_daughter_eta[i] = -666.;
     gLLP_daughter_phi[i] = -666.;
@@ -3374,15 +3377,19 @@ bool llp_ntupler::fillGenParticles(){
   //Fills selected gen particles
   //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
   const double pt_cut = 0.0;
-  int llp_id = 9000006;
-
+  //int llp_id = 9000006;
+  //int llp_id = 1023;
+  int llp_id = llpId_;
+  
   for(size_t i=0; i<genParticles->size();i++)
   {
     if( (abs((*genParticles)[i].pdgId()) >= 1 && abs((*genParticles)[i].pdgId()) <= 6 && ( (*genParticles)[i].status() < 30 ))
        || (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
        || (abs((*genParticles)[i].pdgId()) == 21 && (*genParticles)[i].status() < 30)
-       || (abs((*genParticles)[i].pdgId()) >= 22 && abs((*genParticles)[i].pdgId()) <= 25 && ( (*genParticles)[i].status() < 30))
+	//|| (abs((*genParticles)[i].pdgId()) >= 22 && abs((*genParticles)[i].pdgId()) <= 25 && ( (*genParticles)[i].status() < 30))
+       || (abs((*genParticles)[i].pdgId()) >= 22 && abs((*genParticles)[i].pdgId()) <= 25)
        || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
+       || (abs((*genParticles)[i].pdgId()) == 1023)
        || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
        || (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007))
        {
@@ -3395,7 +3402,7 @@ bool llp_ntupler::fillGenParticles(){
 
   //Total number of gen particles
   nGenParticle = prunedV.size();
-
+  bool _found_first_llp = false;
   //Look for mother particle and Fill gen variables
   for(unsigned int i = 0; i < prunedV.size(); i++)
   {
@@ -3487,13 +3494,13 @@ bool llp_ntupler::fillGenParticles(){
     {
       if ( abs(gParticleId[i]) == llp_id  && gParticleStatus[i] == 22 )
       {
-        if (gParticleId[i] == llp_id)
+	if (gParticleId[i] == llp_id && !_found_first_llp)
         {
           gLLP_prod_vertex_x[0] = prunedV[i]->vx();
           gLLP_prod_vertex_y[0] = prunedV[i]->vy();
           gLLP_prod_vertex_z[0] = prunedV[i]->vz();
         }
-        else if (gParticleId[i] == -1*llp_id)
+        else if ( (gParticleId[i] == -1*llp_id) || (_found_first_llp && gParticleId[i] == llp_id) )
         {
           gLLP_prod_vertex_x[1] = prunedV[i]->vx();
           gLLP_prod_vertex_y[1] = prunedV[i]->vy();
@@ -3524,11 +3531,12 @@ bool llp_ntupler::fillGenParticles(){
           }
         }
 
-        if (foundDaughter)
+	if (foundDaughter)
         {
-
-          if (gParticleId[i] == llp_id)
+	  //_found_first_llp = false;
+          if (gParticleId[i] == llp_id && !_found_first_llp)
           {
+	    _found_first_llp = true;
             gLLP_decay_vertex_x[0] = dau->vx();
             gLLP_decay_vertex_y[0] = dau->vy();
             gLLP_decay_vertex_z[0] = dau->vz();
@@ -3554,6 +3562,7 @@ bool llp_ntupler::fillGenParticles(){
               TLorentzVector tmp;
               tmp.SetPxPyPzE(tmpParticle->daughter(id)->px(), tmpParticle->daughter(id)->py(), tmpParticle->daughter(id)->pz(), tmpParticle->daughter(id)->energy());
               if(tmp.Pt()<pt_cut) continue;
+	      gLLP_daughter_id[id] = tmpParticle->daughter(id)->pdgId();
               gLLP_daughter_pt[id] = tmp.Pt();
               gLLP_daughter_eta[id] = tmp.Eta();
               gLLP_daughter_phi[id] = tmp.Phi();
@@ -3645,7 +3654,7 @@ bool llp_ntupler::fillGenParticles(){
 
             }
           }
-          else if (gParticleId[i] == -1*llp_id)
+          else if ((gParticleId[i] == -1*llp_id) || (_found_first_llp && gParticleId[i] == llp_id))
           {
             gLLP_decay_vertex_x[1] = dau->vx();
             gLLP_decay_vertex_y[1] = dau->vy();
@@ -3673,6 +3682,7 @@ bool llp_ntupler::fillGenParticles(){
               TLorentzVector tmp;
               tmp.SetPxPyPzE(tmpParticle->daughter(id)->px(), tmpParticle->daughter(id)->py(), tmpParticle->daughter(id)->pz(), tmpParticle->daughter(id)->energy());
               if(tmp.Pt()<pt_cut) continue;
+	      gLLP_daughter_id[id+2] = tmpParticle->daughter(id)->pdgId();
               gLLP_daughter_pt[id+2] = tmp.Pt();
               gLLP_daughter_eta[id+2] = tmp.Eta();
               gLLP_daughter_phi[id+2] = tmp.Phi();
@@ -3802,12 +3812,14 @@ bool llp_ntupler::fillTrigger(const edm::Event& iEvent)
     << std::endl;
     */
   }
-  //std::cout << "n triggers: " <<  nameHLT->size() << std::endl;
-  //std::cout << "====================" << std::endl;
-  //for ( unsigned int i = 0; i < nameHLT->size(); i++ )
-  //{
-  //  std::cout << i << " -> " << nameHLT->at(i) << std::endl;
-  //}
+  /*
+  std::cout << "n triggers: " <<  nameHLT->size() << std::endl;
+  std::cout << "====================" << std::endl;
+  for ( unsigned int i = 0; i < nameHLT->size(); i++ )
+  {
+    std::cout << i << " -> " << nameHLT->at(i) << std::endl;
+  }
+  */
   //------------------------------------------------------------------
   // Save trigger decisions in array of booleans
   //------------------------------------------------------------------

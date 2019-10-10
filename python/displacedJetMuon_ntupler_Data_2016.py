@@ -3,7 +3,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 #------ Setup ------#
 
 #initialize the process
-process = cms.Process("LLPNtupler")
+process = cms.Process("displacedJetMuonNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
 process.load("Configuration.EventContent.EventContent_cff")
@@ -11,18 +11,16 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-#'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/D67E96A0-F9BE-E611-A03B-F45214939090.root',
-#'file:/eos/cms//store/group/dpg_bril/comm_bril/lumi/test/MC_test/ggHdddd_AODSIM/ggHdddd_2017/ggHdddd_M55_100mm_CP2_AODSIM/190819_150120/0002/XXTo4J_AODSIM_2757.root'
-'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/HTo2ZdTo2mu2x_MZd-60_Epsilon-7e-09_TuneCUETP8M1_13TeV_madgraph_pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/70000/1A62E7AD-B8A4-E911-991E-0025901AC3F8.root'
-)
+        '/store/data/Run2016B/DoubleEG/AOD/07Aug17_ver2-v2/90005/FEDB8535-21A1-E711-B86E-0242AC130002.root'
+        )
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 500
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 #TFileService for output
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string('llp_ntupler.root'),
+	fileName = cms.string('displacedJetMuon_ntupler.root'),
     closeFileFast = cms.untracked.bool(True)
 )
 
@@ -34,7 +32,7 @@ process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 #------ Declare the correct global tag ------#
 
 
-process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_v3'
+process.GlobalTag.globaltag = '80X_dataRun2_2016LegacyRepro_v4'
 
 #------ If we add any inputs beyond standard miniAOD event content, import them here ------#
 
@@ -43,16 +41,15 @@ process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
 #------ Analyzer ------#
 
 #list input collections
-process.ntuples = cms.EDAnalyzer('llp_ntupler',
-    isData = cms.bool(False),
-    useGen = cms.bool(True),
+process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
+    isData = cms.bool(True),
+    useGen = cms.bool(False),
     isFastsim = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
-    enableGenLLPInfo = cms.bool(True),
+    enableGenLLPInfo = cms.bool(False),
     readGenVertexTime = cms.bool(False),#need to be false for displaced samples
-    llpId = cms.int32(1023),
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v1.dat"),
     eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),

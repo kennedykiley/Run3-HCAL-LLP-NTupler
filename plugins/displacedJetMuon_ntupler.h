@@ -126,6 +126,7 @@ using namespace std;
 
 //------ Array Size Constants ------//
 #define OBJECTARRAYSIZE 1000
+#define CSCRECHITARRAYSIZE 6
 #define RECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
 #define MAX_NPV 1000
@@ -189,6 +190,7 @@ public:
   void resetTriggerBranches();
 
   //------ HELPER FUNCTIONS ------//
+  bool passCaloJetID( const reco::CaloJet *jetCalo, int cutLevel);
   bool passJetID( const reco::PFJet *jet, int cutLevel);
   void findTrackingVariables(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks);
   void jet_second_moments(std::vector<double> &et,std::vector<double> &eta,std::vector<double> &phi,double &sig1,double &sig2);
@@ -196,6 +198,7 @@ public:
   const reco::Candidate* findOriginalMotherWithSameID(const reco::Candidate *particle);
 
   bool fillEventInfo(const edm::Event& iEvent);
+  bool fillElectrons(const edm::Event& iEvent);
   bool fillMuons(const edm::Event& iEvent);
   bool fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillJets(const edm::EventSetup& iSetup);
@@ -203,6 +206,8 @@ public:
   bool fillMet(const edm::Event& iEvent);
   bool fillTrigger(const edm::Event& iEvent);
   bool fillMC();
+  bool fillCaloJets(const edm::EventSetup& iSetup);
+  bool fillPileUp();
 
 
 protected:
@@ -233,7 +238,7 @@ protected:
   string eleHLTFilterNamesFile_;
   string muonHLTFilterNamesFile_;
   string photonHLTFilterNamesFile_;
-  static const int NTriggersMAX = 601;
+  static const int NTriggersMAX = 602;
   string triggerPathNames[NTriggersMAX];
   static const int MAX_ElectronHLTFilters = 100;
   string eleHLTFilterNames[MAX_ElectronHLTFilters];
@@ -673,6 +678,15 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float cscNRecHits_flag[OBJECTARRAYSIZE];
   float cscT[OBJECTARRAYSIZE];
   float cscChi2[OBJECTARRAYSIZE];
+  float cscRechitX[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  float cscRechitY[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  float cscRechitZ[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  float cscRechitT[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  float cscRechitE[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  bool  cscRechitBadStrip[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  bool  cscRechitBadWireGroup[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  bool  cscRechitErrorWithinStrip[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  int   cscRechitQuality[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
 
   int nRpc;
   float rpcPhi[OBJECTARRAYSIZE];
