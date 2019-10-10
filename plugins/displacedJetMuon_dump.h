@@ -144,6 +144,7 @@ public:
   ~displacedJetMuon_dump();
 
   void loadEvent(const edm::Event& iEvent); //call at the beginning of each event to get input handles from the python config
+  const reco::Candidate* findFirstMotherWithDifferentID(const reco::Candidate *particle);
 
 protected:
   virtual void beginJob() override;
@@ -236,6 +237,7 @@ protected:
   edm::EDGetTokenT<vector<reco::GsfElectronCore> > gedGsfElectronCoresToken_;
   edm::EDGetTokenT<vector<reco::PhotonCore> > gedPhotonCoresToken_;
   edm::EDGetTokenT<vector<reco::Track> > generalTrackToken_;
+  edm::EDGetTokenT<vector<reco::Track> > standaloneMuonTrackToken_;
   //  edm::EDGetTokenT<vector<reco::SuperCluster> > superClustersToken_;
   //  edm::EDGetTokenT<vector<reco::PFCandidate> > lostTracksToken_;
   edm::EDGetTokenT<float> genParticles_t0_Token_;
@@ -303,6 +305,7 @@ protected:
   edm::Handle<vector<reco::GsfElectronCore> > gedGsfElectronCores;
   edm::Handle<vector<reco::PhotonCore> > gedPhotonCores;
   edm::Handle<std::vector<reco::Track>> generalTracks;
+  edm::Handle<std::vector<reco::Track>> standaloneMuonTracks;
   //  edm::Handle<vector<reco::SuperCluster> > superClusters;
   //  edm::Handle<vector<reco::PFCandidate> > lostTracks;
   edm::Handle<float> genParticles_t0;

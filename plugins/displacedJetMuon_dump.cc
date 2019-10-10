@@ -87,7 +87,8 @@ displacedJetMuon_dump::displacedJetMuon_dump(const edm::ParameterSet& iConfig):
   singleLegConversionsToken_(consumes<vector<reco::Conversion> >(iConfig.getParameter<edm::InputTag>("singleLegConversions"))),
   gedGsfElectronCoresToken_(consumes<vector<reco::GsfElectronCore> >(iConfig.getParameter<edm::InputTag>("gedGsfElectronCores"))),
   gedPhotonCoresToken_(consumes<vector<reco::PhotonCore> >(iConfig.getParameter<edm::InputTag>("gedPhotonCores"))),
-  generalTrackToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks")))
+  generalTrackToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks"))),
+  standaloneMuonTrackToken_(consumes<std::vector<reco::Track>>(edm::InputTag("standAloneMuons","UpdatedAtVtx", "RECO")))
   //superClustersToken_(consumes<vector<reco::SuperCluster> >(iConfig.getParameter<edm::InputTag>("superClusters"))),
   //  lostTracksToken_(consumes<vector<reco::PFCandidate> >(iConfig.getParameter<edm::InputTag>("lostTracks")))
   // mvaGeneralPurposeValuesMapToken_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaGeneralPurposeValuesMap"))),
@@ -155,6 +156,7 @@ void displacedJetMuon_dump::loadEvent(const edm::Event& iEvent)//load all miniAO
   iEvent.getByToken(gedGsfElectronCoresToken_,gedGsfElectronCores);
   iEvent.getByToken(gedPhotonCoresToken_, gedPhotonCores);
   iEvent.getByToken(generalTrackToken_,generalTracks);
+  iEvent.getByToken(standaloneMuonTrackToken_,standaloneMuonTracks);
 //  iEvent.getByToken(superClustersToken_,superClusters);
 //  iEvent.getByToken(lostTracksToken_,lostTracks);
 //  iEvent.getByToken(hbheNoiseFilterToken_, hbheNoiseFilter);
@@ -202,6 +204,10 @@ void displacedJetMuon_dump::analyze(const edm::Event& iEvent, const edm::EventSe
   //initialize
   loadEvent(iEvent); //loads objects and resets tree branches
 
+  cout << "\n\n";
+  cout << "************************************************************************\n";
+  cout << "Event: " << iEvent.id().run() << " " << iEvent.luminosityBlock() << " " << iEvent.id().event() << "\n";
+  cout << "************************************************************************\n";
 
 
   edm::ESHandle<CSCGeometry> cscG;
@@ -368,10 +374,103 @@ void displacedJetMuon_dump::analyze(const edm::Event& iEvent, const edm::EventSe
   //   }
   // }
 
+
+    //**********************************************************
+    // Print Gen Jets
+    //**********************************************************
+    cout << "GenJets: " << genJets->size() << "\n";
+    int nGenJets = 0;
+    for(const reco::GenJet &j : *genJets) {
+      cout << "GenJet " << nGenJets << " : " << j.pt() << " " << j.eta() << " " << j.phi() << " | " << j.energy() << " , " << j.invisibleEnergy() << "\n";  
+      nGenJets++;
+    }
+    
+
+    //**********************************************************
+    // Print PFJets 
+    //**********************************************************
+    int nJets = 0;
+    for (const reco::PFJet &j : *jets) {
+      cout << "PFJet " << nJets << " : " << j.pt() << " " << j.eta() << " " << j.phi() << " | " << j.energy() <<  "\n";  
+      nJets++;
+    }
+   //**********************************************************
+    // Print CaloJets
+    //**********************************************************
+    int nCaloJets = 0;
+    for (const reco::CaloJet &j : *jetsCalo) {
+      cout << "CaloJet " << nCaloJets << " : " << j.pt() << " " << j.eta() << " " << j.phi() << " | " << j.energy() <<  "\n";  
+      nCaloJets++;
+    }
+    //**********************************************************
+    // Print Gen Muons
+    //**********************************************************
+    for(size_t i=0; i<genParticles->size();i++) {
+      if( abs((*genParticles)[i].pdgId()) == 13 ) {
+	cout << "GenMuons : " << (*genParticles)[i].pdgId() << " " << (*genParticles)[i].status() << " | " 
+	     << (*genParticles)[i].pt() << " " << (*genParticles)[i].eta() << " " << (*genParticles)[i].phi() << " | ";
+	  //<< "\n";
+
+	const reco::Candidate* tmpparticle = &(*genParticles)[i];
+	const reco::Candidate* firstMotherWithDifferentID = findFirstMotherWithDifferentID(tmpparticle);
+	if (firstMotherWithDifferentID) {
+	  cout << firstMotherWithDifferentID->pdgId() << " ";
+	}
+	cout << "\n";
+      }
+    }     
+
+    for(size_t i=0; i<genParticles->size();i++) {
+      //if( abs((*genParticles)[i].pdgId()) == 13 ) {
+    	cout << "GenParticle : " << (*genParticles)[i].pdgId() << " " << (*genParticles)[i].status() << " | " 
+    	     << (*genParticles)[i].pt() << " " << (*genParticles)[i].eta() << " " << (*genParticles)[i].phi() << " | ";
+    	  //<< "\n";
+
+    	const reco::Candidate* tmpparticle = &(*genParticles)[i];
+    	const reco::Candidate* firstMotherWithDifferentID = findFirstMotherWithDifferentID(tmpparticle);
+    	if (firstMotherWithDifferentID) {
+    	  cout << firstMotherWithDifferentID->pdgId() << " ";
+    	}
+    	cout << "\n";
+    	//}      
+    }
+
+
+    
+    //**********************************************************
+    // Print Muons
+    //**********************************************************
+    int nMuons = 0;
+    for(const reco::Muon &mu : *muons) {
+      cout << "Muon " << nMuons << " : " << mu.pt() << " " << mu.eta() << " " << mu.phi() << " | " 
+	   << mu.isGlobalMuon() << " " << mu.isTrackerMuon() << " " << mu.isStandAloneMuon() << " "
+	   << mu.isCaloMuon() << " " << mu.isPFMuon() << " " << mu.isRPCMuon() << " | "	
+	   << "\n";  
+      nMuons++;    
+    }
+    //**********************************************************
+    // Print Standalone Muon Tracks
+    //**********************************************************
+    int nStandaloneMuonTracks = 0;
+    for(const reco::Track &mu : *standaloneMuonTracks) {
+      cout << "Standalone Muon Track " << nStandaloneMuonTracks << " : " << mu.pt() << " " << mu.eta() << " " << mu.phi() << " | " 	 
+	   << "\n";  
+
+    
+      // for (int i=0; i<mu.recHitsSize(); i++) {
+      // 	cout << "RecHit: " << mu.recHit(i).globalPosition.X() << " " << mu.recHit(i).globalPosition.Y() << " " << mu.recHit(i).globalPosition.Z() 
+      // 	     << " ( " << mu.recHit(i).globalPosition.eta() << " " << mu.recHit(i).globalPosition.phi() << " ) " << " "
+      // 	     << "\n";
+      // }    
+      
+    
+      nStandaloneMuonTracks++;    
+    }
+
+
 };
 //**********************************************************
 //**********************************************************
-
 
 //------ Method called once each job just before starting event loop ------//
 void displacedJetMuon_dump::beginJob()
@@ -383,6 +482,27 @@ void displacedJetMuon_dump::beginJob()
 void displacedJetMuon_dump::endJob(){};
 
 
+const reco::Candidate* displacedJetMuon_dump::findFirstMotherWithDifferentID(const reco::Candidate *particle){
+
+  if( particle == 0 ){
+    printf("ERROR! null candidate pointer, this should never happen\n");
+    return 0;
+  }
+
+  // Is this the first parent with a different ID? If yes, return, otherwise
+  // go deeper into recursion
+  if (particle->numberOfMothers() > 0 && particle->pdgId() != 0) {
+    if (particle->pdgId() == particle->mother(0)->pdgId()
+	&& particle->mother(0)->status() != 11  // prevent infinite loop for sherpa documentation gluons
+	) {
+      return findFirstMotherWithDifferentID(particle->mother(0));
+    } else {
+      return particle->mother(0);
+    }
+  }
+
+  return 0;
+};
 
 
 
