@@ -11,8 +11,10 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        #'file:/afs/cern.ch/work/s/sixie/public/releases/run3/CMSSW_9_4_4/src/pickEvents_WJets_highNCSC.root'
-        'file:/eos/user/s/sixie/data/AOD/LLP/364D94A3-F8D1-E611-AAAB-02163E019CBF.root'
+        #'file:/afs/cern.ch/work/s/sixie/public/releases/run3/CMSSW_9_4_4/src/eventPick_WJetsToLNu_v10v6_nCsc_JetMuonVetoCluster0p4_Me1112Veto60_muon.20190917.root'
+        'file:/afs/cern.ch/work/s/sixie/public/releases/run3/CMSSW_9_4_4/src/eventPick_WJetsToLNu_v10v6_nCsc_JetMuonVetoCluster0p4_Me1112Veto50_ele.20190917.root'
+        # 'file:/afs/cern.ch/work/s/sixie/public/releases/run3/CMSSW_9_4_4/src/pickevents_0.root'
+        
         )
 )
 
@@ -104,7 +106,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_dump',
 
     tracks = cms.InputTag("generalTracks", "", "RECO"),
     #trackTime = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModel"),
-    #trackTimeReso = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModelResolution"),
+    #trackTimeReso = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModelResolution"),                                 
 
     puInfo = cms.InputTag("addPileupInfo", "", "HLT"), #uncomment if no pre-mixing
     #puInfo = cms.InputTag("mixData", "", "HLT"), #uncomment for samples with pre-mixed pileup
