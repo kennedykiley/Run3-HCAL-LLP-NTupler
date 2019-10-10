@@ -12,4 +12,5 @@
 <use name="cms_lpc_llp/llp_ntupler"/>
 <use name="cms_lpc_llp/displacedJetMuon_ntupler"/>
 <use name="cms_lpc_llp/displacedJetMuon_dump"/>
+<use name="cms_lpc_llp/displacedJetTiming_ntupler"/>
 <flags EDM_PLUGIN="1"/>
