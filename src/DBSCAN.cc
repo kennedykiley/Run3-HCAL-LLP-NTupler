@@ -112,8 +112,8 @@ int DBSCAN::clusterMoments()
     float a = (m11+m22)/2;
     float b = 0.5*sqrt((m11+m22)*(m11+m22)-4*(m11*m22-m12*m12));
     clusterXSpread.push_back(sqrt(XSpread/(float)clusterSize[i]));
-    clusterYSpread.push_back(sqrt(XSpread/(float)clusterSize[i]));
-    clusterZSpread.push_back(sqrt(XSpread/(float)clusterSize[i]));
+    clusterYSpread.push_back(sqrt(YSpread/(float)clusterSize[i]));
+    clusterZSpread.push_back(sqrt(ZSpread/(float)clusterSize[i]));
     clusterTimeSpread.push_back(sqrt(TSpread/(float)clusterSize[i]));
     clusterEtaSpread.push_back(sqrt(m11/clusterSize[i]));
     clusterEtaPhiSpread.push_back(sqrt(abs(m12)/clusterSize[i]));
