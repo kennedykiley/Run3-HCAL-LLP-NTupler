@@ -1176,8 +1176,8 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
       dtDirX[i] = 0.0;
       dtDirY[i] = 0.0;
       dtDirZ[i] = 0.0;
-      dtT[i] = 0.0;
-      dtTError[i] = 0.0;
+      dtT[i] = -9999.0;
+      dtTError[i] = -9999.0;
     }
     return;
 };
@@ -1920,7 +1920,14 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    nRpc++;
 	}
     }
+
+    //----------------------------------------
+    //Drift Tubes
+    //----------------------------------------
     for(DTRecSegment4D dtSegment : *dtSegments){
+      const DTRecSegment4D dtSegment_copy = dtSegment;
+      const DTChamberRecSegment2D* phiSeg = dtSegment_copy.phiSegment();
+      
 	LocalPoint  segmentLocalPosition       = dtSegment.localPosition();
 	LocalVector segmentLocalDirection      = dtSegment.localDirection();
 	// LocalError  segmentLocalPositionError  = iDT->localPositionError();
@@ -1940,8 +1947,15 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    dtDirX[nDt] = globalDirection.x();
 	    dtDirY[nDt] = globalDirection.y();
 	    dtDirZ[nDt] = globalDirection.z();
-	    dtT[nDt] = 0;//dtSegment.time();
-	    dtTError[nDt] = -1;//dtSegment.timeError();
+	    if (phiSeg)
+	      {
+		if(phiSeg->ist0Valid())
+		  {
+		    dtT[nDt] = phiSeg->t0();
+		    dtTError[nDt] = -1;
+		  }
+	      }
+	    
 	    nDt++;
 	}
 
