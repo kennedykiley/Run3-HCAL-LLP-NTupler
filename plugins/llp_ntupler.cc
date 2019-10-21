@@ -3063,6 +3063,7 @@ bool llp_ntupler::fillMC()
           genVertexY = dau->vy();
           genVertexZ = dau->vz();
           if(readGenVertexTime_) genVertexT = *genParticles_t0;
+	  else genVertexT = 0.;
           foundGenVertex = true;
           break;
         }
