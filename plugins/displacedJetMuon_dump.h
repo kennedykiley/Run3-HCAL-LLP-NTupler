@@ -113,6 +113,12 @@ using namespace std;
 #include "DataFormats/RPCRecHit/interface/RPCRecHit.h"
 #include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
 
+//DIGIS
+#include "DataFormats/CSCDigi/interface/CSCStripDigi.h"
+#include "DataFormats/CSCDigi/interface/CSCStripDigiCollection.h"
+#include "DataFormats/CSCDigi/interface/CSCWireDigi.h"
+#include "DataFormats/CSCDigi/interface/CSCWireDigiCollection.h"
+#include "SimDataFormats/TrackingHit/interface/PSimHit.h"
 //ROOT includes
 #include "TTree.h"
 #include "TFile.h"
@@ -160,6 +166,7 @@ protected:
   bool    isData_;
   bool    useGen_;
   bool    isFastsim_;
+  bool    isAOD_;
   bool enableTriggerInfo_;
   bool enableCaloJet_;
   bool enableGenLLPInfo_;
@@ -169,7 +176,7 @@ protected:
   //bool isFourJet_;
   //bool isQCD_;
 
- 
+
   //EDM tokens for each miniAOD input object
   edm::EDGetTokenT<reco::VertexCollection> verticesToken_;
   //edm::InputTag tracksTag_;
@@ -246,6 +253,7 @@ protected:
   edm::EDGetTokenT<edm::ValueMap<int> > mvaGeneralPurposeCategoriesMapToken_;
   edm::EDGetTokenT<edm::ValueMap<float> > mvaHZZValuesMapToken_;
   edm::EDGetTokenT<edm::ValueMap<int> > mvaHZZCategoriesMapToken_;
+  edm::EDGetTokenT<vector<PSimHit> > MuonCSCSimHitsToken_;
 
   //EDM handles for each miniAOD input object
   edm::Handle<edm::TriggerResults> triggerBits;
@@ -312,7 +320,7 @@ protected:
   edm::Handle<CSCSegmentCollection> cscSegments;
   edm::Handle<DTRecSegment4DCollection> dtSegments;
   edm::Handle<RPCRecHitCollection> rpcRecHits;
-
+  edm::Handle<vector<PSimHit> > MuonCSCSimHits;
 
   const reco::Vertex *myPV;
   const reco::Vertex *myPV_GenMatch;
