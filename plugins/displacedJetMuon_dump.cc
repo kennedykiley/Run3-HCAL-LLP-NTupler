@@ -221,46 +221,32 @@ void displacedJetMuon_dump::analyze(const edm::Event& iEvent, const edm::EventSe
   cout << "Event: " << iEvent.id().run() << " " << iEvent.luminosityBlock() << " " << iEvent.id().event() << "\n";
   cout << "************************************************************************\n";
   cout << "Number of sim hits: "<<MuonCSCSimHits->size()<<endl;
+
+  bool acceptance = false;
+  for(size_t i=0; i<genParticles->size();i++)
+  {
+
+    if(abs((*genParticles)[i].pdgId()) == 9000006){
+      const reco::Candidate *dau = (*genParticles)[i].daughter(0);
+      float gLLP_decay_vertex_x = dau->vx();
+      float gLLP_decay_vertex_y = dau->vy();
+      float gLLP_decay_vertex_r = sqrt(pow(gLLP_decay_vertex_x,2)+pow(gLLP_decay_vertex_y,2));
+      float gLLP_decay_vertex_z = dau->vz();
+      float gLLP_eta = (*genParticles)[i].eta();
+      cout<<gLLP_decay_vertex_r<<","<<gLLP_decay_vertex_z<<endl;
+      if (abs(gLLP_eta) < 2.4 && abs(gLLP_eta) > 0.9
+         && abs(gLLP_decay_vertex_z)<1100 && abs(gLLP_decay_vertex_z)>568
+         && gLLP_decay_vertex_r < 695.5) acceptance = true;
+    }
+  }
+  if (acceptance)cout<<"at least one llp decayed in csc"<<endl;
+
   for(size_t i=0; i<MuonCSCSimHits->size();i++)
   {
       cout<<"time of flight: "<<(*MuonCSCSimHits)[i].timeOfFlight()<<endl;
       cout<<"energyLoss: "<<(*MuonCSCSimHits)[i].energyLoss()<<endl;
       cout<<"particleType: "<<(*MuonCSCSimHits)[i].particleType()<<endl;
   }
-  /*for(size_t i=0; i<genParticles->size();i++)
-  {
-    if((*genParticles)[i].pdgId() == 9000006){
-      const reco::Candidate *dau = genParticles->daughter(0);
-      gLLP_decay_vertex_x[0] = dau->vx();
-      gLLP_decay_vertex_y[0] = dau->vy();
-      gLLP_decay_vertex_r[0] = sqrt(pow(gLLP_decay_vertex_x[0],2)+pow(gLLP_decay_vertex_y[0],2));
-      gLLP_decay_vertex_z[0] = dau->vz();
-      gLLP_eta[0] = genParticles->eta();
-      cout<<gLLP_decay_vertex_r[0]<<","<<gLLP_decay_vertex_z[0]<<endl;
-      if (abs(MuonSystem->gLLP_eta[i]) < 2.4 && abs(MuonSystem->gLLP_eta[i]) > 0.9
-         && abs(MuonSystem->gLLP_decay_vertex_z[i])<1100 && abs(MuonSystem->gLLP_decay_vertex_z[i])>568
-         && MuonSystem->gLLP_decay_vertex_r[i] < 695.5) cout<<"llp decayed in csc"endl;
-    }
-    else if((*genParticles)[i].pdgId() == -9000006){
-      const reco::Candidate *dau = genParticles->daughter(0);
-      gLLP_decay_vertex_x[1] = dau->vx();
-      gLLP_decay_vertex_y[1] = dau->vy();
-      gLLP_decay_vertex_z[1] = dau->vz();
-      gLLP_decay_vertex_r[1] = sqrt(pow(gLLP_decay_vertex_x[1],2)+pow(gLLP_decay_vertex_y[1],2));
-      gLLP_eta[1] = genParticles->eta();
-      cout<<gLLP_decay_vertex_r[1]<<","<<gLLP_decay_vertex_z[1]<<endl;
-
-      if (abs(MuonSystem->gLLP_eta[i]) < 2.4 && abs(MuonSystem->gLLP_eta[i]) > 0.9
-         && abs(MuonSystem->gLLP_decay_vertex_z[i])<1100 && abs(MuonSystem->gLLP_decay_vertex_z[i])>568
-         && MuonSystem->gLLP_decay_vertex_r[i] < 695.5) cout<<"llp decayed in csc"endl;
-    }
-    if (abs(MuonSystem->gLLP_eta[i]) < 2.4 && abs(MuonSystem->gLLP_eta[i]) > 0.9
-       && abs(MuonSystem->gLLP_decay_vertex_z[i])<1100 && abs(MuonSystem->gLLP_decay_vertex_z[i])>568
-       && MuonSystem->gLLP_decay_vertex_r[i] < 695.5) cout<<"llp decayed in csc"endl;
-
-  }*/
-
-
 
 
   /*edm::ESHandle<CSCGeometry> cscG;
