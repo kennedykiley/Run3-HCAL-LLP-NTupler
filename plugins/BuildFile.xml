@@ -3,6 +3,8 @@
 <use name="FWCore/PluginManager"/>
 <use name="FWCore/ParameterSet"/>
 <use name="DataFormats/PatCandidates"/>
+<use name="DataFormats/CSCDigi"/>
+<use name="SimDataFormats/TrackingHit"/>
 <use name="TrackingTools/Records"/>
 <use name="TrackingTools/TransientTrack"/>
 <use name="PhysicsTools/UtilAlgos"/>
@@ -10,7 +12,4 @@
 <use name="EgammaAnalysis/ElectronTools"/>
 <use name="RecoEcal/EgammaCoreTools"/>
 <use name="cms_lpc_llp/llp_ntupler"/>
-<use name="cms_lpc_llp/displacedJetMuon_ntupler"/>
-<use name="cms_lpc_llp/displacedJetMuon_dump"/>
-<use name="cms_lpc_llp/displacedJetTiming_ntupler"/>
 <flags EDM_PLUGIN="1"/>

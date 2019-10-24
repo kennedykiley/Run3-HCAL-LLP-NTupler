@@ -13,12 +13,11 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
 #'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/D67E96A0-F9BE-E611-A03B-F45214939090.root',
         #'/store/mc/RunIISummer16DR80Premix/WplusH_HToSSTobbbb_WToLNu_MH-125_MS-15_ctauS-10000_TuneCUETP8M1_13TeV-powheg-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/364D94A3-F8D1-E611-AAAB-02163E019CBF.root'
-        'file:/mnt/hadoop/store/mc/RunIISummer16DR80Premix/WminusH_HToSSTobbbb_WToLNu_MH-125_MS-40_ctauS-10000_TuneCUETP8M1_13TeV-powheg-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/7C808D45-EDCD-E611-B093-14187741278B.root'
+        '/store/mc/RunIISummer16DR80Premix/WminusH_HToSSTobbbb_WToLNu_MH-125_MS-40_ctauS-10000_TuneCUETP8M1_13TeV-powheg-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/7C808D45-EDCD-E611-B093-14187741278B.root'
         )
 )
 
-#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 #TFileService for output

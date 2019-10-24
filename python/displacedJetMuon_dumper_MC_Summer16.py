@@ -11,10 +11,10 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        #'file:/afs/cern.ch/work/s/sixie/public/releases/run3/CMSSW_9_4_4/src/eventPick_WJetsToLNu_v10v6_nCsc_JetMuonVetoCluster0p4_Me1112Veto60_muon.20190917.root'
-        'file:/afs/cern.ch/work/s/sixie/public/releases/run3/CMSSW_9_4_4/src/eventPick_WJetsToLNu_v10v6_nCsc_JetMuonVetoCluster0p4_Me1112Veto50_ele.20190917.root'
-        # 'file:/afs/cern.ch/work/s/sixie/public/releases/run3/CMSSW_9_4_4/src/pickevents_0.root'
-        
+       'file:/mnt/hadoop/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WminusH_HToSSTobbbb_ms55_pl10000/v2/WminusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WminusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_020035/0000/SUS-RunIIFall17DRPremix-00183_step1_194.root',
+	'file:/mnt/hadoop/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WminusH_HToSSTobbbb_ms55_pl10000/v2/WminusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WminusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_020035/0000/SUS-RunIIFall17DRPremix-00183_step1_195.root',
+	'file:/mnt/hadoop/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WminusH_HToSSTobbbb_ms55_pl10000/v2/WminusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WminusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_020035/0000/SUS-RunIIFall17DRPremix-00183_step1_196.root',
+	'file:/mnt/hadoop/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WminusH_HToSSTobbbb_ms55_pl10000/v2/WminusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WminusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_020035/0000/SUS-RunIIFall17DRPremix-00183_step1_197.root' 
         )
 )
 
@@ -48,6 +48,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_dump',
     isData = cms.bool(False),
     useGen = cms.bool(True),
     isFastsim = cms.bool(False),
+    isAOD = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
@@ -78,7 +79,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_dump',
     #packedPfCands = cms.InputTag("packedPFCandidates"),
 
     genParticles = cms.InputTag("genParticles"),
-
+    MuonCSCSimHits = cms.InputTag("g4SimHits", "MuonCSCHits","SIM"),
     #packedGenParticles = cms.InputTag("packedGenParticles"),
     #prunedGenParticles = cms.InputTag("prunedGenParticles"),
     genMetsCalo = cms.InputTag("genMetCalo"),
