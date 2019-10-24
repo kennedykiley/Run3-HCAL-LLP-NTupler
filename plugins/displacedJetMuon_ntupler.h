@@ -258,6 +258,7 @@ protected:
 
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentInputToken_;
   edm::EDGetTokenT<DTRecSegment4DCollection> dtSegmentInputToken_;
+  edm::EDGetTokenT<DTRecSegment4DCollection> dtCosmicSegmentInputToken_;
   edm::EDGetTokenT<RPCRecHitCollection> rpcRecHitInputToken_;
 
   edm::EDGetTokenT<reco::MuonCollection> muonsToken_;
@@ -386,6 +387,7 @@ protected:
   edm::Handle<float> genParticles_t0;
   edm::Handle<CSCSegmentCollection> cscSegments;
   edm::Handle<DTRecSegment4DCollection> dtSegments;
+  edm::Handle<DTRecSegment4DCollection> dtCosmicSegments;
   edm::Handle<RPCRecHitCollection> rpcRecHits;
 
 
@@ -708,6 +710,18 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float dtDirZ[OBJECTARRAYSIZE];
   float dtT[OBJECTARRAYSIZE];
   float dtTError[OBJECTARRAYSIZE];
+
+  int nDtCosmic;
+  float dtCosmicPhi[OBJECTARRAYSIZE];
+  float dtCosmicEta[OBJECTARRAYSIZE];
+  float dtCosmicX[OBJECTARRAYSIZE];
+  float dtCosmicY[OBJECTARRAYSIZE];
+  float dtCosmicZ[OBJECTARRAYSIZE];
+  float dtCosmicDirX[OBJECTARRAYSIZE];
+  float dtCosmicDirY[OBJECTARRAYSIZE];
+  float dtCosmicDirZ[OBJECTARRAYSIZE];
+  float dtCosmicT[OBJECTARRAYSIZE];
+  float dtCosmicTError[OBJECTARRAYSIZE];
 
  //AK4 Jets
  int nJets;
