@@ -25,13 +25,14 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(500)
+    input = cms.untracked.int32(10)
 )
 
 # Input source
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        'file:/mnt/hadoop/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WplusH_HToSSTobbbb_ms55_pl10000/v2/WplusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WplusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_015936/0000/SUS-RunIIFall17DRPremix-00183_step1_99.root'        
+    #"/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WplusH_HToSSTobbbb_ms55_pl10000/v2/WplusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WplusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_015936/0000/SUS-RunIIFall17DRPremix-00183_step1_99.root",
+    "file:/afs/cern.ch/work/c/christiw/public/LLP/CMSSW_9_4_7/src/cms_lpc_llp/llp_ntupler/SUS-RunIIFall17DRPremix-00183_step1_99.root",
     ),
     secondaryFileNames = cms.untracked.vstring()
 )
@@ -58,7 +59,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     isAOD = cms.bool(False),
     useGen = cms.bool(True),
     isFastsim = cms.bool(False),
-    enableTriggerInfo = cms.bool(True),
+    enableTriggerInfo = cms.bool(False),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
     enableGenLLPInfo = cms.bool(True),
@@ -89,7 +90,11 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
 
     genParticles = cms.InputTag("genParticles"),
     MuonCSCSimHits = cms.InputTag("g4SimHits", "MuonCSCHits","SIM"),
-
+    MuonCSCComparatorDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCComparatorDigi", "HLT"),
+    MuonCSCStripDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCStripDigi", "HLT"),
+    MuonCSCWireDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCWireDigi", "HLT"),
+    MuonCSCWireDigiSimLinks = cms.InputTag( "simMuonCSCDigis", "MuonCSCWireDigiSimLinks", "HLT"),
+    MuonCSCStripDigiSimLinks = cms.InputTag("simMuonCSCDigis","MuonCSCStripDigiSimLinks", "HLT"),
     #packedGenParticles = cms.InputTag("packedGenParticles"),
     #prunedGenParticles = cms.InputTag("prunedGenParticles"),
     genMetsCalo = cms.InputTag("genMetCalo"),
@@ -141,13 +146,13 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     eeRecHits  = cms.InputTag("reducedEcalRecHitsEE", "","RECO"),
     esRecHits = cms.InputTag("reducedEcalRecHitsES", "","RECO"),
     #ebeeClusters = cms.InputTag("reducedEgamma", "reducedEBEEClusters", "RECO"),
-    #ebeeClusters = cms.InputTag("particleFlowEGamma", "EBEEClusters", "RECO"),
-    #esClusters = cms.InputTag("particleFlowEGamma", "ESClusters", "RECO"),
+    ebeeClusters = cms.InputTag("particleFlowEGamma", "EBEEClusters", "RECO"),
+    esClusters = cms.InputTag("particleFlowEGamma", "ESClusters", "RECO"),
     #conversions = cms.InputTag("reducedEgamma", "reducedConversions", "RECO"),
     conversions = cms.InputTag("allConversions", "", "RECO"),
 
     #singleLegConversions = cms.InputTag("reducedEgamma", "reducedSingleLegConversions", "RECO"),
-    #singleLegConversions = cms.InputTag("particleFlowEGamma", "", "RECO"),
+    singleLegConversions = cms.InputTag("particleFlowEGamma", "", "RECO"),
 
     gedGsfElectronCores = cms.InputTag("gedGsfElectronCores", "", "RECO"),
     gedPhotonCores = cms.InputTag("gedPhotonCore", "", "RECO"),

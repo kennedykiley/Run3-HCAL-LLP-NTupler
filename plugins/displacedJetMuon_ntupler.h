@@ -113,7 +113,12 @@ using namespace std;
 #include "DataFormats/RPCRecHit/interface/RPCRecHit.h"
 #include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHit.h"
-
+#include "DataFormats/CSCDigi/interface/CSCComparatorDigi.h"
+#include "DataFormats/CSCDigi/interface/CSCComparatorDigiCollection.h"
+#include "DataFormats/CSCDigi/interface/CSCStripDigi.h"
+#include "DataFormats/CSCDigi/interface/CSCStripDigiCollection.h"
+#include "DataFormats/CSCDigi/interface/CSCWireDigi.h"
+#include "DataFormats/CSCDigi/interface/CSCWireDigiCollection.h"
 //ROOT includes
 #include "TTree.h"
 #include "TFile.h"
@@ -126,7 +131,7 @@ using namespace std;
 //#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
 
 //------ Array Size Constants ------//
-#define OBJECTARRAYSIZE 1000
+#define OBJECTARRAYSIZE 3000
 #define CSCRECHITARRAYSIZE 6
 #define RECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
@@ -263,6 +268,9 @@ protected:
   edm::EDGetTokenT<DTRecSegment4DCollection> dtCosmicSegmentInputToken_;
   edm::EDGetTokenT<RPCRecHitCollection> rpcRecHitInputToken_;
   edm::EDGetTokenT<vector<PSimHit> > MuonCSCSimHitsToken_;
+  edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCComparatorDigi> > MuonCSCComparatorDigiToken_;
+  edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCStripDigi> > MuonCSCStripDigiToken_;
+  edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCWireDigi> > MuonCSCWireDigiToken_;
 
   edm::EDGetTokenT<reco::MuonCollection> muonsToken_;
   edm::EDGetTokenT<reco::GsfElectronCollection> electronsToken_;
@@ -394,7 +402,9 @@ protected:
   edm::Handle<RPCRecHitCollection> rpcRecHits;
   edm::Handle<CSCRecHit2DCollection> cscRechits;
   edm::Handle<vector<PSimHit> > MuonCSCSimHits;
-
+  edm::Handle<MuonDigiCollection<CSCDetId,CSCComparatorDigi> > MuonCSCComparatorDigi;
+  edm::Handle<MuonDigiCollection<CSCDetId,CSCStripDigi> > MuonCSCStripDigi;
+  edm::Handle<MuonDigiCollection<CSCDetId,CSCWireDigi>> MuonCSCWireDigi;
 
 
 
@@ -729,9 +739,15 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float cscSimHits_match_gParticle_minDeltaR[OBJECTARRAYSIZE];
   int cscSimHitsDetId[OBJECTARRAYSIZE];
 
+  int nCscWireDigis;
+  int nCscStripDigis;
+
   unsigned int nCscDetLayer;
   int cscDetLayer_nCscRecHits[OBJECTARRAYSIZE];
   int cscDetLayer_nCscSimHits[OBJECTARRAYSIZE];
+  int cscDetLayer_nWireDigis[OBJECTARRAYSIZE];
+  int cscDetLayer_nStripDigis[OBJECTARRAYSIZE];
+  bool cscDetLayer_inME1112[OBJECTARRAYSIZE];
   int cscDetLayer[OBJECTARRAYSIZE];
 
   int nRpc;
