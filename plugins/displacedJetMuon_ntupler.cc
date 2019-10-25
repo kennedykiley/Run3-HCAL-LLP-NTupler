@@ -36,7 +36,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   tracksTag_(consumes<edm::View<reco::Track> >(iConfig.getParameter<edm::InputTag>("tracks"))),
   cscSegmentInputToken_(consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"))),
   cscRechitInputToken_(consumes<CSCRecHit2DCollection>(edm::InputTag("csc2DRecHits"))),
-  dtSegmentInputToken_(consumes<DTRecSegment4DCollection>(edm::InputTag("dt4DCosmicSegments"))),
+  dtSegmentInputToken_(consumes<DTRecSegment4DCollection>(edm::InputTag("dt4DSegments"))),
+  dtCosmicSegmentInputToken_(consumes<DTRecSegment4DCollection>(edm::InputTag("dt4DCosmicSegments"))),
   rpcRecHitInputToken_(consumes<RPCRecHitCollection>(edm::InputTag("rpcRecHits"))),
   MuonCSCSimHitsToken_(consumes<vector<PSimHit>>(iConfig.getParameter<edm::InputTag>("MuonCSCSimHits"))),
   muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
@@ -554,6 +555,18 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("dtDirZ",dtDirZ,"dtDirZ[nDt]");
     displacedJetMuonTree->Branch("dtT",dtT,"dtT[nDt]");
     displacedJetMuonTree->Branch("dtTError",dtTError,"dtTError[nDt]");
+
+    displacedJetMuonTree->Branch("nDtCosmic",&nDtCosmic,"nDtCosmic/I");
+    displacedJetMuonTree->Branch("dtCosmicPhi",dtCosmicPhi,"dtCosmicPhi[nDtCosmic]");
+    displacedJetMuonTree->Branch("dtCosmicEta",dtCosmicEta,"dtCosmicEta[nDtCosmic]");
+    displacedJetMuonTree->Branch("dtCosmicX",dtCosmicX,"dtCosmicX[nDtCosmic]");
+    displacedJetMuonTree->Branch("dtCosmicY",dtCosmicY,"dtCosmicY[nDtCosmic]");
+    displacedJetMuonTree->Branch("dtCosmicZ",dtCosmicZ,"dtCosmicZ[nDtCosmic]");
+    displacedJetMuonTree->Branch("dtCosmicDirX",dtCosmicDirX,"dtCosmicDirX[nDtCosmic]");
+    displacedJetMuonTree->Branch("dtCosmicDirY",dtCosmicDirY,"dtCosmicDirY[nDtCosmic]");
+    displacedJetMuonTree->Branch("dtCosmicDirZ",dtCosmicDirZ,"dtCosmicDirZ[nDtCosmic]");
+    displacedJetMuonTree->Branch("dtCosmicT",dtCosmicT,"dtCosmicT[nDtCosmic]");
+    displacedJetMuonTree->Branch("dtCosmicTError",dtCosmicTError,"dtCosmicTError[nDt]");
     */
 };
 
@@ -850,8 +863,9 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(metFilterBitsToken_, metFilterBits);
   iEvent.getByToken(verticesToken_, vertices);
   iEvent.getByToken(cscSegmentInputToken_,cscSegments);
-  iEvent.getByToken(dtSegmentInputToken_,dtSegments);
   iEvent.getByToken(cscRechitInputToken_,cscRechits);
+  iEvent.getByToken(dtSegmentInputToken_,dtSegments);
+  iEvent.getByToken(dtCosmicSegmentInputToken_,dtCosmicSegments);
   iEvent.getByToken(rpcRecHitInputToken_,rpcRecHits);
   iEvent.getByToken(MuonCSCSimHitsToken_, MuonCSCSimHits);
 
@@ -1267,6 +1281,20 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
       dtDirZ[i] = 0.0;
       dtT[i] = -9999.0;
       dtTError[i] = -9999.0;
+    }
+    nDtCosmic = 0;
+    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+    {
+      dtCosmicPhi[i] = 0.0;
+      dtCosmicEta[i] = 0.0;
+      dtCosmicX[i] = 0.0;
+      dtCosmicY[i] = 0.0;
+      dtCosmicZ[i] = 0.0;
+      dtCosmicDirX[i] = 0.0;
+      dtCosmicDirY[i] = 0.0;
+      dtCosmicDirZ[i] = 0.0;
+      dtCosmicT[i] = -9999.0;
+      dtCosmicTError[i] = -9999.0;
     }
     return;
 };
@@ -2083,6 +2111,43 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	}
 
 }*/
+
+    for(DTRecSegment4D dtCosmicSegment : *dtCosmicSegments){
+      const DTRecSegment4D dtCosmicSegment_copy = dtCosmicSegment;
+      const DTChamberRecSegment2D* phiSeg = dtCosmicSegment_copy.phiSegment();
+
+	LocalPoint  segmentLocalPosition       = dtCosmicSegment.localPosition();
+	LocalVector segmentLocalDirection      = dtCosmicSegment.localDirection();
+	// LocalError  segmentLocalPositionError  = iDT->localPositionError();
+	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
+	DetId geoid = dtCosmicSegment.geographicalId();
+	DTChamberId dtdetid = DTChamberId(geoid);
+	const DTChamber * dtchamber = dtG->chamber(dtdetid);
+	if (dtchamber) {
+	    GlobalPoint globalPosition = dtchamber->toGlobal(segmentLocalPosition);
+	    GlobalVector globalDirection = dtchamber->toGlobal(segmentLocalDirection);
+
+	    dtCosmicPhi[nDtCosmic] = globalPosition.phi();
+	    dtCosmicEta[nDtCosmic] = globalPosition.eta();
+	    dtCosmicX[nDtCosmic] = globalPosition.x();
+	    dtCosmicY[nDtCosmic] = globalPosition.y();
+	    dtCosmicZ[nDtCosmic] = globalPosition.z();
+	    dtCosmicDirX[nDtCosmic] = globalDirection.x();
+	    dtCosmicDirY[nDtCosmic] = globalDirection.y();
+	    dtCosmicDirZ[nDtCosmic] = globalDirection.z();
+	    if (phiSeg)
+	      {
+		if(phiSeg->ist0Valid())
+		  {
+		    dtCosmicT[nDtCosmic] = phiSeg->t0();
+		    dtCosmicTError[nDtCosmic] = -1;
+		  }
+	      }
+
+	    nDtCosmic++;
+	}
+
+    }
 
 
     return true;
