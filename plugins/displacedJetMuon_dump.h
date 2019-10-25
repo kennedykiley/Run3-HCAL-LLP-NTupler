@@ -114,6 +114,8 @@ using namespace std;
 #include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
 
 //DIGIS
+#include "DataFormats/CSCDigi/interface/CSCComparatorDigi.h"
+#include "DataFormats/CSCDigi/interface/CSCComparatorDigiCollection.h"
 #include "DataFormats/CSCDigi/interface/CSCStripDigi.h"
 #include "DataFormats/CSCDigi/interface/CSCStripDigiCollection.h"
 #include "DataFormats/CSCDigi/interface/CSCWireDigi.h"
@@ -253,6 +255,9 @@ protected:
   edm::EDGetTokenT<edm::ValueMap<int> > mvaGeneralPurposeCategoriesMapToken_;
   edm::EDGetTokenT<edm::ValueMap<float> > mvaHZZValuesMapToken_;
   edm::EDGetTokenT<edm::ValueMap<int> > mvaHZZCategoriesMapToken_;
+  edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCComparatorDigi> > MuonCSCComparatorDigiToken_;
+  edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCStripDigi> > MuonCSCStripDigiToken_;
+  edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCWireDigi> > MuonCSCWireDigiToken_;
   edm::EDGetTokenT<vector<PSimHit> > MuonCSCSimHitsToken_;
 
   //EDM handles for each miniAOD input object
@@ -320,6 +325,9 @@ protected:
   edm::Handle<CSCSegmentCollection> cscSegments;
   edm::Handle<DTRecSegment4DCollection> dtSegments;
   edm::Handle<RPCRecHitCollection> rpcRecHits;
+  edm::Handle<MuonDigiCollection<CSCDetId,CSCComparatorDigi> > MuonCSCComparatorDigi;
+  edm::Handle<MuonDigiCollection<CSCDetId,CSCStripDigi> > MuonCSCStripDigi;
+  edm::Handle<MuonDigiCollection<CSCDetId,CSCWireDigi>> MuonCSCWireDigi;
   edm::Handle<vector<PSimHit> > MuonCSCSimHits;
 
   const reco::Vertex *myPV;

@@ -98,6 +98,9 @@ displacedJetMuon_dump::displacedJetMuon_dump(const edm::ParameterSet& iConfig):
   // mvaGeneralPurposeCategoriesMapToken_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaGeneralPurposeCategoriesMap"))),
   // mvaHZZValuesMapToken_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaHZZValuesMap"))),
   // mvaHZZCategoriesMapToken_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaHZZCategoriesMap")))
+  MuonCSCComparatorDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCComparatorDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCComparatorDigi"))),
+  MuonCSCStripDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCStripDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigi"))),
+  MuonCSCWireDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCWireDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigi"))),
   MuonCSCSimHitsToken_(consumes<vector<PSimHit>>(iConfig.getParameter<edm::InputTag>("MuonCSCSimHits")))
 {
 
@@ -233,20 +236,54 @@ void displacedJetMuon_dump::analyze(const edm::Event& iEvent, const edm::EventSe
       float gLLP_decay_vertex_r = sqrt(pow(gLLP_decay_vertex_x,2)+pow(gLLP_decay_vertex_y,2));
       float gLLP_decay_vertex_z = dau->vz();
       float gLLP_eta = (*genParticles)[i].eta();
-      cout<<gLLP_decay_vertex_r<<","<<gLLP_decay_vertex_z<<endl;
+      // cout<<gLLP_decay_vertex_r<<","<<gLLP_decay_vertex_z<<endl;
       if (abs(gLLP_eta) < 2.4 && abs(gLLP_eta) > 0.9
          && abs(gLLP_decay_vertex_z)<1100 && abs(gLLP_decay_vertex_z)>568
          && gLLP_decay_vertex_r < 695.5) acceptance = true;
     }
   }
   if (acceptance)cout<<"at least one llp decayed in csc"<<endl;
+  // if (acceptance)cout << "Number of sim hits: "<<MuonCSCSimHits->size()<<endl;
 
   for(size_t i=0; i<MuonCSCSimHits->size();i++)
   {
-      cout<<"time of flight: "<<(*MuonCSCSimHits)[i].timeOfFlight()<<endl;
-      cout<<"energyLoss: "<<(*MuonCSCSimHits)[i].energyLoss()<<endl;
-      cout<<"particleType: "<<(*MuonCSCSimHits)[i].particleType()<<endl;
+      // cout << "*****************\n";
+      // cout<<"time of flight: "<<(*MuonCSCSimHits)[i].timeOfFlight()<<endl;
+      // cout<<"energyLoss: "<<(*MuonCSCSimHits)[i].energyLoss()<<endl;
+      // cout<<"particleType: "<<(*MuonCSCSimHits)[i].particleType()<<endl;
+      // cout<<"Momentum: "<<(*MuonCSCSimHits)[i].pabs()<<endl;
+      // cout<<"processType: "<<(*MuonCSCSimHits)[i].processType()<<endl;
+
+
+
   }
+  // CSCWireDigiCollection::DigiRangeIterator detUnitIt;
+  // cout<<"here0"<<endl;
+  // detUnitIt = MuonCSCWireDigi->begin();
+  // bool test = detUnitIt != (MuonCSCWireDigi->end());
+  // cout<<"here1"<<test<<endl;
+  //
+  // cout<<"here2"<<endl;
+  // ++detUnitIt;
+  // cout<<"here3"<<endl;
+  // test = detUnitIt != (MuonCSCWireDigi->end());
+  // cout<<"here1"<<test<<endl;
+  // detUnitIt = MuonCSCWireDigi->begin();
+  // while(detUnitIt != MuonCSCWireDigi->end()){
+  //
+  //   detUnitIt++;
+  // }
+  // for (detUnitIt = MuonCSCWireDigi->begin(); detUnitIt != MuonCSCWireDigi->end(); detUnitIt++){
+  // //   cout<<"here"<<endl;
+  // //   // cout<<"first: "<<(*it).first<<endl;
+  // //
+  //   const CSCDetId &id = (*detUnitIt).first;
+  //   const CSCWireDigiCollection::Range &range = (*detUnitIt).second;
+  //
+  // //
+  // }
+
+
 
 
   /*edm::ESHandle<CSCGeometry> cscG;

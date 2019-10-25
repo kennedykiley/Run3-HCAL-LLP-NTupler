@@ -112,6 +112,7 @@ using namespace std;
 #include "DataFormats/DTRecHit/interface/DTRecSegment4DCollection.h"
 #include "DataFormats/RPCRecHit/interface/RPCRecHit.h"
 #include "DataFormats/RPCRecHit/interface/RPCRecHitCollection.h"
+#include "SimDataFormats/TrackingHit/interface/PSimHit.h"
 
 //ROOT includes
 #include "TTree.h"
@@ -257,8 +258,10 @@ protected:
   edm::EDGetTokenT<edm::ValueMap<float>> trackTimeResoTag_;
 
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentInputToken_;
+  edm::EDGetTokenT<CSCRecHit2DCollection> cscRechitInputToken_;
   edm::EDGetTokenT<DTRecSegment4DCollection> dtSegmentInputToken_;
   edm::EDGetTokenT<RPCRecHitCollection> rpcRecHitInputToken_;
+  edm::EDGetTokenT<vector<PSimHit> > MuonCSCSimHitsToken_;
 
   edm::EDGetTokenT<reco::MuonCollection> muonsToken_;
   edm::EDGetTokenT<reco::GsfElectronCollection> electronsToken_;
@@ -387,7 +390,8 @@ protected:
   edm::Handle<CSCSegmentCollection> cscSegments;
   edm::Handle<DTRecSegment4DCollection> dtSegments;
   edm::Handle<RPCRecHitCollection> rpcRecHits;
-
+  edm::Handle<CSCRecHit2DCollection> cscRechits;
+  edm::Handle<vector<PSimHit> > MuonCSCSimHits;
 
 
 
@@ -687,6 +691,46 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   bool  cscRechitBadWireGroup[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
   bool  cscRechitErrorWithinStrip[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
   int   cscRechitQuality[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  int cscRecHitsChannels[OBJECTARRAYSIZE];
+  unsigned int cscRecHitsNStrips[OBJECTARRAYSIZE];
+  int cscRecHitsHitWire[OBJECTARRAYSIZE];
+  int cscRecHitsWGroupsBX[OBJECTARRAYSIZE];
+  unsigned int cscRecHitsNWireGroups[OBJECTARRAYSIZE];
+  int cscRecHitsDetId[OBJECTARRAYSIZE];
+
+  int nCscRecHits;
+  float cscRecHitsPhi[OBJECTARRAYSIZE];
+  float cscRecHitsEta[OBJECTARRAYSIZE];
+  float cscRecHitsX[OBJECTARRAYSIZE];
+  float cscRecHitsY[OBJECTARRAYSIZE];
+  float cscRecHitsZ[OBJECTARRAYSIZE];
+  float cscRecHitsE[OBJECTARRAYSIZE];
+  float cscRecHitsTpeak[OBJECTARRAYSIZE];
+  float cscRecHitsTwire[OBJECTARRAYSIZE];
+  float cscRecHitsQuality[OBJECTARRAYSIZE];
+
+  int nCscSimHits;
+  int nMatchedSimHits[OBJECTARRAYSIZE];
+  float cscSimHitsTOF[OBJECTARRAYSIZE];
+  float cscSimHitsEnergyLoss[OBJECTARRAYSIZE];
+  int cscSimHitsParticleType[OBJECTARRAYSIZE];
+  float cscSimHitsPabs[OBJECTARRAYSIZE];
+  int cscSimHitsProcessType[OBJECTARRAYSIZE];
+  float cscSimHitsX[OBJECTARRAYSIZE];
+  float cscSimHitsY[OBJECTARRAYSIZE];
+  float cscSimHitsZ[OBJECTARRAYSIZE];
+  float cscSimHitsPhi[OBJECTARRAYSIZE];
+  float cscSimHitsEta[OBJECTARRAYSIZE];
+  int cscSimHits_match_cscRecHits_index[OBJECTARRAYSIZE];
+  float cscSimHits_match_cscRecHits_minDeltaR[OBJECTARRAYSIZE];
+  int cscSimHits_match_gParticle_index[OBJECTARRAYSIZE];
+  float cscSimHits_match_gParticle_minDeltaR[OBJECTARRAYSIZE];
+  int cscSimHitsDetId[OBJECTARRAYSIZE];
+
+  unsigned int nCscDetLayer;
+  int cscDetLayer_nCscRecHits[OBJECTARRAYSIZE];
+  int cscDetLayer_nCscSimHits[OBJECTARRAYSIZE];
+  int cscDetLayer[OBJECTARRAYSIZE];
 
   int nRpc;
   float rpcPhi[OBJECTARRAYSIZE];
@@ -992,6 +1036,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float gLLP_e[LLP_ARRAY_SIZE];
  float gLLP_eta[LLP_ARRAY_SIZE];
  float gLLP_phi[LLP_ARRAY_SIZE];
+ bool gLLP_csc[LLP_ARRAY_SIZE];
 
  float photon_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
  float photon_travel_time_pv[LLP_DAUGHTER_ARRAY_SIZE];

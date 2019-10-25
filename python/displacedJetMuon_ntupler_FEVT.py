@@ -11,10 +11,7 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-       'file:/mnt/hadoop/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WminusH_HToSSTobbbb_ms55_pl10000/v2/WminusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WminusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_020035/0000/SUS-RunIIFall17DRPremix-00183_step1_194.root',
-	'file:/mnt/hadoop/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WminusH_HToSSTobbbb_ms55_pl10000/v2/WminusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WminusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_020035/0000/SUS-RunIIFall17DRPremix-00183_step1_195.root',
-	'file:/mnt/hadoop/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WminusH_HToSSTobbbb_ms55_pl10000/v2/WminusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WminusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_020035/0000/SUS-RunIIFall17DRPremix-00183_step1_196.root',
-	'file:/mnt/hadoop/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WminusH_HToSSTobbbb_ms55_pl10000/v2/WminusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WminusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_020035/0000/SUS-RunIIFall17DRPremix-00183_step1_197.root' 
+	'file:/storage/user/christiw/login-1/christiw/LLP/CMSSW_9_4_4/src/cms_lpc_llp/llp_ntupler/LLPSignal_FEVTDEBUG.root',
         )
 )
 
@@ -35,8 +32,8 @@ process.load('Configuration.StandardSequences.MagneticField_38T_cff')
 #------ Declare the correct global tag ------#
 
 
-process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_v3'
-
+process.GlobalTag.globaltag = '94X_mc2017_realistic_v17'
+#process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_v3'
 #------ If we add any inputs beyond standard miniAOD event content, import them here ------#
 
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
@@ -44,11 +41,10 @@ process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
 #------ Analyzer ------#
 
 #list input collections
-process.ntuples = cms.EDAnalyzer('displacedJetMuon_dump',
+process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     isData = cms.bool(False),
     useGen = cms.bool(True),
     isFastsim = cms.bool(False),
-    isAOD = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
@@ -79,10 +75,6 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_dump',
     #packedPfCands = cms.InputTag("packedPFCandidates"),
 
     genParticles = cms.InputTag("genParticles"),
-    MuonCSCSimHits = cms.InputTag("g4SimHits", "MuonCSCHits","SIM"),
-    MuonCSCComparatorDigi = cms.InputTag("simMuonCSCDigis"           "MuonCSCComparatorDigi"   "HLT"),
-    MuonCSCStripDigi = cms.InputTag("simMuonCSCDigis"           "MuonCSCComparatorDigi"   "HLT"),
-    MuonCSCWireDigi = cms.InputTag("simMuonCSCDigis"           "MuonCSCWireDigi"   "HLT"),
 
     #packedGenParticles = cms.InputTag("packedGenParticles"),
     #prunedGenParticles = cms.InputTag("prunedGenParticles"),
@@ -111,7 +103,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_dump',
 
     tracks = cms.InputTag("generalTracks", "", "RECO"),
     #trackTime = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModel"),
-    #trackTimeReso = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModelResolution"),                                 
+    #trackTimeReso = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModelResolution"),
 
     puInfo = cms.InputTag("addPileupInfo", "", "HLT"), #uncomment if no pre-mixing
     #puInfo = cms.InputTag("mixData", "", "HLT"), #uncomment for samples with pre-mixed pileup
@@ -129,6 +121,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_dump',
     rhoFastjetCentralNeutral = cms.InputTag("fixedGridRhoFastjetCentralNeutral", "", "RECO"),
 
     beamSpot = cms.InputTag("offlineBeamSpot", "", "RECO"),
+    MuonCSCSimHits = cms.InputTag("g4SimHits", "MuonCSCHits","SIM"),
     pfClusters = cms.InputTag("particleFlowClusterECAL","","RECO"),
     ebRecHits = cms.InputTag("reducedEcalRecHitsEB", "","RECO"),
     #ebRecHits = cms.InputTag("EcalRecHit", "reducedEcalRecHitsEB", "RECO"),
