@@ -55,6 +55,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   MuonCSCComparatorDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCComparatorDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCComparatorDigi"))),
   MuonCSCStripDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCStripDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigi"))),
   MuonCSCWireDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCWireDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigi"))),
+  MuonCSCStripDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigiSimLinks"))),
+  MuonCSCWireDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigiSimLinks"))),
   muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
   electronsToken_(consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
   tausToken_(consumes<reco::PFTauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
@@ -482,23 +484,49 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // csc_T = new std::vector<float>;
     // csc_Chi2 = new std::vector<float>;
     //
-    // displacedJetMuonTree->Branch("nCsc",&nCsc,"nCsc/I");
-    // displacedJetMuonTree->Branch("cscPhi",cscPhi,"cscPhi[nCsc]/F");
-    // displacedJetMuonTree->Branch("cscEta",cscEta,"cscEta[nCsc]/F");
-    // displacedJetMuonTree->Branch("cscX",cscX,"cscX[nCsc]/F");
-    // displacedJetMuonTree->Branch("cscY",cscY,"cscY[nCsc]/F");
-    // displacedJetMuonTree->Branch("cscZ",cscZ,"cscZ[nCsc]/F");
-    displacedJetMuonTree->Branch("nCscWireDigis",&nCscWireDigis,"nCscWireDigis/I");
+    displacedJetMuonTree->Branch("nCscSeg",&nCscSeg,"nCscSeg/I");
+    displacedJetMuonTree->Branch("cscSegPhi",cscSegPhi,"cscSegPhi[nCscSeg]/F");
+    displacedJetMuonTree->Branch("cscSegEta",cscSegEta,"cscSegEta[nCscSeg]/F");
+    displacedJetMuonTree->Branch("cscSegX",cscSegX,"cscSegX[nCscSeg]/F");
+    displacedJetMuonTree->Branch("cscSegY",cscSegY,"cscSegY[nCscSeg]/F");
+    displacedJetMuonTree->Branch("cscSegZ",cscSegZ,"cscSegZ[nCscSeg]/F");
+    displacedJetMuonTree->Branch("cscSegT",cscSegT,"cscSegT[nCscSeg]/F");
+    displacedJetMuonTree->Branch("cscSegChi2",cscSegChi2,"cscSegChi2[nCscSeg]/F");
+    displacedJetMuonTree->Branch("cscSegNRecHits",cscSegNRecHits,"cscSegNRecHits[nCscSeg]/I");
+
     displacedJetMuonTree->Branch("nCscStripDigis",&nCscStripDigis,"nCscStripDigis/I");
+    displacedJetMuonTree->Branch("cscStripDigiStripN",cscStripDigiStripN,"cscStripDigiStripN[nCscStripDigis]/I");
+    displacedJetMuonTree->Branch("cscStripDigiDetId",cscStripDigiDetId,"cscStripDigiDetId[nCscStripDigis]/I");
+    displacedJetMuonTree->Branch("cscStripDigiADCCounts","std::vector<vector<int>>(nCscStripDigis)",&cscStripDigiADCCounts);
+
+    displacedJetMuonTree->Branch("nCscWireDigis",&nCscWireDigis,"nCscWireDigis/I");
+    displacedJetMuonTree->Branch("cscWireDigiWireGroupN",cscWireDigiWireGroupN,"cscWireDigiWireGroupN[nCscWireDigis]/I");
+    displacedJetMuonTree->Branch("cscWireDigiDetId",cscWireDigiDetId,"cscWireDigiDetId[nCscWireDigis]/I");
+
+    displacedJetMuonTree->Branch("nCscWireDigiSimLink",&nCscWireDigiSimLink,"nCscWireDigiSimLink/I");
+    displacedJetMuonTree->Branch("cscWireDigiSimLinkNWires",&cscWireDigiSimLinkNWires,"cscWireDigiSimLinkNWires/I");
+    displacedJetMuonTree->Branch("cscWireDigiSimLinkDetId",cscWireDigiSimLinkDetId,"cscWireDigiSimLinkDetId[nCscWireDigiSimLink]/I");
+    displacedJetMuonTree->Branch("cscWireDigiSimLinkChannel",cscWireDigiSimLinkChannel,"cscWireDigiSimLinkChannel[nCscWireDigiSimLink]/I");
+    displacedJetMuonTree->Branch("cscWireDigiSimLinkSimTrackId",cscWireDigiSimLinkSimTrackId,"cscWireDigiSimLinkSimTrackId[nCscWireDigiSimLink]/I");
+    displacedJetMuonTree->Branch("cscWireDigiSimLinkCFposition",cscWireDigiSimLinkCFposition,"cscWireDigiSimLinkCFposition[nCscWireDigiSimLink]/I");
+    displacedJetMuonTree->Branch("cscWireDigiSimLinkFraction",cscWireDigiSimLinkFraction,"cscWireDigiSimLinkFraction[nCscWireDigiSimLink]/F");
+    displacedJetMuonTree->Branch("cscWireDigiSimLinkOccupancy",cscWireDigiSimLinkOccupancy,"cscWireDigiSimLinkOccupancy[nCscWireDigiSimLink]/F");
+
+    displacedJetMuonTree->Branch("nCscStripDigiSimLink",&nCscStripDigiSimLink,"nCscStripDigiSimLink/I");
+    displacedJetMuonTree->Branch("cscStripDigiSimLinkNStrips",&cscStripDigiSimLinkNStrips,"cscStripDigiSimLinkNStrips/I");
+    displacedJetMuonTree->Branch("cscStripDigiSimLinkDetId",cscStripDigiSimLinkDetId,"cscStripDigiSimLinkDetId[nCscStripDigiSimLink]/I");
+    displacedJetMuonTree->Branch("cscStripDigiSimLinkChannel",cscStripDigiSimLinkChannel,"cscStripDigiSimLinkChannel[nCscStripDigiSimLink]/I");
+    displacedJetMuonTree->Branch("cscStripDigiSimLinkSimTrackId",cscStripDigiSimLinkSimTrackId,"cscStripDigiSimLinkSimTrackId[nCscStripDigiSimLink]/I");
+    displacedJetMuonTree->Branch("cscStripDigiSimLinkCFposition",cscStripDigiSimLinkCFposition,"cscStripDigiSimLinkCFposition[nCscStripDigiSimLink]/I");
+    displacedJetMuonTree->Branch("cscStripDigiSimLinkFraction",cscStripDigiSimLinkFraction,"cscStripDigiSimLinkFraction[nCscStripDigiSimLink]/F");
+    displacedJetMuonTree->Branch("cscStripDigiSimLinkOccupancy",cscStripDigiSimLinkOccupancy,"cscStripDigiSimLinkOccupancy[nCscStripDigiSimLink]/F");
 
     displacedJetMuonTree->Branch("nCscDetLayer",&nCscDetLayer,"nCscDetLayer/i");
     displacedJetMuonTree->Branch("cscDetLayer_nCscRecHits",cscDetLayer_nCscRecHits,"cscDetLayer_nCscRecHits[nCscDetLayer]/I");
     displacedJetMuonTree->Branch("cscDetLayer_nCscSimHits",cscDetLayer_nCscSimHits,"cscDetLayer_nCscSimHits[nCscDetLayer]/I");
     displacedJetMuonTree->Branch("cscDetLayer_nWireDigis",cscDetLayer_nWireDigis,"cscDetLayer_nWireDigis[nCscDetLayer]/I");
     displacedJetMuonTree->Branch("cscDetLayer_nStripDigis",cscDetLayer_nStripDigis,"cscDetLayer_nStripDigis[nCscDetLayer]/I");
-
     displacedJetMuonTree->Branch("cscDetLayer_inME1112",cscDetLayer_inME1112,"cscDetLayer_inME1112[nCscDetLayer]/O");
-
     displacedJetMuonTree->Branch("cscDetLayer",cscDetLayer,"cscDetLayer[nCscDetLayer]/I");
 
     displacedJetMuonTree->Branch("nCscRecHits",&nCscRecHits,"nCscRecHits/I");
@@ -541,7 +569,6 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // displacedJetMuonTree->Branch("cscDirectionX",cscDirectionX,"cscDirectionX[nCsc]");
     // displacedJetMuonTree->Branch("cscDirectionY",cscDirectionY,"cscDirectionY[nCsc]");
     // displacedJetMuonTree->Branch("cscDirectionZ",cscDirectionZ,"cscDirectionZ[nCsc]");
-    // displacedJetMuonTree->Branch("cscNRecHits",cscNRecHits,"cscNRecHits[nCsc]");
     // displacedJetMuonTree->Branch("cscNRecHits_flag",cscNRecHits_flag,"cscNRecHits_flag[nCsc]");
     // displacedJetMuonTree->Branch("cscRechitX",cscRechitX,"cscRechitX[nCsc][6]/F");
     // displacedJetMuonTree->Branch("cscRechitY",cscRechitY,"cscRechitY[nCsc][6]/F");
@@ -552,8 +579,7 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // displacedJetMuonTree->Branch("cscRechitBadWireGroup",cscRechitBadWireGroup,"cscRechitBadWireGroup[nCsc][6]/O");
     // displacedJetMuonTree->Branch("cscRechitErrorWithinStrip",cscRechitErrorWithinStrip,"cscRechitErrorWithinStrip[nCsc][6]/O");
     // displacedJetMuonTree->Branch("cscRechitQuality",cscRechitQuality,"cscRechitQuality[nCsc][6]/I");
-    // displacedJetMuonTree->Branch("cscT",cscT,"cscT[nCsc]");
-    // displacedJetMuonTree->Branch("cscChi2",cscChi2,"cscChi2[nCsc]");
+
 
     /*
     displacedJetMuonTree->Branch("nRpc",&nRpc,"nRpc/I");
@@ -890,6 +916,8 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(MuonCSCSimHitsToken_, MuonCSCSimHits);
   iEvent.getByToken(MuonCSCStripDigiToken_, MuonCSCStripDigi);
   iEvent.getByToken(MuonCSCWireDigiToken_, MuonCSCWireDigi);
+  iEvent.getByToken(MuonCSCStripDigiSimLinksToken_, MuonCSCStripDigiSimLinks);
+  iEvent.getByToken(MuonCSCWireDigiSimLinksToken_, MuonCSCWireDigiSimLinks);
 
   iEvent.getByToken(tracksTag_,tracks);
   iEvent.getByToken(PFCandsToken_, pfCands);
@@ -1219,24 +1247,30 @@ void displacedJetMuon_ntupler::resetPhotonBranches()
 
 void displacedJetMuon_ntupler::resetMuonSystemBranches()
 {
-    nCsc = 0;
+    nCscSeg = 0;
     nCscRecHits = 0;
     nCscSimHits = 0;
     nCscStripDigis = 0;
     nCscWireDigis = 0;
     nCscDetLayer = 0;
+    cscStripDigiADCCounts.clear();
+    nCscWireDigiSimLink = 0;
+    nCscStripDigiSimLink = 0;
+    cscWireDigiSimLinkNWires = 0;
+    cscStripDigiSimLinkNStrips = 0;
     for ( int i = 0; i < OBJECTARRAYSIZE; i++)
     {
-      // cscPhi[i] = 0.0;
-      // cscEta[i] = 0.0;
-      // cscX[i] = 0.0;
-      // cscY[i] = 0.0;
-      // cscZ[i] = 0.0;
-      // cscDirectionX[i] = 0.0;
-      // cscDirectionY[i] = 0.0;
-      // cscDirectionZ[i] = 0.0;
-      // cscT[i] = 0.0;
-      // cscChi2[i] = 0.0;
+      cscSegPhi[i] = 0.0;
+      cscSegEta[i] = 0.0;
+      cscSegX[i] = 0.0;
+      cscSegY[i] = 0.0;
+      cscSegZ[i] = 0.0;
+      cscSegDirectionX[i] = 0.0;
+      cscSegDirectionY[i] = 0.0;
+      cscSegDirectionZ[i] = 0.0;
+      cscSegT[i] = 0.0;
+      cscSegChi2[i] = 0.0;
+      cscSegNRecHits[i] = 0;
       cscDetLayer_nCscRecHits[i] = 0;
       cscDetLayer_nCscSimHits[i] = 0;
       cscDetLayer_nWireDigis[i] = 0;
@@ -1275,6 +1309,25 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
       cscSimHits_match_gParticle_index[i] = -999;
       cscSimHits_match_gParticle_minDeltaR[i] = -999.;
       cscSimHitsDetId[i] = 0;
+
+      cscWireDigiDetId[i] = -999;
+      cscWireDigiWireGroupN[i] = -999;
+      cscStripDigiDetId[i] = -999;
+      cscStripDigiStripN[i] = -999;
+
+      cscWireDigiSimLinkChannel[i] = -999;
+      cscWireDigiSimLinkCFposition[i] = -999;
+      cscWireDigiSimLinkFraction[i] = -999.;
+      cscWireDigiSimLinkDetId[i] = -999;
+      cscWireDigiSimLinkSimTrackId[i] = -999;
+      cscWireDigiSimLinkOccupancy[i] = -999;
+
+      cscStripDigiSimLinkChannel[i] = -999;
+      cscStripDigiSimLinkCFposition[i] = -999;
+      cscStripDigiSimLinkFraction[i] = -999.;
+      cscStripDigiSimLinkDetId[i] = -999;
+      cscStripDigiSimLinkSimTrackId[i] = -999;
+      cscStripDigiSimLinkOccupancy[i] = -999;
 
       // for (int j=0;j<CSCRECHITARRAYSIZE;j++) {
       // 	cscRechitX[i][j] = -999.0;
@@ -1746,14 +1799,17 @@ bool displacedJetMuon_ntupler::fillEventInfo(const edm::Event& iEvent)
 
 bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    edm::ESHandle<CSCGeometry> cscG;
-    edm::ESHandle<DTGeometry> dtG;
-    edm::ESHandle<RPCGeometry> rpcG;
+  edm::ESHandle<CSCGeometry> cscG;
+  edm::ESHandle<DTGeometry> dtG;
+  edm::ESHandle<RPCGeometry> rpcG;
 
-    iSetup.get<MuonGeometryRecord>().get(cscG);
-    iSetup.get<MuonGeometryRecord>().get(dtG);
-    iSetup.get<MuonGeometryRecord>().get(rpcG);
-    cout << "Number of rec hits: "<<cscRechits->size()<<endl;
+  iSetup.get<MuonGeometryRecord>().get(cscG);
+  iSetup.get<MuonGeometryRecord>().get(dtG);
+  iSetup.get<MuonGeometryRecord>().get(rpcG);
+  //*****************
+  //** RECHITS
+  //*****************
+  cout << "Number of rec hits: "<<cscRechits->size()<<endl;
 
   for (const CSCRecHit2D cscRechit : *cscRechits) {
     LocalPoint  cscRecHitLocalPosition       = cscRechit.localPosition();
@@ -1762,51 +1818,198 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     cscRecHitsDetId[nCscRecHits] = CSCDetId::rawIdMaker(CSCDetId::endcap(cscdetid), CSCDetId::station(cscdetid), CSCDetId::ring(cscdetid), CSCDetId::chamber(cscdetid), CSCDetId::layer(cscdetid));
     const CSCChamber* cscchamber = cscG->chamber(cscdetid);
     if (cscchamber) {
-        GlobalPoint globalPosition = cscchamber->toGlobal(cscRecHitLocalPosition);
-        cscRecHitsX[nCscRecHits] = globalPosition.x();
-        cscRecHitsY[nCscRecHits] = globalPosition.y();
-        cscRecHitsZ[nCscRecHits] = globalPosition.z();
-        cscRecHitsPhi[nCscRecHits] = globalPosition.phi();
-        cscRecHitsEta[nCscRecHits] = globalPosition.eta();
-        cscRecHitsE[nCscRecHits] = cscRechit.energyDepositedInLayer();//not saved
-        cscRecHitsTpeak[nCscRecHits] = cscRechit.tpeak();
-        cscRecHitsTwire[nCscRecHits] = cscRechit.wireTime();
-        cscRecHitsQuality[nCscRecHits] = cscRechit.quality();
+      GlobalPoint globalPosition = cscchamber->toGlobal(cscRecHitLocalPosition);
+      cscRecHitsX[nCscRecHits] = globalPosition.x();
+      cscRecHitsY[nCscRecHits] = globalPosition.y();
+      cscRecHitsZ[nCscRecHits] = globalPosition.z();
+      cscRecHitsPhi[nCscRecHits] = globalPosition.phi();
+      cscRecHitsEta[nCscRecHits] = globalPosition.eta();
+      cscRecHitsE[nCscRecHits] = cscRechit.energyDepositedInLayer();//not saved
+      cscRecHitsTpeak[nCscRecHits] = cscRechit.tpeak();
+      cscRecHitsTwire[nCscRecHits] = cscRechit.wireTime();
+      cscRecHitsQuality[nCscRecHits] = cscRechit.quality();
 
-        // cscRecHitsChannels[nCscRecHits] = cscRechit.channels();
-        cscRecHitsNStrips[nCscRecHits] = cscRechit.nStrips();
-        cscRecHitsHitWire[nCscRecHits] = cscRechit.hitWire();
-        cscRecHitsWGroupsBX[nCscRecHits] = cscRechit.wgroupsBX();
-        cscRecHitsNWireGroups[nCscRecHits] = cscRechit.nWireGroups();
-        // rpcT[nRpc] = rpcRecHit.time();
-        // rpcTError[nRpc] = rpcRecHit.timeError();
-        nCscRecHits++;
-      }
+      // cscRecHitsChannels[nCscRecHits] = cscRechit.channels();
+      cscRecHitsNStrips[nCscRecHits] = cscRechit.nStrips();
+      cscRecHitsHitWire[nCscRecHits] = cscRechit.hitWire();
+      cscRecHitsWGroupsBX[nCscRecHits] = cscRechit.wgroupsBX();
+      cscRecHitsNWireGroups[nCscRecHits] = cscRechit.nWireGroups();
+      // rpcT[nRpc] = rpcRecHit.time();
+      // rpcTError[nRpc] = rpcRecHit.timeError();
+      nCscRecHits++;
+    }
   }
 
-  // DIGIS
+  //*****************
+  //** DIGIS
+  //*****************
   nCscStripDigis = 0;
   CSCStripDigiCollection::DigiRangeIterator stripDetIt;
   for (stripDetIt = MuonCSCStripDigi->begin(); stripDetIt != MuonCSCStripDigi->end(); stripDetIt++){
+     const CSCDetId &id = (*stripDetIt).first;
+     int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
+
       const CSCStripDigiCollection::Range &range = (*stripDetIt).second;
       for (CSCStripDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
-        nCscStripDigis++;
+        //ADC count is 8 time stamps
+        std::vector<int> myADCVals = digiIt->getADCCounts();
+         bool thisStripFired = false;
+         float thisPedestal = 0.5 * (float)(myADCVals[0] + myADCVals[1]);
+         float threshold = 13.3;
+         float diff = 0.;
+         // float max_diff = 0.0;
+         for (unsigned int iCount = 0; iCount < myADCVals.size(); iCount++) {
+           diff = (float)myADCVals[iCount] - thisPedestal;
+           if (diff > threshold) {
+             thisStripFired = true;
+             // max_diff = diff;
+           }
+         }
+         if (thisStripFired) {
+           const CSCDetId &id = (*stripDetIt).first;
+           int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
+           cscStripDigiDetId[nCscStripDigis] = tempDetId;
+           cscStripDigiStripN[nCscStripDigis] = (*digiIt).getStrip(); //count from 1
+           cscStripDigiADCCounts.push_back(myADCVals);
+           // cout<<"strip number fired: "<<cscStripDigiStripN[nCscStripDigis]<<endl;
+           nCscStripDigis++;
+         }
+
+
       }
   }
+  cout<<"number of strip digi fired:" <<nCscStripDigis<<endl;
   nCscWireDigis = 0;
   CSCWireDigiCollection::DigiRangeIterator wireDetIt;
   for (wireDetIt = MuonCSCWireDigi->begin(); wireDetIt != MuonCSCWireDigi->end(); wireDetIt++){
       const CSCWireDigiCollection::Range &range = (*wireDetIt).second;
       for (CSCWireDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
+        const CSCDetId &id = (*wireDetIt).first;
+        int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
+        cscWireDigiDetId[nCscWireDigis] = tempDetId;
+        cscWireDigiWireGroupN[nCscWireDigis] = (*digiIt).getWireGroup(); //count from 1
         nCscWireDigis++;
       }
+
+  }
+  cout<<"wiredigis "<<nCscWireDigis<<endl;
+
+  //*****************
+  //** DIGI SIM LINKS
+  //*****************
+  edm::DetSetVector<StripDigiSimLink>::const_iterator wireLinkIt;
+  //loop through detid
+  nCscWireDigiSimLink=0;
+  for (wireLinkIt = MuonCSCWireDigiSimLinks->begin(); wireLinkIt != MuonCSCWireDigiSimLinks->end(); wireLinkIt++){
+    edm::DetSetVector<StripDigiSimLink>::detset::const_iterator i;
+    for (  i = (*wireLinkIt).data.begin(); i != (*wireLinkIt).data.end(); i++){
+      const CSCDetId &id = (*wireLinkIt).detId();
+      // cout<<"detid, trackid, channel, CFposition, fraction: "<<id<<","<<(*wireLinkIt).detId()<<", "<<(*i).SimTrackId()<<", "<<(*i).channel()<<", "<<(*i).CFposition()<<", "<<(*i).fraction()<<endl;
+      cscWireDigiSimLinkDetId[nCscWireDigiSimLink] = (*wireLinkIt).detId();
+      cscWireDigiSimLinkSimTrackId[nCscWireDigiSimLink] = (*i).SimTrackId();
+      cscWireDigiSimLinkChannel[nCscWireDigiSimLink] = (*i).channel();
+      cscWireDigiSimLinkCFposition[nCscWireDigiSimLink] = (*i).CFposition();
+      cscWireDigiSimLinkFraction[nCscWireDigiSimLink] = (*i).fraction();
+      nCscWireDigiSimLink++;
+    }
+  }
+  //count occupancy
+  int index = 0;
+  int occupancy = 1;
+  int previous_detid = 0;
+  int previous_channel = 0;
+  cscWireDigiSimLinkNWires = 0;
+  for(int i = 0; i < nCscWireDigiSimLink; i++)
+  {
+    if (previous_channel!=cscWireDigiSimLinkChannel[i] || previous_detid!=cscWireDigiSimLinkDetId[i]){
+      for(int j = i;j>=index;j--)
+      {
+        cscWireDigiSimLinkOccupancy[j] = occupancy;
+      }
+      occupancy = 0;
+      cscWireDigiSimLinkNWires++;
+      previous_channel = cscWireDigiSimLinkChannel[i];
+      previous_detid = cscWireDigiSimLinkDetId[i];
+      index = i;
+    }
+    occupancy++;
+    if (i == nCscWireDigiSimLink-1)
+    {
+      for(int j = i;j>index;j--)
+      {
+        cscWireDigiSimLinkOccupancy[j] = occupancy;
+      }
+      // cscWireDigiSimLinkNWires++;
+    }
+    // cout<<"detid, trackid, channel, fraction,occupancy: "<<cscWireDigiSimLinkDetId[i]<<", "<<cscWireDigiSimLinkSimTrackId[i]<<", "<<cscWireDigiSimLinkChannel[i]<<", "<<cscWireDigiSimLinkFraction[i]<<","<<cscWireDigiSimLinkOccupancy[i]<<endl;
+    // cout<<"wires: "<<cscWireDigiSimLinkNWires<<endl;
+  }
+  cout<<"wires: "<<cscWireDigiSimLinkNWires<<", "<<nCscWireDigiSimLink<<endl;
+
+  // for(int i = 0; i < nCscWireDigiSimLink; i++)
+  // {
+  //   cout<<"detid, trackid, channel, fraction, occupancy: "<<cscWireDigiSimLinkDetId[i]<<", "<<cscWireDigiSimLinkSimTrackId[i]<<", "<<cscWireDigiSimLinkChannel[i]<<", "<<cscWireDigiSimLinkFraction[i]<<", "<<cscWireDigiSimLinkOccupancy[i]<<endl;
+  //
+  // }
+  // cout<<"wiredigisimlink "<<nCscWireDigiSimLink<<endl;
+
+
+  // strip digi simlink
+  edm::DetSetVector<StripDigiSimLink>::const_iterator stripLinkIt;
+  //loop through detid
+  nCscStripDigiSimLink=0;
+  for (stripLinkIt = MuonCSCStripDigiSimLinks->begin(); stripLinkIt != MuonCSCStripDigiSimLinks->end(); stripLinkIt++){
+    edm::DetSetVector<StripDigiSimLink>::detset::const_iterator i;
+    for (  i = (*stripLinkIt).data.begin(); i != (*stripLinkIt).data.end(); i++){
+      cscStripDigiSimLinkDetId[nCscStripDigiSimLink] = (*stripLinkIt).detId();
+      cscStripDigiSimLinkSimTrackId[nCscStripDigiSimLink] = (*i).SimTrackId();
+      cscStripDigiSimLinkChannel[nCscStripDigiSimLink] = (*i).channel();
+      cscStripDigiSimLinkCFposition[nCscStripDigiSimLink] = (*i).CFposition();
+      cscStripDigiSimLinkFraction[nCscStripDigiSimLink] = (*i).fraction();
+      nCscStripDigiSimLink++;
+    }
+
+  }
+  //count occupancy
+  index = 0;
+  occupancy = 1;
+  previous_detid = 0;
+  previous_channel = 0;
+  cscStripDigiSimLinkNStrips = 0;
+  for(int i = 0; i < nCscStripDigiSimLink; i++)
+  {
+    if (previous_channel!=cscStripDigiSimLinkChannel[i] || previous_detid!=cscStripDigiSimLinkDetId[i]){
+      for(int j = i;j>=index;j--)
+      {
+        cscStripDigiSimLinkOccupancy[j] = occupancy;
+      }
+      occupancy = 0;
+      cscStripDigiSimLinkNStrips++;
+      previous_channel = cscStripDigiSimLinkChannel[i];
+      previous_detid = cscStripDigiSimLinkDetId[i];
+      index = i;
+    }
+    occupancy++;
+    if (i == nCscStripDigiSimLink-1)
+    {
+      for(int j = i;j>index;j--)
+      {
+        cscStripDigiSimLinkOccupancy[j] = occupancy;
+      }
+      // cscStripDigiSimLinkNStrips++;
+    }
+    // cout<<"detid, trackid, channel, fraction: "<<cscWireDigiSimLinkDetId[i]<<", "<<cscWireDigiSimLinkSimTrackId[i]<<", "<<cscWireDigiSimLinkChannel[i]<<", "<<cscWireDigiSimLinkFraction[i]<<endl;
+    // cout<<"wires: "<<cscWireDigiSimLinkNWires<<endl;
   }
 
-  cout << "Number of sim hits: "<<MuonCSCSimHits->size()<<endl;
-  // vector of unique detIDs for sim hits
 
+
+  //*****************
+  //** SIM HITS
+  //*****************
   vector<int> detLayers;
   vector<bool> layer_in_ME1112;
+  cout<<"number of simhits: "<<MuonCSCSimHits->size()<<endl;
   for(size_t i=0; i<MuonCSCSimHits->size();i++)
   {
     cscSimHitsTOF[nCscSimHits] = (*MuonCSCSimHits)[i].timeOfFlight();
@@ -1835,26 +2038,27 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     cscSimHitsZ[nCscSimHits] = globalPosition.z();
     cscSimHitsPhi[nCscSimHits] = globalPosition.phi();
     cscSimHitsEta[nCscSimHits] = globalPosition.eta();
-    //match rechits to sim hits
+    // cout<<"simhit detid, track id, particle type: "<<cscdetid<<", "<<cscSimHitsDetId[nCscSimHits]<<","<<(*MuonCSCSimHits)[i].trackId()<<","<<(*MuonCSCSimHits)[i].particleType()<<endl;
+
+    //match simhit to genParticle
     double min_delta_r = 15;
     int matched_rechit = 999;
-    for (int j = 0; j < nCscRecHits; j++)
+    for (int j = 0; j < nGenParticle; j++)
     {
-      // double current_delta_r = deltaR(cscSimHitsEta[i], cscSimHitsPhi[i], cscRecHitsEta[j], cscRecHitsPhi[j]);
-      double current_delta_r = sqrt(pow(cscSimHitsX[i]-cscRecHitsX[j],2) + pow(cscSimHitsY[i]-cscRecHitsY[j],2) + pow(cscSimHitsZ[i]-cscRecHitsZ[j],2));
-      if (current_delta_r < min_delta_r && cscSimHitsDetId[i] == cscRecHitsDetId[j])
+      double current_delta_r = deltaR(cscSimHitsEta[i], cscSimHitsPhi[i], gParticleEta[j], gParticlePhi[j]);
+      if (current_delta_r < min_delta_r)
       {
         min_delta_r = current_delta_r;
         matched_rechit = j;
       }
     }
-    if (min_delta_r < 15)
+    if (min_delta_r < 0.4)
     {
-      cscSimHits_match_cscRecHits_minDeltaR[nCscSimHits] = min_delta_r;
-      cscSimHits_match_cscRecHits_index[nCscSimHits] = matched_rechit;
-
+      cscSimHits_match_gParticle_minDeltaR[nCscSimHits] = min_delta_r;
+      cscSimHits_match_gParticle_index[nCscSimHits] = matched_rechit;
+      // cout<<"matched to particle: "<< gParticleId[matched_rechit]<<endl;
     }
-      nCscSimHits++;
+    nCscSimHits++;
   }
   std::vector<muonCscLayers> cscLayers;
   nCscDetLayer = detLayers.size();
@@ -1884,6 +2088,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
         for (CSCStripDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
           strip_count++;
         }
+        // cout<<"strip digis: "<<strip_count<<endl;
         tmpLayer.nStripDigis = strip_count;
       }
     }
@@ -1898,6 +2103,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
         for (CSCWireDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
           strip_count++;
         }
+        // cout<<"wire digis: "<<strip_count<<endl;
         tmpLayer.nWireDigis = strip_count;
       }
     }
@@ -1922,43 +2128,6 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
   }
 
 
-
-  //match rechits to sim hits
-  int matched = 0;
-  for (int i = 0; i < nCscRecHits; i++)
-  {
-    for (int j = 0; j < nCscSimHits; j++)
-    {
-      if (cscSimHits_match_cscRecHits_index[j] == i) nMatchedSimHits[i]++;
-    }
-    matched += nMatchedSimHits[i];
-  }
-  cout<<"total matched sim hits" <<matched<<endl;
-
-
-  //match simhits to gen particles
-
-
-  for (int i = 0; i < nCscSimHits; i++)
-  {
-    double min_delta_r = 15;
-    int matched_rechit = 999;
-    for (int j = 0; j < nGenParticle; j++)
-    {
-      double current_delta_r = deltaR(cscSimHitsEta[i], cscSimHitsPhi[i], gParticleEta[j], gParticlePhi[j]);
-      if (current_delta_r < min_delta_r)
-      {
-        min_delta_r = current_delta_r;
-        matched_rechit = j;
-      }
-    }
-    if (min_delta_r < 0.4)
-    {
-      cscSimHits_match_gParticle_minDeltaR[i] = min_delta_r;
-      cscSimHits_match_gParticle_index[i] = matched_rechit;
-
-    }
-  }
     // cout << gLLP_decay_vertex_z[0] << " " << gLLP_eta[0] << " " << sqrt(gLLP_decay_vertex_x[0]*gLLP_decay_vertex_x[0]+gLLP_decay_vertex_y[0]*gLLP_decay_vertex_y[0]) << "\n";
     // cout << gLLP_decay_vertex_z[1] << " " << gLLP_eta[1] << " " << sqrt(gLLP_decay_vertex_x[1]*gLLP_decay_vertex_x[1]+gLLP_decay_vertex_y[1]*gLLP_decay_vertex_y[1]) << "\n";
     // cout << "\n\n";
@@ -1979,9 +2148,9 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     // }
 
 
-    /*vector<vector<float> > trackSegments;
+  vector<vector<float> > trackSegments;
 
-    for (const CSCSegment cscSegment : *cscSegments) {
+  for (const CSCSegment cscSegment : *cscSegments) {
 	float globPhi   = 0.;
 	float globX = 0.;
 	float globY = 0.;
@@ -2004,17 +2173,17 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    globY = globalPosition.y();
 	    globZ = globalPosition.z();
 	    // globR = pow(globX*globX+globY*globY,0.5);
-	    cscNRecHits[nCsc] = cscSegment.nRecHits();
-	    cscX[nCsc] = globX;
-	    cscY[nCsc] = globY;
-	    cscZ[nCsc] = globZ;
-	    cscDirectionX[nCsc] = globalDirection.x();
-	    cscDirectionY[nCsc] = globalDirection.y();
-	    cscDirectionZ[nCsc] = globalDirection.z();
-	    cscPhi[nCsc] = globPhi;
-	    cscEta[nCsc] = globEta;
-	    cscT[nCsc] = cscSegment.time();
-	    cscChi2[nCsc] = cscSegment.chi2();
+	    cscSegNRecHits[nCscSeg] = cscSegment.nRecHits();
+	    cscSegX[nCscSeg] = globX;
+	    cscSegY[nCscSeg] = globY;
+	    cscSegZ[nCscSeg] = globZ;
+	    cscSegDirectionX[nCscSeg] = globalDirection.x();
+	    cscSegDirectionY[nCscSeg] = globalDirection.y();
+	    cscSegDirectionZ[nCscSeg] = globalDirection.z();
+	    cscSegPhi[nCscSeg] = globPhi;
+	    cscSegEta[nCscSeg] = globEta;
+	    cscSegT[nCscSeg] = cscSegment.time();
+	    cscSegChi2[nCscSeg] = cscSegment.chi2();
 
 
 	    // //if (LLPInCSC_index >= 0) {
@@ -2043,46 +2212,46 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 
 	    // look at flags of the rechits
-	    const std::vector<CSCRecHit2D> cscrechits2d = cscSegment.specificRecHits();
-	    int cscNRecHits_flagged = 0;
-	    int rechitIndex = 0;
-	    for (const CSCRecHit2D recHit2d : cscrechits2d) {
+	    // const std::vector<CSCRecHit2D> cscrechits2d = cscSegment.specificRecHits();
+	    // int cscNRecHits_flagged = 0;
+	    // int rechitIndex = 0;
+	    // for (const CSCRecHit2D recHit2d : cscrechits2d) {
+      //
+	    //   LocalPoint hitLocalPos = recHit2d.localPosition();
+	    //   GlobalPoint hitGlobalPos = cscchamber->toGlobal(hitLocalPos);
+	    //   cscRechitBadStrip[nCsc][rechitIndex] = recHit2d.badStrip();
+	    //   cscRechitBadWireGroup[nCsc][rechitIndex] = recHit2d.badWireGroup();
+	    //   cscRechitErrorWithinStrip[nCsc][rechitIndex] = recHit2d.errorWithinStrip();
+	    //   cscRechitQuality[nCsc][rechitIndex] = recHit2d.quality();
+	    //   cscRechitX[nCsc][rechitIndex] = hitGlobalPos.x();
+	    //   cscRechitY[nCsc][rechitIndex] = hitGlobalPos.y();
+	    //   cscRechitZ[nCsc][rechitIndex] = hitGlobalPos.z();
+	    //   cscRechitT[nCsc][rechitIndex] = recHit2d.tpeak();
+	    //   cscRechitE[nCsc][rechitIndex] = recHit2d.energyDepositedInLayer();
+      //
+      //
+	    //   // if (!(recHit2d.quality()==1)) continue;
+	    //   // if(recHit2d.badStrip()) continue;
+	    //   // if (recHit2d.badWireGroup()) continue;
+      //
+	    //   // cout << "---> Rechit : " << hitGlobalPos.x() << " " << hitGlobalPos.y() << " " << hitGlobalPos.z() << " | "
+	    //   // 	   << recHit2d.tpeak()
+	    //   // 	   << "\n";
+	    //   // std::cout<<cscSegment.nRecHits()<<", " << recHit2d.quality()<<", "<<recHit2d.badStrip()<<", "<<recHit2d.badWireGroup()<<", "<<recHit2d.errorWithinStrip()<<", "<<recHit2d.energyDepositedInLayer()<<std::endl;
+      //
+      //
+	    //   //cout << "---> Rechit : " << recHit2d
+      //
+	    //   cscNRecHits_flagged++;
+	    //   rechitIndex++;
+	    // }
+	    // cscNRecHits_flag[nCsc] = cscNRecHits_flagged;
 
-	      LocalPoint hitLocalPos = recHit2d.localPosition();
-	      GlobalPoint hitGlobalPos = cscchamber->toGlobal(hitLocalPos);
-	      cscRechitBadStrip[nCsc][rechitIndex] = recHit2d.badStrip();
-	      cscRechitBadWireGroup[nCsc][rechitIndex] = recHit2d.badWireGroup();
-	      cscRechitErrorWithinStrip[nCsc][rechitIndex] = recHit2d.errorWithinStrip();
-	      cscRechitQuality[nCsc][rechitIndex] = recHit2d.quality();
-	      cscRechitX[nCsc][rechitIndex] = hitGlobalPos.x();
-	      cscRechitY[nCsc][rechitIndex] = hitGlobalPos.y();
-	      cscRechitZ[nCsc][rechitIndex] = hitGlobalPos.z();
-	      cscRechitT[nCsc][rechitIndex] = recHit2d.tpeak();
-	      cscRechitE[nCsc][rechitIndex] = recHit2d.energyDepositedInLayer();
-
-
-	      // if (!(recHit2d.quality()==1)) continue;
-	      // if(recHit2d.badStrip()) continue;
-	      // if (recHit2d.badWireGroup()) continue;
-
-	      // cout << "---> Rechit : " << hitGlobalPos.x() << " " << hitGlobalPos.y() << " " << hitGlobalPos.z() << " | "
-	      // 	   << recHit2d.tpeak()
-	      // 	   << "\n";
-	      // std::cout<<cscSegment.nRecHits()<<", " << recHit2d.quality()<<", "<<recHit2d.badStrip()<<", "<<recHit2d.badWireGroup()<<", "<<recHit2d.errorWithinStrip()<<", "<<recHit2d.energyDepositedInLayer()<<std::endl;
-
-
-	      //cout << "---> Rechit : " << recHit2d
-
-	      cscNRecHits_flagged++;
-	      rechitIndex++;
-	    }
-	    cscNRecHits_flag[nCsc] = cscNRecHits_flagged;
-
-	    nCsc++;
-	}
+	    nCscSeg++;
+	   }
     }
 
-
+    /*
     // //Check for distance of closest approach
     // cout << "nCsc = " << nCsc << "\n";
     // cout << "\n\n\n Check for closest approach\n";
@@ -2212,7 +2381,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 }*/
 
-    for(DTRecSegment4D dtCosmicSegment : *dtCosmicSegments){
+    /*for(DTRecSegment4D dtCosmicSegment : *dtCosmicSegments){
       const DTRecSegment4D dtCosmicSegment_copy = dtCosmicSegment;
       const DTChamberRecSegment2D* phiSeg = dtCosmicSegment_copy.phiSegment();
 
@@ -2247,7 +2416,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    nDtCosmic++;
 	}
 
-    }
+}*/
 
 
     return true;

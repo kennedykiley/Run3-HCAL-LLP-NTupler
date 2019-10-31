@@ -78,7 +78,7 @@ using namespace std;
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/BasicJetCollection.h"
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
-
+#include "DataFormats/Common/interface/DetSetVector.h"
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
@@ -119,6 +119,10 @@ using namespace std;
 #include "DataFormats/CSCDigi/interface/CSCStripDigiCollection.h"
 #include "DataFormats/CSCDigi/interface/CSCWireDigi.h"
 #include "DataFormats/CSCDigi/interface/CSCWireDigiCollection.h"
+#include "SimDataFormats/DigiSimLinks/interface/DTDigiSimLink.h"
+#include "SimDataFormats/TrackerDigiSimLink/interface/StripDigiSimLink.h"
+
+
 //ROOT includes
 #include "TTree.h"
 #include "TFile.h"
@@ -131,7 +135,7 @@ using namespace std;
 //#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
 
 //------ Array Size Constants ------//
-#define OBJECTARRAYSIZE 3000
+#define OBJECTARRAYSIZE 5000
 #define CSCRECHITARRAYSIZE 6
 #define RECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
@@ -271,6 +275,10 @@ protected:
   edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCComparatorDigi> > MuonCSCComparatorDigiToken_;
   edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCStripDigi> > MuonCSCStripDigiToken_;
   edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCWireDigi> > MuonCSCWireDigiToken_;
+  edm::EDGetTokenT<edm::DetSetVector<StripDigiSimLink> > MuonCSCStripDigiSimLinksToken_;
+  edm::EDGetTokenT<edm::DetSetVector<StripDigiSimLink>> MuonCSCWireDigiSimLinksToken_;
+
+
 
   edm::EDGetTokenT<reco::MuonCollection> muonsToken_;
   edm::EDGetTokenT<reco::GsfElectronCollection> electronsToken_;
@@ -405,7 +413,8 @@ protected:
   edm::Handle<MuonDigiCollection<CSCDetId,CSCComparatorDigi> > MuonCSCComparatorDigi;
   edm::Handle<MuonDigiCollection<CSCDetId,CSCStripDigi> > MuonCSCStripDigi;
   edm::Handle<MuonDigiCollection<CSCDetId,CSCWireDigi>> MuonCSCWireDigi;
-
+  edm::Handle<edm::DetSetVector<StripDigiSimLink> > MuonCSCStripDigiSimLinks;
+  edm::Handle<edm::DetSetVector<StripDigiSimLink>> MuonCSCWireDigiSimLinks;
 
 
   //MVAs for triggering and non-triggering electron ID
@@ -681,28 +690,30 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  bool ecalRechit_kDiWeirdflag[RECHITARRAYSIZE];
 
   //Muon system
-  int nCsc;
-  float cscPhi[OBJECTARRAYSIZE];
-  float cscEta[OBJECTARRAYSIZE];
-  float cscX[OBJECTARRAYSIZE];
-  float cscY[OBJECTARRAYSIZE];
-  float cscZ[OBJECTARRAYSIZE];
-  float cscDirectionX[OBJECTARRAYSIZE];
-  float cscDirectionY[OBJECTARRAYSIZE];
-  float cscDirectionZ[OBJECTARRAYSIZE];
-  float cscNRecHits[OBJECTARRAYSIZE];
-  float cscNRecHits_flag[OBJECTARRAYSIZE];
-  float cscT[OBJECTARRAYSIZE];
-  float cscChi2[OBJECTARRAYSIZE];
-  float cscRechitX[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  float cscRechitY[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  float cscRechitZ[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  float cscRechitT[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  float cscRechitE[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  bool  cscRechitBadStrip[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  bool  cscRechitBadWireGroup[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  bool  cscRechitErrorWithinStrip[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  int   cscRechitQuality[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  int nCscSeg;
+  float cscSegPhi[OBJECTARRAYSIZE];
+  float cscSegEta[OBJECTARRAYSIZE];
+  float cscSegX[OBJECTARRAYSIZE];
+  float cscSegY[OBJECTARRAYSIZE];
+  float cscSegZ[OBJECTARRAYSIZE];
+  float cscSegDirectionX[OBJECTARRAYSIZE];
+  float cscSegDirectionY[OBJECTARRAYSIZE];
+  float cscSegDirectionZ[OBJECTARRAYSIZE];
+  float cscSegT[OBJECTARRAYSIZE];
+  float cscSegChi2[OBJECTARRAYSIZE];
+  float cscSegNRecHits[OBJECTARRAYSIZE];
+
+  //
+  // float cscNRecHits_flag[OBJECTARRAYSIZE];
+  // float cscRechitX[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  // float cscRechitY[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  // float cscRechitZ[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  // float cscRechitT[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  // float cscRechitE[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  // bool  cscRechitBadStrip[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  // bool  cscRechitBadWireGroup[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  // bool  cscRechitErrorWithinStrip[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
+  // int   cscRechitQuality[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
   int cscRecHitsChannels[OBJECTARRAYSIZE];
   unsigned int cscRecHitsNStrips[OBJECTARRAYSIZE];
   int cscRecHitsHitWire[OBJECTARRAYSIZE];
@@ -739,8 +750,33 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float cscSimHits_match_gParticle_minDeltaR[OBJECTARRAYSIZE];
   int cscSimHitsDetId[OBJECTARRAYSIZE];
 
-  int nCscWireDigis;
   int nCscStripDigis;
+  int cscStripDigiStripN[OBJECTARRAYSIZE];
+  vector<vector<int> > cscStripDigiADCCounts;
+  int cscStripDigiDetId[OBJECTARRAYSIZE];
+
+  int nCscWireDigis;
+  int cscWireDigiDetId[OBJECTARRAYSIZE];
+  int cscWireDigiWireGroupN[OBJECTARRAYSIZE];
+
+  int nCscWireDigiSimLink;
+  int cscWireDigiSimLinkNWires;//number of unique wires
+  int cscWireDigiSimLinkDetId[OBJECTARRAYSIZE];
+  int cscWireDigiSimLinkChannel[OBJECTARRAYSIZE];
+  int cscWireDigiSimLinkSimTrackId[OBJECTARRAYSIZE];
+  int cscWireDigiSimLinkCFposition[OBJECTARRAYSIZE];
+  float cscWireDigiSimLinkFraction[OBJECTARRAYSIZE];
+  float cscWireDigiSimLinkOccupancy[OBJECTARRAYSIZE];
+
+  int nCscStripDigiSimLink;
+  int cscStripDigiSimLinkNStrips;
+  int cscStripDigiSimLinkDetId[OBJECTARRAYSIZE];
+  int cscStripDigiSimLinkChannel[OBJECTARRAYSIZE];
+  int cscStripDigiSimLinkSimTrackId[OBJECTARRAYSIZE];
+  int cscStripDigiSimLinkCFposition[OBJECTARRAYSIZE];
+  float cscStripDigiSimLinkFraction[OBJECTARRAYSIZE];
+  float cscStripDigiSimLinkOccupancy[OBJECTARRAYSIZE];
+
 
   unsigned int nCscDetLayer;
   int cscDetLayer_nCscRecHits[OBJECTARRAYSIZE];
