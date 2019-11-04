@@ -1,12 +1,12 @@
 // -*- C++ -*-
-// Class:      displacedJetMuon_ntupler
+// Class:      displacedJetMuon_rechit_studies
 /*
   Description: Base class for miniAOD analysis with CRAB
 */
 //         Author:  Cristián Peña and Si Xie.
 //         Created:  Thu, 26 March 2019 15:00:06 GMT
 
-#include "displacedJetMuon_ntupler.h"
+#include "displacedJetMuon_rechit_studies.h"
 #include <fastjet/internal/base.hh>
 #include "fastjet/PseudoJet.hh"
 #include "fastjet/JetDefinition.hh"
@@ -14,21 +14,24 @@
 #include "fastjet/Selector.hh"
 #include "fastjet/PseudoJet.hh"
 
-struct muonCscLayers{
+struct muonCscLayer{
   int id;
   int nSimHits;
   int nRecHits;
   int nWireDigis;
   int nStripDigis;
   bool Me1112;
+  int match_gParticle_index;
+  int strip_digi_occupancy;
+  int wire_digi_occupancy;
 };
-struct largest_muonCscLayers
+struct largest_muonCscLayer
 {
-  inline bool operator() (const muonCscLayers& c1, const muonCscLayers& c2){return c1.nSimHits > c2.nSimHits;}
-} my_largest_muonCscLayers;
+  inline bool operator() (const muonCscLayer& c1, const muonCscLayer& c2){return c1.nSimHits > c2.nSimHits;}
+} my_largest_muonCscLayer_;
 
 //------ Constructors and destructor ------//
-displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iConfig):
+displacedJetMuon_rechit_studies::displacedJetMuon_rechit_studies(const edm::ParameterSet& iConfig):
   //get inputs from config file
   isData_(iConfig.getParameter<bool> ("isData")),
   //isFourJet_(iConfig.getParameter<bool> ("isFourJet")),
@@ -130,8 +133,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   /*
   //set up electron MVA ID
   std::vector<std::string> myTrigWeights;
-  myTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/TrigIDMVA_25ns_EB_BDT.weights.xml").fullPath().c_str());
-  myTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/TrigIDMVA_25ns_EE_BDT.weights.xml").fullPath().c_str());
+  myTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_rechit_studies/data/TrigIDMVA_25ns_EB_BDT.weights.xml").fullPath().c_str());
+  myTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_rechit_studies/data/TrigIDMVA_25ns_EE_BDT.weights.xml").fullPath().c_str());
 
   myMVATrig = new EGammaMvaEleEstimatorCSA14();
   myMVATrig->initialize("BDT",
@@ -140,12 +143,12 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   myTrigWeights);
 
   std::vector<std::string> myNonTrigWeights;
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EB1_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EB2_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EE_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EB1_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EB2_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EE_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_rechit_studies/data/EIDmva_EB1_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_rechit_studies/data/EIDmva_EB2_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_rechit_studies/data/EIDmva_EE_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_rechit_studies/data/EIDmva_EB1_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_rechit_studies/data/EIDmva_EB2_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
+  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_rechit_studies/data/EIDmva_EE_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
 
   myMVANonTrig = new ElectronMVAEstimatorRun2NonTrig();
   myMVANonTrig->initialize("BDTG method",
@@ -155,8 +158,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
 
   //set up photon MVA ID
   std::vector<std::string> myPhotonMVAWeights;
-  myPhotonMVAWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/PhotonIDMVA_Spring15_50ns_v0_EB.weights.xml").fullPath().c_str());
-  myPhotonMVAWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/PhotonIDMVA_Spring15_50ns_v0_EE.weights.xml").fullPath().c_str());
+  myPhotonMVAWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_rechit_studies/data/PhotonIDMVA_Spring15_50ns_v0_EB.weights.xml").fullPath().c_str());
+  myPhotonMVAWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_rechit_studies/data/PhotonIDMVA_Spring15_50ns_v0_EE.weights.xml").fullPath().c_str());
   std::vector<std::string> myPhotonMVAMethodNames;
   myPhotonMVAMethodNames.push_back("BDTG photons barrel");
   myPhotonMVAMethodNames.push_back("BDTG photons endcap");
@@ -211,7 +214,7 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
 */
 }
 
-displacedJetMuon_ntupler::~displacedJetMuon_ntupler()
+displacedJetMuon_rechit_studies::~displacedJetMuon_rechit_studies()
 {
 };
 
@@ -219,7 +222,7 @@ displacedJetMuon_ntupler::~displacedJetMuon_ntupler()
 //Enable output ntuple branches
 //***********************************************
 
-void displacedJetMuon_ntupler::setBranches()
+void displacedJetMuon_rechit_studies::setBranches()
 {
   enableEventInfoBranches();
   // enablePVAllBranches();
@@ -241,7 +244,7 @@ void displacedJetMuon_ntupler::setBranches()
   enableGenParticleBranches();
 };
 
-void displacedJetMuon_ntupler::enableEventInfoBranches()
+void displacedJetMuon_rechit_studies::enableEventInfoBranches()
 {
   displacedJetMuonTree->Branch("isData", &isData, "isData/O");
   displacedJetMuonTree->Branch("nPV", &nPV, "nPV/I");
@@ -261,7 +264,7 @@ void displacedJetMuon_ntupler::enableEventInfoBranches()
   displacedJetMuonTree->Branch("fixedGridRhoFastjetCentralNeutral", &fixedGridRhoFastjetCentralNeutral, "fixedGridRhoFastjetCentralNeutral/F");
 }
 
-void displacedJetMuon_ntupler::enablePVAllBranches()
+void displacedJetMuon_rechit_studies::enablePVAllBranches()
 {
   displacedJetMuonTree->Branch("nPVAll", &nPVAll,"nPVAll/I");
   displacedJetMuonTree->Branch("pvAllX", pvAllX,"pvAllX[nPVAll]/F");
@@ -272,7 +275,7 @@ void displacedJetMuon_ntupler::enablePVAllBranches()
   displacedJetMuonTree->Branch("pvAllSumPy", pvAllSumPy,"pvAllSumPy[nPVAll]/F");
 };
 
-void displacedJetMuon_ntupler::enablePVTracksBranches()
+void displacedJetMuon_rechit_studies::enablePVTracksBranches()
 {
   displacedJetMuonTree->Branch("nPVTracks", &nPVTracks,"nPVTracks/I");
   displacedJetMuonTree->Branch("pvTrackPt", pvTrackPt,"pvTrackPt[nPVTracks]/F");
@@ -280,7 +283,7 @@ void displacedJetMuon_ntupler::enablePVTracksBranches()
   displacedJetMuonTree->Branch("pvTrackPhi", pvTrackPhi,"pvTrackPhi[nPVTracks]/F");
 };
 
-void displacedJetMuon_ntupler::enablePileUpBranches()
+void displacedJetMuon_rechit_studies::enablePileUpBranches()
 {
   displacedJetMuonTree->Branch("nBunchXing", &nBunchXing, "nBunchXing/I");
   displacedJetMuonTree->Branch("BunchXing", BunchXing, "BunchXing[nBunchXing]/I");
@@ -288,7 +291,7 @@ void displacedJetMuon_ntupler::enablePileUpBranches()
   displacedJetMuonTree->Branch("nPUmean", nPUmean, "nPUmean[nBunchXing]/F");
 };
 
-void displacedJetMuon_ntupler::enableMuonBranches()
+void displacedJetMuon_rechit_studies::enableMuonBranches()
 {
   displacedJetMuonTree->Branch("nMuons", &nMuons,"nMuons/I");
   displacedJetMuonTree->Branch("muonE", muonE,"muonE[nMuons]/F");
@@ -325,7 +328,7 @@ void displacedJetMuon_ntupler::enableMuonBranches()
   displacedJetMuonTree->Branch("muonIsICHEPMedium", muonIsICHEPMedium,"muonIsICHEPMedium[nMuons]/O");
 };
 
-void displacedJetMuon_ntupler::enableElectronBranches()
+void displacedJetMuon_rechit_studies::enableElectronBranches()
 {
   displacedJetMuonTree->Branch("nElectrons", &nElectrons,"nElectrons/I");
   displacedJetMuonTree->Branch("eleE", eleE,"eleE[nElectrons]/F");
@@ -373,7 +376,7 @@ void displacedJetMuon_ntupler::enableElectronBranches()
 
 };
 
-void displacedJetMuon_ntupler::enableTauBranches()
+void displacedJetMuon_rechit_studies::enableTauBranches()
 {
   displacedJetMuonTree->Branch("nTaus", &nTaus,"nTaus/I");
   displacedJetMuonTree->Branch("tauE", tauE,"tauE[nTaus]/F");
@@ -405,7 +408,7 @@ void displacedJetMuon_ntupler::enableTauBranches()
   displacedJetMuonTree->Branch("tau_leadChargedHadrCandID", tau_leadChargedHadrCandID, "tau_leadChargedHadrCandID[nTaus]/I");
 };
 
-void displacedJetMuon_ntupler::enableIsoPFCandidateBranches()
+void displacedJetMuon_rechit_studies::enableIsoPFCandidateBranches()
 {
   displacedJetMuonTree->Branch("nIsoPFCandidates", &nIsoPFCandidates, "nIsoPFCandidates/i");
   displacedJetMuonTree->Branch("isoPFCandidatePt", isoPFCandidatePt, "isoPFCandidatePt[nIsoPFCandidates]/F");
@@ -416,7 +419,7 @@ void displacedJetMuon_ntupler::enableIsoPFCandidateBranches()
   displacedJetMuonTree->Branch("isoPFCandidatePdgId", isoPFCandidatePdgId, "isoPFCandidatePdgId[nIsoPFCandidates]/I");
 };
 
-void displacedJetMuon_ntupler::enablePhotonBranches()
+void displacedJetMuon_rechit_studies::enablePhotonBranches()
 {
   displacedJetMuonTree->Branch("nPhotons", &nPhotons,"nPhotons/I");
   displacedJetMuonTree->Branch("nPhotons_overlap", &nPhotons_overlap,"nPhotons_overlap/I");
@@ -472,7 +475,7 @@ void displacedJetMuon_ntupler::enablePhotonBranches()
 
 };
 
-void displacedJetMuon_ntupler::enableMuonSystemBranches()
+void displacedJetMuon_rechit_studies::enableMuonSystemBranches()
 {
 
     // csc_Phi = new std::vector<float>;
@@ -528,6 +531,9 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("cscDetLayer_nStripDigis",cscDetLayer_nStripDigis,"cscDetLayer_nStripDigis[nCscDetLayer]/I");
     displacedJetMuonTree->Branch("cscDetLayer_inME1112",cscDetLayer_inME1112,"cscDetLayer_inME1112[nCscDetLayer]/O");
     displacedJetMuonTree->Branch("cscDetLayer",cscDetLayer,"cscDetLayer[nCscDetLayer]/I");
+    displacedJetMuonTree->Branch("cscDetLayer_wireDigiOccupancy",cscDetLayer_wireDigiOccupancy,"cscDetLayer_wireDigiOccupancy[nCscDetLayer]/I");
+    displacedJetMuonTree->Branch("cscDetLayer_stripDigiOccupancy",cscDetLayer_stripDigiOccupancy,"cscDetLayer_stripDigiOccupancy[nCscDetLayer]/I");
+    displacedJetMuonTree->Branch("cscDetLayer_match_gParticle_index",cscDetLayer_match_gParticle_index,"cscDetLayer_match_gParticle_index[nCscDetLayer]/I");
 
     displacedJetMuonTree->Branch("nCscRecHits",&nCscRecHits,"nCscRecHits/I");
     displacedJetMuonTree->Branch("cscRecHitsPhi",cscRecHitsPhi,"cscRecHitsPhi[nCscRecHits]/F");
@@ -617,7 +623,7 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     */
 };
 
-void displacedJetMuon_ntupler::enableEcalRechitBranches()
+void displacedJetMuon_rechit_studies::enableEcalRechitBranches()
 {
   displacedJetMuonTree->Branch("nRechits", &nRechits,"nRechits/I");
   displacedJetMuonTree->Branch("ecalRechit_Eta", ecalRechit_Eta,"ecalRechit_Eta[nRechits]/F");
@@ -634,7 +640,7 @@ void displacedJetMuon_ntupler::enableEcalRechitBranches()
 
 };
 
-void displacedJetMuon_ntupler::enableJetBranches()
+void displacedJetMuon_rechit_studies::enableJetBranches()
 {
   displacedJetMuonTree->Branch("nJets", &nJets,"nJets/I");
   displacedJetMuonTree->Branch("jetE", jetE,"jetE[nJets]/F");
@@ -701,7 +707,7 @@ void displacedJetMuon_ntupler::enableJetBranches()
 
 };
 
-void displacedJetMuon_ntupler::enableCaloJetBranches()
+void displacedJetMuon_rechit_studies::enableCaloJetBranches()
 {
   displacedJetMuonTree->Branch("nCaloJets", &nCaloJets,"nCaloJets/I");
   displacedJetMuonTree->Branch("calojetE", calojetE,"calojetE[nCaloJets]/F");
@@ -737,7 +743,7 @@ void displacedJetMuon_ntupler::enableCaloJetBranches()
 };
 
 
-void displacedJetMuon_ntupler::enableJetAK8Branches()
+void displacedJetMuon_rechit_studies::enableJetAK8Branches()
 {
   displacedJetMuonTree->Branch("nFatJets", &nFatJets,"nFatJets/i");
   displacedJetMuonTree->Branch("fatJetE", fatJetE,"fatJetE[nFatJets]/F");
@@ -761,7 +767,7 @@ void displacedJetMuon_ntupler::enableJetAK8Branches()
   displacedJetMuonTree->Branch("fatJetPassIDTight", fatJetPassIDTight,"fatJetPassIDTight[nFatJets]/O");
 };
 
-void displacedJetMuon_ntupler::enableMetBranches()
+void displacedJetMuon_rechit_studies::enableMetBranches()
 {
   displacedJetMuonTree->Branch("metPt", &metPt, "metPt/F");
   displacedJetMuonTree->Branch("metPhi", &metPhi, "metPhi/F");
@@ -809,7 +815,7 @@ void displacedJetMuon_ntupler::enableMetBranches()
   displacedJetMuonTree->Branch("Flag_METFilters", &Flag_METFilters, "Flag_METFilters/O");
 };
 
-void displacedJetMuon_ntupler::enableTriggerBranches()
+void displacedJetMuon_rechit_studies::enableTriggerBranches()
 {
   nameHLT = new std::vector<std::string>; nameHLT->clear();
   displacedJetMuonTree->Branch("HLTDecision", &triggerDecision, ("HLTDecision[" + std::to_string(NTriggersMAX) +  "]/O").c_str());
@@ -818,7 +824,7 @@ void displacedJetMuon_ntupler::enableTriggerBranches()
   //displacedJetMuonTree->Branch("HLTRSQ", &HLTRSQ, "HLTRSQ/F");
 };
 
-void displacedJetMuon_ntupler::enableMCBranches()
+void displacedJetMuon_rechit_studies::enableMCBranches()
 {
   displacedJetMuonTree->Branch("nGenJets", &nGenJets, "nGenJets/I");
   displacedJetMuonTree->Branch("genJetE", genJetE, "genJetE[nGenJets]/F");
@@ -849,7 +855,7 @@ void displacedJetMuon_ntupler::enableMCBranches()
   // displacedJetMuonTree->Branch("alphasWeights", "std::vector<float>",&alphasWeights);
 };
 
-void displacedJetMuon_ntupler::enableGenParticleBranches()
+void displacedJetMuon_rechit_studies::enableGenParticleBranches()
 {
   displacedJetMuonTree->Branch("nGenParticle", &nGenParticle, "nGenParticle/I");
   displacedJetMuonTree->Branch("gParticleMotherId", gParticleMotherId, "gParticleMotherId[nGenParticle]/I");
@@ -902,7 +908,7 @@ void displacedJetMuon_ntupler::enableGenParticleBranches()
 };
 
 //------ Load the miniAOD objects and reset tree variables for each event ------//
-void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all miniAOD objects for the current event
+void displacedJetMuon_rechit_studies::loadEvent(const edm::Event& iEvent)//load all miniAOD objects for the current event
 {
   // iEvent.getByToken(triggerBitsToken_, triggerBits);
   iEvent.getByToken(hepMCToken_, hepMC);
@@ -979,7 +985,7 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
 }
 
 //called by the loadEvent() method
-void displacedJetMuon_ntupler::resetBranches()
+void displacedJetMuon_rechit_studies::resetBranches()
 {
     //reset tree variables
     resetEventInfoBranches();
@@ -1001,7 +1007,7 @@ void displacedJetMuon_ntupler::resetBranches()
 
 };
 
-void displacedJetMuon_ntupler::resetEventInfoBranches()
+void displacedJetMuon_rechit_studies::resetEventInfoBranches()
 {
   //Event
   nPV = -1;
@@ -1022,7 +1028,7 @@ void displacedJetMuon_ntupler::resetEventInfoBranches()
   return;
 };
 
-void displacedJetMuon_ntupler::resetPVAllBranches()
+void displacedJetMuon_rechit_studies::resetPVAllBranches()
 {
   nPVAll = 0;
   for(int i = 0; i < MAX_NPV; i++)
@@ -1036,7 +1042,7 @@ void displacedJetMuon_ntupler::resetPVAllBranches()
   }
 };
 
-void displacedJetMuon_ntupler::resetPVTracksBranches()
+void displacedJetMuon_rechit_studies::resetPVTracksBranches()
 {
   nPVTracks = 0;
   for(int i = 0; i < OBJECTARRAYSIZE; i++)
@@ -1047,7 +1053,7 @@ void displacedJetMuon_ntupler::resetPVTracksBranches()
   }
 };
 
-void displacedJetMuon_ntupler::resetPileUpBranches()
+void displacedJetMuon_rechit_studies::resetPileUpBranches()
 {
   nBunchXing = 0;
   for(int i = 0; i < MAX_NBX; i++)
@@ -1058,7 +1064,7 @@ void displacedJetMuon_ntupler::resetPileUpBranches()
   }
 };
 
-void displacedJetMuon_ntupler::resetMuonBranches()
+void displacedJetMuon_rechit_studies::resetMuonBranches()
 {
   nMuons = 0;
   for(int i = 0; i < OBJECTARRAYSIZE; i++)
@@ -1098,7 +1104,7 @@ void displacedJetMuon_ntupler::resetMuonBranches()
   }
 };
 
-void displacedJetMuon_ntupler::resetElectronBranches()
+void displacedJetMuon_rechit_studies::resetElectronBranches()
 {
   nElectrons = 0;
   for(int i = 0; i < OBJECTARRAYSIZE; i++)
@@ -1148,7 +1154,7 @@ void displacedJetMuon_ntupler::resetElectronBranches()
 
 };
 
-void displacedJetMuon_ntupler::resetTauBranches()
+void displacedJetMuon_rechit_studies::resetTauBranches()
 {
   nTaus = 0;
   for(int i = 0; i < OBJECTARRAYSIZE; i++)
@@ -1183,7 +1189,7 @@ void displacedJetMuon_ntupler::resetTauBranches()
   }
 };
 
-void displacedJetMuon_ntupler::resetPhotonBranches()
+void displacedJetMuon_rechit_studies::resetPhotonBranches()
 {
   nPhotons = 0;
   nPhotons_overlap = 0;
@@ -1245,7 +1251,7 @@ void displacedJetMuon_ntupler::resetPhotonBranches()
   return;
 };
 
-void displacedJetMuon_ntupler::resetMuonSystemBranches()
+void displacedJetMuon_rechit_studies::resetMuonSystemBranches()
 {
     nCscSeg = 0;
     nCscRecHits = 0;
@@ -1275,6 +1281,9 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
       cscDetLayer_nCscSimHits[i] = 0;
       cscDetLayer_nWireDigis[i] = 0;
       cscDetLayer_nStripDigis[i] = 0;
+      cscDetLayer_wireDigiOccupancy[i] = 0;
+      cscDetLayer_stripDigiOccupancy[i] = 0;
+      cscDetLayer_match_gParticle_index[i] = 0;
       cscDetLayer_inME1112[i] = false;
       cscDetLayer[i] = 0;
       cscRecHitsPhi[i] = 0.0;
@@ -1378,7 +1387,7 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
     }
     return;
 };
-void displacedJetMuon_ntupler::resetJetBranches()
+void displacedJetMuon_rechit_studies::resetJetBranches()
 {
   nJets = 0;
   for ( int i = 0; i < OBJECTARRAYSIZE; i++)
@@ -1441,7 +1450,7 @@ void displacedJetMuon_ntupler::resetJetBranches()
   }
   return;
 };
-void displacedJetMuon_ntupler::resetEcalRechitBranches()
+void displacedJetMuon_rechit_studies::resetEcalRechitBranches()
 {
   nRechits = 0;
   for ( int i = 0; i < RECHITARRAYSIZE; i++)
@@ -1462,7 +1471,7 @@ void displacedJetMuon_ntupler::resetEcalRechitBranches()
   }
   return;
 };
-void displacedJetMuon_ntupler::resetCaloJetBranches()
+void displacedJetMuon_rechit_studies::resetCaloJetBranches()
 {
   nCaloJets = 0;
   for ( int i = 0; i < OBJECTARRAYSIZE; i++)
@@ -1505,7 +1514,7 @@ void displacedJetMuon_ntupler::resetCaloJetBranches()
 };
 
 
-void displacedJetMuon_ntupler::resetMetBranches()
+void displacedJetMuon_rechit_studies::resetMetBranches()
 {
   metPt = -999;
   metPhi = -999;
@@ -1594,7 +1603,7 @@ void displacedJetMuon_ntupler::resetMetBranches()
   metType1PhiJetResDownSmear=-999.;
   metType1PhiMETFullUncertaintySize=-999.;
 };
-void displacedJetMuon_ntupler::resetGenParticleBranches()
+void displacedJetMuon_rechit_studies::resetGenParticleBranches()
 {
   for(int i = 0; i < GENPARTICLEARRAYSIZE; i++)
   {
@@ -1656,7 +1665,7 @@ void displacedJetMuon_ntupler::resetGenParticleBranches()
   return;
 };
 
-void displacedJetMuon_ntupler::resetMCBranches()
+void displacedJetMuon_rechit_studies::resetMCBranches()
 {
   nGenJets = 0;
   for ( int i = 0; i < OBJECTARRAYSIZE; i++ )
@@ -1689,7 +1698,7 @@ void displacedJetMuon_ntupler::resetMCBranches()
   return;
 };
 
-void displacedJetMuon_ntupler::resetTriggerBranches()
+void displacedJetMuon_rechit_studies::resetTriggerBranches()
 {
   for( int i = 0; i < NTriggersMAX; i++ )
   {
@@ -1699,14 +1708,14 @@ void displacedJetMuon_ntupler::resetTriggerBranches()
 };
 //------ Method called for each run ------//
 
-void displacedJetMuon_ntupler::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
+void displacedJetMuon_rechit_studies::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
 
 
 }
 
 
 //------ Method called for each lumi block ------//
-void displacedJetMuon_ntupler::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) {
+void displacedJetMuon_rechit_studies::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) {
 
 }
 
@@ -1714,7 +1723,7 @@ void displacedJetMuon_ntupler::beginLuminosityBlock(edm::LuminosityBlock const& 
 //------ Method called for each event ------//
 //------ Method called for each event ------//
 
-void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+void displacedJetMuon_rechit_studies::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
 
   //initialize
@@ -1747,18 +1756,18 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
 
 
 //------ Method called once each job just before starting event loop ------//
-void displacedJetMuon_ntupler::beginJob()
+void displacedJetMuon_rechit_studies::beginJob()
 {
   setBranches();
 }
 
 //------ Method called once each job just after ending the event loop ------//
-void displacedJetMuon_ntupler::endJob(){};
+void displacedJetMuon_rechit_studies::endJob(){};
 
 
 
 //------ Methods to fill tree variables ------//
-bool displacedJetMuon_ntupler::fillEventInfo(const edm::Event& iEvent)
+bool displacedJetMuon_rechit_studies::fillEventInfo(const edm::Event& iEvent)
 {
   isData = isData_;
   runNum = iEvent.id().run();
@@ -1797,7 +1806,7 @@ bool displacedJetMuon_ntupler::fillEventInfo(const edm::Event& iEvent)
 };
 
 
-bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+bool displacedJetMuon_rechit_studies::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   edm::ESHandle<CSCGeometry> cscG;
   edm::ESHandle<DTGeometry> dtG;
@@ -1855,7 +1864,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
         std::vector<int> myADCVals = digiIt->getADCCounts();
          bool thisStripFired = false;
          float thisPedestal = 0.5 * (float)(myADCVals[0] + myADCVals[1]);
-         float threshold = 13.3;
+         float threshold = STRIP_DIGI_THRESHOLD;
          float diff = 0.;
          // float max_diff = 0.0;
          for (unsigned int iCount = 0; iCount < myADCVals.size(); iCount++) {
@@ -1871,11 +1880,9 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
            cscStripDigiDetId[nCscStripDigis] = tempDetId;
            cscStripDigiStripN[nCscStripDigis] = (*digiIt).getStrip(); //count from 1
            cscStripDigiADCCounts.push_back(myADCVals);
-           // cout<<"strip number fired: "<<cscStripDigiStripN[nCscStripDigis]<<endl;
+           // cout<<"strip digi: "<<tempDetId<<", "<<cscStripDigiStripN[nCscStripDigis]<<", "<<max_diff<<endl;
            nCscStripDigis++;
          }
-
-
       }
   }
   cout<<"number of strip digi fired:" <<nCscStripDigis<<endl;
@@ -1961,6 +1968,9 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
   for (stripLinkIt = MuonCSCStripDigiSimLinks->begin(); stripLinkIt != MuonCSCStripDigiSimLinks->end(); stripLinkIt++){
     edm::DetSetVector<StripDigiSimLink>::detset::const_iterator i;
     for (  i = (*stripLinkIt).data.begin(); i != (*stripLinkIt).data.end(); i++){
+      const CSCDetId &id = (*stripLinkIt).detId();
+      int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
+      // cout<<"detid, trackid, channel, CFposition, fraction: "<<tempDetId<<","<<(*wireLinkIt).detId()<<", "<<(*i).SimTrackId()<<", "<<(*i).channel()<<", "<<(*i).CFposition()<<", "<<(*i).fraction()<<endl;
       cscStripDigiSimLinkDetId[nCscStripDigiSimLink] = (*stripLinkIt).detId();
       cscStripDigiSimLinkSimTrackId[nCscStripDigiSimLink] = (*i).SimTrackId();
       cscStripDigiSimLinkChannel[nCscStripDigiSimLink] = (*i).channel();
@@ -1970,6 +1980,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     }
 
   }
+  cout<<"number of strip digilinks: "<<nCscStripDigiSimLink<<endl;
   //count occupancy
   index = 0;
   occupancy = 1;
@@ -2060,74 +2071,73 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     }
     nCscSimHits++;
   }
-  std::vector<muonCscLayers> cscLayers;
+  std::vector<muonCscLayer> cscLayers;
   nCscDetLayer = detLayers.size();
-  for(unsigned int i = 0; i < detLayers.size(); i++)
+  // cout<<"nCscDetLayer: "<<nCscDetLayer<<", "<<cscLayers.size()<<endl;
+  for(unsigned int i = 0; i < nCscDetLayer; i++)
   {
-    muonCscLayers tmpLayer;
-    int nSimHits = 0;
-    int nRecHits = 0;
+    muonCscLayer tmpLayer;
+    tmpLayer.match_gParticle_index = 999;
+    tmpLayer.wire_digi_occupancy = 0;
+    tmpLayer.strip_digi_occupancy = 0;
+    tmpLayer.nStripDigis = 0;
+    tmpLayer.nWireDigis = 0;
+    tmpLayer.nSimHits = 0;
+    tmpLayer.nRecHits = 0;
     for (int j = 0; j < nCscRecHits; j++)
     {
       if (detLayers[i] == cscRecHitsDetId[j])
-      nRecHits++;
+      tmpLayer.nRecHits++;
     }
     for (int j = 0; j < nCscSimHits; j++)
     {
       if (detLayers[i] == cscSimHitsDetId[j])
-      nSimHits++;
+      {
+        tmpLayer.match_gParticle_index = cscSimHits_match_gParticle_index[j];
+        tmpLayer.nSimHits++;
+      }
+
     }
     //count number of strips digis in layer
-    CSCStripDigiCollection::DigiRangeIterator stripDetIt;
-    for (stripDetIt = MuonCSCStripDigi->begin(); stripDetIt != MuonCSCStripDigi->end(); stripDetIt++){
-      const CSCDetId &id = (*stripDetIt).first;
-      int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
-      if (detLayers[i] == tempDetId){
-        const CSCStripDigiCollection::Range &range = (*stripDetIt).second;
-        int strip_count = 0;
-        for (CSCStripDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
-          strip_count++;
-        }
-        // cout<<"strip digis: "<<strip_count<<endl;
-        tmpLayer.nStripDigis = strip_count;
-      }
+    for (int j = 0; j < nCscStripDigis; j++){
+      if (detLayers[i] == cscStripDigiDetId[j])tmpLayer.nStripDigis++;
+
     }
     //count number of wire digis in layer
-    CSCWireDigiCollection::DigiRangeIterator wireDetIt;
-    for (wireDetIt = MuonCSCWireDigi->begin(); wireDetIt != MuonCSCWireDigi->end(); wireDetIt++){
-      const CSCDetId &id = (*wireDetIt).first;
-      int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
-      if (detLayers[i] == tempDetId){
-        const CSCWireDigiCollection::Range &range = (*wireDetIt).second;
-        int strip_count = 0;
-        for (CSCWireDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
-          strip_count++;
-        }
-        // cout<<"wire digis: "<<strip_count<<endl;
-        tmpLayer.nWireDigis = strip_count;
-      }
+    for (int j = 0; j < nCscWireDigis; j++){
+      if (detLayers[i] == cscWireDigiDetId[j])tmpLayer.nWireDigis++;
     }
-
+    for (int j = 0; j < nCscStripDigiSimLink; j++)
+    {
+      if (detLayers[i] == cscStripDigiSimLinkDetId[j])tmpLayer.strip_digi_occupancy = cscStripDigiSimLinkOccupancy[j];
+    }
+    for (int j = 0; j < nCscWireDigiSimLink; j++)
+    {
+      if (detLayers[i] == cscWireDigiSimLinkDetId[j])tmpLayer.wire_digi_occupancy = cscWireDigiSimLinkOccupancy[j];
+    }
+    cout<<i<<endl;
     tmpLayer.Me1112 = layer_in_ME1112[i];
     tmpLayer.id = detLayers[i];
-    tmpLayer.nSimHits = nSimHits;
-    tmpLayer.nRecHits = nRecHits;
     cscLayers.push_back(tmpLayer);
-    cout<<i<<", "<<cscLayers.size()<<endl;
   }
 
-  sort(cscLayers.begin(), cscLayers.end(), my_largest_muonCscLayers);
+  sort(cscLayers.begin(), cscLayers.end(), my_largest_muonCscLayer_);
 
   for(unsigned int i = 0; i < cscLayers.size();i++)
   {
+
     cscDetLayer[i] = cscLayers[i].id;
     cscDetLayer_nCscRecHits[i]  = cscLayers[i].nRecHits;
     cscDetLayer_nCscSimHits[i]  = cscLayers[i].nSimHits;
     cscDetLayer_nWireDigis[i]  = cscLayers[i].nWireDigis;
     cscDetLayer_nStripDigis[i]  = cscLayers[i].nStripDigis;
     cscDetLayer_inME1112[i]  = cscLayers[i].Me1112;
-  }
+    cscDetLayer_stripDigiOccupancy[i] = cscLayers[i].strip_digi_occupancy;
+    cscDetLayer_wireDigiOccupancy[i] = cscLayers[i].wire_digi_occupancy;
+    cscDetLayer_match_gParticle_index[i] = cscLayers[i].match_gParticle_index;
 
+  }
+  cout<<"here"<<endl;
 
     // cout << gLLP_decay_vertex_z[0] << " " << gLLP_eta[0] << " " << sqrt(gLLP_decay_vertex_x[0]*gLLP_decay_vertex_x[0]+gLLP_decay_vertex_y[0]*gLLP_decay_vertex_y[0]) << "\n";
     // cout << gLLP_decay_vertex_z[1] << " " << gLLP_eta[1] << " " << sqrt(gLLP_decay_vertex_x[1]*gLLP_decay_vertex_x[1]+gLLP_decay_vertex_y[1]*gLLP_decay_vertex_y[1]) << "\n";
@@ -2150,7 +2160,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 
   vector<vector<float> > trackSegments;
-
+  int nRechits_seg = 0;
   for (const CSCSegment cscSegment : *cscSegments) {
 	float globPhi   = 0.;
 	float globX = 0.;
@@ -2185,7 +2195,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    cscSegEta[nCscSeg] = globEta;
 	    cscSegT[nCscSeg] = cscSegment.time();
 	    cscSegChi2[nCscSeg] = cscSegment.chi2();
-
+      nRechits_seg+=cscSegment.nRecHits();
 
 	    // //if (LLPInCSC_index >= 0) {
 	    //   cout << "Segment: " << globX << " " << globY << " " << globZ << " : "
@@ -2251,7 +2261,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    nCscSeg++;
 	   }
     }
-
+    cout<<"number of rechits from segments:" <<nRechits_seg<<endl;
     /*
     // //Check for distance of closest approach
     // cout << "nCsc = " << nCsc << "\n";
@@ -2423,7 +2433,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     return true;
 }
 
-bool displacedJetMuon_ntupler::fillGenParticles(){
+bool displacedJetMuon_rechit_studies::fillGenParticles(){
   std::vector<const reco::Candidate*> prunedV;//Allows easier comparison for mother finding
   //Fills selected gen particles
   //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
@@ -2840,7 +2850,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 };
 
 
-bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
+bool displacedJetMuon_rechit_studies::fillJets(const edm::EventSetup& iSetup)
 {
 
   for (const reco::PFJet &j : *jets)
@@ -3032,7 +3042,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
   return true;
 };
 
-bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
+bool displacedJetMuon_rechit_studies::fillMuons(const edm::Event& iEvent)
 {
   for(const pat::Muon &mu : *muons) {
     muonE[nMuons] = mu.energy();
@@ -3128,13 +3138,13 @@ bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
   return true;
 };
 
-bool displacedJetMuon_ntupler::passCaloJetID( const reco::CaloJet *jetCalo, int cutLevel) {
+bool displacedJetMuon_rechit_studies::passCaloJetID( const reco::CaloJet *jetCalo, int cutLevel) {
   bool result = false;
 
   return result;
 }//passJetID CaloJet
 
-bool displacedJetMuon_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
+bool displacedJetMuon_rechit_studies::passJetID( const reco::PFJet *jet, int cutLevel) {
   bool result = false;
 
   double NHF = jet->neutralHadronEnergyFraction();
@@ -3185,7 +3195,7 @@ bool displacedJetMuon_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) 
   return result;
 }//passJetID PFJet
 
-void displacedJetMuon_ntupler::findTrackingVariables(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks)
+void displacedJetMuon_rechit_studies::findTrackingVariables(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks)
 {
   int nTracksAll = 0;
   //Displaced jet stuff
@@ -3271,7 +3281,7 @@ void displacedJetMuon_ntupler::findTrackingVariables(const TLorentzVector &jetVe
   }
 };
 
-void displacedJetMuon_ntupler::jet_second_moments(std::vector<double> &et,std::vector<double> &eta,std::vector<double> &phi,double &sig1,double &sig2)
+void displacedJetMuon_rechit_studies::jet_second_moments(std::vector<double> &et,std::vector<double> &eta,std::vector<double> &phi,double &sig1,double &sig2)
 {
   double mean_eta = 0.0;
   double mean_phi = 0.0;
@@ -3299,7 +3309,7 @@ void displacedJetMuon_ntupler::jet_second_moments(std::vector<double> &et,std::v
 
 };
 
-const reco::Candidate* displacedJetMuon_ntupler::findFirstMotherWithDifferentID(const reco::Candidate *particle){
+const reco::Candidate* displacedJetMuon_rechit_studies::findFirstMotherWithDifferentID(const reco::Candidate *particle){
 
   if( particle == 0 ){
     printf("ERROR! null candidate pointer, this should never happen\n");
@@ -3321,7 +3331,7 @@ const reco::Candidate* displacedJetMuon_ntupler::findFirstMotherWithDifferentID(
   return 0;
 };
 
-const reco::Candidate* displacedJetMuon_ntupler::findOriginalMotherWithSameID(const reco::Candidate *particle){
+const reco::Candidate* displacedJetMuon_rechit_studies::findOriginalMotherWithSameID(const reco::Candidate *particle){
 
   if( particle == 0 ){
     printf("ERROR! null candidate pointer, this should never happen\n");
@@ -3343,7 +3353,7 @@ const reco::Candidate* displacedJetMuon_ntupler::findOriginalMotherWithSameID(co
   return 0;
 }
 
-bool displacedJetMuon_ntupler::fillMet(const edm::Event& iEvent)
+bool displacedJetMuon_rechit_studies::fillMet(const edm::Event& iEvent)
 {
   const reco::PFMET &Met = mets->front();
 
@@ -3363,7 +3373,7 @@ bool displacedJetMuon_ntupler::fillMet(const edm::Event& iEvent)
   return true;
 };
 
-bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
+bool displacedJetMuon_rechit_studies::fillTrigger(const edm::Event& iEvent)
 {
 
   //fill trigger information
@@ -3439,7 +3449,7 @@ bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
   return true;
 };
 
-bool displacedJetMuon_ntupler::fillMC()
+bool displacedJetMuon_rechit_studies::fillMC()
 {
   for(const reco::GenJet &j : *genJets)
   {
@@ -3490,7 +3500,7 @@ bool displacedJetMuon_ntupler::fillMC()
   return true;
 };
 
-bool displacedJetMuon_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
+bool displacedJetMuon_rechit_studies::fillCaloJets(const edm::EventSetup& iSetup)
 {
   for (const reco::CaloJet &j : *jetsCalo) {
 
@@ -3590,7 +3600,7 @@ bool displacedJetMuon_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
 };
 
 
-bool displacedJetMuon_ntupler::fillElectrons(const edm::Event& iEvent)
+bool displacedJetMuon_rechit_studies::fillElectrons(const edm::Event& iEvent)
 {
 
   // Get MVA values and categories (optional)
@@ -3727,7 +3737,7 @@ bool displacedJetMuon_ntupler::fillElectrons(const edm::Event& iEvent)
   return true;
 };
 
-bool displacedJetMuon_ntupler::fillPileUp()
+bool displacedJetMuon_rechit_studies::fillPileUp()
 {
   for(const PileupSummaryInfo &pu : *puInfo)
   {
@@ -3740,4 +3750,4 @@ bool displacedJetMuon_ntupler::fillPileUp()
 };
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(displacedJetMuon_ntupler);
+DEFINE_FWK_MODULE(displacedJetMuon_rechit_studies);
