@@ -33,6 +33,41 @@ using namespace std;
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 
+#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/ESTransientHandle.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/ModuleFactory.h"
+#include "FWCore/Framework/interface/ESProducer.h"
+
+//tracking and vertex
+#include "TrackingTools/TrajectoryState/interface/FreeTrajectoryState.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
+#include "RecoTracker/DebugTools/interface/GetTrackTrajInfo.h"
+
+#include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+
+#include "TrackingTools/GeomPropagators/interface/Propagator.h"
+#include "TrackingTools/GeomPropagators/interface/StateOnTrackerBound.h"
+#include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
+#include "TrackingTools/MaterialEffects/interface/PropagatorWithMaterial.h"
+#include "RecoVertex/VertexPrimitives/interface/TransientVertex.h"
+
+#include "PhysicsTools/RecoUtils/interface/CheckHitPattern.h"
+#include "RecoVertex/ConfigurableVertexReco/interface/ConfigurableVertexReconstructor.h"
+#include "RecoVertex/VertexTools/interface/VertexCompatibleWithBeam.h"
+#include "RecoVertex/VertexTools/interface/VertexDistanceXY.h"
+#include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
+#include "RecoVertex/KinematicFit/interface/KinematicParticleVertexFitter.h"
+#include "RecoVertex/KinematicFit/interface/KinematicParticleFitter.h"
+#include "RecoVertex/KinematicFitPrimitives/interface/KinematicParticle.h"
+#include "RecoVertex/KinematicFitPrimitives/interface/KinematicParticleFactoryFromTransientTrack.h"
+#include "RecoVertex/KinematicFitPrimitives/interface/RefCountedKinematicParticle.h"
+#include "RecoVertex/VertexPrimitives/interface/ConvertToFromReco.h"
+#include "RecoVertex/VertexPrimitives/interface/ConvertError.h"
+
 
 //CMSSW package includes
 #include "FWCore/Framework/interface/LuminosityBlock.h"
@@ -126,6 +161,7 @@ using namespace std;
 
 //------ Array Size Constants ------//
 #define OBJECTARRAYSIZE 1000
+#define TRACKARRAYSIZE 3000
 #define RECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
 #define MAX_NPV 1000
@@ -134,6 +170,7 @@ using namespace std;
 #define MAX_NBX 1000
 #define LLP_ARRAY_SIZE 2
 #define LLP_DAUGHTER_ARRAY_SIZE 4
+#define LLP_GRAND_DAUGHTER_ARRAY_SIZE 4
 
 //------ Class declaration ------//
 
@@ -150,6 +187,8 @@ public:
   void enableEventInfoBranches();
   void enablePVAllBranches();
   void enablePVTracksBranches();
+  void enableTracksBranches();
+  void enableTracksPVBranches();
   void enablePileUpBranches();
   void enableMuonBranches();
   void enableElectronBranches();
@@ -172,6 +211,8 @@ public:
   void resetEventInfoBranches();
   void resetPVAllBranches();
   void resetPVTracksBranches();
+  void resetTracksBranches();
+  void resetTracksPVBranches();
   void resetPileUpBranches();
   void resetMuonBranches();
   void resetElectronBranches();
@@ -194,12 +235,15 @@ public:
   double deltaPhi(double phi1, double phi2);
   double deltaR(double eta1, double phi1, double eta2, double phi2);
   void findTrackingVariables(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks);
+  void findTrackingVariablesWithoutPropagator(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks);
   void jet_second_moments(std::vector<double> &et,std::vector<double> &eta,std::vector<double> &phi,double &sig1,double &sig2);
 
   //bool fill_fat_jet(const edm::EventSetup& iSetup);
   bool fillEventInfo(const edm::Event& iEvent);
   bool fillPVAll();
   bool fillPVTracks();
+  bool fillTracks(const edm::EventSetup& iSetup);
+  bool fillTracksPV(const edm::EventSetup& iSetup);
   bool fillPileUp();
   bool fillMuons(const edm::Event& iEvent);
   bool fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
@@ -261,6 +305,7 @@ protected:
   edm::EDGetTokenT<edm::View<reco::Track> > tracksTag_;
   edm::EDGetTokenT<edm::ValueMap<float> > trackTimeTag_;
   edm::EDGetTokenT<edm::ValueMap<float>> trackTimeResoTag_;
+
 
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentInputToken_;
   edm::EDGetTokenT<DTRecSegment4DCollection> dtSegmentInputToken_;
@@ -329,6 +374,7 @@ protected:
   edm::EDGetTokenT<edm::ValueMap<float> > mvaHZZValuesMapToken_;
   edm::EDGetTokenT<edm::ValueMap<int> > mvaHZZCategoriesMapToken_;
 
+
   //EDM handles for each miniAOD input object
   edm::Handle<edm::TriggerResults> triggerBits;
   edm::Handle<edm::HepMCProduct> hepMC;
@@ -395,9 +441,6 @@ protected:
   edm::Handle<RPCRecHitCollection> rpcRecHits;
 
 
-
-
-
   //MVAs for triggering and non-triggering electron ID
   EGammaMvaEleEstimatorCSA14* myMVATrig;
   ElectronMVAEstimatorRun2NonTrig* myMVANonTrig;
@@ -451,6 +494,24 @@ int   nPVTracks;
 float pvTrackPt[OBJECTARRAYSIZE];
 float pvTrackEta[OBJECTARRAYSIZE];
 float pvTrackPhi[OBJECTARRAYSIZE];
+
+ //Tacks (list of tracks)
+ int   nTracks;
+ float TrackX[TRACKARRAYSIZE];
+ float TrackY[TRACKARRAYSIZE];
+ float TrackZ[TRACKARRAYSIZE];
+ float TrackPt[TRACKARRAYSIZE];
+ float TrackEta[TRACKARRAYSIZE];
+ float TrackPhi[TRACKARRAYSIZE];
+
+ //Tacks PV (list of PV tracks)
+ int   npvTracks;
+ float PVTrackX[OBJECTARRAYSIZE];
+ float PVTrackY[OBJECTARRAYSIZE];
+ float PVTrackZ[OBJECTARRAYSIZE];
+ float PVTrackPt[OBJECTARRAYSIZE];
+ float PVTrackEta[OBJECTARRAYSIZE];
+ float PVTrackPhi[OBJECTARRAYSIZE];
 
  //PU
  int nBunchXing;
@@ -764,7 +825,24 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float jet_energy_frac[OBJECTARRAYSIZE];
  float jet_sig_et1[OBJECTARRAYSIZE];
  float jet_sig_et2[OBJECTARRAYSIZE];
- bool jet_matched[OBJECTARRAYSIZE];
+ bool jet_matched_gLLP0_daughter[OBJECTARRAYSIZE];
+ bool jet_matched_gLLP1_daughter[OBJECTARRAYSIZE];
+ bool jet_matched_gLLP0_grandaughter[OBJECTARRAYSIZE];
+ bool jet_matched_gLLP1_grandaughter[OBJECTARRAYSIZE];
+
+ float jetGammaMax_wp[OBJECTARRAYSIZE];
+ float jetGammaMax_ET_wp[OBJECTARRAYSIZE];
+ float jetGammaMax_EM_wp[OBJECTARRAYSIZE];
+ float jetGammaMax_Hadronic_wp[OBJECTARRAYSIZE];
+ float jetAlphaMax_wp[OBJECTARRAYSIZE];
+ float jetBetaMax_wp[OBJECTARRAYSIZE];
+
+ float jetPtAllTracks_wp[OBJECTARRAYSIZE];
+ float jetPtAllPVTracks_wp[OBJECTARRAYSIZE];
+ float jetMedianTheta2D_wp[OBJECTARRAYSIZE];
+ float jetMedianIP_wp[OBJECTARRAYSIZE];
+ float jetMinDeltaRAllTracks_wp[OBJECTARRAYSIZE];
+ float jetMinDeltaRPVTracks_wp[OBJECTARRAYSIZE];
 
  //Calo Jets
  int nCaloJets;
@@ -989,7 +1067,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float gLLP_e[LLP_ARRAY_SIZE];
  float gLLP_eta[LLP_ARRAY_SIZE];
  float gLLP_phi[LLP_ARRAY_SIZE];
-
+/*
  bool gLLP_daughter_EB[LLP_DAUGHTER_ARRAY_SIZE]; 
  bool gLLP_daughter_ETL[LLP_DAUGHTER_ARRAY_SIZE];
 
@@ -1014,10 +1092,60 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float gLLP_min_delta_r_match_jet[LLP_DAUGHTER_ARRAY_SIZE];
  unsigned int gLLP_daughter_match_calojet_index[LLP_DAUGHTER_ARRAY_SIZE];
  float gLLP_min_delta_r_match_calojet[LLP_DAUGHTER_ARRAY_SIZE];
+*/
+ //daughters
+ bool gLLP_daughter_EB[LLP_DAUGHTER_ARRAY_SIZE]; 
+ bool gLLP_daughter_ETL[LLP_DAUGHTER_ARRAY_SIZE];
 
-/////////////////
-//>  int gLLP_daughter_pid[LLP_DAUGHTER_ARRAY_SIZE];
-/////////////////
+ float gLLP_daughter_photon_travel_time_EB[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_photon_travel_time_ETL[LLP_DAUGHTER_ARRAY_SIZE];
+
+ float gLLP_daughter_travel_time_EB[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_travel_time_ETL[LLP_DAUGHTER_ARRAY_SIZE];
+
+ float gen_time_daughter_EB[LLP_DAUGHTER_ARRAY_SIZE];
+ float gen_time_daughter_ETL[LLP_DAUGHTER_ARRAY_SIZE];
+
+ int   gLLP_daughter_id[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_pt[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_eta[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_phi[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_eta_ecalcorr[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_phi_ecalcorr[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_e[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_mass[LLP_DAUGHTER_ARRAY_SIZE];
+
+ unsigned int gLLP_daughter_match_jet_index[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_min_delta_r_match_jet[LLP_DAUGHTER_ARRAY_SIZE];
+ unsigned int gLLP_daughter_match_calojet_index[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_daughter_min_delta_r_match_calojet[LLP_DAUGHTER_ARRAY_SIZE];
+
+ //grandaughters
+ bool gLLP_grandaughter_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE]; 
+ bool gLLP_grandaughter_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+
+ float gLLP_grandaughter_photon_travel_time_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_photon_travel_time_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+
+ float gLLP_grandaughter_travel_time_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_travel_time_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+
+ float gen_time_grandaughter_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gen_time_grandaughter_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+
+ int   gLLP_grandaughter_id[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_pt[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_eta[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_phi[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_eta_ecalcorr[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_phi_ecalcorr[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_e[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_mass[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+
+ unsigned int gLLP_grandaughter_match_jet_index[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_min_delta_r_match_jet[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ unsigned int gLLP_grandaughter_match_calojet_index[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_min_delta_r_match_calojet[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
 
  //razor variables
  float HLTMR, HLTRSQ;
@@ -1167,7 +1295,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
 
 
 
-  //All Photons Match To the Jet (Take Seed RecHit as a reference)
+ 3//All Photons Match To the Jet (Take Seed RecHit as a reference)
   Int_t                   fJetNPhotons;
   Float_t                 fJetPhotonPt[OBJECTARRAYSIZE];
   Float_t                 fJetPhotonEta[OBJECTARRAYSIZE];
