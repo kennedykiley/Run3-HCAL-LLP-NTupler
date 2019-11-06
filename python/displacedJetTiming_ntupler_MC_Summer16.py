@@ -17,11 +17,8 @@ process.source = cms.Source("PoolSource",
 )
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 1
-
-#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
-#process.MessageLogger.cerr.FwkReport.reportEvery = 500
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.MessageLogger.cerr.FwkReport.reportEvery = 500
 
 #TFileService for output
 process.TFileService = cms.Service("TFileService",
