@@ -479,7 +479,7 @@ void displacedJetMuon_dump::analyze(const edm::Event& iEvent, const edm::EventSe
     for (const reco::CaloJet &j : *jetsCalo) {
       cout << "CaloJet " << nCaloJets << " : " << j.pt() << " " << j.eta() << " " << j.phi() << " | " << j.energy() <<  "\n";
       nCaloJets++;
-    }
+    }*/
     //**********************************************************
     // Print Gen Muons
     //**********************************************************
@@ -518,7 +518,7 @@ void displacedJetMuon_dump::analyze(const edm::Event& iEvent, const edm::EventSe
     //**********************************************************
     // Print Muons
     //**********************************************************
-    int nMuons = 0;
+    /*int nMuons = 0;
     for(const reco::Muon &mu : *muons) {
       cout << "Muon " << nMuons << " : " << mu.pt() << " " << mu.eta() << " " << mu.phi() << " | "
 	   << mu.isGlobalMuon() << " " << mu.isTrackerMuon() << " " << mu.isStandAloneMuon() << " "

@@ -82,7 +82,7 @@ then
 	then
 		eval `scram unsetenv -sh`
 		gfal-mkdir -p gsiftp://transfer.ultralight.org//${outputDirectory}
-		gfal-copy -f --checksum-mode=both ${outputfile} gsiftp://transfer.ultralight.org//${outputDirectory}/${outputfile}
+		gfal-copy --checksum-mode=both ${outputfile} gsiftp://transfer.ultralight.org//${outputDirectory}/${outputfile}
 		#mkdir -p ${outputDirectory}
 		#cp ${outputfile} ${outputDirectory}/${outputfile}
 	else

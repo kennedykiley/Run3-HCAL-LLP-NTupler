@@ -29,11 +29,7 @@ int DBSCAN::run()
 
 int DBSCAN::result(){
 
-  // for (unsigned int i = 0;i < m_pointSize;i++)
-  // {
-  //   cscLabels.push_back(m_points[i].clusterID);
-  //
-  // }
+  cout<<"nclusters: "<<nClusters<<endl;
   for(int i = 0; i < nClusters; i++)
   {
     float avg_x(0.0), avg_y(0.0), avg_z(0.0), avg_t(0.0);
@@ -64,7 +60,6 @@ int DBSCAN::result(){
     avg_phi = deltaPhi(avg_phi,0.0);
     avg_eta = atan(sqrt(pow(avg_x,2)+pow(avg_y,2))/abs(avg_z));
     avg_eta = -1.0*TMath::Sign(1.0, avg_z)*log(tan(avg_eta/2));
-
     clusterEta.push_back(avg_eta);
     clusterPhi.push_back(avg_phi);
     clusterX.push_back(avg_x);
@@ -163,24 +158,24 @@ void DBSCAN::sort_clusters()
         segment_index.push_back(l);
         if (abs(m_points[l].chamber) == 11) nSegments_Me11++;
         if (abs(m_points[l].chamber) == 12) nSegments_Me12++;
-	if (m_points[l].chamber == 11) tmpCluster.nCscSegmentChamberPlus11++;
-	if (m_points[l].chamber == 12) tmpCluster.nCscSegmentChamberPlus12++;
-	if (m_points[l].chamber == 13) tmpCluster.nCscSegmentChamberPlus13++;
-	if (m_points[l].chamber == 21) tmpCluster.nCscSegmentChamberPlus21++;
-	if (m_points[l].chamber == 22) tmpCluster.nCscSegmentChamberPlus22++;
-	if (m_points[l].chamber == 31) tmpCluster.nCscSegmentChamberPlus31++;
-	if (m_points[l].chamber == 32) tmpCluster.nCscSegmentChamberPlus32++;
-	if (m_points[l].chamber == 41) tmpCluster.nCscSegmentChamberPlus41++;
-	if (m_points[l].chamber == 42) tmpCluster.nCscSegmentChamberPlus42++;
-	if (m_points[l].chamber == -11) tmpCluster.nCscSegmentChamberMinus11++;
-	if (m_points[l].chamber == -12) tmpCluster.nCscSegmentChamberMinus12++;
-	if (m_points[l].chamber == -13) tmpCluster.nCscSegmentChamberMinus13++;
-	if (m_points[l].chamber == -21) tmpCluster.nCscSegmentChamberMinus21++;
-	if (m_points[l].chamber == -22) tmpCluster.nCscSegmentChamberMinus22++;
-	if (m_points[l].chamber == -31) tmpCluster.nCscSegmentChamberMinus31++;
-	if (m_points[l].chamber == -32) tmpCluster.nCscSegmentChamberMinus32++;
-	if (m_points[l].chamber == -41) tmpCluster.nCscSegmentChamberMinus41++;
-	if (m_points[l].chamber == -42) tmpCluster.nCscSegmentChamberMinus42++;
+      	if (m_points[l].chamber == 11) tmpCluster.nCscSegmentChamberPlus11++;
+      	if (m_points[l].chamber == 12) tmpCluster.nCscSegmentChamberPlus12++;
+      	if (m_points[l].chamber == 13) tmpCluster.nCscSegmentChamberPlus13++;
+      	if (m_points[l].chamber == 21) tmpCluster.nCscSegmentChamberPlus21++;
+      	if (m_points[l].chamber == 22) tmpCluster.nCscSegmentChamberPlus22++;
+      	if (m_points[l].chamber == 31) tmpCluster.nCscSegmentChamberPlus31++;
+      	if (m_points[l].chamber == 32) tmpCluster.nCscSegmentChamberPlus32++;
+      	if (m_points[l].chamber == 41) tmpCluster.nCscSegmentChamberPlus41++;
+      	if (m_points[l].chamber == 42) tmpCluster.nCscSegmentChamberPlus42++;
+      	if (m_points[l].chamber == -11) tmpCluster.nCscSegmentChamberMinus11++;
+      	if (m_points[l].chamber == -12) tmpCluster.nCscSegmentChamberMinus12++;
+      	if (m_points[l].chamber == -13) tmpCluster.nCscSegmentChamberMinus13++;
+      	if (m_points[l].chamber == -21) tmpCluster.nCscSegmentChamberMinus21++;
+      	if (m_points[l].chamber == -22) tmpCluster.nCscSegmentChamberMinus22++;
+      	if (m_points[l].chamber == -31) tmpCluster.nCscSegmentChamberMinus31++;
+      	if (m_points[l].chamber == -32) tmpCluster.nCscSegmentChamberMinus32++;
+      	if (m_points[l].chamber == -41) tmpCluster.nCscSegmentChamberMinus41++;
+      	if (m_points[l].chamber == -42) tmpCluster.nCscSegmentChamberMinus42++;
       }
     }
     tmpCluster.x = clusterX[i];
