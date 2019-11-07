@@ -42,6 +42,17 @@ process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
 
 #------ Analyzer ------#
 
+# For AOD Track variables
+process.MaterialPropagator = cms.ESProducer('PropagatorWithMaterialESProducer',
+    ComponentName = cms.string('PropagatorWithMaterial'),
+    Mass = cms.double(0.105),
+    MaxDPhi = cms.double(1.6),
+    PropagationDirection = cms.string('alongMomentum'),
+    SimpleMagneticField = cms.string(''),
+    ptMin = cms.double(-1.0),
+    useRungeKutta = cms.bool(False)
+)
+
 #list input collections
 process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
     isData = cms.bool(False),
@@ -66,7 +77,6 @@ process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
     taus = cms.InputTag("hpsPFTauProducer"),
     photons = cms.InputTag("gedPhotons"),
     jetsCalo = cms.InputTag("ak4CaloJets","","RECO"),
-    jetsPF = cms.InputTag("ak4PFJets"),
     jets = cms.InputTag("ak4PFJetsCHS"),
     jetsPuppi = cms.InputTag("ak4PFJets"),
     jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
@@ -140,6 +150,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
 
     gedGsfElectronCores = cms.InputTag("gedGsfElectronCores", "", "RECO"),
     gedPhotonCores = cms.InputTag("gedPhotonCore", "", "RECO"),
+    generalTracks = cms.InputTag("generalTracks", "", "RECO"),
     #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters", "RECO"),
 
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
