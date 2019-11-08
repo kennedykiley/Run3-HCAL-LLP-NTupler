@@ -140,7 +140,7 @@ llp_ntupler::llp_ntupler(const edm::ParameterSet& iConfig):
     std::cout << "\n";
   }
   if(readGenVertexTime_) genParticles_t0_Token_ = consumes<float>(iConfig.getParameter<edm::InputTag>("genParticles_t0"));
- 
+
 }
 
 llp_ntupler::~llp_ntupler()
@@ -1785,7 +1785,7 @@ bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup
 	  cscDirectionZ[nCsc] = globalDirection.z();
 	  cscT[nCsc] = cscSegment.time();
 	  cscChi2[nCsc] = cscSegment.chi2();
-	  
+
 	  // look at flags of the rechits
 	  const std::vector<CSCRecHit2D> cscrechits2d = cscSegment.specificRecHits();
 	  int cscNRecHits_flagged = 0;
@@ -1793,12 +1793,12 @@ bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup
 	    if (!(recHit2d.quality()==1)) continue;
 	    if(recHit2d.badStrip()) continue;
 	    if (recHit2d.badWireGroup()) continue;
-	    
+
 	    // std::cout<<cscSegment.nRecHits()<<", " << recHit2d.quality()<<", "<<recHit2d.badStrip()<<", "<<recHit2d.badWireGroup()<<", "<<recHit2d.errorWithinStrip()<<", "<<recHit2d.energyDepositedInLayer()<<std::endl;
 	    cscNRecHits_flagged++;
 	  }
 	  cscNRecHits_flag[nCsc] = cscNRecHits_flagged;
-	  
+
 	  // for dbscan
 	    Point p;
 	    p.phi = globPhi;
@@ -1813,7 +1813,7 @@ bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup
 	    p.station = cscStation(globX,globY,globZ);
 	    p.chamber = cscChamber(globX,globY,globZ);
 	    p.clusterID = UNCLASSIFIED;
-	    points.push_back(p);	   	    	    
+	    points.push_back(p);
 	    nCsc++;
 	}
     }
@@ -1903,7 +1903,7 @@ bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup
           cscClusterJetVetoE[nCscClusters]  = j.energy();
         }
       }
-      for(const pat::Muon &mu : *muons) {      
+      for(const pat::Muon &mu : *muons) {
 	//if (mu.pt() < 20.0) continue;
         if (fabs(mu.eta()) > 3.0) continue;
         if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > cscClusterMuonVetoPt[nCscClusters]) {
@@ -1913,11 +1913,11 @@ bool llp_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup
           cscClusterMuonVetoE[nCscClusters] = mu.energy();
         }
       }
- 
+
       nCscClusters++;
     }
 
-    
+
 
 
 
@@ -2031,7 +2031,7 @@ bool llp_ntupler::fillMuons(const edm::Event& iEvent)
     //Trigger Object Matching
     //-----------------------
     bool passTagMuonFilter = false;
- 
+
     muon_passSingleMuTagFilter[nMuons] = passTagMuonFilter;
     nMuons++;
   }
@@ -2095,7 +2095,7 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     } else {
     ele_OneOverEminusOneOverP[nElectrons] = 1./ele.ecalEnergy()  -  ele.eSuperClusterOverP()/ele.ecalEnergy();
     }
- 
+
     //-----------------------
     //Trigger Object Matching
     //-----------------------
@@ -2104,7 +2104,7 @@ bool llp_ntupler::fillElectrons(const edm::Event& iEvent)
     bool passTPTwoTagFilter= false;
     bool passTPOneProbeFilter= false;
     bool passTPTwoProbeFilter= false;
-  
+
     //std::cout << "debug ele 9 " << nElectrons << std::endl;
     ele_passSingleEleTagFilter[nElectrons] = passSingleEleTagFilter;
     ele_passTPOneTagFilter[nElectrons] = passTPOneTagFilter;
@@ -2289,7 +2289,7 @@ bool llp_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& i
       photonIsoSum += candidate.pt();
     }
 
- 
+
     //fill the proper variables
     for(int q = 0; q < nPVAll; q++) {
       pho_sumChargedHadronPtAllVertices[nPhotons][q] = chargedIsoSumAllVertices[q];
@@ -3076,7 +3076,7 @@ bool llp_ntupler::fillMC()
   genQScale = genInfo->qScale();
   genAlphaQCD = genInfo->alphaQCD();
   genAlphaQED = genInfo->alphaQED();
- 
+
 
   return true;
 };
@@ -3095,12 +3095,12 @@ bool llp_ntupler::fillGenParticles(){
   llpIDs.push_back(1023);
   llpIDs.push_back(1000023);
   llpIDs.push_back(1000025);
-  
+
   for(size_t i=0; i<genParticles->size();i++)
   {
     if( (abs((*genParticles)[i].pdgId()) >= 1 && abs((*genParticles)[i].pdgId()) <= 6 && ( (*genParticles)[i].status() < 30 ))
        || (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
-       || (abs((*genParticles)[i].pdgId()) == 21 && (*genParticles)[i].status() < 30)	
+       || (abs((*genParticles)[i].pdgId()) == 21 && (*genParticles)[i].status() < 30)
 	|| (abs((*genParticles)[i].pdgId()) == 22 && (*genParticles)[i].pt() > 10.0)
        || (abs((*genParticles)[i].pdgId()) >= 23 && abs((*genParticles)[i].pdgId()) <= 25)
        || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
@@ -3136,7 +3136,7 @@ bool llp_ntupler::fillGenParticles(){
     gParticleMotherId[i] = 0;
     gParticleMotherIndex[i] = -1;
 
- 
+
     if(prunedV[i]->numberOfMothers() > 0)
     {
       //find the ID of the first mother that has a different ID than the particle itself
@@ -3175,24 +3175,24 @@ bool llp_ntupler::fillGenParticles(){
 	for (uint d=0 ; d < llpIDs.size() ; d++) {
 	  if ( abs(gParticleId[i]) == llpIDs[d] ) {
 	    matchedLLPID = gParticleId[i];
-	    matchedLLP = true;	    
+	    matchedLLP = true;
 	  }
 	}
       }
 
-      
-      
+
+
       if ( matchedLLP ) {
 	if (!_found_first_llp) {
 	  gLLP_prod_vertex_x[0] = prunedV[i]->vx();
 	  gLLP_prod_vertex_y[0] = prunedV[i]->vy();
 	  gLLP_prod_vertex_z[0] = prunedV[i]->vz();
-	} else {	
+	} else {
 	  gLLP_prod_vertex_x[1] = prunedV[i]->vx();
 	  gLLP_prod_vertex_y[1] = prunedV[i]->vy();
 	  gLLP_prod_vertex_z[1] = prunedV[i]->vz();
 	}
-	  
+
         const reco::Candidate *dau = 0;
         bool foundDaughter = false;
         bool noDaughter = false;
@@ -3210,7 +3210,7 @@ bool llp_ntupler::fillGenParticles(){
             noDaughter = true;
           }
         }
-	
+
 	if (foundDaughter) {
           if (!_found_first_llp) {
 	    _found_first_llp = true;
@@ -3316,7 +3316,7 @@ bool llp_ntupler::fillGenParticles(){
 
               if (min_delta_r_calo < 0.3) {
                 gLLP_daughter_match_calojet_index[id] = match_calojet_index;
-                gLLP_min_delta_r_match_calojet[id] = min_delta_r_calo;		
+                gLLP_min_delta_r_match_calojet[id] = min_delta_r_calo;
               }
             }
           } else {

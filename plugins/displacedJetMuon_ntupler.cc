@@ -13,6 +13,7 @@
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/Selector.hh"
 #include "fastjet/PseudoJet.hh"
+#include "cms_lpc_llp/llp_ntupler/interface/DBSCAN.h"
 
 struct muonCscLayers{
   int id;
@@ -191,17 +192,17 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
     std::cout << "ERROR!!! Could not open trigger path name file : " << edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str() << "\n";
   }
 
-  if(enableTriggerInfo_)
-  {
-    std::cout << "\n";
-    std::cout << "****************** Trigger Paths Defined For Razor Ntuple ******************\n";
-    for (int i = 0; i<NTriggersMAX; ++i)
-    {
-      if (triggerPathNames[i] != "") std::cout << "Trigger " << i << " " << triggerPathNames[i] << "\n";
-    }
-    std::cout << "****************************************************************************\n";
-    std::cout << "\n";
-  }
+  // if(enableTriggerInfo_)
+  // {
+  //   std::cout << "\n";
+  //   std::cout << "****************** Trigger Paths Defined For Razor Ntuple ******************\n";
+  //   for (int i = 0; i<NTriggersMAX; ++i)
+  //   {
+  //     if (triggerPathNames[i] != "") std::cout << "Trigger " << i << " " << triggerPathNames[i] << "\n";
+  //   }
+  //   std::cout << "****************************************************************************\n";
+  //   std::cout << "\n";
+  // }
   if(readGenVertexTime_) genParticles_t0_Token_ = consumes<float>(iConfig.getParameter<edm::InputTag>("genParticles_t0"));
   /*
   fJetPhotonRecHitEta = new std::vector<float>; fJetPhotonRecHitEta->clear();
@@ -484,6 +485,9 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // csc_T = new std::vector<float>;
     // csc_Chi2 = new std::vector<float>;
     //
+    displacedJetMuonTree->Branch("nCscWireDigis",&nCscWireDigis,"nCscWireDigis/I");
+    displacedJetMuonTree->Branch("nCscStripDigis",&nCscStripDigis,"nCscStripDigis/I");
+
     displacedJetMuonTree->Branch("nCscSeg",&nCscSeg,"nCscSeg/I");
     displacedJetMuonTree->Branch("cscSegPhi",cscSegPhi,"cscSegPhi[nCscSeg]/F");
     displacedJetMuonTree->Branch("cscSegEta",cscSegEta,"cscSegEta[nCscSeg]/F");
@@ -492,94 +496,165 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("cscSegZ",cscSegZ,"cscSegZ[nCscSeg]/F");
     displacedJetMuonTree->Branch("cscSegT",cscSegT,"cscSegT[nCscSeg]/F");
     displacedJetMuonTree->Branch("cscSegChi2",cscSegChi2,"cscSegChi2[nCscSeg]/F");
+    displacedJetMuonTree->Branch("cscSegChamber",cscSegChamber,"cscSegChamber[nCscSeg]/I");
+    displacedJetMuonTree->Branch("cscSegStation",cscSegStation,"cscSegStation[nCscSeg]/I");
+
     displacedJetMuonTree->Branch("cscSegNRecHits",cscSegNRecHits,"cscSegNRecHits[nCscSeg]/I");
 
-    displacedJetMuonTree->Branch("nCscStripDigis",&nCscStripDigis,"nCscStripDigis/I");
-    displacedJetMuonTree->Branch("cscStripDigiStripN",cscStripDigiStripN,"cscStripDigiStripN[nCscStripDigis]/I");
-    displacedJetMuonTree->Branch("cscStripDigiDetId",cscStripDigiDetId,"cscStripDigiDetId[nCscStripDigis]/I");
-    displacedJetMuonTree->Branch("cscStripDigiADCCounts","std::vector<vector<int>>(nCscStripDigis)",&cscStripDigiADCCounts);
+    displacedJetMuonTree->Branch("ncscRechits",&ncscRechits,"ncscRechits/I");
+    displacedJetMuonTree->Branch("cscRechitsPhi",cscRechitsPhi,"cscRechitsPhi[ncscRechits]/F");
+    displacedJetMuonTree->Branch("cscRechitsEta",cscRechitsEta,"cscRechitsEta[ncscRechits]/F");
+    displacedJetMuonTree->Branch("cscRechitsX",cscRechitsX,"cscRechitsX[ncscRechits]/F");
+    displacedJetMuonTree->Branch("cscRechitsY",cscRechitsY,"cscRechitsY[ncscRechits]/F");
+    displacedJetMuonTree->Branch("cscRechitsZ",cscRechitsZ,"cscRechitsZ[ncscRechits]/F");
+    displacedJetMuonTree->Branch("cscRechitsE",cscRechitsE,"cscRechitsE[ncscRechits]/F");
+    displacedJetMuonTree->Branch("cscRechitsTpeak",cscRechitsTpeak,"cscRechitsTpeak[ncscRechits]/F");
+    displacedJetMuonTree->Branch("cscRechitsTwire",cscRechitsTwire,"cscRechitsTwire[ncscRechits]/F");
+    displacedJetMuonTree->Branch("cscRechitsQuality",cscRechitsQuality,"cscRechitsQuality[ncscRechits]/I");
+    displacedJetMuonTree->Branch("cscRechitsChamber",cscRechitsChamber,"cscRechitsChamber[ncscRechits]/I");
+    displacedJetMuonTree->Branch("cscRechitsStation",cscRechitsStation,"cscRechitsStation[ncscRechits]/I");
 
-    displacedJetMuonTree->Branch("nCscWireDigis",&nCscWireDigis,"nCscWireDigis/I");
-    displacedJetMuonTree->Branch("cscWireDigiWireGroupN",cscWireDigiWireGroupN,"cscWireDigiWireGroupN[nCscWireDigis]/I");
-    displacedJetMuonTree->Branch("cscWireDigiDetId",cscWireDigiDetId,"cscWireDigiDetId[nCscWireDigis]/I");
-
-    displacedJetMuonTree->Branch("nCscWireDigiSimLink",&nCscWireDigiSimLink,"nCscWireDigiSimLink/I");
-    displacedJetMuonTree->Branch("cscWireDigiSimLinkNWires",&cscWireDigiSimLinkNWires,"cscWireDigiSimLinkNWires/I");
-    displacedJetMuonTree->Branch("cscWireDigiSimLinkDetId",cscWireDigiSimLinkDetId,"cscWireDigiSimLinkDetId[nCscWireDigiSimLink]/I");
-    displacedJetMuonTree->Branch("cscWireDigiSimLinkChannel",cscWireDigiSimLinkChannel,"cscWireDigiSimLinkChannel[nCscWireDigiSimLink]/I");
-    displacedJetMuonTree->Branch("cscWireDigiSimLinkSimTrackId",cscWireDigiSimLinkSimTrackId,"cscWireDigiSimLinkSimTrackId[nCscWireDigiSimLink]/I");
-    displacedJetMuonTree->Branch("cscWireDigiSimLinkCFposition",cscWireDigiSimLinkCFposition,"cscWireDigiSimLinkCFposition[nCscWireDigiSimLink]/I");
-    displacedJetMuonTree->Branch("cscWireDigiSimLinkFraction",cscWireDigiSimLinkFraction,"cscWireDigiSimLinkFraction[nCscWireDigiSimLink]/F");
-    displacedJetMuonTree->Branch("cscWireDigiSimLinkOccupancy",cscWireDigiSimLinkOccupancy,"cscWireDigiSimLinkOccupancy[nCscWireDigiSimLink]/F");
-
-    displacedJetMuonTree->Branch("nCscStripDigiSimLink",&nCscStripDigiSimLink,"nCscStripDigiSimLink/I");
-    displacedJetMuonTree->Branch("cscStripDigiSimLinkNStrips",&cscStripDigiSimLinkNStrips,"cscStripDigiSimLinkNStrips/I");
-    displacedJetMuonTree->Branch("cscStripDigiSimLinkDetId",cscStripDigiSimLinkDetId,"cscStripDigiSimLinkDetId[nCscStripDigiSimLink]/I");
-    displacedJetMuonTree->Branch("cscStripDigiSimLinkChannel",cscStripDigiSimLinkChannel,"cscStripDigiSimLinkChannel[nCscStripDigiSimLink]/I");
-    displacedJetMuonTree->Branch("cscStripDigiSimLinkSimTrackId",cscStripDigiSimLinkSimTrackId,"cscStripDigiSimLinkSimTrackId[nCscStripDigiSimLink]/I");
-    displacedJetMuonTree->Branch("cscStripDigiSimLinkCFposition",cscStripDigiSimLinkCFposition,"cscStripDigiSimLinkCFposition[nCscStripDigiSimLink]/I");
-    displacedJetMuonTree->Branch("cscStripDigiSimLinkFraction",cscStripDigiSimLinkFraction,"cscStripDigiSimLinkFraction[nCscStripDigiSimLink]/F");
-    displacedJetMuonTree->Branch("cscStripDigiSimLinkOccupancy",cscStripDigiSimLinkOccupancy,"cscStripDigiSimLinkOccupancy[nCscStripDigiSimLink]/F");
-
-    displacedJetMuonTree->Branch("nCscDetLayer",&nCscDetLayer,"nCscDetLayer/i");
-    displacedJetMuonTree->Branch("cscDetLayer_nCscRecHits",cscDetLayer_nCscRecHits,"cscDetLayer_nCscRecHits[nCscDetLayer]/I");
-    displacedJetMuonTree->Branch("cscDetLayer_nCscSimHits",cscDetLayer_nCscSimHits,"cscDetLayer_nCscSimHits[nCscDetLayer]/I");
-    displacedJetMuonTree->Branch("cscDetLayer_nWireDigis",cscDetLayer_nWireDigis,"cscDetLayer_nWireDigis[nCscDetLayer]/I");
-    displacedJetMuonTree->Branch("cscDetLayer_nStripDigis",cscDetLayer_nStripDigis,"cscDetLayer_nStripDigis[nCscDetLayer]/I");
-    displacedJetMuonTree->Branch("cscDetLayer_inME1112",cscDetLayer_inME1112,"cscDetLayer_inME1112[nCscDetLayer]/O");
-    displacedJetMuonTree->Branch("cscDetLayer",cscDetLayer,"cscDetLayer[nCscDetLayer]/I");
-
-    displacedJetMuonTree->Branch("nCscRecHits",&nCscRecHits,"nCscRecHits/I");
-    displacedJetMuonTree->Branch("cscRecHitsPhi",cscRecHitsPhi,"cscRecHitsPhi[nCscRecHits]/F");
-    displacedJetMuonTree->Branch("cscRecHitsEta",cscRecHitsEta,"cscRecHitsEta[nCscRecHits]/F");
-    displacedJetMuonTree->Branch("cscRecHitsX",cscRecHitsX,"cscRecHitsX[nCscRecHits]/F");
-    displacedJetMuonTree->Branch("cscRecHitsY",cscRecHitsY,"cscRecHitsY[nCscRecHits]/F");
-    displacedJetMuonTree->Branch("cscRecHitsZ",cscRecHitsZ,"cscRecHitsZ[nCscRecHits]/F");
-    displacedJetMuonTree->Branch("cscRecHitsE",cscRecHitsE,"cscRecHitsE[nCscRecHits]/F");
-    displacedJetMuonTree->Branch("cscRecHitsTpeak",cscRecHitsTpeak,"cscRecHitsTpeak[nCscRecHits]/F");
-    displacedJetMuonTree->Branch("cscRecHitsTwire",cscRecHitsTwire,"cscRecHitsTwire[nCscRecHits]/F");
-    displacedJetMuonTree->Branch("cscRecHitsQuality",cscRecHitsQuality,"cscRecHitsQuality[nCscRecHits]/I");
-    displacedJetMuonTree->Branch("nMatchedSimHits",nMatchedSimHits,"nMatchedSimHits[nCscRecHits]/I");
-    displacedJetMuonTree->Branch("cscRecHitsChannels",cscRecHitsChannels,"cscRecHitsChannels[nCscRecHits]/I");
-    displacedJetMuonTree->Branch("cscRecHitsNStrips",cscRecHitsNStrips,"cscRecHitsNStrips[nCscRecHits]/i");
-    displacedJetMuonTree->Branch("cscRecHitsHitWire",cscRecHitsHitWire,"cscRecHitsHitWire[nCscRecHits]/I");
-    displacedJetMuonTree->Branch("cscRecHitsWGroupsBX",cscRecHitsWGroupsBX,"cscRecHitsWGroupsBX[nCscRecHits]/I");
-    displacedJetMuonTree->Branch("cscRecHitsNWireGroups",cscRecHitsNWireGroups,"cscRecHitsNWireGroups[nCscRecHits]/i");
-    displacedJetMuonTree->Branch("cscRecHitsDetId",cscRecHitsDetId,"cscRecHitsDetId[nCscRecHits]/I");
-
-    displacedJetMuonTree->Branch("nCscSimHits",&nCscSimHits,"nCscSimHits/I");
-    displacedJetMuonTree->Branch("cscSimHitsTOF",cscSimHitsTOF,"cscSimHitsTOF[nCscSimHits]/F");
-    displacedJetMuonTree->Branch("cscSimHitsEnergyLoss",cscSimHitsEnergyLoss,"cscSimHitsEnergyLoss[nCscSimHits]/F");
-    displacedJetMuonTree->Branch("cscSimHitsParticleType",cscSimHitsParticleType,"cscSimHitsParticleType[nCscSimHits]/I");
-    displacedJetMuonTree->Branch("cscSimHitsPabs",cscSimHitsPabs,"cscSimHitsPabs[nCscSimHits]/F");
-    displacedJetMuonTree->Branch("cscSimHitsProcessType",cscSimHitsProcessType,"cscSimHitsProcessType[nCscSimHits]/I");
-    displacedJetMuonTree->Branch("cscSimHitsX",cscSimHitsX,"cscSimHitsX[nCscSimHits]/F");
-    displacedJetMuonTree->Branch("cscSimHitsY",cscSimHitsY,"cscSimHitsY[nCscSimHits]/F");
-    displacedJetMuonTree->Branch("cscSimHitsZ",cscSimHitsZ,"cscSimHitsZ[nCscSimHits]/F");
-    displacedJetMuonTree->Branch("cscSimHitsPhi",cscSimHitsPhi,"cscSimHitsPhi[nCscSimHits]/F");
-    displacedJetMuonTree->Branch("cscSimHitsEta",cscSimHitsEta,"cscSimHitsEta[nCscSimHits]/F");
-    displacedJetMuonTree->Branch("cscSimHits_match_cscRecHits_minDeltaR",cscSimHits_match_cscRecHits_minDeltaR,"cscSimHits_match_cscRecHits_minDeltaR[nCscSimHits]/F");
-    displacedJetMuonTree->Branch("cscSimHits_match_cscRecHits_index",cscSimHits_match_cscRecHits_index,"cscSimHits_match_cscRecHits_index[nCscSimHits]/I");
-    displacedJetMuonTree->Branch("cscSimHits_match_gParticle_minDeltaR",cscSimHits_match_gParticle_minDeltaR,"cscSimHits_match_gParticle_minDeltaR[nCscSimHits]/F");
-    displacedJetMuonTree->Branch("cscSimHits_match_gParticle_index",cscSimHits_match_gParticle_index,"cscSimHits_match_gParticle_index[nCscSimHits]/I");
-    displacedJetMuonTree->Branch("cscSimHitsDetId",cscSimHitsDetId,"cscSimHitsDetId[nCscSimHits]/I");
+    // displacedJetMuonTree->Branch("nMatchedSimHits",nMatchedSimHits,"nMatchedSimHits[nCscRecHits]/I");
+    displacedJetMuonTree->Branch("cscRechitsChannels",cscRechitsChannels,"cscRechitsChannels[ncscRechits]/I");
+    displacedJetMuonTree->Branch("cscRechitsNStrips",cscRechitsNStrips,"cscRechitsNStrips[ncscRechits]/i");
+    displacedJetMuonTree->Branch("cscRechitsHitWire",cscRechitsHitWire,"cscRechitsHitWire[ncscRechits]/I");
+    displacedJetMuonTree->Branch("cscRechitsWGroupsBX",cscRechitsWGroupsBX,"cscRechitsWGroupsBX[ncscRechits]/I");
+    displacedJetMuonTree->Branch("cscRechitsNWireGroups",cscRechitsNWireGroups,"cscRechitsNWireGroups[ncscRechits]/i");
+    displacedJetMuonTree->Branch("cscRechitsDetId",cscRechitsDetId,"cscRechitsDetId[ncscRechits]/I");
+    // all csc clusters
 
 
 
-    // displacedJetMuonTree->Branch("cscDirectionX",cscDirectionX,"cscDirectionX[nCsc]");
-    // displacedJetMuonTree->Branch("cscDirectionY",cscDirectionY,"cscDirectionY[nCsc]");
-    // displacedJetMuonTree->Branch("cscDirectionZ",cscDirectionZ,"cscDirectionZ[nCsc]");
-    // displacedJetMuonTree->Branch("cscNRecHits_flag",cscNRecHits_flag,"cscNRecHits_flag[nCsc]");
-    // displacedJetMuonTree->Branch("cscRechitX",cscRechitX,"cscRechitX[nCsc][6]/F");
-    // displacedJetMuonTree->Branch("cscRechitY",cscRechitY,"cscRechitY[nCsc][6]/F");
-    // displacedJetMuonTree->Branch("cscRechitZ",cscRechitZ,"cscRechitZ[nCsc][6]/F");
-    // displacedJetMuonTree->Branch("cscRechitT",cscRechitT,"cscRechitT[nCsc][6]/F");
-    // displacedJetMuonTree->Branch("cscRechitE",cscRechitE,"cscRechitE[nCsc][6]/F");
-    // displacedJetMuonTree->Branch("cscRechitBadStrip",cscRechitBadStrip,"cscRechitBadStrip[nCsc][6]/O");
-    // displacedJetMuonTree->Branch("cscRechitBadWireGroup",cscRechitBadWireGroup,"cscRechitBadWireGroup[nCsc][6]/O");
-    // displacedJetMuonTree->Branch("cscRechitErrorWithinStrip",cscRechitErrorWithinStrip,"cscRechitErrorWithinStrip[nCsc][6]/O");
-    // displacedJetMuonTree->Branch("cscRechitQuality",cscRechitQuality,"cscRechitQuality[nCsc][6]/I");
+    displacedJetMuonTree->Branch("nCscRechitClusters",             &nCscRechitClusters, "nCscRechitClusters/I");
+    displacedJetMuonTree->Branch("cscRechitCluster_match_cscSegCluster_minDeltaR",             cscRechitCluster_match_cscSegCluster_minDeltaR,             "cscRechitCluster_match_cscSegCluster_minDeltaR[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitCluster_match_cscSegCluster_index",             cscRechitCluster_match_cscSegCluster_index,             "cscRechitCluster_match_cscSegCluster_index[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitCluster_match_gParticle_minDeltaR",             cscRechitCluster_match_gParticle_minDeltaR,             "cscRechitCluster_match_gParticle_minDeltaR[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitCluster_match_gParticle_index",             cscRechitCluster_match_gParticle_index,             "cscRechitCluster_match_gParticle_index[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitCluster_match_gParticle_id",             cscRechitCluster_match_gParticle_id,             "cscRechitCluster_match_gParticle_id[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterX",             cscRechitClusterX,             "cscRechitClusterX[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterY",             cscRechitClusterY,             "cscRechitClusterY[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterZ",             cscRechitClusterZ,             "cscRechitClusterZ[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterTime",             cscRechitClusterTime,             "cscRechitClusterTime[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterTimeSpread",             cscRechitClusterTimeSpread,             "cscRechitClusterTimeSpread[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterGenMuonDeltaR",             cscRechitClusterGenMuonDeltaR,             "cscRechitClusterGenMuonDeltaR[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterMajorAxis",             cscRechitClusterMajorAxis,             "cscRechitClusterMajorAxis[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterMinorAxis",             cscRechitClusterMinorAxis,             "cscRechitClusterMinorAxis[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterEtaPhiSpread",             cscRechitClusterEtaPhiSpread,             "cscRechitClusterEtaPhiSpread[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterPhiSpread",             cscRechitClusterPhiSpread,             "cscRechitClusterPhiSpread[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterEtaSpread",             cscRechitClusterEtaSpread,             "cscRechitClusterEtaSpread[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterXSpread",             cscRechitClusterXSpread,             "cscRechitClusterXSpread[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterYSpread",             cscRechitClusterYSpread,             "cscRechitClusterYSpread[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterZSpread",             cscRechitClusterZSpread,             "cscRechitClusterZSpread[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterPhi",             cscRechitClusterPhi,             "cscRechitClusterPhi[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterEta",             cscRechitClusterEta,             "cscRechitClusterEta[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterJetVetoPt",       cscRechitClusterJetVetoPt,       "cscRechitClusterJetVetoPt[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterJetVetoE",        cscRechitClusterJetVetoE,        "cscRechitClusterJetVetoE[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterMuonVetoPt",      cscRechitClusterMuonVetoPt,      "cscRechitClusterMuonVetoPt[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterMuonVetoE",       cscRechitClusterMuonVetoE,       "cscRechitClusterMuonVetoE[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterCaloJetVeto",     cscRechitClusterCaloJetVeto,     "cscRechitClusterCaloJetVeto[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterSize",            cscRechitClusterSize,            "cscRechitClusterSize[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberPlus11",             cscRechitClusterNRechitChamberPlus11,             "cscRechitClusterNRechitChamberPlus11[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberPlus12",             cscRechitClusterNRechitChamberPlus12,             "cscRechitClusterNRechitChamberPlus12[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberPlus13",             cscRechitClusterNRechitChamberPlus13,             "cscRechitClusterNRechitChamberPlus13[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberPlus21",             cscRechitClusterNRechitChamberPlus21,             "cscRechitClusterNRechitChamberPlus21[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberPlus22",             cscRechitClusterNRechitChamberPlus22,             "cscRechitClusterNRechitChamberPlus22[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberPlus31",             cscRechitClusterNRechitChamberPlus31,             "cscRechitClusterNRechitChamberPlus31[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberPlus32",             cscRechitClusterNRechitChamberPlus32,             "cscRechitClusterNRechitChamberPlus32[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberPlus41",             cscRechitClusterNRechitChamberPlus41,             "cscRechitClusterNRechitChamberPlus41[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberPlus42",             cscRechitClusterNRechitChamberPlus42,             "cscRechitClusterNRechitChamberPlus42[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberMinus11",            cscRechitClusterNRechitChamberMinus11,            "cscRechitClusterNRechitChamberMinus11[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberMinus12",            cscRechitClusterNRechitChamberMinus12,            "cscRechitClusterNRechitChamberMinus12[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberMinus13",            cscRechitClusterNRechitChamberMinus13,            "cscRechitClusterNRechitChamberMinus13[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberMinus21",            cscRechitClusterNRechitChamberMinus21,            "cscRechitClusterNRechitChamberMinus21[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberMinus22",            cscRechitClusterNRechitChamberMinus22,            "cscRechitClusterNRechitChamberMinus22[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberMinus31",            cscRechitClusterNRechitChamberMinus31,            "cscRechitClusterNRechitChamberMinus31[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberMinus32",            cscRechitClusterNRechitChamberMinus32,            "cscRechitClusterNRechitChamberMinus32[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberMinus41",            cscRechitClusterNRechitChamberMinus41,            "cscRechitClusterNRechitChamberMinus41[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterNRechitChamberMinus42",            cscRechitClusterNRechitChamberMinus42,            "cscRechitClusterNRechitChamberMinus42[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterMe11Ratio",             cscRechitClusterMe11Ratio,             "cscRechitClusterMe11Ratio[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterMe12Ratio",             cscRechitClusterMe12Ratio,             "cscRechitClusterMe12Ratio[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterNStation",             cscRechitClusterNStation,             "cscRechitClusterNStation[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterMaxStation",             cscRechitClusterMaxStation,             "cscRechitClusterMaxStation[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterMaxStationRatio",             cscRechitClusterMaxStationRatio,             "cscRechitClusterMaxStationRatio[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterNChamber",             cscRechitClusterNChamber,             "cscRechitClusterNChamber[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterMaxChamber",             cscRechitClusterMaxChamber,             "cscRechitClusterMaxChamber[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterMaxChamberRatio",             cscRechitClusterMaxChamberRatio,             "cscRechitClusterMaxChamberRatio[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterVertexR",             cscRechitClusterVertexR,             "cscRechitClusterVertexR[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterVertexZ",             cscRechitClusterVertexZ,             "cscRechitClusterVertexZ[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterVertexDis",             cscRechitClusterVertexDis,             "cscRechitClusterVertexDis[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterVertexChi2",             cscRechitClusterVertexChi2,             "cscRechitClusterVertexChi2[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterVertexN1",             cscRechitClusterVertexN1,             "cscRechitClusterVertexN1[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterVertexN5",             cscRechitClusterVertexN5,             "cscRechitClusterVertexN5[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterVertexN10",             cscRechitClusterVertexN10,             "cscRechitClusterVertexN10[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterVertexN15",             cscRechitClusterVertexN15,             "cscRechitClusterVertexN15[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterVertexN20",             cscRechitClusterVertexN20,             "cscRechitClusterVertexN20[nCscRechitClusters]/I");
+    displacedJetMuonTree->Branch("cscRechitClusterVertexN",             cscRechitClusterVertexN,             "cscRechitClusterVertexN[nCscRechitClusters]/I");
 
+    //segment Clusters
+    // all csc clusters
+    displacedJetMuonTree->Branch("nCscSegClusters",             &nCscSegClusters, "nCscSegClusters/I");
+    displacedJetMuonTree->Branch("cscSegCluster_match_gParticle_minDeltaR",             cscSegCluster_match_gParticle_minDeltaR,             "cscSegCluster_match_gParticle_minDeltaR[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegCluster_match_gParticle_index",             cscSegCluster_match_gParticle_index,             "cscSegCluster_match_gParticle_index[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegCluster_match_gParticle_id",             cscSegCluster_match_gParticle_id,             "cscSegCluster_match_gParticle_id[nCscSegClusters]/I");
+
+    displacedJetMuonTree->Branch("cscSegClusterX",             cscSegClusterX,             "cscSegClusterX[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterY",             cscSegClusterY,             "cscSegClusterY[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterZ",             cscSegClusterZ,             "cscSegClusterZ[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterTime",             cscSegClusterTime,             "cscSegClusterTime[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterTimeSpread",             cscSegClusterTimeSpread,             "cscSegClusterTimeSpread[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterGenMuonDeltaR",             cscSegClusterGenMuonDeltaR,             "cscSegClusterGenMuonDeltaR[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterMajorAxis",             cscSegClusterMajorAxis,             "cscSegClusterMajorAxis[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterMinorAxis",             cscSegClusterMinorAxis,             "cscSegClusterMinorAxis[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterEtaPhiSpread",             cscSegClusterEtaPhiSpread,             "cscSegClusterEtaPhiSpread[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterPhiSpread",             cscSegClusterPhiSpread,             "cscSegClusterPhiSpread[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterEtaSpread",             cscSegClusterEtaSpread,             "cscSegClusterEtaSpread[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterXSpread",             cscSegClusterXSpread,             "cscSegClusterXSpread[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterYSpread",             cscSegClusterYSpread,             "cscSegClusterYSpread[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterZSpread",             cscSegClusterZSpread,             "cscSegClusterZSpread[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterPhi",             cscSegClusterPhi,             "cscSegClusterPhi[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterEta",             cscSegClusterEta,             "cscSegClusterEta[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterJetVetoPt",       cscSegClusterJetVetoPt,       "cscSegClusterJetVetoPt[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterJetVetoE",        cscSegClusterJetVetoE,        "cscSegClusterJetVetoE[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterMuonVetoPt",      cscSegClusterMuonVetoPt,      "cscSegClusterMuonVetoPt[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterMuonVetoE",       cscSegClusterMuonVetoE,       "cscSegClusterMuonVetoE[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterCaloJetVeto",     cscSegClusterCaloJetVeto,     "cscSegClusterCaloJetVeto[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterSize",            cscSegClusterSize,            "cscSegClusterSize[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberPlus11",             cscSegClusterNSegmentChamberPlus11,             "cscSegClusterNSegmentChamberPlus11[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberPlus12",             cscSegClusterNSegmentChamberPlus12,             "cscSegClusterNSegmentChamberPlus12[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberPlus13",             cscSegClusterNSegmentChamberPlus13,             "cscSegClusterNSegmentChamberPlus13[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberPlus21",             cscSegClusterNSegmentChamberPlus21,             "cscSegClusterNSegmentChamberPlus21[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberPlus22",             cscSegClusterNSegmentChamberPlus22,             "cscSegClusterNSegmentChamberPlus22[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberPlus31",             cscSegClusterNSegmentChamberPlus31,             "cscSegClusterNSegmentChamberPlus31[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberPlus32",             cscSegClusterNSegmentChamberPlus32,             "cscSegClusterNSegmentChamberPlus32[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberPlus41",             cscSegClusterNSegmentChamberPlus41,             "cscSegClusterNSegmentChamberPlus41[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberPlus42",             cscSegClusterNSegmentChamberPlus42,             "cscSegClusterNSegmentChamberPlus42[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberMinus11",            cscSegClusterNSegmentChamberMinus11,            "cscSegClusterNSegmentChamberMinus11[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberMinus12",            cscSegClusterNSegmentChamberMinus12,            "cscSegClusterNSegmentChamberMinus12[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberMinus13",            cscSegClusterNSegmentChamberMinus13,            "cscSegClusterNSegmentChamberMinus13[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberMinus21",            cscSegClusterNSegmentChamberMinus21,            "cscSegClusterNSegmentChamberMinus21[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberMinus22",            cscSegClusterNSegmentChamberMinus22,            "cscSegClusterNSegmentChamberMinus22[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberMinus31",            cscSegClusterNSegmentChamberMinus31,            "cscSegClusterNSegmentChamberMinus31[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberMinus32",            cscSegClusterNSegmentChamberMinus32,            "cscSegClusterNSegmentChamberMinus32[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberMinus41",            cscSegClusterNSegmentChamberMinus41,            "cscSegClusterNSegmentChamberMinus41[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterNSegmentChamberMinus42",            cscSegClusterNSegmentChamberMinus42,            "cscSegClusterNSegmentChamberMinus42[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterMe11Ratio",             cscSegClusterMe11Ratio,             "cscSegClusterMe11Ratio[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterMe12Ratio",             cscSegClusterMe12Ratio,             "cscSegClusterMe12Ratio[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterNStation",             cscSegClusterNStation,             "cscSegClusterNStation[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterMaxStation",             cscSegClusterMaxStation,             "cscSegClusterMaxStation[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterMaxStationRatio",             cscSegClusterMaxStationRatio,             "cscSegClusterMaxStationRatio[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterNChamber",             cscSegClusterNChamber,             "cscSegClusterNChamber[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterMaxChamber",             cscSegClusterMaxChamber,             "cscSegClusterMaxChamber[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterMaxChamberRatio",             cscSegClusterMaxChamberRatio,             "cscSegClusterMaxChamberRatio[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterVertexR",             cscSegClusterVertexR,             "cscSegClusterVertexR[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterVertexZ",             cscSegClusterVertexZ,             "cscSegClusterVertexZ[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterVertexDis",             cscSegClusterVertexDis,             "cscSegClusterVertexDis[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterVertexChi2",             cscSegClusterVertexChi2,             "cscSegClusterVertexChi2[nCscSegClusters]/F");
+    displacedJetMuonTree->Branch("cscSegClusterVertexN1",             cscSegClusterVertexN1,             "cscSegClusterVertexN1[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterVertexN5",             cscSegClusterVertexN5,             "cscSegClusterVertexN5[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterVertexN10",             cscSegClusterVertexN10,             "cscSegClusterVertexN10[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterVertexN15",             cscSegClusterVertexN15,             "cscSegClusterVertexN15[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterVertexN20",             cscSegClusterVertexN20,             "cscSegClusterVertexN20[nCscSegClusters]/I");
+    displacedJetMuonTree->Branch("cscSegClusterVertexN",             cscSegClusterVertexN,             "cscSegClusterVertexN[nCscSegClusters]/I");
 
     /*
     displacedJetMuonTree->Branch("nRpc",&nRpc,"nRpc/I");
@@ -866,6 +941,9 @@ void displacedJetMuon_ntupler::enableGenParticleBranches()
   displacedJetMuonTree->Branch("gParticleProdVertexX", gParticleProdVertexX, "gParticleProdVertexX[nGenParticle]/F");
   displacedJetMuonTree->Branch("gParticleProdVertexY", gParticleProdVertexY, "gParticleProdVertexY[nGenParticle]/F");
   displacedJetMuonTree->Branch("gParticleProdVertexZ", gParticleProdVertexZ, "gParticleProdVertexZ[nGenParticle]/F");
+  displacedJetMuonTree->Branch("gParticleDecayVertexX", gParticleDecayVertexX, "gParticleDecayVertexX[nGenParticle]/F");
+  displacedJetMuonTree->Branch("gParticleDecayVertexY", gParticleDecayVertexY, "gParticleDecayVertexY[nGenParticle]/F");
+  displacedJetMuonTree->Branch("gParticleDecayVertexZ", gParticleDecayVertexZ, "gParticleDecayVertexZ[nGenParticle]/F");
 
    // displacedJetMuonTree->Branch("gLLP_prod_vertex_x", gLLP_prod_vertex_x, "gLLP_prod_vertex_x[2]/F");
    // displacedJetMuonTree->Branch("gLLP_prod_vertex_y", gLLP_prod_vertex_y, "gLLP_prod_vertex_y[2]/F");
@@ -1247,96 +1325,177 @@ void displacedJetMuon_ntupler::resetPhotonBranches()
 
 void displacedJetMuon_ntupler::resetMuonSystemBranches()
 {
-    nCscSeg = 0;
-    nCscRecHits = 0;
-    nCscSimHits = 0;
-    nCscStripDigis = 0;
-    nCscWireDigis = 0;
-    nCscDetLayer = 0;
-    cscStripDigiADCCounts.clear();
-    nCscWireDigiSimLink = 0;
-    nCscStripDigiSimLink = 0;
-    cscWireDigiSimLinkNWires = 0;
-    cscStripDigiSimLinkNStrips = 0;
-    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
-    {
-      cscSegPhi[i] = 0.0;
-      cscSegEta[i] = 0.0;
-      cscSegX[i] = 0.0;
-      cscSegY[i] = 0.0;
-      cscSegZ[i] = 0.0;
-      cscSegDirectionX[i] = 0.0;
-      cscSegDirectionY[i] = 0.0;
-      cscSegDirectionZ[i] = 0.0;
-      cscSegT[i] = 0.0;
-      cscSegChi2[i] = 0.0;
-      cscSegNRecHits[i] = 0;
-      cscDetLayer_nCscRecHits[i] = 0;
-      cscDetLayer_nCscSimHits[i] = 0;
-      cscDetLayer_nWireDigis[i] = 0;
-      cscDetLayer_nStripDigis[i] = 0;
-      cscDetLayer_inME1112[i] = false;
-      cscDetLayer[i] = 0;
-      cscRecHitsPhi[i] = 0.0;
-      cscRecHitsEta[i] = 0.0;
-      cscRecHitsX[i] = 0.0;
-      cscRecHitsY[i] = 0.0;
-      cscRecHitsZ[i] = 0.0;
-      cscRecHitsE[i] = 0.0;
-      cscRecHitsTwire[i] = 0.0;
-      cscRecHitsTpeak[i] = 0.0;
-      cscRecHitsQuality[i] = 0.0;
-      nMatchedSimHits[i] = 0;
-      cscRecHitsChannels[i] = 0;
-      cscRecHitsNStrips[i] = 0;
-      cscRecHitsHitWire[i] = 0;
-      cscRecHitsWGroupsBX[i] = 0;
-      cscRecHitsNWireGroups[i] = 0;
-      cscRecHitsDetId[i] = 0;
+  nCscSeg = 0;
+  ncscRechits = 0;
+  nCscSegClusters = 0;
+  nCscRechitClusters = 0;
+  nCscWireDigis = 0;
+  nCscStripDigis = 0;
+  for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+  {
 
-      cscSimHitsTOF[i] = 0.0;
-      cscSimHitsEnergyLoss[i] = 0.0;
-      cscSimHitsParticleType[i] = -999;
-      cscSimHitsPabs[i] = 0.0;
-      cscSimHitsProcessType[i] = -999;
-      cscSimHitsX[i] = 0.0;
-      cscSimHitsY[i] = 0.0;
-      cscSimHitsZ[i] = 0.0;
-      cscSimHitsPhi[i] = 0.0;
-      cscSimHitsEta[i] = 0.0;
-      cscSimHits_match_cscRecHits_index[i] = -999;
-      cscSimHits_match_cscRecHits_minDeltaR[i] = -999.;
-      cscSimHits_match_gParticle_index[i] = -999;
-      cscSimHits_match_gParticle_minDeltaR[i] = -999.;
-      cscSimHitsDetId[i] = 0;
+    cscRechitsPhi[i] = 0.0;
+    cscRechitsEta[i] = 0.0;
+    cscRechitsX[i] = 0.0;
+    cscRechitsY[i] = 0.0;
+    cscRechitsZ[i] = 0.0;
+    cscRechitsE[i] = 0.0;
+    cscRechitsTwire[i] = 0.0;
+    cscRechitsTpeak[i] = 0.0;
+    cscRechitsQuality[i] = 0.0;
+    cscRechitsChannels[i] = 0;
+    cscRechitsNStrips[i] = 0;
+    cscRechitsHitWire[i] = 0;
+    cscRechitsWGroupsBX[i] = 0;
+    cscRechitsNWireGroups[i] = 0;
+    cscRechitsDetId[i] = 0;
+    cscRechitsStation[i] = 0;
+    cscRechitsChamber[i] = 0;
+    cscSegPhi[i] = 0.0;
+    cscSegEta[i] = 0.0;
+    cscSegX[i] = 0.0;
+    cscSegY[i] = 0.0;
+    cscSegZ[i] = 0.0;
+    cscSegDirectionX[i] = 0.0;
+    cscSegDirectionY[i] = 0.0;
+    cscSegDirectionZ[i] = 0.0;
+    cscSegT[i] = 0.0;
+    cscSegChi2[i] = 0.0;
+    cscSegNRecHits[i] = 0;
+    cscSegStation[i] = 0;
+    cscSegChamber[i] = 0;
+    cscSegCluster_match_gParticle_id[i] = 999;
+    cscSegCluster_match_gParticle_index[i] = 999;
+    cscSegCluster_match_gParticle_minDeltaR[i] = 999.;
+    cscSegClusterJetVetoPt[i] = 0.0;
+    cscSegClusterJetVetoE[i] = 0.0;
+    cscSegClusterCaloJetVeto[i] = 0.0;
+    cscSegClusterMuonVetoPt[i] = 0.0;
+    cscSegClusterMuonVetoE[i] = 0.0;
+    cscSegClusterX[i] = 0.0;
+    cscSegClusterY[i] = 0.0;
+    cscSegClusterZ[i] = 0.0;
+    cscSegClusterTime[i] = 0.0;
+    cscSegClusterTimeSpread[i] = 0.0;
+    cscSegClusterGenMuonDeltaR[i] = 0.0;
+    cscSegClusterMajorAxis[i] = 0.0;
+    cscSegClusterMinorAxis[i] = 0.0;
+    cscSegClusterXSpread[i] = 0.0;
+    cscSegClusterYSpread[i] = 0.0;
+    cscSegClusterZSpread[i] = 0.0;
+    cscSegClusterEtaPhiSpread[i] = 0.0;
+    cscSegClusterEtaSpread[i] = 0.0;
+    cscSegClusterPhiSpread[i] = 0.0;
+    cscSegClusterEta[i] = 0.0;
+    cscSegClusterPhi[i] = 0.0;
+    cscSegClusterSize[i] = 0;
+    cscSegClusterNSegmentChamberPlus11[i] = 0;
+    cscSegClusterNSegmentChamberPlus12[i] = 0;
+    cscSegClusterNSegmentChamberPlus13[i] = 0;
+    cscSegClusterNSegmentChamberPlus21[i] = 0;
+    cscSegClusterNSegmentChamberPlus22[i] = 0;
+    cscSegClusterNSegmentChamberPlus31[i] = 0;
+    cscSegClusterNSegmentChamberPlus32[i] = 0;
+    cscSegClusterNSegmentChamberPlus41[i] = 0;
+    cscSegClusterNSegmentChamberPlus42[i] = 0;
+    cscSegClusterNSegmentChamberMinus11[i] = 0;
+    cscSegClusterNSegmentChamberMinus12[i] = 0;
+    cscSegClusterNSegmentChamberMinus13[i] = 0;
+    cscSegClusterNSegmentChamberMinus21[i] = 0;
+    cscSegClusterNSegmentChamberMinus22[i] = 0;
+    cscSegClusterNSegmentChamberMinus31[i] = 0;
+    cscSegClusterNSegmentChamberMinus32[i] = 0;
+    cscSegClusterNSegmentChamberMinus41[i] = 0;
+    cscSegClusterNSegmentChamberMinus42[i] = 0;
+    cscSegClusterMe11Ratio[i] = 0.0;
+    cscSegClusterMe12Ratio[i] = 0.0;
+    cscSegClusterVertexR[i] = 0.0;
+    cscSegClusterVertexZ[i] = 0.0;
+    cscSegClusterVertexN[i] = 0;
+    cscSegClusterVertexN1[i] = 0;
+    cscSegClusterVertexN5[i] = 0;
+    cscSegClusterVertexN10[i] = 0;
+    cscSegClusterVertexN15[i] = 0;
+    cscSegClusterVertexN20[i] = 0;
+    cscSegClusterVertexChi2[i] = 0.0;
+    cscSegClusterVertexDis[i] = 0.0;
+    cscSegClusterMaxStationRatio[i] = 0.0;
+    cscSegClusterMaxStation[i] = 0;
+    cscSegClusterNStation[i] = 0;
+    cscSegClusterMaxChamberRatio[i] = 0.0;
+    cscSegClusterMaxChamber[i] = 0;
+    cscSegClusterNChamber[i] = 0;
 
-      cscWireDigiDetId[i] = -999;
-      cscWireDigiWireGroupN[i] = -999;
-      cscStripDigiDetId[i] = -999;
-      cscStripDigiStripN[i] = -999;
+    cscRechitCluster_match_cscSegCluster_index[i] = 999;
+    cscRechitCluster_match_cscSegCluster_minDeltaR[i] = 999.;
+    cscRechitCluster_match_gParticle_id[i] = 999;
+    cscRechitCluster_match_gParticle_index[i] = 999;
+    cscRechitCluster_match_gParticle_minDeltaR[i] = 999.;
+    cscRechitClusterJetVetoPt[i] = 0.0;
+    cscRechitClusterJetVetoE[i] = 0.0;
+    cscRechitClusterCaloJetVeto[i] = 0.0;
+    cscRechitClusterMuonVetoPt[i] = 0.0;
+    cscRechitClusterMuonVetoE[i] = 0.0;
+    cscRechitClusterX[i] = 0.0;
+    cscRechitClusterY[i] = 0.0;
+    cscRechitClusterZ[i] = 0.0;
+    cscRechitClusterTime[i] = 0.0;
+    cscRechitClusterTimeSpread[i] = 0.0;
+    cscRechitClusterGenMuonDeltaR[i] = 0.0;
+    cscRechitClusterMajorAxis[i] = 0.0;
+    cscRechitClusterMinorAxis[i] = 0.0;
+    cscRechitClusterXSpread[i] = 0.0;
+    cscRechitClusterYSpread[i] = 0.0;
+    cscRechitClusterZSpread[i] = 0.0;
+    cscRechitClusterEtaPhiSpread[i] = 0.0;
+    cscRechitClusterEtaSpread[i] = 0.0;
+    cscRechitClusterPhiSpread[i] = 0.0;
+    cscRechitClusterEta[i] = 0.0;
+    cscRechitClusterPhi[i] = 0.0;
+    cscRechitClusterSize[i] = 0;
+    cscRechitClusterNRechitChamberPlus11[i] = 0;
+    cscRechitClusterNRechitChamberPlus12[i] = 0;
+    cscRechitClusterNRechitChamberPlus13[i] = 0;
+    cscRechitClusterNRechitChamberPlus21[i] = 0;
+    cscRechitClusterNRechitChamberPlus22[i] = 0;
+    cscRechitClusterNRechitChamberPlus31[i] = 0;
+    cscRechitClusterNRechitChamberPlus32[i] = 0;
+    cscRechitClusterNRechitChamberPlus41[i] = 0;
+    cscRechitClusterNRechitChamberPlus42[i] = 0;
+    cscRechitClusterNRechitChamberMinus11[i] = 0;
+    cscRechitClusterNRechitChamberMinus12[i] = 0;
+    cscRechitClusterNRechitChamberMinus13[i] = 0;
+    cscRechitClusterNRechitChamberMinus21[i] = 0;
+    cscRechitClusterNRechitChamberMinus22[i] = 0;
+    cscRechitClusterNRechitChamberMinus31[i] = 0;
+    cscRechitClusterNRechitChamberMinus32[i] = 0;
+    cscRechitClusterNRechitChamberMinus41[i] = 0;
+    cscRechitClusterNRechitChamberMinus42[i] = 0;
+    cscRechitClusterMe11Ratio[i] = 0.0;
+    cscRechitClusterMe12Ratio[i] = 0.0;
+    cscRechitClusterVertexR[i] = 0.0;
+    cscRechitClusterVertexZ[i] = 0.0;
+    cscRechitClusterVertexN[i] = 0;
+    cscRechitClusterVertexN1[i] = 0;
+    cscRechitClusterVertexN5[i] = 0;
+    cscRechitClusterVertexN10[i] = 0;
+    cscRechitClusterVertexN15[i] = 0;
+    cscRechitClusterVertexN20[i] = 0;
+    cscRechitClusterVertexChi2[i] = 0.0;
+    cscRechitClusterVertexDis[i] = 0.0;
+    cscRechitClusterMaxStationRatio[i] = 0.0;
+    cscRechitClusterMaxStation[i] = 0;
+    cscRechitClusterNStation[i] = 0;
+    cscRechitClusterMaxChamberRatio[i] = 0.0;
+    cscRechitClusterMaxChamber[i] = 0;
+    cscRechitClusterNChamber[i] = 0;
 
-      cscWireDigiSimLinkChannel[i] = -999;
-      cscWireDigiSimLinkCFposition[i] = -999;
-      cscWireDigiSimLinkFraction[i] = -999.;
-      cscWireDigiSimLinkDetId[i] = -999;
-      cscWireDigiSimLinkSimTrackId[i] = -999;
-      cscWireDigiSimLinkOccupancy[i] = -999;
 
-      cscStripDigiSimLinkChannel[i] = -999;
-      cscStripDigiSimLinkCFposition[i] = -999;
-      cscStripDigiSimLinkFraction[i] = -999.;
-      cscStripDigiSimLinkDetId[i] = -999;
-      cscStripDigiSimLinkSimTrackId[i] = -999;
-      cscStripDigiSimLinkOccupancy[i] = -999;
 
-      // for (int j=0;j<CSCRECHITARRAYSIZE;j++) {
-      // 	cscRechitX[i][j] = -999.0;
-      // 	cscRechitY[i][j] = -999.0;
-      // 	cscRechitZ[i][j] = -999.0;
-      // 	cscRechitT[i][j] = -999.0;
-      // 	cscRechitE[i][j] = -999.0;
-      // }
-    }
+
+
+
+  }
     nRpc = 0;
     for ( int i = 0; i < OBJECTARRAYSIZE; i++)
     {
@@ -1613,6 +1772,9 @@ void displacedJetMuon_ntupler::resetGenParticleBranches()
     gParticleProdVertexX[i] = -99999.0;
     gParticleProdVertexY[i] = -99999.0;
     gParticleProdVertexZ[i] = -99999.0;
+    gParticleDecayVertexX[i] = -99999.0;
+    gParticleDecayVertexY[i] = -99999.0;
+    gParticleDecayVertexZ[i] = -99999.0;
 
   }
   for ( int i = 0; i < LLP_ARRAY_SIZE; i++ )
@@ -1726,7 +1888,7 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
   resetBranches();
   fillEventInfo(iEvent);
   // fillJets(iSetup);
-  // fillMuons(iEvent);
+  fillMuons(iEvent);
   // fillElectrons(iEvent);
   // fillMet(iEvent);
   // fillCaloJets(iSetup);
@@ -1806,39 +1968,6 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
   iSetup.get<MuonGeometryRecord>().get(cscG);
   iSetup.get<MuonGeometryRecord>().get(dtG);
   iSetup.get<MuonGeometryRecord>().get(rpcG);
-  //*****************
-  //** RECHITS
-  //*****************
-  cout << "Number of rec hits: "<<cscRechits->size()<<endl;
-
-  for (const CSCRecHit2D cscRechit : *cscRechits) {
-    LocalPoint  cscRecHitLocalPosition       = cscRechit.localPosition();
-    // LocalError  segmentLocalDirectionError = iDT->localDirectionError();
-    CSCDetId cscdetid = cscRechit.cscDetId();
-    cscRecHitsDetId[nCscRecHits] = CSCDetId::rawIdMaker(CSCDetId::endcap(cscdetid), CSCDetId::station(cscdetid), CSCDetId::ring(cscdetid), CSCDetId::chamber(cscdetid), CSCDetId::layer(cscdetid));
-    const CSCChamber* cscchamber = cscG->chamber(cscdetid);
-    if (cscchamber) {
-      GlobalPoint globalPosition = cscchamber->toGlobal(cscRecHitLocalPosition);
-      cscRecHitsX[nCscRecHits] = globalPosition.x();
-      cscRecHitsY[nCscRecHits] = globalPosition.y();
-      cscRecHitsZ[nCscRecHits] = globalPosition.z();
-      cscRecHitsPhi[nCscRecHits] = globalPosition.phi();
-      cscRecHitsEta[nCscRecHits] = globalPosition.eta();
-      cscRecHitsE[nCscRecHits] = cscRechit.energyDepositedInLayer();//not saved
-      cscRecHitsTpeak[nCscRecHits] = cscRechit.tpeak();
-      cscRecHitsTwire[nCscRecHits] = cscRechit.wireTime();
-      cscRecHitsQuality[nCscRecHits] = cscRechit.quality();
-
-      // cscRecHitsChannels[nCscRecHits] = cscRechit.channels();
-      cscRecHitsNStrips[nCscRecHits] = cscRechit.nStrips();
-      cscRecHitsHitWire[nCscRecHits] = cscRechit.hitWire();
-      cscRecHitsWGroupsBX[nCscRecHits] = cscRechit.wgroupsBX();
-      cscRecHitsNWireGroups[nCscRecHits] = cscRechit.nWireGroups();
-      // rpcT[nRpc] = rpcRecHit.time();
-      // rpcTError[nRpc] = rpcRecHit.timeError();
-      nCscRecHits++;
-    }
-  }
 
   //*****************
   //** DIGIS
@@ -1855,473 +1984,417 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
         std::vector<int> myADCVals = digiIt->getADCCounts();
          bool thisStripFired = false;
          float thisPedestal = 0.5 * (float)(myADCVals[0] + myADCVals[1]);
-         float threshold = 13.3;
+         float threshold = STRIP_DIGI_THRESHOLD;
          float diff = 0.;
-         // float max_diff = 0.0;
          for (unsigned int iCount = 0; iCount < myADCVals.size(); iCount++) {
            diff = (float)myADCVals[iCount] - thisPedestal;
            if (diff > threshold) {
              thisStripFired = true;
-             // max_diff = diff;
            }
          }
-         if (thisStripFired) {
-           const CSCDetId &id = (*stripDetIt).first;
-           int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
-           cscStripDigiDetId[nCscStripDigis] = tempDetId;
-           cscStripDigiStripN[nCscStripDigis] = (*digiIt).getStrip(); //count from 1
-           cscStripDigiADCCounts.push_back(myADCVals);
-           // cout<<"strip number fired: "<<cscStripDigiStripN[nCscStripDigis]<<endl;
-           nCscStripDigis++;
-         }
-
-
+         if (thisStripFired) nCscStripDigis++;
       }
   }
-  cout<<"number of strip digi fired:" <<nCscStripDigis<<endl;
   nCscWireDigis = 0;
   CSCWireDigiCollection::DigiRangeIterator wireDetIt;
   for (wireDetIt = MuonCSCWireDigi->begin(); wireDetIt != MuonCSCWireDigi->end(); wireDetIt++){
       const CSCWireDigiCollection::Range &range = (*wireDetIt).second;
       for (CSCWireDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
-        const CSCDetId &id = (*wireDetIt).first;
-        int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
-        cscWireDigiDetId[nCscWireDigis] = tempDetId;
-        cscWireDigiWireGroupN[nCscWireDigis] = (*digiIt).getWireGroup(); //count from 1
+
         nCscWireDigis++;
       }
 
   }
-  cout<<"wiredigis "<<nCscWireDigis<<endl;
-
-  //*****************
-  //** DIGI SIM LINKS
-  //*****************
-  edm::DetSetVector<StripDigiSimLink>::const_iterator wireLinkIt;
-  //loop through detid
-  nCscWireDigiSimLink=0;
-  for (wireLinkIt = MuonCSCWireDigiSimLinks->begin(); wireLinkIt != MuonCSCWireDigiSimLinks->end(); wireLinkIt++){
-    edm::DetSetVector<StripDigiSimLink>::detset::const_iterator i;
-    for (  i = (*wireLinkIt).data.begin(); i != (*wireLinkIt).data.end(); i++){
-      const CSCDetId &id = (*wireLinkIt).detId();
-      // cout<<"detid, trackid, channel, CFposition, fraction: "<<id<<","<<(*wireLinkIt).detId()<<", "<<(*i).SimTrackId()<<", "<<(*i).channel()<<", "<<(*i).CFposition()<<", "<<(*i).fraction()<<endl;
-      cscWireDigiSimLinkDetId[nCscWireDigiSimLink] = (*wireLinkIt).detId();
-      cscWireDigiSimLinkSimTrackId[nCscWireDigiSimLink] = (*i).SimTrackId();
-      cscWireDigiSimLinkChannel[nCscWireDigiSimLink] = (*i).channel();
-      cscWireDigiSimLinkCFposition[nCscWireDigiSimLink] = (*i).CFposition();
-      cscWireDigiSimLinkFraction[nCscWireDigiSimLink] = (*i).fraction();
-      nCscWireDigiSimLink++;
-    }
-  }
-  //count occupancy
-  int index = 0;
-  int occupancy = 1;
-  int previous_detid = 0;
-  int previous_channel = 0;
-  cscWireDigiSimLinkNWires = 0;
-  for(int i = 0; i < nCscWireDigiSimLink; i++)
-  {
-    if (previous_channel!=cscWireDigiSimLinkChannel[i] || previous_detid!=cscWireDigiSimLinkDetId[i]){
-      for(int j = i;j>=index;j--)
-      {
-        cscWireDigiSimLinkOccupancy[j] = occupancy;
-      }
-      occupancy = 0;
-      cscWireDigiSimLinkNWires++;
-      previous_channel = cscWireDigiSimLinkChannel[i];
-      previous_detid = cscWireDigiSimLinkDetId[i];
-      index = i;
-    }
-    occupancy++;
-    if (i == nCscWireDigiSimLink-1)
-    {
-      for(int j = i;j>index;j--)
-      {
-        cscWireDigiSimLinkOccupancy[j] = occupancy;
-      }
-      // cscWireDigiSimLinkNWires++;
-    }
-    // cout<<"detid, trackid, channel, fraction,occupancy: "<<cscWireDigiSimLinkDetId[i]<<", "<<cscWireDigiSimLinkSimTrackId[i]<<", "<<cscWireDigiSimLinkChannel[i]<<", "<<cscWireDigiSimLinkFraction[i]<<","<<cscWireDigiSimLinkOccupancy[i]<<endl;
-    // cout<<"wires: "<<cscWireDigiSimLinkNWires<<endl;
-  }
-  cout<<"wires: "<<cscWireDigiSimLinkNWires<<", "<<nCscWireDigiSimLink<<endl;
-
-  // for(int i = 0; i < nCscWireDigiSimLink; i++)
-  // {
-  //   cout<<"detid, trackid, channel, fraction, occupancy: "<<cscWireDigiSimLinkDetId[i]<<", "<<cscWireDigiSimLinkSimTrackId[i]<<", "<<cscWireDigiSimLinkChannel[i]<<", "<<cscWireDigiSimLinkFraction[i]<<", "<<cscWireDigiSimLinkOccupancy[i]<<endl;
-  //
-  // }
-  // cout<<"wiredigisimlink "<<nCscWireDigiSimLink<<endl;
 
 
-  // strip digi simlink
-  edm::DetSetVector<StripDigiSimLink>::const_iterator stripLinkIt;
-  //loop through detid
-  nCscStripDigiSimLink=0;
-  for (stripLinkIt = MuonCSCStripDigiSimLinks->begin(); stripLinkIt != MuonCSCStripDigiSimLinks->end(); stripLinkIt++){
-    edm::DetSetVector<StripDigiSimLink>::detset::const_iterator i;
-    for (  i = (*stripLinkIt).data.begin(); i != (*stripLinkIt).data.end(); i++){
-      cscStripDigiSimLinkDetId[nCscStripDigiSimLink] = (*stripLinkIt).detId();
-      cscStripDigiSimLinkSimTrackId[nCscStripDigiSimLink] = (*i).SimTrackId();
-      cscStripDigiSimLinkChannel[nCscStripDigiSimLink] = (*i).channel();
-      cscStripDigiSimLinkCFposition[nCscStripDigiSimLink] = (*i).CFposition();
-      cscStripDigiSimLinkFraction[nCscStripDigiSimLink] = (*i).fraction();
-      nCscStripDigiSimLink++;
-    }
 
-  }
-  //count occupancy
-  index = 0;
-  occupancy = 1;
-  previous_detid = 0;
-  previous_channel = 0;
-  cscStripDigiSimLinkNStrips = 0;
-  for(int i = 0; i < nCscStripDigiSimLink; i++)
-  {
-    if (previous_channel!=cscStripDigiSimLinkChannel[i] || previous_detid!=cscStripDigiSimLinkDetId[i]){
-      for(int j = i;j>=index;j--)
-      {
-        cscStripDigiSimLinkOccupancy[j] = occupancy;
-      }
-      occupancy = 0;
-      cscStripDigiSimLinkNStrips++;
-      previous_channel = cscStripDigiSimLinkChannel[i];
-      previous_detid = cscStripDigiSimLinkDetId[i];
-      index = i;
-    }
-    occupancy++;
-    if (i == nCscStripDigiSimLink-1)
-    {
-      for(int j = i;j>index;j--)
-      {
-        cscStripDigiSimLinkOccupancy[j] = occupancy;
-      }
-      // cscStripDigiSimLinkNStrips++;
-    }
-    // cout<<"detid, trackid, channel, fraction: "<<cscWireDigiSimLinkDetId[i]<<", "<<cscWireDigiSimLinkSimTrackId[i]<<", "<<cscWireDigiSimLinkChannel[i]<<", "<<cscWireDigiSimLinkFraction[i]<<endl;
-    // cout<<"wires: "<<cscWireDigiSimLinkNWires<<endl;
-  }
+
+
 
 
 
   //*****************
-  //** SIM HITS
+  //** Segments
   //*****************
-  vector<int> detLayers;
-  vector<bool> layer_in_ME1112;
-  cout<<"number of simhits: "<<MuonCSCSimHits->size()<<endl;
-  for(size_t i=0; i<MuonCSCSimHits->size();i++)
-  {
-    cscSimHitsTOF[nCscSimHits] = (*MuonCSCSimHits)[i].timeOfFlight();
-    cscSimHitsEnergyLoss[nCscSimHits] = (*MuonCSCSimHits)[i].energyLoss();
-    cscSimHitsParticleType[nCscSimHits] = (*MuonCSCSimHits)[i].particleType();
-    cscSimHitsPabs[nCscSimHits] = (*MuonCSCSimHits)[i].pabs();
-    cscSimHitsProcessType[nCscSimHits] = (*MuonCSCSimHits)[i].processType();
-
-    Local3DPoint cscSimHitLocalPosition = (*MuonCSCSimHits)[i].localPosition();
-    CSCDetId cscdetid = (CSCDetId)(*MuonCSCSimHits)[i].detUnitId();
-    // cout<<cscdetid.rawIdMaker()<<endl;
-    cscSimHitsDetId[nCscSimHits] = CSCDetId::rawIdMaker(CSCDetId::endcap(cscdetid), CSCDetId::station(cscdetid), CSCDetId::ring(cscdetid), CSCDetId::chamber(cscdetid), CSCDetId::layer(cscdetid));
-
-    // if detID not already in detLayer
-    if (!(std::find(detLayers.begin(), detLayers.end(), cscSimHitsDetId[nCscSimHits]) != detLayers.end()))
-    {
-
-      detLayers.push_back(cscSimHitsDetId[nCscSimHits]);
-      layer_in_ME1112.push_back(CSCDetId::station(cscdetid) == 1 && CSCDetId::ring(cscdetid)<=2);
-    }
-
-    const CSCChamber* cscchamber = cscG->chamber(cscdetid);
-    GlobalPoint globalPosition = cscchamber->toGlobal(cscSimHitLocalPosition);
-    cscSimHitsX[nCscSimHits] = globalPosition.x();
-    cscSimHitsY[nCscSimHits] = globalPosition.y();
-    cscSimHitsZ[nCscSimHits] = globalPosition.z();
-    cscSimHitsPhi[nCscSimHits] = globalPosition.phi();
-    cscSimHitsEta[nCscSimHits] = globalPosition.eta();
-    // cout<<"simhit detid, track id, particle type: "<<cscdetid<<", "<<cscSimHitsDetId[nCscSimHits]<<","<<(*MuonCSCSimHits)[i].trackId()<<","<<(*MuonCSCSimHits)[i].particleType()<<endl;
-
-    //match simhit to genParticle
-    double min_delta_r = 15;
-    int matched_rechit = 999;
-    for (int j = 0; j < nGenParticle; j++)
-    {
-      double current_delta_r = deltaR(cscSimHitsEta[i], cscSimHitsPhi[i], gParticleEta[j], gParticlePhi[j]);
-      if (current_delta_r < min_delta_r)
-      {
-        min_delta_r = current_delta_r;
-        matched_rechit = j;
-      }
-    }
-    if (min_delta_r < 0.4)
-    {
-      cscSimHits_match_gParticle_minDeltaR[nCscSimHits] = min_delta_r;
-      cscSimHits_match_gParticle_index[nCscSimHits] = matched_rechit;
-      // cout<<"matched to particle: "<< gParticleId[matched_rechit]<<endl;
-    }
-    nCscSimHits++;
-  }
-  std::vector<muonCscLayers> cscLayers;
-  nCscDetLayer = detLayers.size();
-  for(unsigned int i = 0; i < detLayers.size(); i++)
-  {
-    muonCscLayers tmpLayer;
-    int nSimHits = 0;
-    int nRecHits = 0;
-    for (int j = 0; j < nCscRecHits; j++)
-    {
-      if (detLayers[i] == cscRecHitsDetId[j])
-      nRecHits++;
-    }
-    for (int j = 0; j < nCscSimHits; j++)
-    {
-      if (detLayers[i] == cscSimHitsDetId[j])
-      nSimHits++;
-    }
-    //count number of strips digis in layer
-    CSCStripDigiCollection::DigiRangeIterator stripDetIt;
-    for (stripDetIt = MuonCSCStripDigi->begin(); stripDetIt != MuonCSCStripDigi->end(); stripDetIt++){
-      const CSCDetId &id = (*stripDetIt).first;
-      int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
-      if (detLayers[i] == tempDetId){
-        const CSCStripDigiCollection::Range &range = (*stripDetIt).second;
-        int strip_count = 0;
-        for (CSCStripDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
-          strip_count++;
-        }
-        // cout<<"strip digis: "<<strip_count<<endl;
-        tmpLayer.nStripDigis = strip_count;
-      }
-    }
-    //count number of wire digis in layer
-    CSCWireDigiCollection::DigiRangeIterator wireDetIt;
-    for (wireDetIt = MuonCSCWireDigi->begin(); wireDetIt != MuonCSCWireDigi->end(); wireDetIt++){
-      const CSCDetId &id = (*wireDetIt).first;
-      int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
-      if (detLayers[i] == tempDetId){
-        const CSCWireDigiCollection::Range &range = (*wireDetIt).second;
-        int strip_count = 0;
-        for (CSCWireDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
-          strip_count++;
-        }
-        // cout<<"wire digis: "<<strip_count<<endl;
-        tmpLayer.nWireDigis = strip_count;
-      }
-    }
-
-    tmpLayer.Me1112 = layer_in_ME1112[i];
-    tmpLayer.id = detLayers[i];
-    tmpLayer.nSimHits = nSimHits;
-    tmpLayer.nRecHits = nRecHits;
-    cscLayers.push_back(tmpLayer);
-    cout<<i<<", "<<cscLayers.size()<<endl;
-  }
-
-  sort(cscLayers.begin(), cscLayers.end(), my_largest_muonCscLayers);
-
-  for(unsigned int i = 0; i < cscLayers.size();i++)
-  {
-    cscDetLayer[i] = cscLayers[i].id;
-    cscDetLayer_nCscRecHits[i]  = cscLayers[i].nRecHits;
-    cscDetLayer_nCscSimHits[i]  = cscLayers[i].nSimHits;
-    cscDetLayer_nWireDigis[i]  = cscLayers[i].nWireDigis;
-    cscDetLayer_nStripDigis[i]  = cscLayers[i].nStripDigis;
-    cscDetLayer_inME1112[i]  = cscLayers[i].Me1112;
-  }
-
-
-    // cout << gLLP_decay_vertex_z[0] << " " << gLLP_eta[0] << " " << sqrt(gLLP_decay_vertex_x[0]*gLLP_decay_vertex_x[0]+gLLP_decay_vertex_y[0]*gLLP_decay_vertex_y[0]) << "\n";
-    // cout << gLLP_decay_vertex_z[1] << " " << gLLP_eta[1] << " " << sqrt(gLLP_decay_vertex_x[1]*gLLP_decay_vertex_x[1]+gLLP_decay_vertex_y[1]*gLLP_decay_vertex_y[1]) << "\n";
-    // cout << "\n\n";
-
-    // int LLPInCSC_index = -1;
-    // if (
-    // 	(fabs(gLLP_decay_vertex_z[0]) > 568 && fabs(gLLP_decay_vertex_z[0]) < 1100 && fabs(gLLP_eta[0]) > 0.9 && fabs(gLLP_eta[0]) < 2.4 && sqrt(gLLP_decay_vertex_x[0]*gLLP_decay_vertex_x[0]+gLLP_decay_vertex_y[0]*gLLP_decay_vertex_y[0]) < 695.5)
-    // 	 ) {
-    //   LLPInCSC_index = 0;
-    // }
-    // if (
-    // 	(fabs(gLLP_decay_vertex_z[1]) > 568 && fabs(gLLP_decay_vertex_z[1]) < 1100 && fabs(gLLP_eta[1]) > 0.9 && fabs(gLLP_eta[1]) < 2.4 && sqrt(gLLP_decay_vertex_x[1]*gLLP_decay_vertex_x[1]+gLLP_decay_vertex_y[1]*gLLP_decay_vertex_y[1]) < 695.5)
-    // 	) {
-    //   LLPInCSC_index = 1;
-    // }
-    // if (LLPInCSC_index >= 0) {
-    //   // cout << "Found LLP Decay in CSC: " << gLLP_decay_vertex_x[LLPInCSC_index] << " " << gLLP_decay_vertex_y[LLPInCSC_index] << " " << gLLP_decay_vertex_z[LLPInCSC_index] << " \n";
-    // }
-
-
-  vector<vector<float> > trackSegments;
-
+  vector<Point> points; //vector defined for DBScan Clustering algorithm
   for (const CSCSegment cscSegment : *cscSegments) {
-	float globPhi   = 0.;
-	float globX = 0.;
-	float globY = 0.;
-	float globZ = 0.;
-	float globEta = 0.;
+
+    CSCDetId id  = (CSCDetId)(cscSegment).cscDetId();
+
+    int endcap = CSCDetId::endcap(id) == 1 ? 1 : -1;
+    LocalPoint segPos = (cscSegment).localPosition();
+    LocalVector segDirection = (cscSegment).localDirection();
+    const CSCChamber* cscchamber = cscG->chamber(id);
+    if (cscchamber) {
+      GlobalPoint globalPosition = cscchamber->toGlobal(segPos);
+      GlobalVector globalDirection = cscchamber->toGlobal(segDirection);
+
+      cscSegNRecHits[nCscSeg] = cscSegment.nRecHits();
+      cscSegX[nCscSeg] = globalPosition.x();
+      cscSegY[nCscSeg] = globalPosition.y();
+      cscSegZ[nCscSeg] = globalPosition.z();
+      cscSegPhi[nCscSeg] =  globalPosition.phi();
+      cscSegEta[nCscSeg] =globalPosition.eta();
+      cscSegDirectionX[nCscSeg] = globalDirection.x();
+      cscSegDirectionY[nCscSeg] = globalDirection.y();
+      cscSegDirectionZ[nCscSeg] = globalDirection.z();
+      cscSegT[nCscSeg] = cscSegment.time();
+      cscSegChi2[nCscSeg] = cscSegment.chi2();
+      cscSegStation[nCscSeg] = endcap*CSCDetId::station(id);
+      cscSegChamber[nCscSeg] = endcap* (CSCDetId::station(id)*10 + CSCDetId::ring(id));
+      //https://github.com/cms-sw/cmssw/blob/master/DataFormats/MuonDetId/interface/CSCDetId.h#L173-L177
+      // chamber 14 is also in ME11
+      if (CSCDetId::ring(id) == 4) cscRechitsChamber[ncscRechits] = endcap * (CSCDetId::station(id)*10 + 1);
+
+      // cscSegRing[nCscSeg] = CSCDetId::ring(id);
 
 
-	CSCDetId id  = (CSCDetId)(cscSegment).cscDetId();
-	LocalPoint segPos = (cscSegment).localPosition();
-	//LocalError segPosError = (cscSegment).localPositionError();
-	LocalVector segDirection = (cscSegment).localDirection();
-
-	const CSCChamber* cscchamber = cscG->chamber(id);
-	if (cscchamber) {
-	    GlobalPoint globalPosition = cscchamber->toGlobal(segPos);
-	    GlobalVector globalDirection = cscchamber->toGlobal(segDirection);
-	    globPhi   = globalPosition.phi();
-	    globEta   = globalPosition.eta();
-	    globX = globalPosition.x();
-	    globY = globalPosition.y();
-	    globZ = globalPosition.z();
-	    // globR = pow(globX*globX+globY*globY,0.5);
-	    cscSegNRecHits[nCscSeg] = cscSegment.nRecHits();
-	    cscSegX[nCscSeg] = globX;
-	    cscSegY[nCscSeg] = globY;
-	    cscSegZ[nCscSeg] = globZ;
-	    cscSegDirectionX[nCscSeg] = globalDirection.x();
-	    cscSegDirectionY[nCscSeg] = globalDirection.y();
-	    cscSegDirectionZ[nCscSeg] = globalDirection.z();
-	    cscSegPhi[nCscSeg] = globPhi;
-	    cscSegEta[nCscSeg] = globEta;
-	    cscSegT[nCscSeg] = cscSegment.time();
-	    cscSegChi2[nCscSeg] = cscSegment.chi2();
+      // for dbscan
+      Point p;
+      p.phi = globalPosition.phi();
+      p.eta = globalPosition.eta();
+      p.x = globalPosition.x();
+      p.y = globalPosition.y();
+      p.z = globalPosition.z();
+      p.t = cscSegment.time();
+      p.dirX = globalDirection.x();
+      p.dirY = globalDirection.y();
+      p.dirZ = globalDirection.z();
+      p.station = cscSegStation[nCscSeg];
+      // p.ring = CSCDetId::ring(id);
+	    p.chamber = cscSegChamber[nCscSeg];
+      p.clusterID = UNCLASSIFIED;
+      points.push_back(p);
+      nCscSeg++;
+    }
+  }
 
 
-	    // //if (LLPInCSC_index >= 0) {
-	    //   cout << "Segment: " << globX << " " << globY << " " << globZ << " : "
-	    // 	   << cscSegment.nRecHits() << " " << cscSegment.chi2() << " "
-	    // 	   << " : "
-	    // 	   << globalDirection.x() << " " << globalDirection.y() << " " << globalDirection.z()
-	    // 	   << " : "
-	    // 	   <<  cscSegment.time() << " "
-	    // 	//<< cscSegment.parameters()[0] << " " << cscSegment.parameters()[1] << " " << cscSegment.parameters()[2] << " " << cscSegment.parameters()[3] << " | "
-	    // 	//<< cscSegment.parametersError()
-	    // 	   << "\n";
-	    //   if (cscSegment.nRecHits() >= 3) {
-	    // 	vector<float> trackSegment;
-	    // 	trackSegment.push_back( globX );
-	    // 	trackSegment.push_back( globY );
-	    // 	trackSegment.push_back( globZ );
-	    // 	trackSegment.push_back( globX + globalDirection.x() );
-	    // 	trackSegment.push_back( globY + globalDirection.y());
-	    // 	trackSegment.push_back( globZ + globalDirection.z());
-	    // 	trackSegments.push_back(trackSegment);
-	    //   }
-	    //   //}
+    //Do DBSCAN Clustering
+    int min_point_seg = 10;  //minimum number of segments to call it a cluster
+    float epsilon_seg = 0.2; //cluster radius parameter
+    DBSCAN ds_seg(min_point_seg, epsilon_seg, points);
+    ds_seg.run();
+    ds_seg.result();
+    ds_seg.clusterMoments();
+    ds_seg.vertexing();
+    ds_seg.sort_clusters();
 
+    //Save cluster information
+    for ( auto &tmp : ds_seg.CscCluster ) {
+      cscSegClusterX[nCscSegClusters] =tmp.x;
+      cscSegClusterY[nCscSegClusters] =tmp.y;
+      cscSegClusterZ[nCscSegClusters] =tmp.z;
+      cscSegClusterTime[nCscSegClusters] = tmp.t;
+      cscSegClusterEta[nCscSegClusters] =tmp.eta;
+      cscSegClusterPhi[nCscSegClusters] = tmp.phi;
+      cscSegClusterMajorAxis[nCscSegClusters] =tmp.MajorAxis;
+      cscSegClusterMinorAxis[nCscSegClusters] =tmp.MinorAxis;
+      cscSegClusterXSpread[nCscSegClusters] =tmp.XSpread;
+      cscSegClusterYSpread[nCscSegClusters] =tmp.YSpread;
+      cscSegClusterZSpread[nCscSegClusters] =tmp.ZSpread;
+      cscSegClusterEtaPhiSpread[nCscSegClusters] =tmp.EtaPhiSpread;
+      cscSegClusterEtaSpread[nCscSegClusters] =tmp.EtaSpread;
+      cscSegClusterPhiSpread[nCscSegClusters] = tmp.PhiSpread;
+      cscSegClusterTimeSpread[nCscSegClusters] = tmp.TSpread;
+      cscSegClusterSize[nCscSegClusters] = tmp.nCscSegments;
 
+      cscSegClusterNSegmentChamberPlus11[nCscSegClusters] = tmp.nCscSegmentChamberPlus11;
+      cscSegClusterNSegmentChamberPlus12[nCscSegClusters] = tmp.nCscSegmentChamberPlus12;
+      cscSegClusterNSegmentChamberPlus13[nCscSegClusters] = tmp.nCscSegmentChamberPlus13;
+      cscSegClusterNSegmentChamberPlus21[nCscSegClusters] = tmp.nCscSegmentChamberPlus21;
+      cscSegClusterNSegmentChamberPlus22[nCscSegClusters] = tmp.nCscSegmentChamberPlus22;
+      cscSegClusterNSegmentChamberPlus31[nCscSegClusters] = tmp.nCscSegmentChamberPlus31;
+      cscSegClusterNSegmentChamberPlus32[nCscSegClusters] = tmp.nCscSegmentChamberPlus32;
+      cscSegClusterNSegmentChamberPlus41[nCscSegClusters] = tmp.nCscSegmentChamberPlus41;
+      cscSegClusterNSegmentChamberPlus42[nCscSegClusters] = tmp.nCscSegmentChamberPlus42;
+      cscSegClusterNSegmentChamberMinus11[nCscSegClusters] = tmp.nCscSegmentChamberMinus11;
+      cscSegClusterNSegmentChamberMinus12[nCscSegClusters] = tmp.nCscSegmentChamberMinus12;
+      cscSegClusterNSegmentChamberMinus13[nCscSegClusters] = tmp.nCscSegmentChamberMinus13;
+      cscSegClusterNSegmentChamberMinus21[nCscSegClusters] = tmp.nCscSegmentChamberMinus21;
+      cscSegClusterNSegmentChamberMinus22[nCscSegClusters] = tmp.nCscSegmentChamberMinus22;
+      cscSegClusterNSegmentChamberMinus31[nCscSegClusters] = tmp.nCscSegmentChamberMinus31;
+      cscSegClusterNSegmentChamberMinus32[nCscSegClusters] = tmp.nCscSegmentChamberMinus32;
+      cscSegClusterNSegmentChamberMinus41[nCscSegClusters] = tmp.nCscSegmentChamberMinus41;
+      cscSegClusterNSegmentChamberMinus42[nCscSegClusters] = tmp.nCscSegmentChamberMinus42;
+      cscSegClusterMaxChamber[nCscSegClusters] = tmp.maxChamber;
+      cscSegClusterMaxChamberRatio[nCscSegClusters] = 1.0*tmp.maxChamberSegment/tmp.nCscSegments;
+      cscSegClusterNChamber[nCscSegClusters] = tmp.nChamber;
+      cscSegClusterMaxStation[nCscSegClusters] = tmp.maxStation;
+      cscSegClusterMaxStationRatio[nCscSegClusters] = 1.0*tmp.maxStationSegment/tmp.nCscSegments;
+      cscSegClusterNStation[nCscSegClusters] = tmp.nStation;
 
+      cscSegClusterMe11Ratio[nCscSegClusters] = tmp.Me11Ratio;
+      cscSegClusterMe12Ratio[nCscSegClusters] = tmp.Me12Ratio;
+      cscSegClusterVertexR[nCscSegClusters] = tmp.vertex_r;
+      cscSegClusterVertexZ[nCscSegClusters] = tmp.vertex_z;
+      cscSegClusterVertexChi2[nCscSegClusters] = tmp.vertex_chi2;
+      cscSegClusterVertexDis[nCscSegClusters] = tmp.vertex_dis;
+      cscSegClusterVertexN[nCscSegClusters] = tmp.vertex_n;
+      cscSegClusterVertexN1[nCscSegClusters] = tmp.vertex_n1;
+      cscSegClusterVertexN5[nCscSegClusters] = tmp.vertex_n5;
+      cscSegClusterVertexN15[nCscSegClusters] = tmp.vertex_n15;
+      cscSegClusterVertexN20[nCscSegClusters] = tmp.vertex_n20;
+      cscSegClusterVertexN10[nCscSegClusters] = tmp.vertex_n10;
 
-	    // look at flags of the rechits
-	    // const std::vector<CSCRecHit2D> cscrechits2d = cscSegment.specificRecHits();
-	    // int cscNRecHits_flagged = 0;
-	    // int rechitIndex = 0;
-	    // for (const CSCRecHit2D recHit2d : cscrechits2d) {
-      //
-	    //   LocalPoint hitLocalPos = recHit2d.localPosition();
-	    //   GlobalPoint hitGlobalPos = cscchamber->toGlobal(hitLocalPos);
-	    //   cscRechitBadStrip[nCsc][rechitIndex] = recHit2d.badStrip();
-	    //   cscRechitBadWireGroup[nCsc][rechitIndex] = recHit2d.badWireGroup();
-	    //   cscRechitErrorWithinStrip[nCsc][rechitIndex] = recHit2d.errorWithinStrip();
-	    //   cscRechitQuality[nCsc][rechitIndex] = recHit2d.quality();
-	    //   cscRechitX[nCsc][rechitIndex] = hitGlobalPos.x();
-	    //   cscRechitY[nCsc][rechitIndex] = hitGlobalPos.y();
-	    //   cscRechitZ[nCsc][rechitIndex] = hitGlobalPos.z();
-	    //   cscRechitT[nCsc][rechitIndex] = recHit2d.tpeak();
-	    //   cscRechitE[nCsc][rechitIndex] = recHit2d.energyDepositedInLayer();
-      //
-      //
-	    //   // if (!(recHit2d.quality()==1)) continue;
-	    //   // if(recHit2d.badStrip()) continue;
-	    //   // if (recHit2d.badWireGroup()) continue;
-      //
-	    //   // cout << "---> Rechit : " << hitGlobalPos.x() << " " << hitGlobalPos.y() << " " << hitGlobalPos.z() << " | "
-	    //   // 	   << recHit2d.tpeak()
-	    //   // 	   << "\n";
-	    //   // std::cout<<cscSegment.nRecHits()<<", " << recHit2d.quality()<<", "<<recHit2d.badStrip()<<", "<<recHit2d.badWireGroup()<<", "<<recHit2d.errorWithinStrip()<<", "<<recHit2d.energyDepositedInLayer()<<std::endl;
-      //
-      //
-	    //   //cout << "---> Rechit : " << recHit2d
-      //
-	    //   cscNRecHits_flagged++;
-	    //   rechitIndex++;
-	    // }
-	    // cscNRecHits_flag[nCsc] = cscNRecHits_flagged;
+      //Jet veto/ muon veto
+      cscSegClusterJetVetoPt[nCscSegClusters] = 0.0;
+      cscSegClusterJetVetoE[nCscSegClusters] = 0.0;
+      cscSegClusterCaloJetVeto[nCscSegClusters] = 0.0;
+      cscSegClusterMuonVetoPt[nCscSegClusters] = 0.0;
+      cscSegClusterMuonVetoE[nCscSegClusters] = 0.0;
 
-	    nCscSeg++;
-	   }
+      for (const reco::PFJet &j : *jets) {
+        //if (j.pt() < 10) continue;
+        if (fabs(j.eta())>3.0) continue;
+        if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscSegClusterJetVetoPt[nCscSegClusters] ) {
+          cscSegClusterJetVetoPt[nCscSegClusters]  = j.pt();
+        }
+        if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscSegClusterJetVetoE[nCscSegClusters] ) {
+          cscSegClusterJetVetoE[nCscSegClusters]  = j.energy();
+        }
+      }
+      for(const pat::Muon &mu : *muons) {
+	//if (mu.pt() < 20.0) continue;
+        if (fabs(mu.eta()) > 3.0) continue;
+        if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > cscSegClusterMuonVetoPt[nCscSegClusters]) {
+          cscSegClusterMuonVetoPt[nCscSegClusters] = mu.pt();
+        }
+        if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscSegClusterMuonVetoE[nCscSegClusters]) {
+          cscSegClusterMuonVetoE[nCscSegClusters] = mu.energy();
+        }
+      }
+      //match to genparticles
+      float min_deltaR = 15.;
+      int index = 999;
+      for(int j = 0; j < nGenParticle; j++)
+      {
+        if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
+
+        double current_delta_r = deltaR(cscSegClusterEta[nCscSegClusters], cscSegClusterPhi[nCscSegClusters], gParticleEta[j], gParticlePhi[j]);
+        if (current_delta_r < min_deltaR)
+        {
+          min_deltaR = current_delta_r;
+          index = j;
+        }
+      }
+      if (min_deltaR < 0.4)
+      {
+        cscSegCluster_match_gParticle_minDeltaR[nCscSegClusters] = min_deltaR;
+        cscSegCluster_match_gParticle_index[nCscSegClusters] = index;
+        cscSegCluster_match_gParticle_id[nCscSegClusters] = gParticleId[index];
+
+      }
+
+      nCscSegClusters++;
     }
 
-    /*
-    // //Check for distance of closest approach
-    // cout << "nCsc = " << nCsc << "\n";
-    // cout << "\n\n\n Check for closest approach\n";
-    // cout << "Number of Segments: " << trackSegments.size() << "\n";
-    // for (uint i=0; i<trackSegments.size() ;i++) {
-    //   cout << "Track Segment " << i << " : "
-    // 	   << trackSegments[i][0] << "," << trackSegments[i][1] << "," << trackSegments[i][2] << " | "
-    // 	   << trackSegments[i][3] - trackSegments[i][0]  << "," << trackSegments[i][4] - trackSegments[i][1]  << "," << trackSegments[i][5] -trackSegments[i][2]
-    // 	   << "\n";
-    //   for (uint j=0; j<trackSegments.size() ;j++) {
-    // 	if (i==j) continue;
-    // 	cout << "   Closest approach to Track Segment " << j << " : "
-    // 	     << trackSegments[j][0] << "," << trackSegments[j][1] << "," << trackSegments[j][2] << " | "
-    // 	     << trackSegments[j][3] - trackSegments[j][0]  << "," << trackSegments[j][4] - trackSegments[j][1]  << "," << trackSegments[j][5] -trackSegments[j][2]
-    // 	     << " | ";
-
-    // 	//u is the direction of line i
-    // 	double u_x = trackSegments[i][3] - trackSegments[i][0];
-    // 	double u_y = trackSegments[i][4] - trackSegments[i][1];
-    // 	double u_z = trackSegments[i][5] - trackSegments[i][2];
-    // 	//v is the direction of line j
-    // 	double v_x = trackSegments[j][3] - trackSegments[j][0];
-    // 	double v_y = trackSegments[j][4] - trackSegments[j][1];
-    // 	double v_z = trackSegments[j][5] - trackSegments[j][2];
-    // 	//w is the vector between the anchor points on the two lines
-    // 	double w_x = trackSegments[i][0] - trackSegments[j][0];
-    // 	double w_y = trackSegments[i][1] - trackSegments[j][1];
-    // 	double w_z = trackSegments[i][2] - trackSegments[j][2];
-
-    // 	double a = u_x*u_x + u_y*u_y + u_z*u_z;         // u.u , always >= 0
-    // 	double b = u_x*v_x + u_y*v_y + u_z*v_z;         // u.v
-    // 	double c = v_x*v_x + v_y*v_y + v_z*u_z;         // v.v , always >= 0
-    // 	double d = u_x*w_x + u_y*w_y + u_z*w_z;         // u.w
-    // 	double e = v_x*w_x + v_y*w_y + v_z*w_z;         // v.w
-    // 	double D = a*c - b*b;        // always >= 0
-    // 	double sc, tc;
-
-    // 	// compute the line parameters of the two closest points
-    // 	if (D < 0.000001) {          // the lines are almost parallel
-    // 	  sc = 0.0;
-    // 	  tc = (b>c ? d/b : e/c);    // use the largest denominator
-    // 	}
-    // 	else {
-    // 	  sc = (b*e - c*d) / D;
-    // 	  tc = (a*e - b*d) / D;
-    // 	}
-
-    // 	// get the difference of the two closest points : vector DP = L1(sc) - L2(tc)
-    // 	double dP_x = w_x + (sc * u_x) - (tc * v_x);
-    // 	double dP_y = w_y + (sc * u_y) - (tc * v_y);
-    // 	double dP_z = w_z + (sc * u_z) - (tc * v_z);
-    // 	double closestApproach = sqrt(dP_x*dP_x + dP_y*dP_y + dP_z*dP_z); //norm(dP)
-
-    // 	double midPoint_x = 0.5* (trackSegments[i][0] + (sc * u_x) + trackSegments[j][0] + (tc * v_x));
-    // 	double midPoint_y = 0.5* (trackSegments[i][1] + (sc * u_y) + trackSegments[j][1] + (tc * v_y));
-    // 	double midPoint_z = 0.5* (trackSegments[i][2] + (sc * u_z) + trackSegments[j][2] + (tc * v_z));
-
-    // 	cout << closestApproach << " | ";
-    // 	cout << midPoint_x << " , " << midPoint_y << " , " << midPoint_z << " ";
-    // 	cout << "\n";
-    //   }
-    //   cout << " done \n";
-    // }
-
-    // cout << "\n******\n\n\n\n";
 
 
 
 
+  //*****************
+  //** RECHITS
+  //*****************
+  cout << "Number of rec hits: "<<cscRechits->size()<<endl;
+  points.clear();
+  for (const CSCRecHit2D cscRechit : *cscRechits) {
+    LocalPoint  cscRecHitLocalPosition       = cscRechit.localPosition();
+    // LocalError  segmentLocalDirectionError = iDT->localDirectionError();
+    CSCDetId cscdetid = cscRechit.cscDetId();
+    cscRechitsDetId[ncscRechits] = CSCDetId::rawIdMaker(CSCDetId::endcap(cscdetid), CSCDetId::station(cscdetid), CSCDetId::ring(cscdetid), CSCDetId::chamber(cscdetid), CSCDetId::layer(cscdetid));
+    int endcap = CSCDetId::endcap(cscdetid) == 1 ? 1 : -1;
+    const CSCChamber* cscchamber = cscG->chamber(cscdetid);
+    if (cscchamber) {
+      GlobalPoint globalPosition = cscchamber->toGlobal(cscRecHitLocalPosition);
+      cscRechitsX[ncscRechits] = globalPosition.x();
+      cscRechitsY[ncscRechits] = globalPosition.y();
+      cscRechitsZ[ncscRechits] = globalPosition.z();
+      cscRechitsPhi[ncscRechits] = globalPosition.phi();
+      cscRechitsEta[ncscRechits] = globalPosition.eta();
+      cscRechitsE[ncscRechits] = cscRechit.energyDepositedInLayer();//not saved
+      cscRechitsTpeak[ncscRechits] = cscRechit.tpeak();
+      cscRechitsTwire[ncscRechits] = cscRechit.wireTime();
+      cscRechitsQuality[ncscRechits] = cscRechit.quality();
+      cscRechitsChamber[ncscRechits] = endcap * (CSCDetId::station(cscdetid)*10 + CSCDetId::ring(cscdetid));
+      if (CSCDetId::ring(cscdetid) == 4) cscRechitsChamber[ncscRechits] = endcap * (CSCDetId::station(cscdetid)*10 + 1);
+      // cscRechitsRing[ncscRechits] = CSCDetId::ring(cscdetid);
+
+      cscRechitsStation[ncscRechits] = endcap *CSCDetId::station(cscdetid);
+      // cscRechitsChannels[ncscRechits] = cscRechit.channels();
+      cscRechitsNStrips[ncscRechits] = cscRechit.nStrips();
+      cscRechitsHitWire[ncscRechits] = cscRechit.hitWire();
+      cscRechitsWGroupsBX[ncscRechits] = cscRechit.wgroupsBX();
+      cscRechitsNWireGroups[ncscRechits] = cscRechit.nWireGroups();
+
+      Point p;
+	    p.phi = cscRechitsPhi[ncscRechits];
+	    p.eta = cscRechitsEta[ncscRechits];
+	    p.x = cscRechitsX[ncscRechits];
+	    p.y = cscRechitsY[ncscRechits];
+	    p.z = cscRechitsZ[ncscRechits];
+	    p.t = cscRechitsTpeak[ncscRechits];
+	    p.station = cscRechitsStation[ncscRechits];
+	    p.chamber = cscRechitsChamber[ncscRechits];
+	    p.clusterID = UNCLASSIFIED;
+	    points.push_back(p);
+
+      ncscRechits++;
+    }
+  }
+  //Do DBSCAN Clustering
+  int min_point = 50;  //minimum number of segments to call it a cluster
+  float epsilon = 0.2; //cluster radius parameter
+  DBSCAN ds(min_point, epsilon, points);
+  ds.run();
+  ds.result();
+  ds.clusterMoments();
+  ds.vertexing();
+  ds.sort_clusters();
+  //Save cluster information
+  for ( auto &tmp : ds.CscCluster ) {
+    cscRechitClusterX[nCscRechitClusters] =tmp.x;
+    cscRechitClusterY[nCscRechitClusters] =tmp.y;
+    cscRechitClusterZ[nCscRechitClusters] =tmp.z;
+    cscRechitClusterTime[nCscRechitClusters] = tmp.t;
+    cscRechitClusterEta[nCscRechitClusters] =tmp.eta;
+    cscRechitClusterPhi[nCscRechitClusters] = tmp.phi;
+    cscRechitClusterMajorAxis[nCscRechitClusters] =tmp.MajorAxis;
+    cscRechitClusterMinorAxis[nCscRechitClusters] =tmp.MinorAxis;
+    cscRechitClusterXSpread[nCscRechitClusters] =tmp.XSpread;
+    cscRechitClusterYSpread[nCscRechitClusters] =tmp.YSpread;
+    cscRechitClusterZSpread[nCscRechitClusters] =tmp.ZSpread;
+    cscRechitClusterEtaPhiSpread[nCscRechitClusters] =tmp.EtaPhiSpread;
+    cscRechitClusterEtaSpread[nCscRechitClusters] =tmp.EtaSpread;
+    cscRechitClusterPhiSpread[nCscRechitClusters] = tmp.PhiSpread;
+    cscRechitClusterTimeSpread[nCscRechitClusters] = tmp.TSpread;
+    cscRechitClusterSize[nCscRechitClusters] = tmp.nCscSegments;
+
+    cscRechitClusterNRechitChamberPlus11[nCscRechitClusters] = tmp.nCscSegmentChamberPlus11;
+    cscRechitClusterNRechitChamberPlus12[nCscRechitClusters] = tmp.nCscSegmentChamberPlus12;
+    cscRechitClusterNRechitChamberPlus13[nCscRechitClusters] = tmp.nCscSegmentChamberPlus13;
+    cscRechitClusterNRechitChamberPlus21[nCscRechitClusters] = tmp.nCscSegmentChamberPlus21;
+    cscRechitClusterNRechitChamberPlus22[nCscRechitClusters] = tmp.nCscSegmentChamberPlus22;
+    cscRechitClusterNRechitChamberPlus31[nCscRechitClusters] = tmp.nCscSegmentChamberPlus31;
+    cscRechitClusterNRechitChamberPlus32[nCscRechitClusters] = tmp.nCscSegmentChamberPlus32;
+    cscRechitClusterNRechitChamberPlus41[nCscRechitClusters] = tmp.nCscSegmentChamberPlus41;
+    cscRechitClusterNRechitChamberPlus42[nCscRechitClusters] = tmp.nCscSegmentChamberPlus42;
+    cscRechitClusterNRechitChamberMinus11[nCscRechitClusters] = tmp.nCscSegmentChamberMinus11;
+    cscRechitClusterNRechitChamberMinus12[nCscRechitClusters] = tmp.nCscSegmentChamberMinus12;
+    cscRechitClusterNRechitChamberMinus13[nCscRechitClusters] = tmp.nCscSegmentChamberMinus13;
+    cscRechitClusterNRechitChamberMinus21[nCscRechitClusters] = tmp.nCscSegmentChamberMinus21;
+    cscRechitClusterNRechitChamberMinus22[nCscRechitClusters] = tmp.nCscSegmentChamberMinus22;
+    cscRechitClusterNRechitChamberMinus31[nCscRechitClusters] = tmp.nCscSegmentChamberMinus31;
+    cscRechitClusterNRechitChamberMinus32[nCscRechitClusters] = tmp.nCscSegmentChamberMinus32;
+    cscRechitClusterNRechitChamberMinus41[nCscRechitClusters] = tmp.nCscSegmentChamberMinus41;
+    cscRechitClusterNRechitChamberMinus42[nCscRechitClusters] = tmp.nCscSegmentChamberMinus42;
+    cscRechitClusterMaxChamber[nCscRechitClusters] = tmp.maxChamber;
+    cscRechitClusterMaxChamberRatio[nCscRechitClusters] = 1.0*tmp.maxChamberSegment/tmp.nCscSegments;
+    cscRechitClusterNChamber[nCscRechitClusters] = tmp.nChamber;
+    cscRechitClusterMaxStation[nCscRechitClusters] = tmp.maxStation;
+    cscRechitClusterMaxStationRatio[nCscRechitClusters] = 1.0*tmp.maxStationSegment/tmp.nCscSegments;
+    cscRechitClusterNStation[nCscRechitClusters] = tmp.nStation;
+
+    cscRechitClusterMe11Ratio[nCscRechitClusters] = tmp.Me11Ratio;
+    cscRechitClusterMe12Ratio[nCscRechitClusters] = tmp.Me12Ratio;
+    cscRechitClusterVertexR[nCscRechitClusters] = tmp.vertex_r;
+    cscRechitClusterVertexZ[nCscRechitClusters] = tmp.vertex_z;
+    cscRechitClusterVertexChi2[nCscRechitClusters] = tmp.vertex_chi2;
+    cscRechitClusterVertexDis[nCscRechitClusters] = tmp.vertex_dis;
+    cscRechitClusterVertexN[nCscRechitClusters] = tmp.vertex_n;
+    cscRechitClusterVertexN1[nCscRechitClusters] = tmp.vertex_n1;
+    cscRechitClusterVertexN5[nCscRechitClusters] = tmp.vertex_n5;
+    cscRechitClusterVertexN15[nCscRechitClusters] = tmp.vertex_n15;
+    cscRechitClusterVertexN20[nCscRechitClusters] = tmp.vertex_n20;
+    cscRechitClusterVertexN10[nCscRechitClusters] = tmp.vertex_n10;
+
+    //Jet veto/ muon veto
+    cscRechitClusterJetVetoPt[nCscRechitClusters] = 0.0;
+    cscRechitClusterJetVetoE[nCscRechitClusters] = 0.0;
+    cscRechitClusterCaloJetVeto[nCscRechitClusters] = 0.0;
+    cscRechitClusterMuonVetoPt[nCscRechitClusters] = 0.0;
+    cscRechitClusterMuonVetoE[nCscRechitClusters] = 0.0;
+    for (const reco::PFJet &j : *jets) {
+      //if (j.pt() < 10) continue;
+      if (fabs(j.eta())>3.0) continue;
+      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscRechitClusterJetVetoPt[nCscRechitClusters] ) {
+        cscRechitClusterJetVetoPt[nCscRechitClusters]  = j.pt();
+      }
+      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscRechitClusterJetVetoE[nCscRechitClusters] ) {
+        cscRechitClusterJetVetoE[nCscRechitClusters]  = j.energy();
+      }
+    }
+    for(const pat::Muon &mu : *muons) {
+    //if (mu.pt() < 20.0) continue;
+      if (fabs(mu.eta()) > 3.0) continue;
+      if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > cscRechitClusterMuonVetoPt[nCscRechitClusters]) {
+        cscRechitClusterMuonVetoPt[nCscRechitClusters] = mu.pt();
+      }
+      if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscRechitClusterMuonVetoE[nCscRechitClusters]) {
+        cscRechitClusterMuonVetoE[nCscRechitClusters] = mu.energy();
+      }
+    }
+
+    for (const reco::PFJet &j : *jets) {
+      //if (j.pt() < 10) continue;
+      if (fabs(j.eta())>3.0) continue;
+      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscRechitClusterJetVetoPt[nCscRechitClusters] ) {
+        cscRechitClusterJetVetoPt[nCscRechitClusters]  = j.pt();
+      }
+      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscRechitClusterJetVetoE[nCscRechitClusters] ) {
+        cscRechitClusterJetVetoE[nCscRechitClusters]  = j.energy();
+      }
+    }
+
+    //match to segment clusters
+    float min_deltaR = 15.;
+    int index = 999;
+
+    for(int j = 0; j < nCscSegClusters; j++)
+    {
+      double current_delta_r = deltaR(cscRechitClusterEta[nCscRechitClusters], cscRechitClusterPhi[nCscRechitClusters], cscSegClusterEta[j], cscSegClusterPhi[j]);
+      if (current_delta_r < min_deltaR)
+      {
+        min_deltaR = current_delta_r;
+        index = j;
+      }
+    }
+    if (min_deltaR < 0.4)
+    {
+      cscRechitCluster_match_cscSegCluster_minDeltaR[nCscRechitClusters] = min_deltaR;
+      cscRechitCluster_match_cscSegCluster_index[nCscRechitClusters] = index;
+    }
+    min_deltaR = 15.;
+    index = 999;
+    //match to genparticles
+    for(int j = 0; j < nGenParticle; j++)
+    {
+      if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
+      double current_delta_r = deltaR(cscRechitClusterEta[nCscRechitClusters], cscRechitClusterPhi[nCscRechitClusters], gParticleEta[j], gParticlePhi[j]);
+      if (current_delta_r < min_deltaR)
+      {
+        min_deltaR = current_delta_r;
+        index = j;
+      }
+    }
+    if (min_deltaR < 0.4)
+    {
+      cscRechitCluster_match_gParticle_minDeltaR[nCscRechitClusters] = min_deltaR;
+      cscRechitCluster_match_gParticle_index[nCscRechitClusters] = index;
+      cscRechitCluster_match_gParticle_id[nCscRechitClusters] = gParticleId[index];
+    }
+
+    nCscRechitClusters++;
+  }
+
+
+
+
+
+
+
+
+/*
 
     for (const RPCRecHit rpcRecHit : *rpcRecHits){
 	LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
@@ -2422,14 +2495,12 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
     return true;
 }
-
 bool displacedJetMuon_ntupler::fillGenParticles(){
   std::vector<const reco::Candidate*> prunedV;//Allows easier comparison for mother finding
   //Fills selected gen particles
   //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
   const double pt_cut = 0.0;
   int llp_id = 9000006;
-
   for(size_t i=0; i<genParticles->size();i++)
   {
     if(
@@ -2439,7 +2510,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
        || (abs((*genParticles)[i].pdgId()) >= 23 && abs((*genParticles)[i].pdgId()) <= 25 && ( (*genParticles)[i].status() < 30))
        || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
        || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
-
+       || (abs((*genParticles)[i].pdgId()) >= 100 && abs((*genParticles)[i].pdgId()) <= 350)
        // || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
        || (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007)
 	)
@@ -2448,12 +2519,9 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
            prunedV.push_back(&(*genParticles)[i]);
          }
        }
-
   }
-
   //Total number of gen particles
   nGenParticle = prunedV.size();
-
   //Look for mother particle and Fill gen variables
   for(unsigned int i = 0; i < prunedV.size(); i++)
   {
@@ -2584,6 +2652,9 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 
         if (foundDaughter)
         {
+          gParticleDecayVertexX[i] = dau->vx();
+        	gParticleDecayVertexY[i] = dau->vy();
+        	gParticleDecayVertexZ[i] = dau->vz();
 
           if (gParticleId[i] == llp_id)
           {
@@ -3374,6 +3445,7 @@ bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
   //Expensive option in terms of ntuple size
   //------------------------------------------------------------------
   nameHLT->clear();
+  cout<<triggerBits->size()<<endl;
   for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i)
   {
     string hltPathNameReq = "HLT_";
@@ -3398,6 +3470,7 @@ bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
   //------------------------------------------------------------------
   // Save trigger decisions in array of booleans
   //------------------------------------------------------------------
+
   for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i)
   {
     string hltPathNameReq = "HLT_";

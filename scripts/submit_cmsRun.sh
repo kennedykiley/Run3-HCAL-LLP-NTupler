@@ -1,5 +1,4 @@
 #!/bin/sh
-
 mkdir -p log
 mkdir -p submit
 
@@ -11,13 +10,19 @@ cd -
 
 job_script=${CMSSW_BASE}/src/cms_lpc_llp/llp_ntupler/scripts/runRazorJob_llp_vH.sh
 echo $job_script
-samples=WplusH_HToSSTobbbb_ms55_pl10000_ev150000
+
+year=RunIISummer16
+samples=WminusH_HToSSTobbbb_ms55_pl10000_ev150000_${year}
+#samples=WminusH_HToSSTobbbb_ms55_pl10000_ev150000_RunIISummer16
 filesPerJob=1
 for sample in ${samples}
 do
 	echo "Sample " ${sample}
-	version=/v4/
-	output=/store/group/phys_exotica/privateProduction/ntuple/RunIIFall17/WplusH_HToSSTobbbb_ms55_pl10000/${version}/${sample}
+	version=/v7/
+	echo "${version}"
+	#output=/store/group/phys_exotica/privateProduction/ntuple/RunIISummer16/WminusH_HToSSTobbbb_ms55_pl10000/${version}/${sample}
+	output=/store/group/phys_exotica/privateProduction/ntuple/${year}/${sample}/${version}/${sample}
+	echo "output ${output}"
 	inputfilelist=/src/cms_lpc_llp/llp_ntupler/lists/${sample}.txt
 	nfiles=`cat ${CMSSW_BASE}$inputfilelist | wc | awk '{print $1}' `
         maxjob=`python -c "print int($nfiles.0/$filesPerJob)"`
@@ -26,7 +31,9 @@ do
         then
                 maxjob=`python -c "print int($nfiles.0/$filesPerJob)-1"`
         fi
-	config=displacedJetMuon_step2_rechit_studies_cfg_condor
+	#config=displacedJetMuon_step2_rechit_studies_cfg_condor
+	config=displacedJetMuon_step2_ntupler_cfg_condor
+	echo "${config}"
 	rm -f submit/${config}_{sample}_Job*.jdl
 	rm -f log/${config}_${sample}_Job*
 	for jobnumber in `seq 0 1 ${maxjob}`
@@ -38,11 +45,11 @@ do
                 echo "Arguments = ${config}.py ${inputfilelist} ${filesPerJob} ${jobnumber} ${sample}_Job${jobnumber}_Of_${maxjob}.root ${output} ${CMSSW_BASE} ${HOME}/" >> ${jdl_file}
 		
 		# option should always be 1, when running condor
-		echo "Log = log/${config}_${sample}_Job${jobnumber}_Of_${maxjob}_PC.log" >> ${jdl_file}
+		echo "Log = log/${config}_${sample}_Job${jobnumber}_Of_${maxjob}_\$(Cluster).\$(Process).log" >> ${jdl_file}
 		echo "Output = log/${config}_${sample}_Job${jobnumber}_Of_${maxjob}_\$(Cluster).\$(Process).out" >> ${jdl_file}
 	        echo "Error = log/${config}_${sample}_Job${jobnumber}_Of_${maxjob}_\$(Cluster).\$(Process).err" >> ${jdl_file}
 
-		echo "Requirements=(TARGET.OpSysAndVer==\"CentOS7\" && regexp(\"blade.*\", TARGET.Machine))" >> ${jdl_file}
+		#echo "Requirements=(TARGET.OpSysAndVer==\"CentOS7\" && regexp(\"blade.*\", TARGET.Machine))" >> ${jdl_file}
 		echo "RequestMemory = 2000" >> ${jdl_file}
 		echo "RequestCpus = 1" >> ${jdl_file}
 		echo "RequestDisk = 4" >> ${jdl_file}
