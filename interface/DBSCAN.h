@@ -21,6 +21,8 @@ struct cscCluster
   int maxStation, maxStationSegment, nStation;
   int nCscSegmentChamberPlus11, nCscSegmentChamberPlus12, nCscSegmentChamberPlus13, nCscSegmentChamberPlus21, nCscSegmentChamberPlus22, nCscSegmentChamberPlus31, nCscSegmentChamberPlus32, nCscSegmentChamberPlus41, nCscSegmentChamberPlus42;
   int nCscSegmentChamberMinus11, nCscSegmentChamberMinus12, nCscSegmentChamberMinus13, nCscSegmentChamberMinus21, nCscSegmentChamberMinus22, nCscSegmentChamberMinus31, nCscSegmentChamberMinus32, nCscSegmentChamberMinus41, nCscSegmentChamberMinus42;
+  int nDtSegmentStation1,nDtSegmentStation2,nDtSegmentStation3,nDtSegmentStation4;
+
   float Me11Ratio, Me12Ratio;
   float MajorAxis, MinorAxis, EtaSpread, PhiSpread, EtaPhiSpread;
   float XSpread, YSpread, ZSpread, TSpread;

@@ -29,7 +29,6 @@ int DBSCAN::run()
 
 int DBSCAN::result(){
 
-  cout<<"nclusters: "<<nClusters<<endl;
   for(int i = 0; i < nClusters; i++)
   {
     float avg_x(0.0), avg_y(0.0), avg_z(0.0), avg_t(0.0);
@@ -149,6 +148,11 @@ void DBSCAN::sort_clusters()
     tmpCluster.nCscSegmentChamberMinus32 = 0;
     tmpCluster.nCscSegmentChamberMinus41 = 0;
     tmpCluster.nCscSegmentChamberMinus42 = 0;
+
+    tmpCluster.nDtSegmentStation1 = 0;
+    tmpCluster.nDtSegmentStation2 = 0;
+    tmpCluster.nDtSegmentStation3 = 0;
+    tmpCluster.nDtSegmentStation4 = 0;
     for(unsigned int l=0; l < m_pointSize; l++){
       if (m_points[l].clusterID == i+1){
         cscStations.push_back(m_points[l].station);
@@ -176,6 +180,12 @@ void DBSCAN::sort_clusters()
       	if (m_points[l].chamber == -32) tmpCluster.nCscSegmentChamberMinus32++;
       	if (m_points[l].chamber == -41) tmpCluster.nCscSegmentChamberMinus41++;
       	if (m_points[l].chamber == -42) tmpCluster.nCscSegmentChamberMinus42++;
+
+        if (m_points[l].station == 1) tmpCluster.nDtSegmentStation1++;
+        if (m_points[l].station == 2) tmpCluster.nDtSegmentStation2++;
+        if (m_points[l].station == 3) tmpCluster.nDtSegmentStation3++;
+        if (m_points[l].station == 4) tmpCluster.nDtSegmentStation4++;
+
       }
     }
     tmpCluster.x = clusterX[i];
@@ -196,16 +206,16 @@ void DBSCAN::sort_clusters()
     tmpCluster.nCscSegments = clusterSize[i];
     tmpCluster.Me11Ratio = 1.0*nSegments_Me11/clusterSize[i];
     tmpCluster.Me12Ratio = 1.0*nSegments_Me12/clusterSize[i];
-    tmpCluster.vertex_r = clusterVertexR[i];
-    tmpCluster.vertex_z = clusterVertexZ[i];
-    tmpCluster.vertex_dis = clusterVertexDis[i];
-    tmpCluster.vertex_chi2 = clusterVertexChi2[i];
-    tmpCluster.vertex_n = clusterVertexN[i];
-    tmpCluster.vertex_n1 = clusterVertexN1cm[i];
-    tmpCluster.vertex_n5 = clusterVertexN5cm[i];
-    tmpCluster.vertex_n10 = clusterVertexN10cm[i];
-    tmpCluster.vertex_n15 = clusterVertexN15cm[i];
-    tmpCluster.vertex_n20 = clusterVertexN20cm[i];
+    // tmpCluster.vertex_r = clusterVertexR[i];
+    // tmpCluster.vertex_z = clusterVertexZ[i];
+    // tmpCluster.vertex_dis = clusterVertexDis[i];
+    // tmpCluster.vertex_chi2 = clusterVertexChi2[i];
+    // tmpCluster.vertex_n = clusterVertexN[i];
+    // tmpCluster.vertex_n1 = clusterVertexN1cm[i];
+    // tmpCluster.vertex_n5 = clusterVertexN5cm[i];
+    // tmpCluster.vertex_n10 = clusterVertexN10cm[i];
+    // tmpCluster.vertex_n15 = clusterVertexN15cm[i];
+    // tmpCluster.vertex_n20 = clusterVertexN20cm[i];
     tmpCluster.segment_id = segment_index;
 
     // count the number of chambers and max chamber segments

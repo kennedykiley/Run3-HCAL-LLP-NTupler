@@ -51,6 +51,9 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   cscRechitInputToken_(consumes<CSCRecHit2DCollection>(edm::InputTag("csc2DRecHits"))),
   dtSegmentInputToken_(consumes<DTRecSegment4DCollection>(edm::InputTag("dt4DSegments"))),
   dtCosmicSegmentInputToken_(consumes<DTRecSegment4DCollection>(edm::InputTag("dt4DCosmicSegments"))),
+  dtRechitInputToken_(consumes<DTRecHitCollection>(edm::InputTag("dt1DRecHits"))),
+  dtCosmicRechitInputToken_(consumes<DTRecHitCollection>(edm::InputTag("dt1DCosmicRecHits"))),
+
   rpcRecHitInputToken_(consumes<RPCRecHitCollection>(edm::InputTag("rpcRecHits"))),
   MuonCSCSimHitsToken_(consumes<vector<PSimHit>>(iConfig.getParameter<edm::InputTag>("MuonCSCSimHits"))),
   MuonCSCComparatorDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCComparatorDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCComparatorDigi"))),
@@ -524,7 +527,6 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // all csc clusters
 
 
-
     displacedJetMuonTree->Branch("nCscRechitClusters",             &nCscRechitClusters, "nCscRechitClusters/I");
     displacedJetMuonTree->Branch("cscRechitCluster_match_cscSegCluster_minDeltaR",             cscRechitCluster_match_cscSegCluster_minDeltaR,             "cscRechitCluster_match_cscSegCluster_minDeltaR[nCscRechitClusters]/F");
     displacedJetMuonTree->Branch("cscRechitCluster_match_cscSegCluster_index",             cscRechitCluster_match_cscSegCluster_index,             "cscRechitCluster_match_cscSegCluster_index[nCscRechitClusters]/I");
@@ -656,6 +658,62 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("cscSegClusterVertexN20",             cscSegClusterVertexN20,             "cscSegClusterVertexN20[nCscSegClusters]/I");
     displacedJetMuonTree->Branch("cscSegClusterVertexN",             cscSegClusterVertexN,             "cscSegClusterVertexN[nCscSegClusters]/I");
 
+
+    displacedJetMuonTree->Branch("nDtRechits",             &nDtRechits,             "nDtRechits/I");
+    displacedJetMuonTree->Branch("dtRechitX",             dtRechitX,             "dtRechitX[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitY",             dtRechitY,             "dtRechitY[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitZ",             dtRechitZ,             "dtRechitZ[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitEta",             dtRechitEta,             "dtRechitEta[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitPhi",             dtRechitPhi,             "dtRechitPhi[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitTime",             dtRechitTime,             "dtRechitTime[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitStation",             dtRechitStation,             "dtRechitStation[nDtRechits]/I");
+    displacedJetMuonTree->Branch("dtRechitWheel",             dtRechitWheel,             "dtRechitWheel[nDtRechits]/I");
+
+    displacedJetMuonTree->Branch("nDtRechitClusters",             &nDtRechitClusters, "nDtRechitClusters/I");
+    displacedJetMuonTree->Branch("dtRechitCluster_match_gParticle_minDeltaR",             dtRechitCluster_match_gParticle_minDeltaR,             "dtRechitCluster_match_gParticle_minDeltaR[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitCluster_match_gParticle_index",             dtRechitCluster_match_gParticle_index,             "dtRechitCluster_match_gParticle_index[nDtRechitClusters]/I");
+    displacedJetMuonTree->Branch("dtRechitCluster_match_gParticle_id",             dtRechitCluster_match_gParticle_id,             "dtRechitCluster_match_gParticle_id[nDtRechitClusters]/I");
+    displacedJetMuonTree->Branch("dtRechitClusterX",             dtRechitClusterX,             "dtRechitClusterX[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterY",             dtRechitClusterY,             "dtRechitClusterY[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterZ",             dtRechitClusterZ,             "dtRechitClusterZ[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterTime",             dtRechitClusterTime,             "dtRechitClusterTime[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterTimeSpread",             dtRechitClusterTimeSpread,             "dtRechitClusterTimeSpread[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterGenMuonDeltaR",             dtRechitClusterGenMuonDeltaR,             "dtRechitClusterGenMuonDeltaR[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterMajorAxis",             dtRechitClusterMajorAxis,             "dtRechitClusterMajorAxis[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterMinorAxis",             dtRechitClusterMinorAxis,             "dtRechitClusterMinorAxis[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterEtaPhiSpread",             dtRechitClusterEtaPhiSpread,             "dtRechitClusterEtaPhiSpread[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterPhiSpread",             dtRechitClusterPhiSpread,             "dtRechitClusterPhiSpread[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterEtaSpread",             dtRechitClusterEtaSpread,             "dtRechitClusterEtaSpread[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterXSpread",             dtRechitClusterXSpread,             "dtRechitClusterXSpread[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterYSpread",             dtRechitClusterYSpread,             "dtRechitClusterYSpread[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterZSpread",             dtRechitClusterZSpread,             "dtRechitClusterZSpread[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterPhi",             dtRechitClusterPhi,             "dtRechitClusterPhi[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterEta",             dtRechitClusterEta,             "dtRechitClusterEta[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterJetVetoPt",       dtRechitClusterJetVetoPt,       "dtRechitClusterJetVetoPt[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterJetVetoE",        dtRechitClusterJetVetoE,        "dtRechitClusterJetVetoE[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterMuonVetoPt",      dtRechitClusterMuonVetoPt,      "dtRechitClusterMuonVetoPt[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterMuonVetoE",       dtRechitClusterMuonVetoE,       "dtRechitClusterMuonVetoE[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterCaloJetVeto",     dtRechitClusterCaloJetVeto,     "dtRechitClusterCaloJetVeto[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterSize",            dtRechitClusterSize,            "dtRechitClusterSize[nDtRechitClusters]/I");
+    displacedJetMuonTree->Branch("dtRechitClusterNStation",             dtRechitClusterNStation,             "dtRechitClusterNStation[nDtRechitClusters]/I");
+    displacedJetMuonTree->Branch("dtRechitClusterMaxStation",             dtRechitClusterMaxStation,             "dtRechitClusterMaxStation[nDtRechitClusters]/I");
+    displacedJetMuonTree->Branch("dtRechitClusterMaxStationRatio",             dtRechitClusterMaxStationRatio,             "dtRechitClusterMaxStationRatio[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterNChamber",             dtRechitClusterNChamber,             "dtRechitClusterNChamber[nDtRechitClusters]/I");
+    displacedJetMuonTree->Branch("dtRechitClusterMaxChamber",             dtRechitClusterMaxChamber,             "dtRechitClusterMaxChamber[nDtRechitClusters]/I");
+    displacedJetMuonTree->Branch("dtRechitClusterMaxChamberRatio",             dtRechitClusterMaxChamberRatio,             "dtRechitClusterMaxChamberRatio[nDtRechitClusters]/F");
+    displacedJetMuonTree->Branch("dtRechitClusterNSegmentStation1",            dtRechitClusterNSegmentStation1,            "dtRechitClusterNSegmentStation1[nDtRechitClusters]/I");
+    displacedJetMuonTree->Branch("dtRechitClusterNSegmentStation2",            dtRechitClusterNSegmentStation2,            "dtRechitClusterNSegmentStation2[nDtRechitClusters]/I");
+    displacedJetMuonTree->Branch("dtRechitClusterNSegmentStation3",            dtRechitClusterNSegmentStation3,            "dtRechitClusterNSegmentStation3[nDtRechitClusters]/I");
+    displacedJetMuonTree->Branch("dtRechitClusterNSegmentStation4",            dtRechitClusterNSegmentStation4,            "dtRechitClusterNSegmentStation4[nDtRechitClusters]/I");
+// displacedJetMuonTree->Branch("nDTCosmicRechits",             &nDTCosmicRechits,             "nDTCosmicRechits/I");
+    // displacedJetMuonTree->Branch("dtCosmicRechitX",             dtCosmicRechitX,             "dtCosmicRechitX[nDTCosmicRechits]/F");
+    // displacedJetMuonTree->Branch("dtCosmicRechitY",             dtCosmicRechitY,             "dtCosmicRechitY[nDTCosmicRechits]/F");
+    // displacedJetMuonTree->Branch("dtCosmicRechitZ",             dtCosmicRechitZ,             "dtCosmicRechitZ[nDTCosmicRechits]/F");
+    // displacedJetMuonTree->Branch("dtCosmicRechitEta",             dtCosmicRechitEta,             "dtCosmicRechitEta[nDTCosmicRechits]/F");
+    // displacedJetMuonTree->Branch("dtCosmicRechitPhi",             dtCosmicRechitPhi,             "dtCosmicRechitPhi[nDTCosmicRechits]/F");
+    // displacedJetMuonTree->Branch("dtCosmicRechitTime",             dtCosmicRechitTime,             "dtCosmicRechitTime[nDTCosmicRechits]/F");
+
+
     /*
     displacedJetMuonTree->Branch("nRpc",&nRpc,"nRpc/I");
     displacedJetMuonTree->Branch("rpcPhi",rpcPhi,"rpcPhi[nRpc]");
@@ -665,31 +723,82 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("rpcZ",rpcZ,"rpcZ[nRpc]");
     displacedJetMuonTree->Branch("rpcT",rpcT,"rpcT[nRpc]");
     displacedJetMuonTree->Branch("rpcTError",rpcTError,"rpcTError[nRpc]");
-
-    displacedJetMuonTree->Branch("nDt",&nDt,"nDt/I");
-    displacedJetMuonTree->Branch("dtPhi",dtPhi,"dtPhi[nDt]");
-    displacedJetMuonTree->Branch("dtEta",dtEta,"dtEta[nDt]");
-    displacedJetMuonTree->Branch("dtX",dtX,"dtX[nDt]");
-    displacedJetMuonTree->Branch("dtY",dtY,"dtY[nDt]");
-    displacedJetMuonTree->Branch("dtZ",dtZ,"dtZ[nDt]");
-    displacedJetMuonTree->Branch("dtDirX",dtDirX,"dtDirX[nDt]");
-    displacedJetMuonTree->Branch("dtDirY",dtDirY,"dtDirY[nDt]");
-    displacedJetMuonTree->Branch("dtDirZ",dtDirZ,"dtDirZ[nDt]");
-    displacedJetMuonTree->Branch("dtT",dtT,"dtT[nDt]");
-    displacedJetMuonTree->Branch("dtTError",dtTError,"dtTError[nDt]");
-
-    displacedJetMuonTree->Branch("nDtCosmic",&nDtCosmic,"nDtCosmic/I");
-    displacedJetMuonTree->Branch("dtCosmicPhi",dtCosmicPhi,"dtCosmicPhi[nDtCosmic]");
-    displacedJetMuonTree->Branch("dtCosmicEta",dtCosmicEta,"dtCosmicEta[nDtCosmic]");
-    displacedJetMuonTree->Branch("dtCosmicX",dtCosmicX,"dtCosmicX[nDtCosmic]");
-    displacedJetMuonTree->Branch("dtCosmicY",dtCosmicY,"dtCosmicY[nDtCosmic]");
-    displacedJetMuonTree->Branch("dtCosmicZ",dtCosmicZ,"dtCosmicZ[nDtCosmic]");
-    displacedJetMuonTree->Branch("dtCosmicDirX",dtCosmicDirX,"dtCosmicDirX[nDtCosmic]");
-    displacedJetMuonTree->Branch("dtCosmicDirY",dtCosmicDirY,"dtCosmicDirY[nDtCosmic]");
-    displacedJetMuonTree->Branch("dtCosmicDirZ",dtCosmicDirZ,"dtCosmicDirZ[nDtCosmic]");
-    displacedJetMuonTree->Branch("dtCosmicT",dtCosmicT,"dtCosmicT[nDtCosmic]");
-    displacedJetMuonTree->Branch("dtCosmicTError",dtCosmicTError,"dtCosmicTError[nDt]");
     */
+
+
+    displacedJetMuonTree->Branch("nDtSeg",&nDtSeg,"nDtSeg/I");
+    displacedJetMuonTree->Branch("dtSegPhi",dtSegPhi,"dtSegPhi[nDtSeg]/F");
+    displacedJetMuonTree->Branch("dtSegEta",dtSegEta,"dtSegEta[nDtSeg]/F");
+    displacedJetMuonTree->Branch("dtSegX",dtSegX,"dtSegX[nDtSeg]/F");
+    displacedJetMuonTree->Branch("dtSegY",dtSegY,"dtSegY[nDtSeg]/F");
+    displacedJetMuonTree->Branch("dtSegZ",dtSegZ,"dtSegZ[nDtSeg]/F");
+    displacedJetMuonTree->Branch("dtSegStation",dtSegStation,"dtSegStation[nDtSeg]/I");
+    displacedJetMuonTree->Branch("dtSegWheel",dtSegWheel,"dtSegWheel[nDtSeg]/I");
+    displacedJetMuonTree->Branch("dtSegTime",dtSegTime,"dtSegTime[nDtSeg]/F");
+    displacedJetMuonTree->Branch("dtSegTimeError",dtSegTimeError,"dtSegTimeError[nDtSeg]/F");
+
+    displacedJetMuonTree->Branch("nDtSegClusters",             &nDtSegClusters, "nDtSegClusters/I");
+    displacedJetMuonTree->Branch("dtSegCluster_match_gParticle_minDeltaR",             dtSegCluster_match_gParticle_minDeltaR,             "dtSegCluster_match_gParticle_minDeltaR[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegCluster_match_gParticle_index",             dtSegCluster_match_gParticle_index,             "dtSegCluster_match_gParticle_index[nDtSegClusters]/I");
+    displacedJetMuonTree->Branch("dtSegCluster_match_gParticle_id",             dtSegCluster_match_gParticle_id,             "dtSegCluster_match_gParticle_id[nDtSegClusters]/I");
+    displacedJetMuonTree->Branch("dtSegClusterX",             dtSegClusterX,             "dtSegClusterX[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterY",             dtSegClusterY,             "dtSegClusterY[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterZ",             dtSegClusterZ,             "dtSegClusterZ[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterTime",             dtSegClusterTime,             "dtSegClusterTime[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterTimeSpread",             dtSegClusterTimeSpread,             "dtSegClusterTimeSpread[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterGenMuonDeltaR",             dtSegClusterGenMuonDeltaR,             "dtSegClusterGenMuonDeltaR[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterMajorAxis",             dtSegClusterMajorAxis,             "dtSegClusterMajorAxis[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterMinorAxis",             dtSegClusterMinorAxis,             "dtSegClusterMinorAxis[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterEtaPhiSpread",             dtSegClusterEtaPhiSpread,             "dtSegClusterEtaPhiSpread[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterPhiSpread",             dtSegClusterPhiSpread,             "dtSegClusterPhiSpread[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterEtaSpread",             dtSegClusterEtaSpread,             "dtSegClusterEtaSpread[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterXSpread",             dtSegClusterXSpread,             "dtSegClusterXSpread[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterYSpread",             dtSegClusterYSpread,             "dtSegClusterYSpread[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterZSpread",             dtSegClusterZSpread,             "dtSegClusterZSpread[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterPhi",             dtSegClusterPhi,             "dtSegClusterPhi[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterEta",             dtSegClusterEta,             "dtSegClusterEta[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterJetVetoPt",       dtSegClusterJetVetoPt,       "dtSegClusterJetVetoPt[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterJetVetoE",        dtSegClusterJetVetoE,        "dtSegClusterJetVetoE[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterMuonVetoPt",      dtSegClusterMuonVetoPt,      "dtSegClusterMuonVetoPt[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterMuonVetoE",       dtSegClusterMuonVetoE,       "dtSegClusterMuonVetoE[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterCaloJetVeto",     dtSegClusterCaloJetVeto,     "dtSegClusterCaloJetVeto[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterSize",            dtSegClusterSize,            "dtSegClusterSize[nDtSegClusters]/I");
+    displacedJetMuonTree->Branch("dtSegClusterNSegmentStation1",            dtSegClusterNSegmentStation1,            "dtSegClusterNSegmentStation1[nDtSegClusters]/I");
+    displacedJetMuonTree->Branch("dtSegClusterNSegmentStation2",            dtSegClusterNSegmentStation2,            "dtSegClusterNSegmentStation2[nDtSegClusters]/I");
+    displacedJetMuonTree->Branch("dtSegClusterNSegmentStation3",            dtSegClusterNSegmentStation3,            "dtSegClusterNSegmentStation3[nDtSegClusters]/I");
+    displacedJetMuonTree->Branch("dtSegClusterNSegmentStation4",            dtSegClusterNSegmentStation4,            "dtSegClusterNSegmentStation4[nDtSegClusters]/I");
+
+    // displacedJetMuonTree->Branch("dtSegClusterMe11Ratio",             dtSegClusterMe11Ratio,             "dtSegClusterMe11Ratio[nDtSegClusters]/F");
+    // displacedJetMuonTree->Branch("dtSegClusterMe12Ratio",             dtSegClusterMe12Ratio,             "dtSegClusterMe12Ratio[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterNStation",             dtSegClusterNStation,             "dtSegClusterNStation[nDtSegClusters]/I");
+    displacedJetMuonTree->Branch("dtSegClusterMaxStation",             dtSegClusterMaxStation,             "dtSegClusterMaxStation[nDtSegClusters]/I");
+    displacedJetMuonTree->Branch("dtSegClusterMaxStationRatio",             dtSegClusterMaxStationRatio,             "dtSegClusterMaxStationRatio[nDtSegClusters]/F");
+    displacedJetMuonTree->Branch("dtSegClusterNChamber",             dtSegClusterNChamber,             "dtSegClusterNChamber[nDtSegClusters]/I");
+    displacedJetMuonTree->Branch("dtSegClusterMaxChamber",             dtSegClusterMaxChamber,             "dtSegClusterMaxChamber[nDtSegClusters]/I");
+    displacedJetMuonTree->Branch("dtSegClusterMaxChamberRatio",             dtSegClusterMaxChamberRatio,             "dtSegClusterMaxChamberRatio[nDtSegClusters]/F");
+    // displacedJetMuonTree->Branch("dtSegClusterVertexR",             dtSegClusterVertexR,             "dtSegClusterVertexR[nDtSegClusters]/F");
+    // displacedJetMuonTree->Branch("dtSegClusterVertexZ",             dtSegClusterVertexZ,             "dtSegClusterVertexZ[nDtSegClusters]/F");
+    // displacedJetMuonTree->Branch("dtSegClusterVertexDis",             dtSegClusterVertexDis,             "dtSegClusterVertexDis[nDtSegClusters]/F");
+    // displacedJetMuonTree->Branch("dtSegClusterVertexChi2",             dtSegClusterVertexChi2,             "dtSegClusterVertexChi2[nDtSegClusters]/F");
+    // displacedJetMuonTree->Branch("dtSegClusterVertexN1",             dtSegClusterVertexN1,             "dtSegClusterVertexN1[nDtSegClusters]/I");
+    // displacedJetMuonTree->Branch("dtSegClusterVertexN5",             dtSegClusterVertexN5,             "dtSegClusterVertexN5[nDtSegClusters]/I");
+    // displacedJetMuonTree->Branch("dtSegClusterVertexN10",             dtSegClusterVertexN10,             "dtSegClusterVertexN10[nDtSegClusters]/I");
+    // displacedJetMuonTree->Branch("dtSegClusterVertexN15",             dtSegClusterVertexN15,             "dtSegClusterVertexN15[nDtSegClusters]/I");
+    // displacedJetMuonTree->Branch("dtSegClusterVertexN20",             dtSegClusterVertexN20,             "dtSegClusterVertexN20[nDtSegClusters]/I");
+    // displacedJetMuonTree->Branch("dtSegClusterVertexN",             dtSegClusterVertexN,             "dtSegClusterVertexN[nDtSegClusters]/I");
+
+    displacedJetMuonTree->Branch("nDtCosmicSeg",&nDtCosmicSeg,"nDtCosmicSeg/I");
+    displacedJetMuonTree->Branch("dtCosmicSegPhi",dtCosmicSegPhi,"dtCosmicSegPhi[nDtCosmicSeg]");
+    displacedJetMuonTree->Branch("dtCosmicSegEta",dtCosmicSegEta,"dtCosmicSegEta[nDtCosmicSeg]");
+    displacedJetMuonTree->Branch("dtCosmicSegX",dtCosmicSegX,"dtCosmicSegX[nDtCosmicSeg]");
+    displacedJetMuonTree->Branch("dtCosmicSegY",dtCosmicSegY,"dtCosmicSegY[nDtCosmicSeg]");
+    displacedJetMuonTree->Branch("dtCosmicSegZ",dtCosmicSegZ,"dtCosmicSegZ[nDtCosmicSeg]");
+    displacedJetMuonTree->Branch("dtCosmicSegDirX",dtCosmicSegDirX,"dtCosmicSegDirX[nDtCosmicSeg]");
+    displacedJetMuonTree->Branch("dtCosmicSegDirY",dtCosmicSegDirY,"dtCosmicSegDirY[nDtCosmicSeg]");
+    displacedJetMuonTree->Branch("dtCosmicSegDirZ",dtCosmicSegDirZ,"dtCosmicSegDirZ[nDtCosmicSeg]");
+    displacedJetMuonTree->Branch("dtCosmicSegT",dtCosmicSegT,"dtCosmicSegT[nDtCosmicSeg]");
+    displacedJetMuonTree->Branch("dtCosmicSegTError",dtCosmicSegTError,"dtCosmicSegTError[nDtCosmicSeg]");
+
 };
 
 void displacedJetMuon_ntupler::enableEcalRechitBranches()
@@ -957,6 +1066,7 @@ void displacedJetMuon_ntupler::enableGenParticleBranches()
    displacedJetMuonTree->Branch("gLLP_eta", gLLP_eta, "gLLP_eta[2]/F");
    displacedJetMuonTree->Branch("gLLP_phi", gLLP_phi, "gLLP_phi[2]/F");
    displacedJetMuonTree->Branch("gLLP_csc", gLLP_csc, "gLLP_csc[2]/O");
+   displacedJetMuonTree->Branch("gLLP_dt", gLLP_dt, "gLLP_dt[2]/O");
 
    displacedJetMuonTree->Branch("gLLP_travel_time", gLLP_travel_time, "gLLP_travel_time[2]/F");
  //
@@ -990,6 +1100,9 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(cscRechitInputToken_,cscRechits);
   iEvent.getByToken(dtSegmentInputToken_,dtSegments);
   iEvent.getByToken(dtCosmicSegmentInputToken_,dtCosmicSegments);
+  iEvent.getByToken(dtRechitInputToken_,dtRechits);
+  iEvent.getByToken(dtCosmicRechitInputToken_,dtCosmicRechits);
+
   iEvent.getByToken(rpcRecHitInputToken_,rpcRecHits);
   iEvent.getByToken(MuonCSCSimHitsToken_, MuonCSCSimHits);
   iEvent.getByToken(MuonCSCStripDigiToken_, MuonCSCStripDigi);
@@ -1507,33 +1620,128 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
       rpcT[i] = 0.0;
       rpcTError[i] = 0.0;
     }
-    nDt = 0;
+    nDtSeg = 0;
+    nDtRechits = 0;
+    nDtSegClusters = 0;
+    nDtRechitClusters = 0;
+    // nDTCosmicRechits = 0;
     for ( int i = 0; i < OBJECTARRAYSIZE; i++)
     {
-      dtPhi[i] = 0.0;
-      dtEta[i] = 0.0;
-      dtX[i] = 0.0;
-      dtY[i] = 0.0;
-      dtZ[i] = 0.0;
-      dtDirX[i] = 0.0;
-      dtDirY[i] = 0.0;
-      dtDirZ[i] = 0.0;
-      dtT[i] = -9999.0;
-      dtTError[i] = -9999.0;
+      dtRechitX[i] = 0.0;
+      dtRechitY[i] = 0.0;
+      dtRechitZ[i] = 0.0;
+      dtRechitEta[i] = 0.0;
+      dtRechitPhi[i] = 0.0;
+      dtRechitTime[i] = 0.0;
+      dtRechitStation[i] = 0;
+      dtRechitWheel[i] = 0;
+      dtRechitCluster_match_gParticle_id[i] = 999;
+      dtRechitCluster_match_gParticle_index[i] = 999;
+      dtRechitCluster_match_gParticle_minDeltaR[i] = 999.;
+      dtRechitClusterJetVetoPt[i] = 0.0;
+      dtRechitClusterJetVetoE[i] = 0.0;
+      dtRechitClusterCaloJetVeto[i] = 0.0;
+      dtRechitClusterMuonVetoPt[i] = 0.0;
+      dtRechitClusterMuonVetoE[i] = 0.0;
+      dtRechitClusterX[i] = 0.0;
+      dtRechitClusterY[i] = 0.0;
+      dtRechitClusterZ[i] = 0.0;
+      dtRechitClusterTime[i] = 0.0;
+      dtRechitClusterTimeSpread[i] = 0.0;
+      dtRechitClusterGenMuonDeltaR[i] = 0.0;
+      dtRechitClusterMajorAxis[i] = 0.0;
+      dtRechitClusterMinorAxis[i] = 0.0;
+      dtRechitClusterXSpread[i] = 0.0;
+      dtRechitClusterYSpread[i] = 0.0;
+      dtRechitClusterZSpread[i] = 0.0;
+      dtRechitClusterEtaPhiSpread[i] = 0.0;
+      dtRechitClusterEtaSpread[i] = 0.0;
+      dtRechitClusterPhiSpread[i] = 0.0;
+      dtRechitClusterEta[i] = 0.0;
+      dtRechitClusterPhi[i] = 0.0;
+      dtRechitClusterSize[i] = 0;
+      dtRechitClusterNSegmentStation1[i] = 0;
+      dtRechitClusterNSegmentStation2[i] = 0;
+      dtRechitClusterNSegmentStation3[i] = 0;
+      dtRechitClusterNSegmentStation4[i] = 0;
+      dtRechitClusterMaxStationRatio[i] = 0.0;
+      dtRechitClusterMaxStation[i] = 0;
+      dtRechitClusterNStation[i] = 0;
+      dtRechitClusterMaxChamberRatio[i] = 0.0;
+      dtRechitClusterMaxChamber[i] = 0;
+      dtRechitClusterNChamber[i] = 0;
+      // dtCosmicRechitX[i] = 0.0;
+      // dtCosmicRechitY[i] = 0.0;
+      // dtCosmicRechitZ[i] = 0.0;
+      // dtCosmicRechitEta[i] = 0.0;
+      // dtCosmicRechitPhi[i] = 0.0;
+      // dtCosmicRechitTime[i] = 0.0;
+
     }
-    nDtCosmic = 0;
+
+
+
     for ( int i = 0; i < OBJECTARRAYSIZE; i++)
     {
-      dtCosmicPhi[i] = 0.0;
-      dtCosmicEta[i] = 0.0;
-      dtCosmicX[i] = 0.0;
-      dtCosmicY[i] = 0.0;
-      dtCosmicZ[i] = 0.0;
-      dtCosmicDirX[i] = 0.0;
-      dtCosmicDirY[i] = 0.0;
-      dtCosmicDirZ[i] = 0.0;
-      dtCosmicT[i] = -9999.0;
-      dtCosmicTError[i] = -9999.0;
+      dtSegPhi[i] = 0.0;
+      dtSegEta[i] = 0.0;
+      dtSegX[i] = 0.0;
+      dtSegY[i] = 0.0;
+      dtSegZ[i] = 0.0;
+      dtSegStation[i] = 0;
+      dtSegWheel[i] = 0;
+      dtSegTime[i] = -9999.0;
+      dtSegTimeError[i] = -9999.0;
+
+      dtSegCluster_match_gParticle_id[i] = 999;
+      dtSegCluster_match_gParticle_index[i] = 999;
+      dtSegCluster_match_gParticle_minDeltaR[i] = 999.;
+      dtSegClusterJetVetoPt[i] = 0.0;
+      dtSegClusterJetVetoE[i] = 0.0;
+      dtSegClusterCaloJetVeto[i] = 0.0;
+      dtSegClusterMuonVetoPt[i] = 0.0;
+      dtSegClusterMuonVetoE[i] = 0.0;
+      dtSegClusterX[i] = 0.0;
+      dtSegClusterY[i] = 0.0;
+      dtSegClusterZ[i] = 0.0;
+      dtSegClusterTime[i] = 0.0;
+      dtSegClusterTimeSpread[i] = 0.0;
+      dtSegClusterGenMuonDeltaR[i] = 0.0;
+      dtSegClusterMajorAxis[i] = 0.0;
+      dtSegClusterMinorAxis[i] = 0.0;
+      dtSegClusterXSpread[i] = 0.0;
+      dtSegClusterYSpread[i] = 0.0;
+      dtSegClusterZSpread[i] = 0.0;
+      dtSegClusterEtaPhiSpread[i] = 0.0;
+      dtSegClusterEtaSpread[i] = 0.0;
+      dtSegClusterPhiSpread[i] = 0.0;
+      dtSegClusterEta[i] = 0.0;
+      dtSegClusterPhi[i] = 0.0;
+      dtSegClusterSize[i] = 0;
+      dtSegClusterNSegmentStation1[i] = 0;
+      dtSegClusterNSegmentStation2[i] = 0;
+      dtSegClusterNSegmentStation3[i] = 0;
+      dtSegClusterNSegmentStation4[i] = 0;
+      dtSegClusterMaxStationRatio[i] = 0.0;
+      dtSegClusterMaxStation[i] = 0;
+      dtSegClusterNStation[i] = 0;
+      dtSegClusterMaxChamberRatio[i] = 0.0;
+      dtSegClusterMaxChamber[i] = 0;
+      dtSegClusterNChamber[i] = 0;
+    }
+    nDtCosmicSeg = 0;
+    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
+    {
+      dtCosmicSegPhi[i] = 0.0;
+      dtCosmicSegEta[i] = 0.0;
+      dtCosmicSegX[i] = 0.0;
+      dtCosmicSegY[i] = 0.0;
+      dtCosmicSegZ[i] = 0.0;
+      dtCosmicSegDirX[i] = 0.0;
+      dtCosmicSegDirY[i] = 0.0;
+      dtCosmicSegDirZ[i] = 0.0;
+      dtCosmicSegT[i] = -9999.0;
+      dtCosmicSegTError[i] = -9999.0;
     }
     return;
 };
@@ -1791,6 +1999,7 @@ void displacedJetMuon_ntupler::resetGenParticleBranches()
     gLLP_e[i] = -666.;
     gLLP_phi[i] = -666.;
     gLLP_csc[i] = false;
+    gLLP_dt[i] = false;
     gLLP_travel_time[i] = -666.;
   }
 
@@ -2014,7 +2223,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 
   //*****************
-  //** Segments
+  //** CSC Segments
   //*****************
   vector<Point> points; //vector defined for DBScan Clustering algorithm
   for (const CSCSegment cscSegment : *cscSegments) {
@@ -2077,7 +2286,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     ds_seg.run();
     ds_seg.result();
     ds_seg.clusterMoments();
-    ds_seg.vertexing();
+    // ds_seg.vertexing();
     ds_seg.sort_clusters();
 
     //Save cluster information
@@ -2126,16 +2335,16 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
       cscSegClusterMe11Ratio[nCscSegClusters] = tmp.Me11Ratio;
       cscSegClusterMe12Ratio[nCscSegClusters] = tmp.Me12Ratio;
-      cscSegClusterVertexR[nCscSegClusters] = tmp.vertex_r;
-      cscSegClusterVertexZ[nCscSegClusters] = tmp.vertex_z;
-      cscSegClusterVertexChi2[nCscSegClusters] = tmp.vertex_chi2;
-      cscSegClusterVertexDis[nCscSegClusters] = tmp.vertex_dis;
-      cscSegClusterVertexN[nCscSegClusters] = tmp.vertex_n;
-      cscSegClusterVertexN1[nCscSegClusters] = tmp.vertex_n1;
-      cscSegClusterVertexN5[nCscSegClusters] = tmp.vertex_n5;
-      cscSegClusterVertexN15[nCscSegClusters] = tmp.vertex_n15;
-      cscSegClusterVertexN20[nCscSegClusters] = tmp.vertex_n20;
-      cscSegClusterVertexN10[nCscSegClusters] = tmp.vertex_n10;
+      // cscSegClusterVertexR[nCscSegClusters] = tmp.vertex_r;
+      // cscSegClusterVertexZ[nCscSegClusters] = tmp.vertex_z;
+      // cscSegClusterVertexChi2[nCscSegClusters] = tmp.vertex_chi2;
+      // cscSegClusterVertexDis[nCscSegClusters] = tmp.vertex_dis;
+      // cscSegClusterVertexN[nCscSegClusters] = tmp.vertex_n;
+      // cscSegClusterVertexN1[nCscSegClusters] = tmp.vertex_n1;
+      // cscSegClusterVertexN5[nCscSegClusters] = tmp.vertex_n5;
+      // cscSegClusterVertexN15[nCscSegClusters] = tmp.vertex_n15;
+      // cscSegClusterVertexN20[nCscSegClusters] = tmp.vertex_n20;
+      // cscSegClusterVertexN10[nCscSegClusters] = tmp.vertex_n10;
 
       //Jet veto/ muon veto
       cscSegClusterJetVetoPt[nCscSegClusters] = 0.0;
@@ -2192,10 +2401,14 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 
 
+  //************************************************************************************************************
+  //************************************************************************************************************
+  //** CSC RECHITS
+  //************************************************************************************************************
+  //************************************************************************************************************
 
-  //*****************
-  //** RECHITS
-  //*****************
+
+
   cout << "Number of rec hits: "<<cscRechits->size()<<endl;
   points.clear();
   for (const CSCRecHit2D cscRechit : *cscRechits) {
@@ -2249,7 +2462,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
   ds.run();
   ds.result();
   ds.clusterMoments();
-  ds.vertexing();
+  // ds.vertexing();
   ds.sort_clusters();
   //Save cluster information
   for ( auto &tmp : ds.CscCluster ) {
@@ -2297,16 +2510,16 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
     cscRechitClusterMe11Ratio[nCscRechitClusters] = tmp.Me11Ratio;
     cscRechitClusterMe12Ratio[nCscRechitClusters] = tmp.Me12Ratio;
-    cscRechitClusterVertexR[nCscRechitClusters] = tmp.vertex_r;
-    cscRechitClusterVertexZ[nCscRechitClusters] = tmp.vertex_z;
-    cscRechitClusterVertexChi2[nCscRechitClusters] = tmp.vertex_chi2;
-    cscRechitClusterVertexDis[nCscRechitClusters] = tmp.vertex_dis;
-    cscRechitClusterVertexN[nCscRechitClusters] = tmp.vertex_n;
-    cscRechitClusterVertexN1[nCscRechitClusters] = tmp.vertex_n1;
-    cscRechitClusterVertexN5[nCscRechitClusters] = tmp.vertex_n5;
-    cscRechitClusterVertexN15[nCscRechitClusters] = tmp.vertex_n15;
-    cscRechitClusterVertexN20[nCscRechitClusters] = tmp.vertex_n20;
-    cscRechitClusterVertexN10[nCscRechitClusters] = tmp.vertex_n10;
+    // cscRechitClusterVertexR[nCscRechitClusters] = tmp.vertex_r;
+    // cscRechitClusterVertexZ[nCscRechitClusters] = tmp.vertex_z;
+    // cscRechitClusterVertexChi2[nCscRechitClusters] = tmp.vertex_chi2;
+    // cscRechitClusterVertexDis[nCscRechitClusters] = tmp.vertex_dis;
+    // cscRechitClusterVertexN[nCscRechitClusters] = tmp.vertex_n;
+    // cscRechitClusterVertexN1[nCscRechitClusters] = tmp.vertex_n1;
+    // cscRechitClusterVertexN5[nCscRechitClusters] = tmp.vertex_n5;
+    // cscRechitClusterVertexN15[nCscRechitClusters] = tmp.vertex_n15;
+    // cscRechitClusterVertexN20[nCscRechitClusters] = tmp.vertex_n20;
+    // cscRechitClusterVertexN10[nCscRechitClusters] = tmp.vertex_n10;
 
     //Jet veto/ muon veto
     cscRechitClusterJetVetoPt[nCscRechitClusters] = 0.0;
@@ -2389,7 +2602,303 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 
 
+  //************************************************************************************************************
+  //************************************************************************************************************
+  //** DT SEGMENTS
+  //************************************************************************************************************
+  //************************************************************************************************************
 
+  // Segments
+  points.clear();
+  for(DTRecSegment4D dtSegment : *dtSegments){
+    const DTRecSegment4D dtSegment_copy = dtSegment;
+    const DTChamberRecSegment2D* phiSeg = dtSegment_copy.phiSegment();
+
+    LocalPoint  segmentLocalPosition       = dtSegment.localPosition();
+    // LocalVector segmentLocalDirection      = dtSegment.localDirection();
+    // LocalError  segmentLocalPositionError  = iDT->localPositionError();
+    // LocalError  segmentLocalDirectionError = iDT->localDirectionError();
+    DetId geoid = dtSegment.geographicalId();
+    DTChamberId dtdetid = DTChamberId(geoid);
+    const DTChamber * dtchamber = dtG->chamber(dtdetid);
+    if (dtchamber) {
+        GlobalPoint globalPosition = dtchamber->toGlobal(segmentLocalPosition);
+        // GlobalVector globalDirection = dtchamber->toGlobal(segmentLocalDirection);
+
+        dtSegPhi[nDtSeg] = globalPosition.phi();
+        dtSegEta[nDtSeg] = globalPosition.eta();
+        dtSegX[nDtSeg] = globalPosition.x();
+        dtSegY[nDtSeg] = globalPosition.y();
+        dtSegZ[nDtSeg] = globalPosition.z();
+        // dtSegDirX[nDtSeg] = globalDirection.x();
+        // dtSegDirY[nDtSeg] = globalDirection.y();
+        // dtSegDirZ[nDtSeg] = globalDirection.z();
+        dtSegStation[nDtSeg] = dtdetid.station();
+        dtSegWheel[nDtSeg] = dtdetid.wheel();
+        if (phiSeg)
+        {
+          if(phiSeg->ist0Valid())
+            {
+              dtSegTime[nDtSeg] = phiSeg->t0();
+              dtSegTimeError[nDtSeg] = -1;
+            }
+        }
+        Point p;
+        p.phi = dtSegPhi[nDtSeg];
+        p.eta = dtSegEta[nDtSeg];
+        p.x = dtSegX[nDtSeg];
+        p.y = dtSegY[nDtSeg];
+        p.z = dtSegZ[nDtSeg];
+        p.t = dtSegTime[nDtSeg];
+        p.station = dtSegStation[nDtSeg];
+        p.chamber = dtSegWheel[nDtSeg];
+        p.clusterID = UNCLASSIFIED;
+        points.push_back(p);
+
+        nDtSeg++;
+      }
+
+    }
+    //Do DBSCAN Clustering
+    int min_point_dtseg = 10;  //minimum number of segments to call it a cluster
+    float epsilon_dtseg = 0.2; //cluster radius parameter
+    DBSCAN ds_dtseg(min_point_dtseg, epsilon_dtseg, points);
+    ds_dtseg.run();
+    ds_dtseg.result();
+    ds_dtseg.clusterMoments();
+    // ds_dtseg.vertexing();
+    ds_dtseg.sort_clusters();
+
+    //Save cluster information
+    for ( auto &tmp : ds_dtseg.CscCluster ) {
+      dtSegClusterX[nDtSegClusters] =tmp.x;
+      dtSegClusterY[nDtSegClusters] =tmp.y;
+      dtSegClusterZ[nDtSegClusters] =tmp.z;
+      dtSegClusterTime[nDtSegClusters] = tmp.t;
+      dtSegClusterEta[nDtSegClusters] =tmp.eta;
+      dtSegClusterPhi[nDtSegClusters] = tmp.phi;
+      dtSegClusterMajorAxis[nDtSegClusters] =tmp.MajorAxis;
+      dtSegClusterMinorAxis[nDtSegClusters] =tmp.MinorAxis;
+      dtSegClusterXSpread[nDtSegClusters] =tmp.XSpread;
+      dtSegClusterYSpread[nDtSegClusters] =tmp.YSpread;
+      dtSegClusterZSpread[nDtSegClusters] =tmp.ZSpread;
+      dtSegClusterEtaPhiSpread[nDtSegClusters] =tmp.EtaPhiSpread;
+      dtSegClusterEtaSpread[nDtSegClusters] =tmp.EtaSpread;
+      dtSegClusterPhiSpread[nDtSegClusters] = tmp.PhiSpread;
+      dtSegClusterTimeSpread[nDtSegClusters] = tmp.TSpread;
+      dtSegClusterSize[nDtSegClusters] = tmp.nCscSegments;
+
+      dtSegClusterNSegmentStation1[nDtSegClusters] = tmp.nDtSegmentStation1;
+      dtSegClusterNSegmentStation2[nDtSegClusters] = tmp.nDtSegmentStation2;
+      dtSegClusterNSegmentStation3[nDtSegClusters] = tmp.nDtSegmentStation3;
+      dtSegClusterNSegmentStation4[nDtSegClusters] = tmp.nDtSegmentStation4;
+
+      dtSegClusterMaxChamber[nDtSegClusters] = tmp.maxChamber;
+      dtSegClusterMaxChamberRatio[nDtSegClusters] = 1.0*tmp.maxChamberSegment/tmp.nCscSegments;
+      dtSegClusterNChamber[nDtSegClusters] = tmp.nChamber;
+      dtSegClusterMaxStation[nDtSegClusters] = tmp.maxStation;
+      dtSegClusterMaxStationRatio[nDtSegClusters] = 1.0*tmp.maxStationSegment/tmp.nCscSegments;
+      dtSegClusterNStation[nDtSegClusters] = tmp.nStation;
+
+      // dtSegClusterMe11Ratio[nDtSegClusters] = tmp.Me11Ratio;
+      // dtSegClusterMe12Ratio[nDtSegClusters] = tmp.Me12Ratio;
+      // dtSegClusterVertexR[nDtSegClusters] = tmp.vertex_r;
+      // dtSegClusterVertexZ[nDtSegClusters] = tmp.vertex_z;
+      // dtSegClusterVertexChi2[nDtSegClusters] = tmp.vertex_chi2;
+      // dtSegClusterVertexDis[nDtSegClusters] = tmp.vertex_dis;
+      // dtSegClusterVertexN[nDtSegClusters] = tmp.vertex_n;
+      // dtSegClusterVertexN1[nDtSegClusters] = tmp.vertex_n1;
+      // dtSegClusterVertexN5[nDtSegClusters] = tmp.vertex_n5;
+      // dtSegClusterVertexN15[nDtSegClusters] = tmp.vertex_n15;
+      // dtSegClusterVertexN20[nDtSegClusters] = tmp.vertex_n20;
+      // dtSegClusterVertexN10[nDtSegClusters] = tmp.vertex_n10;
+
+      //Jet veto/ muon veto
+      dtSegClusterJetVetoPt[nDtSegClusters] = 0.0;
+      dtSegClusterJetVetoE[nDtSegClusters] = 0.0;
+      dtSegClusterCaloJetVeto[nDtSegClusters] = 0.0;
+      dtSegClusterMuonVetoPt[nDtSegClusters] = 0.0;
+      dtSegClusterMuonVetoE[nDtSegClusters] = 0.0;
+
+      for (const reco::PFJet &j : *jets) {
+        //if (j.pt() < 10) continue;
+        if (fabs(j.eta())>3.0) continue;
+        if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > dtSegClusterJetVetoPt[nDtSegClusters] ) {
+          dtSegClusterJetVetoPt[nDtSegClusters]  = j.pt();
+        }
+        if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > dtSegClusterJetVetoE[nDtSegClusters] ) {
+          dtSegClusterJetVetoE[nDtSegClusters]  = j.energy();
+        }
+      }
+      for(const pat::Muon &mu : *muons) {
+  //if (mu.pt() < 20.0) continue;
+        if (fabs(mu.eta()) > 3.0) continue;
+        if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > dtSegClusterMuonVetoPt[nDtSegClusters]) {
+          dtSegClusterMuonVetoPt[nDtSegClusters] = mu.pt();
+        }
+        if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > dtSegClusterMuonVetoE[nDtSegClusters]) {
+          dtSegClusterMuonVetoE[nDtSegClusters] = mu.energy();
+        }
+      }
+      //match to genparticles
+      float min_deltaR = 15.;
+      int index = 999;
+      for(int j = 0; j < nGenParticle; j++)
+      {
+        if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
+
+        double current_delta_r = deltaR(dtSegClusterEta[nDtSegClusters], dtSegClusterPhi[nDtSegClusters], gParticleEta[j], gParticlePhi[j]);
+        if (current_delta_r < min_deltaR)
+        {
+          min_deltaR = current_delta_r;
+          index = j;
+        }
+      }
+      if (min_deltaR < 0.4)
+      {
+        dtSegCluster_match_gParticle_minDeltaR[nDtSegClusters] = min_deltaR;
+        dtSegCluster_match_gParticle_index[nDtSegClusters] = index;
+        dtSegCluster_match_gParticle_id[nDtSegClusters] = gParticleId[index];
+
+      }
+
+      nDtSegClusters++;
+    }
+
+
+
+  //************************************************************************************************************
+  //************************************************************************************************************
+  //** DT RECHITS
+  //************************************************************************************************************
+  //************************************************************************************************************
+
+
+  cout<<"number of dt rechits: " <<dtRechits->size()<<endl;
+  points.clear();
+  for(DTRecHit1DPair dtRechit: *dtRechits){
+    LocalPoint  localPosition       = dtRechit.localPosition();
+    DetId geoid = dtRechit.geographicalId();
+    DTChamberId dtdetid = DTChamberId(geoid);
+    const DTChamber * dtchamber = dtG->chamber(dtdetid);
+    if (dtchamber) {
+      GlobalPoint globalPosition = dtchamber->toGlobal(localPosition);
+      dtRechitPhi[nDtRechits] = globalPosition.phi();
+      dtRechitEta[nDtRechits] = globalPosition.eta();
+      dtRechitX[nDtRechits] = globalPosition.x();
+      dtRechitY[nDtRechits] = globalPosition.y();
+      dtRechitZ[nDtRechits] = globalPosition.z();
+      dtRechitTime[nDtRechits] = dtRechit.digiTime();
+      dtRechitStation[nDtRechits] = dtdetid.station();
+      dtRechitWheel[nDtRechits] = dtdetid.wheel();
+      Point p;
+      p.phi = dtRechitPhi[nDtRechits];
+      p.eta = dtRechitEta[nDtRechits];
+      p.x = dtRechitX[nDtRechits];
+      p.y = dtRechitY[nDtRechits];
+      p.z = dtRechitZ[nDtRechits];
+      p.t = dtRechitTime[nDtRechits];
+      p.station = dtRechitStation[nDtRechits];
+      p.chamber = dtRechitWheel[nDtRechits];
+      p.clusterID = UNCLASSIFIED;
+      points.push_back(p);
+
+      nDtRechits++;
+    }
+  }
+  //Do DBSCAN Clustering
+  int min_point_dtrechit = 50;  //minimum number of segments to call it a cluster
+  float epsilon_dtrechit = 0.2; //cluster radius parameter
+  DBSCAN ds_dtRechit(min_point_dtrechit, epsilon_dtrechit, points);
+  ds_dtRechit.run();
+  ds_dtRechit.result();
+  ds_dtRechit.clusterMoments();
+  // ds_dtseg.vertexing();
+  ds_dtRechit.sort_clusters();
+
+  //Save cluster information
+  for ( auto &tmp : ds_dtRechit.CscCluster ) {
+    dtRechitClusterX[nDtRechitClusters] =tmp.x;
+    dtRechitClusterY[nDtRechitClusters] =tmp.y;
+    dtRechitClusterZ[nDtRechitClusters] =tmp.z;
+    dtRechitClusterTime[nDtRechitClusters] = tmp.t;
+    dtRechitClusterEta[nDtRechitClusters] =tmp.eta;
+    dtRechitClusterPhi[nDtRechitClusters] = tmp.phi;
+    dtRechitClusterMajorAxis[nDtRechitClusters] =tmp.MajorAxis;
+    dtRechitClusterMinorAxis[nDtRechitClusters] =tmp.MinorAxis;
+    dtRechitClusterXSpread[nDtRechitClusters] =tmp.XSpread;
+    dtRechitClusterYSpread[nDtRechitClusters] =tmp.YSpread;
+    dtRechitClusterZSpread[nDtRechitClusters] =tmp.ZSpread;
+    dtRechitClusterEtaPhiSpread[nDtRechitClusters] =tmp.EtaPhiSpread;
+    dtRechitClusterEtaSpread[nDtRechitClusters] =tmp.EtaSpread;
+    dtRechitClusterPhiSpread[nDtRechitClusters] = tmp.PhiSpread;
+    dtRechitClusterTimeSpread[nDtRechitClusters] = tmp.TSpread;
+    dtRechitClusterSize[nDtRechitClusters] = tmp.nCscSegments;
+
+    dtRechitClusterNSegmentStation1[nDtRechitClusters] = tmp.nDtSegmentStation2;
+    dtRechitClusterNSegmentStation2[nDtRechitClusters] = tmp.nDtSegmentStation2;
+    dtRechitClusterNSegmentStation3[nDtRechitClusters] = tmp.nDtSegmentStation3;
+    dtRechitClusterNSegmentStation4[nDtRechitClusters] = tmp.nDtSegmentStation4;
+
+    dtRechitClusterMaxChamber[nDtRechitClusters] = tmp.maxChamber;
+    dtRechitClusterMaxChamberRatio[nDtRechitClusters] = 1.0*tmp.maxChamberSegment/tmp.nCscSegments;
+    dtRechitClusterNChamber[nDtRechitClusters] = tmp.nChamber;
+    dtRechitClusterMaxStation[nDtRechitClusters] = tmp.maxStation;
+    dtRechitClusterMaxStationRatio[nDtRechitClusters] = 1.0*tmp.maxStationSegment/tmp.nCscSegments;
+    dtRechitClusterNStation[nDtRechitClusters] = tmp.nStation;
+
+
+    //Jet veto/ muon veto
+    dtRechitClusterJetVetoPt[nDtRechitClusters] = 0.0;
+    dtRechitClusterJetVetoE[nDtRechitClusters] = 0.0;
+    dtRechitClusterCaloJetVeto[nDtRechitClusters] = 0.0;
+    dtRechitClusterMuonVetoPt[nDtRechitClusters] = 0.0;
+    dtRechitClusterMuonVetoE[nDtRechitClusters] = 0.0;
+
+    for (const reco::PFJet &j : *jets) {
+      //if (j.pt() < 10) continue;
+      if (fabs(j.eta())>3.0) continue;
+      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > dtRechitClusterJetVetoPt[nDtRechitClusters] ) {
+        dtRechitClusterJetVetoPt[nDtRechitClusters]  = j.pt();
+      }
+      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > dtRechitClusterJetVetoE[nDtRechitClusters] ) {
+        dtRechitClusterJetVetoE[nDtRechitClusters]  = j.energy();
+      }
+    }
+    for(const pat::Muon &mu : *muons) {
+//if (mu.pt() < 20.0) continue;
+      if (fabs(mu.eta()) > 3.0) continue;
+      if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > dtRechitClusterMuonVetoPt[nDtRechitClusters]) {
+        dtRechitClusterMuonVetoPt[nDtRechitClusters] = mu.pt();
+      }
+      if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > dtRechitClusterMuonVetoE[nDtRechitClusters]) {
+        dtRechitClusterMuonVetoE[nDtRechitClusters] = mu.energy();
+      }
+    }
+    //match to genparticles
+    float min_deltaR = 15.;
+    int index = 999;
+    for(int j = 0; j < nGenParticle; j++)
+    {
+      if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
+
+      double current_delta_r = deltaR(dtRechitClusterEta[nDtRechitClusters], dtRechitClusterPhi[nDtRechitClusters], gParticleEta[j], gParticlePhi[j]);
+      if (current_delta_r < min_deltaR)
+      {
+        min_deltaR = current_delta_r;
+        index = j;
+      }
+    }
+    if (min_deltaR < 0.4)
+    {
+      dtRechitCluster_match_gParticle_minDeltaR[nDtRechitClusters] = min_deltaR;
+      dtRechitCluster_match_gParticle_index[nDtRechitClusters] = index;
+      dtRechitCluster_match_gParticle_id[nDtRechitClusters] = gParticleId[index];
+
+    }
+
+    nDtRechitClusters++;
+  }
 
 
 
@@ -2413,84 +2922,65 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    rpcTError[nRpc] = rpcRecHit.timeError();
 	    nRpc++;
 	}
-    }
-
-    //----------------------------------------
-    //Drift Tubes
-    //----------------------------------------
-    for(DTRecSegment4D dtSegment : *dtSegments){
-      const DTRecSegment4D dtSegment_copy = dtSegment;
-      const DTChamberRecSegment2D* phiSeg = dtSegment_copy.phiSegment();
-
-	LocalPoint  segmentLocalPosition       = dtSegment.localPosition();
-	LocalVector segmentLocalDirection      = dtSegment.localDirection();
-	// LocalError  segmentLocalPositionError  = iDT->localPositionError();
-	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
-	DetId geoid = dtSegment.geographicalId();
-	DTChamberId dtdetid = DTChamberId(geoid);
-	const DTChamber * dtchamber = dtG->chamber(dtdetid);
-	if (dtchamber) {
-	    GlobalPoint globalPosition = dtchamber->toGlobal(segmentLocalPosition);
-	    GlobalVector globalDirection = dtchamber->toGlobal(segmentLocalDirection);
-
-	    dtPhi[nDt] = globalPosition.phi();
-	    dtEta[nDt] = globalPosition.eta();
-	    dtX[nDt] = globalPosition.x();
-	    dtY[nDt] = globalPosition.y();
-	    dtZ[nDt] = globalPosition.z();
-	    dtDirX[nDt] = globalDirection.x();
-	    dtDirY[nDt] = globalDirection.y();
-	    dtDirZ[nDt] = globalDirection.z();
-	    if (phiSeg)
-	      {
-		if(phiSeg->ist0Valid())
-		  {
-		    dtT[nDt] = phiSeg->t0();
-		    dtTError[nDt] = -1;
-		  }
-	      }
-
-	    nDt++;
-	}
-
 }*/
 
-    /*for(DTRecSegment4D dtCosmicSegment : *dtCosmicSegments){
-      const DTRecSegment4D dtCosmicSegment_copy = dtCosmicSegment;
-      const DTChamberRecSegment2D* phiSeg = dtCosmicSegment_copy.phiSegment();
 
-	LocalPoint  segmentLocalPosition       = dtCosmicSegment.localPosition();
-	LocalVector segmentLocalDirection      = dtCosmicSegment.localDirection();
-	// LocalError  segmentLocalPositionError  = iDT->localPositionError();
-	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
-	DetId geoid = dtCosmicSegment.geographicalId();
-	DTChamberId dtdetid = DTChamberId(geoid);
-	const DTChamber * dtchamber = dtG->chamber(dtdetid);
-	if (dtchamber) {
-	    GlobalPoint globalPosition = dtchamber->toGlobal(segmentLocalPosition);
-	    GlobalVector globalDirection = dtchamber->toGlobal(segmentLocalDirection);
+    // for(DTRecHit1DPair dtCosmicRechit: *dtRechits){
+    //   LocalPoint  localPosition       = dtCosmicRechit.localPosition();
+    //   DetId geoid = dtCosmicRechit.geographicalId();
+    //   DTChamberId dtdetid = DTChamberId(geoid);
+    //   const DTChamber * dtchamber = dtG->chamber(dtdetid);
+    //   if (dtchamber) {
+    //     GlobalPoint globalPosition = dtchamber->toGlobal(localPosition);
+  	//     dtCosmicRechitPhi[nDTCosmicRechits] = globalPosition.phi();
+  	//     dtCosmicRechitEta[nDTCosmicRechits] = globalPosition.eta();
+  	//     dtCosmicRechitX[nDTCosmicRechits] = globalPosition.x();
+  	//     dtCosmicRechitY[nDTCosmicRechits] = globalPosition.y();
+  	//     dtCosmicRechitZ[nDTCosmicRechits] = globalPosition.z();
+  	//     dtCosmicRechitTime[nDTCosmicRechits] = dtCosmicRechit.digiTime();
+    //     nDTCosmicRechits++;
+    //   }
+    // }
 
-	    dtCosmicPhi[nDtCosmic] = globalPosition.phi();
-	    dtCosmicEta[nDtCosmic] = globalPosition.eta();
-	    dtCosmicX[nDtCosmic] = globalPosition.x();
-	    dtCosmicY[nDtCosmic] = globalPosition.y();
-	    dtCosmicZ[nDtCosmic] = globalPosition.z();
-	    dtCosmicDirX[nDtCosmic] = globalDirection.x();
-	    dtCosmicDirY[nDtCosmic] = globalDirection.y();
-	    dtCosmicDirZ[nDtCosmic] = globalDirection.z();
-	    if (phiSeg)
+
+
+
+  for(DTRecSegment4D dtCosmicSegment : *dtCosmicSegments){
+    const DTRecSegment4D dtCosmicSegment_copy = dtCosmicSegment;
+    const DTChamberRecSegment2D* phiSeg = dtCosmicSegment_copy.phiSegment();
+
+  	LocalPoint  segmentLocalPosition       = dtCosmicSegment.localPosition();
+  	LocalVector segmentLocalDirection      = dtCosmicSegment.localDirection();
+  	// LocalError  segmentLocalPositionError  = iDT->localPositionError();
+  	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
+  	DetId geoid = dtCosmicSegment.geographicalId();
+  	DTChamberId dtdetid = DTChamberId(geoid);
+  	const DTChamber * dtchamber = dtG->chamber(dtdetid);
+  	if (dtchamber) {
+  	    GlobalPoint globalPosition = dtchamber->toGlobal(segmentLocalPosition);
+  	    GlobalVector globalDirection = dtchamber->toGlobal(segmentLocalDirection);
+
+  	    dtCosmicSegPhi[nDtCosmicSeg] = globalPosition.phi();
+  	    dtCosmicSegEta[nDtCosmicSeg] = globalPosition.eta();
+  	    dtCosmicSegX[nDtCosmicSeg] = globalPosition.x();
+  	    dtCosmicSegY[nDtCosmicSeg] = globalPosition.y();
+  	    dtCosmicSegZ[nDtCosmicSeg] = globalPosition.z();
+  	    dtCosmicSegDirX[nDtCosmicSeg] = globalDirection.x();
+  	    dtCosmicSegDirY[nDtCosmicSeg] = globalDirection.y();
+  	    dtCosmicSegDirZ[nDtCosmicSeg] = globalDirection.z();
+  	    if (phiSeg)
 	      {
-		if(phiSeg->ist0Valid())
-		  {
-		    dtCosmicT[nDtCosmic] = phiSeg->t0();
-		    dtCosmicTError[nDtCosmic] = -1;
-		  }
+      		if(phiSeg->ist0Valid())
+    		  {
+    		    dtCosmicSegT[nDtCosmicSeg] = phiSeg->t0();
+    		    dtCosmicSegTError[nDtCosmicSeg] = -1;
+    		  }
 	      }
 
-	    nDtCosmic++;
-	}
+  	    nDtCosmicSeg++;
+  	}
 
-}*/
+  }
 
 
     return true;
@@ -2674,6 +3164,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
             if (abs(gLLP_eta[0]) < 2.4 && abs(gLLP_eta[0]) > 0.9
                && abs(gLLP_decay_vertex_z[0])<1100 && abs(gLLP_decay_vertex_z[0])>568
                && radius < 695.5) gLLP_csc[0] = true;
+           if (radius < 740 && radius > 400 && abs(gLLP_decay_vertex_z[0])< 650 ) gLLP_dt[0] = true;
             double ecal_radius = 129.0;
             // double hcal_radius = 179.0;
             double EB_z = 268.36447217; // 129*sinh(1.479)
@@ -2795,6 +3286,8 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
             if (abs(gLLP_eta[1]) < 2.4 && abs(gLLP_eta[1]) > 0.9
                && abs(gLLP_decay_vertex_z[1])<1100 && abs(gLLP_decay_vertex_z[1])>568
                && radius < 695.5) gLLP_csc[1] = true;
+           if (radius < 740 && radius > 400 && abs(gLLP_decay_vertex_z[1])< 650 ) gLLP_dt[1] = true;
+
             double ecal_radius = 129.0;
             // double hcal_radius = 179.0;
             double EB_z = 268.36447217; // 129*sinh(1.479)

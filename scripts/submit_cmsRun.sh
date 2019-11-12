@@ -11,14 +11,15 @@ cd -
 job_script=${CMSSW_BASE}/src/cms_lpc_llp/llp_ntupler/scripts/runRazorJob_llp_vH.sh
 echo $job_script
 
-year=RunIISummer16
-samples=WminusH_HToSSTobbbb_ms55_pl10000_ev150000_${year}
-#samples=WminusH_HToSSTobbbb_ms55_pl10000_ev150000_RunIISummer16
+#year=RunIISummer16
+year=RunIIFall17
+#samples=WminusH_HToSSTobbbb_ms55_pl10000_ev150000_${year}
+samples=WplusH_HToSSTobbbb_ms55_pl10000_ev150000_${year}
 filesPerJob=1
 for sample in ${samples}
 do
 	echo "Sample " ${sample}
-	version=/v7/
+	version=/v8/
 	echo "${version}"
 	#output=/store/group/phys_exotica/privateProduction/ntuple/RunIISummer16/WminusH_HToSSTobbbb_ms55_pl10000/${version}/${sample}
 	output=/store/group/phys_exotica/privateProduction/ntuple/${year}/${sample}/${version}/${sample}
