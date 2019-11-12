@@ -1732,7 +1732,7 @@ void displacedJetTiming_ntupler::analyze(const edm::Event& iEvent, const edm::Ev
   //fillTracks(iSetup);
   fillTracksPV(iSetup);
   fillMuons(iEvent);
-  //fillMuonSystem(iEvent, iSetup);
+  fillMuonSystem(iEvent, iSetup);
   fillElectrons(iEvent);
   // fillPhotons(iEvent, iSetup);
   // fillTaus();
@@ -3510,6 +3510,44 @@ void displacedJetTiming_ntupler::findTrackingVariables(const TLorentzVector &jet
   reco::Vertex primaryVertex = vertices->at(0);
   std::vector<double> theta2Ds;
   std::vector<double> IP2Ds;
+
+  // propagator
+  //edm::ESHandle<Propagator> thePropagator_;
+  edm::ESTransientHandle<Propagator> thePropagator_;
+  std::string thePropagatorName_ = "PropagatorWithMaterial";
+  iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
+  StateOnTrackerBound stateOnTracker(thePropagator_.product());
+  
+  const MagneticField* magneticField_;
+  //edm::ESHandle<MagneticField> magneticField;
+  edm::ESTransientHandle<MagneticField> magneticField;
+  iSetup.get<IdealMagneticFieldRecord>().get(magneticField); 
+  magneticField_ = &*magneticField; 
+  //std::cout << "B " << magneticField_ << " tracks size " << tracks->size() << std::endl;
+  
+  for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
+    FreeTrajectoryState fts = trajectoryStateTransform::initialFreeState (tracks->at(iTrack),magneticField_); 
+    TrajectoryStateOnSurface outer = stateOnTracker(fts); 
+    if(!outer.isValid()) continue; 
+    GlobalPoint outerPos = outer.globalPosition();
+    
+  	TLorentzVector generalTrackVecTemp;
+  	generalTrackVecTemp.SetPtEtaPhiM((generalTracks->at(iTrack)).pt(), outerPos.eta(), outerPos.phi(), 0);
+
+  	if ((generalTracks->at(iTrack)).pt() > 1) {
+	    if (minDeltaRAllTracks > generalTrackVecTemp.DeltaR(jetVec))
+	    {
+		    minDeltaRAllTracks =  generalTrackVecTemp.DeltaR(jetVec);
+	    }
+	    if (generalTrackVecTemp.DeltaR(jetVec) < 0.4){
+    		nTracksAll ++;
+    		//tot pt for alpha
+    		ptAllTracks += (generalTracks->at(iTrack)).pt();
+
+      }
+    }
+  }
+/*
   for (int iTrack = 0; iTrack < nTracks; iTrack ++){
   	TLorentzVector generalTrackVecTemp;
   	generalTrackVecTemp.SetPtEtaPhiM(TrackPt[iTrack], TrackEta[iTrack], TrackPhi[iTrack], 0);
@@ -3527,6 +3565,7 @@ void displacedJetTiming_ntupler::findTrackingVariables(const TLorentzVector &jet
       	     }
          }
   }
+*/
   if (ptAllTracks > 0.9){
     //No matched jets
     for (int ipvTrack = 0; ipvTrack < npvTracks; ipvTrack++){
