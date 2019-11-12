@@ -2835,7 +2835,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     dtRechitClusterTimeSpread[nDtRechitClusters] = tmp.TSpread;
     dtRechitClusterSize[nDtRechitClusters] = tmp.nCscSegments;
 
-    dtRechitClusterNSegmentStation1[nDtRechitClusters] = tmp.nDtSegmentStation2;
+    dtRechitClusterNSegmentStation1[nDtRechitClusters] = tmp.nDtSegmentStation1;
     dtRechitClusterNSegmentStation2[nDtRechitClusters] = tmp.nDtSegmentStation2;
     dtRechitClusterNSegmentStation3[nDtRechitClusters] = tmp.nDtSegmentStation3;
     dtRechitClusterNSegmentStation4[nDtRechitClusters] = tmp.nDtSegmentStation4;
