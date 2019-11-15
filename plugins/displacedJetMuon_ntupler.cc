@@ -57,8 +57,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   rpcRecHitInputToken_(consumes<RPCRecHitCollection>(edm::InputTag("rpcRecHits"))),
   MuonCSCSimHitsToken_(consumes<vector<PSimHit>>(iConfig.getParameter<edm::InputTag>("MuonCSCSimHits"))),
   MuonCSCComparatorDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCComparatorDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCComparatorDigi"))),
-  MuonCSCStripDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCStripDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigi"))),
-  MuonCSCWireDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCWireDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigi"))),
+  MuonCSCStripDigiToken_(consumes<CSCStripDigiCollection>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigi"))),
+  MuonCSCWireDigiToken_(consumes<CSCWireDigiCollection>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigi"))),
   MuonCSCStripDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigiSimLinks"))),
   MuonCSCWireDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigiSimLinks"))),
   muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
@@ -229,17 +229,17 @@ void displacedJetMuon_ntupler::setBranches()
   // enablePVAllBranches();
   // enablePVTracksBranches();
   // enablePileUpBranches();
-  // enableMuonBranches();
-  // enableElectronBranches();
+  enableMuonBranches();
+  enableElectronBranches();
   // enableTauBranches();
   // enableIsoPFCandidateBranches();
   // enablePhotonBranches();
   enableMuonSystemBranches();
   // enableEcalRechitBranches();
-  // enableJetBranches();
+  enableJetBranches();
   // enableCaloJetBranches();
   // enableJetAK8Branches();
-  // enableMetBranches();
+  enableMetBranches();
   enableTriggerBranches();
   enableMCBranches();
   enableGenParticleBranches();
@@ -787,17 +787,17 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // displacedJetMuonTree->Branch("dtSegClusterVertexN20",             dtSegClusterVertexN20,             "dtSegClusterVertexN20[nDtSegClusters]/I");
     // displacedJetMuonTree->Branch("dtSegClusterVertexN",             dtSegClusterVertexN,             "dtSegClusterVertexN[nDtSegClusters]/I");
 
-    displacedJetMuonTree->Branch("nDtCosmicSeg",&nDtCosmicSeg,"nDtCosmicSeg/I");
-    displacedJetMuonTree->Branch("dtCosmicSegPhi",dtCosmicSegPhi,"dtCosmicSegPhi[nDtCosmicSeg]");
-    displacedJetMuonTree->Branch("dtCosmicSegEta",dtCosmicSegEta,"dtCosmicSegEta[nDtCosmicSeg]");
-    displacedJetMuonTree->Branch("dtCosmicSegX",dtCosmicSegX,"dtCosmicSegX[nDtCosmicSeg]");
-    displacedJetMuonTree->Branch("dtCosmicSegY",dtCosmicSegY,"dtCosmicSegY[nDtCosmicSeg]");
-    displacedJetMuonTree->Branch("dtCosmicSegZ",dtCosmicSegZ,"dtCosmicSegZ[nDtCosmicSeg]");
-    displacedJetMuonTree->Branch("dtCosmicSegDirX",dtCosmicSegDirX,"dtCosmicSegDirX[nDtCosmicSeg]");
-    displacedJetMuonTree->Branch("dtCosmicSegDirY",dtCosmicSegDirY,"dtCosmicSegDirY[nDtCosmicSeg]");
-    displacedJetMuonTree->Branch("dtCosmicSegDirZ",dtCosmicSegDirZ,"dtCosmicSegDirZ[nDtCosmicSeg]");
-    displacedJetMuonTree->Branch("dtCosmicSegT",dtCosmicSegT,"dtCosmicSegT[nDtCosmicSeg]");
-    displacedJetMuonTree->Branch("dtCosmicSegTError",dtCosmicSegTError,"dtCosmicSegTError[nDtCosmicSeg]");
+    // displacedJetMuonTree->Branch("nDtCosmicSeg",&nDtCosmicSeg,"nDtCosmicSeg/I");
+    // displacedJetMuonTree->Branch("dtCosmicSegPhi",dtCosmicSegPhi,"dtCosmicSegPhi[nDtCosmicSeg]");
+    // displacedJetMuonTree->Branch("dtCosmicSegEta",dtCosmicSegEta,"dtCosmicSegEta[nDtCosmicSeg]");
+    // displacedJetMuonTree->Branch("dtCosmicSegX",dtCosmicSegX,"dtCosmicSegX[nDtCosmicSeg]");
+    // displacedJetMuonTree->Branch("dtCosmicSegY",dtCosmicSegY,"dtCosmicSegY[nDtCosmicSeg]");
+    // displacedJetMuonTree->Branch("dtCosmicSegZ",dtCosmicSegZ,"dtCosmicSegZ[nDtCosmicSeg]");
+    // displacedJetMuonTree->Branch("dtCosmicSegDirX",dtCosmicSegDirX,"dtCosmicSegDirX[nDtCosmicSeg]");
+    // displacedJetMuonTree->Branch("dtCosmicSegDirY",dtCosmicSegDirY,"dtCosmicSegDirY[nDtCosmicSeg]");
+    // displacedJetMuonTree->Branch("dtCosmicSegDirZ",dtCosmicSegDirZ,"dtCosmicSegDirZ[nDtCosmicSeg]");
+    // displacedJetMuonTree->Branch("dtCosmicSegT",dtCosmicSegT,"dtCosmicSegT[nDtCosmicSeg]");
+    // displacedJetMuonTree->Branch("dtCosmicSegTError",dtCosmicSegTError,"dtCosmicSegTError[nDtCosmicSeg]");
 
 };
 
@@ -1104,11 +1104,13 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(dtCosmicRechitInputToken_,dtCosmicRechits);
 
   iEvent.getByToken(rpcRecHitInputToken_,rpcRecHits);
-  iEvent.getByToken(MuonCSCSimHitsToken_, MuonCSCSimHits);
+  if (!isData) {
+    iEvent.getByToken(MuonCSCSimHitsToken_, MuonCSCSimHits);
+    iEvent.getByToken(MuonCSCStripDigiSimLinksToken_, MuonCSCStripDigiSimLinks);
+    iEvent.getByToken(MuonCSCWireDigiSimLinksToken_, MuonCSCWireDigiSimLinks);
+  }
   iEvent.getByToken(MuonCSCStripDigiToken_, MuonCSCStripDigi);
   iEvent.getByToken(MuonCSCWireDigiToken_, MuonCSCWireDigi);
-  iEvent.getByToken(MuonCSCStripDigiSimLinksToken_, MuonCSCStripDigiSimLinks);
-  iEvent.getByToken(MuonCSCWireDigiSimLinksToken_, MuonCSCWireDigiSimLinks);
 
   iEvent.getByToken(tracksTag_,tracks);
   iEvent.getByToken(PFCandsToken_, pfCands);
@@ -2096,10 +2098,10 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
 
   resetBranches();
   fillEventInfo(iEvent);
-  // fillJets(iSetup);
+  fillJets(iSetup);
   fillMuons(iEvent);
-  // fillElectrons(iEvent);
-  // fillMet(iEvent);
+  fillElectrons(iEvent);
+  fillMet(iEvent);
   // fillCaloJets(iSetup);
   if (!isData) {
     fillPileUp();
@@ -2373,26 +2375,28 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
           cscSegClusterMuonVetoE[nCscSegClusters] = mu.energy();
         }
       }
-      //match to genparticles
-      float min_deltaR = 15.;
-      int index = 999;
-      for(int j = 0; j < nGenParticle; j++)
-      {
-        if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
 
-        double current_delta_r = deltaR(cscSegClusterEta[nCscSegClusters], cscSegClusterPhi[nCscSegClusters], gParticleEta[j], gParticlePhi[j]);
-        if (current_delta_r < min_deltaR)
-        {
-          min_deltaR = current_delta_r;
-          index = j;
-        }
-      }
-      if (min_deltaR < 0.4)
-      {
-        cscSegCluster_match_gParticle_minDeltaR[nCscSegClusters] = min_deltaR;
-        cscSegCluster_match_gParticle_index[nCscSegClusters] = index;
-        cscSegCluster_match_gParticle_id[nCscSegClusters] = gParticleId[index];
-
+      if (!isData) {
+	//match to genparticles
+	float min_deltaR = 15.;
+	int index = 999;
+	for(int j = 0; j < nGenParticle; j++)
+	  {
+	    if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
+	    
+	    double current_delta_r = deltaR(cscSegClusterEta[nCscSegClusters], cscSegClusterPhi[nCscSegClusters], gParticleEta[j], gParticlePhi[j]);
+	    if (current_delta_r < min_deltaR)
+	      {
+		min_deltaR = current_delta_r;
+		index = j;
+	      }
+	  }
+	if (min_deltaR < 0.4)
+	  {
+	    cscSegCluster_match_gParticle_minDeltaR[nCscSegClusters] = min_deltaR;
+	    cscSegCluster_match_gParticle_index[nCscSegClusters] = index;
+	    cscSegCluster_match_gParticle_id[nCscSegClusters] = gParticleId[index];	    
+	  }
       }
 
       nCscSegClusters++;
@@ -2546,18 +2550,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscRechitClusterMuonVetoE[nCscRechitClusters]) {
         cscRechitClusterMuonVetoE[nCscRechitClusters] = mu.energy();
       }
-    }
-
-    for (const reco::PFJet &j : *jets) {
-      //if (j.pt() < 10) continue;
-      if (fabs(j.eta())>3.0) continue;
-      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscRechitClusterJetVetoPt[nCscRechitClusters] ) {
-        cscRechitClusterJetVetoPt[nCscRechitClusters]  = j.pt();
-      }
-      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscRechitClusterJetVetoE[nCscRechitClusters] ) {
-        cscRechitClusterJetVetoE[nCscRechitClusters]  = j.energy();
-      }
-    }
+    }   
 
     //match to segment clusters
     float min_deltaR = 15.;
@@ -2579,24 +2572,28 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     }
     min_deltaR = 15.;
     index = 999;
-    //match to genparticles
-    for(int j = 0; j < nGenParticle; j++)
-    {
-      if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
-      double current_delta_r = deltaR(cscRechitClusterEta[nCscRechitClusters], cscRechitClusterPhi[nCscRechitClusters], gParticleEta[j], gParticlePhi[j]);
-      if (current_delta_r < min_deltaR)
-      {
-        min_deltaR = current_delta_r;
-        index = j;
-      }
-    }
-    if (min_deltaR < 0.4)
-    {
-      cscRechitCluster_match_gParticle_minDeltaR[nCscRechitClusters] = min_deltaR;
-      cscRechitCluster_match_gParticle_index[nCscRechitClusters] = index;
-      cscRechitCluster_match_gParticle_id[nCscRechitClusters] = gParticleId[index];
-    }
 
+
+    if (!isData) {
+      //match to genparticles
+      for(int j = 0; j < nGenParticle; j++)
+	{
+	  if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
+	  double current_delta_r = deltaR(cscRechitClusterEta[nCscRechitClusters], cscRechitClusterPhi[nCscRechitClusters], gParticleEta[j], gParticlePhi[j]);
+	  if (current_delta_r < min_deltaR)
+	    {
+	      min_deltaR = current_delta_r;
+	      index = j;
+	    }
+	}
+      if (min_deltaR < 0.4)
+	{
+	  cscRechitCluster_match_gParticle_minDeltaR[nCscRechitClusters] = min_deltaR;
+	  cscRechitCluster_match_gParticle_index[nCscRechitClusters] = index;
+	  cscRechitCluster_match_gParticle_id[nCscRechitClusters] = gParticleId[index];
+	}
+    }
+    
     nCscRechitClusters++;
   }
 
@@ -2740,26 +2737,28 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
           dtSegClusterMuonVetoE[nDtSegClusters] = mu.energy();
         }
       }
-      //match to genparticles
-      float min_deltaR = 15.;
-      int index = 999;
-      for(int j = 0; j < nGenParticle; j++)
-      {
-        if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
 
-        double current_delta_r = deltaR(dtSegClusterEta[nDtSegClusters], dtSegClusterPhi[nDtSegClusters], gParticleEta[j], gParticlePhi[j]);
-        if (current_delta_r < min_deltaR)
-        {
-          min_deltaR = current_delta_r;
-          index = j;
-        }
-      }
-      if (min_deltaR < 0.4)
-      {
-        dtSegCluster_match_gParticle_minDeltaR[nDtSegClusters] = min_deltaR;
-        dtSegCluster_match_gParticle_index[nDtSegClusters] = index;
-        dtSegCluster_match_gParticle_id[nDtSegClusters] = gParticleId[index];
+      if (!isData) {
+	//match to genparticles
+	float min_deltaR = 15.;
+	int index = 999;
+	for(int j = 0; j < nGenParticle; j++)
+	  {
+	    if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
 
+	    double current_delta_r = deltaR(dtSegClusterEta[nDtSegClusters], dtSegClusterPhi[nDtSegClusters], gParticleEta[j], gParticlePhi[j]);
+	    if (current_delta_r < min_deltaR)
+	      {
+		min_deltaR = current_delta_r;
+		index = j;
+	      }
+	  }
+	if (min_deltaR < 0.4)
+	  {
+	    dtSegCluster_match_gParticle_minDeltaR[nDtSegClusters] = min_deltaR;
+	    dtSegCluster_match_gParticle_index[nDtSegClusters] = index;
+	    dtSegCluster_match_gParticle_id[nDtSegClusters] = gParticleId[index];
+	  }
       }
 
       nDtSegClusters++;
@@ -2875,26 +2874,28 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
         dtRechitClusterMuonVetoE[nDtRechitClusters] = mu.energy();
       }
     }
-    //match to genparticles
-    float min_deltaR = 15.;
-    int index = 999;
-    for(int j = 0; j < nGenParticle; j++)
-    {
-      if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
 
-      double current_delta_r = deltaR(dtRechitClusterEta[nDtRechitClusters], dtRechitClusterPhi[nDtRechitClusters], gParticleEta[j], gParticlePhi[j]);
-      if (current_delta_r < min_deltaR)
-      {
-        min_deltaR = current_delta_r;
-        index = j;
-      }
-    }
-    if (min_deltaR < 0.4)
-    {
-      dtRechitCluster_match_gParticle_minDeltaR[nDtRechitClusters] = min_deltaR;
-      dtRechitCluster_match_gParticle_index[nDtRechitClusters] = index;
-      dtRechitCluster_match_gParticle_id[nDtRechitClusters] = gParticleId[index];
+    if (!isData) {
+      //match to genparticles
+      float min_deltaR = 15.;
+      int index = 999;
+      for(int j = 0; j < nGenParticle; j++)
+	{
+	  if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
 
+	  double current_delta_r = deltaR(dtRechitClusterEta[nDtRechitClusters], dtRechitClusterPhi[nDtRechitClusters], gParticleEta[j], gParticlePhi[j]);
+	  if (current_delta_r < min_deltaR)
+	    {
+	      min_deltaR = current_delta_r;
+	      index = j;
+	    }
+	}
+      if (min_deltaR < 0.4)
+	{
+	  dtRechitCluster_match_gParticle_minDeltaR[nDtRechitClusters] = min_deltaR;
+	  dtRechitCluster_match_gParticle_index[nDtRechitClusters] = index;
+	  dtRechitCluster_match_gParticle_id[nDtRechitClusters] = gParticleId[index];
+	}
     }
 
     nDtRechitClusters++;
@@ -3409,7 +3410,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
   for (const reco::PFJet &j : *jets)
   {
-    //if (j.pt() < 15) continue;
+    if (j.pt() < 25) continue;
     //if (fabs(j.eta()) > 2.4) continue;
     //-------------------
     //Fill Jet-Level Info
