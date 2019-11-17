@@ -11,7 +11,8 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/data/Run2018C/SingleMuon/AOD/17Sep2018-v1/60004/FA5DBB92-39A5-6348-AB16-C20E300B0F7B.root'
+'file:///storage/user/christiw/login-1/christiw/LLP/CMSSW_9_4_7/src/cms_lpc_llp/llp_ntupler/F2E310F0-1513-A741-B89D-BC588E298466.root',
+#        '/store/data/Run2018C/SingleMuon/AOD/17Sep2018-v1/60004/FA5DBB92-39A5-6348-AB16-C20E300B0F7B.root'
         )
 )
 
@@ -138,7 +139,12 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     gedGsfElectronCores = cms.InputTag("gedGsfElectronCores", "", "RECO"),
     gedPhotonCores = cms.InputTag("gedPhotonCore", "", "RECO"),
     #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters", "RECO"),
-
+    MuonCSCSimHits = cms.InputTag("g4SimHits", "MuonCSCHits","SIM"),
+    MuonCSCComparatorDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCComparatorDigi", "HLT"),
+    MuonCSCStripDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCStripDigi", "HLT"),
+    MuonCSCWireDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCWireDigi", "HLT"),
+    MuonCSCWireDigiSimLinks = cms.InputTag( "simMuonCSCDigis", "MuonCSCWireDigiSimLinks", "HLT"),
+    MuonCSCStripDigiSimLinks = cms.InputTag("simMuonCSCDigis","MuonCSCStripDigiSimLinks", "HLT"),
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
 )
 

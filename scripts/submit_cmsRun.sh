@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 mkdir -p log
 mkdir -p submit
 
@@ -12,17 +12,18 @@ job_script=${CMSSW_BASE}/src/cms_lpc_llp/llp_ntupler/scripts/runRazorJob_llp_vH.
 echo $job_script
 
 #year=RunIISummer16
-year=RunIIFall17
+year=Fall18
 #samples=WminusH_HToSSTobbbb_ms55_pl10000_ev150000_${year}
-samples=WplusH_HToSSTobbbb_ms55_pl10000_ev150000_${year}
+samples=WplusH_HToSSTobbbb_ms55_pl10000_ev150000_RunII${year}
 filesPerJob=1
 for sample in ${samples}
 do
 	echo "Sample " ${sample}
-	version=/v8/
+	version=/v9/
 	echo "${version}"
 	#output=/store/group/phys_exotica/privateProduction/ntuple/RunIISummer16/WminusH_HToSSTobbbb_ms55_pl10000/${version}/${sample}
-	output=/store/group/phys_exotica/privateProduction/ntuple/${year}/${sample}/${version}/${sample}
+	output=/store/group/phys_exotica/privateProduction/ntuple/RunII${year}/${sample}/${version}/${sample}
+
 	echo "output ${output}"
 	inputfilelist=/src/cms_lpc_llp/llp_ntupler/lists/${sample}.txt
 	nfiles=`cat ${CMSSW_BASE}$inputfilelist | wc | awk '{print $1}' `
@@ -33,7 +34,7 @@ do
                 maxjob=`python -c "print int($nfiles.0/$filesPerJob)-1"`
         fi
 	#config=displacedJetMuon_step2_rechit_studies_cfg_condor
-	config=displacedJetMuon_step2_ntupler_cfg_condor
+	config=displacedJetMuon_step2_ntupler_MC_${year}_cfg_condor
 	echo "${config}"
 	rm -f submit/${config}_{sample}_Job*.jdl
 	rm -f log/${config}_${sample}_Job*
@@ -43,7 +44,7 @@ do
 		jdl_file=submit/${config}_${sample}_Job${jobnumber}_Of_${maxjob}.jdl
 		echo "Universe = vanilla" > ${jdl_file}
 		echo "Executable = ${job_script}" >> ${jdl_file}
-                echo "Arguments = ${config}.py ${inputfilelist} ${filesPerJob} ${jobnumber} ${sample}_Job${jobnumber}_Of_${maxjob}.root ${output} ${CMSSW_BASE} ${HOME}/" >> ${jdl_file}
+                echo "Arguments = ${config}.py ${inputfilelist} ${filesPerJob} ${jobnumber} ${sample}_Job${jobnumber}_Of_${maxjob}.root ${output} ${CMSSW_BASE} ${HOME}/ ${year}" >> ${jdl_file}
 		
 		# option should always be 1, when running condor
 		echo "Log = log/${config}_${sample}_Job${jobnumber}_Of_${maxjob}_\$(Cluster).\$(Process).log" >> ${jdl_file}
@@ -56,7 +57,12 @@ do
 		echo "RequestDisk = 4" >> ${jdl_file}
 		echo "+RunAsOwner = True" >> ${jdl_file}
 		echo "+InteractiveUser = true" >> ${jdl_file}
-		echo "+SingularityImage = \"/cvmfs/singularity.opensciencegrid.org/bbockelm/cms:rhel6\"" >> ${jdl_file}
+		if [ ${year} == "Summer16" ]
+		then
+			echo "+SingularityImage = \"/cvmfs/singularity.opensciencegrid.org/bbockelm/cms:rhel7\"" >> ${jdl_file}
+		else
+			echo "+SingularityImage = \"/cvmfs/singularity.opensciencegrid.org/bbockelm/cms:rhel6\"" >> ${jdl_file}
+		fi
 		echo '+SingularityBindCVMFS = True' >> ${jdl_file}
 #		echo "transfer_input_files = tarball/${sample}.tar" >> ${jdl_file}
 		echo "run_as_owner = True" >> ${jdl_file}

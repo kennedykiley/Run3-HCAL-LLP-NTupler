@@ -43,7 +43,7 @@ using namespace std;
 #include "TrackingTools/TrajectoryState/interface/FreeTrajectoryState.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
-#include "RecoTracker/DebugTools/interface/GetTrackTrajInfo.h"
+// #include "RecoTracker/DebugTools/interface/GetTrackTrajInfo.h"
 
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 
@@ -1068,7 +1068,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float gLLP_eta[LLP_ARRAY_SIZE];
  float gLLP_phi[LLP_ARRAY_SIZE];
 /*
- bool gLLP_daughter_EB[LLP_DAUGHTER_ARRAY_SIZE]; 
+ bool gLLP_daughter_EB[LLP_DAUGHTER_ARRAY_SIZE];
  bool gLLP_daughter_ETL[LLP_DAUGHTER_ARRAY_SIZE];
 
  float photon_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
@@ -1094,7 +1094,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float gLLP_min_delta_r_match_calojet[LLP_DAUGHTER_ARRAY_SIZE];
 */
  //daughters
- bool gLLP_daughter_EB[LLP_DAUGHTER_ARRAY_SIZE]; 
+ bool gLLP_daughter_EB[LLP_DAUGHTER_ARRAY_SIZE];
  bool gLLP_daughter_ETL[LLP_DAUGHTER_ARRAY_SIZE];
 
  float gLLP_daughter_photon_travel_time_EB[LLP_DAUGHTER_ARRAY_SIZE];
@@ -1121,7 +1121,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float gLLP_daughter_min_delta_r_match_calojet[LLP_DAUGHTER_ARRAY_SIZE];
 
  //grandaughters
- bool gLLP_grandaughter_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE]; 
+ bool gLLP_grandaughter_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
  bool gLLP_grandaughter_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
 
  float gLLP_grandaughter_photon_travel_time_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];

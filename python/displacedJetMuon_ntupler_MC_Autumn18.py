@@ -11,7 +11,8 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(        
-        '/store/mc/RunIIAutumn18DRPremix/ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/260000/EC536CE3-5405-9F4D-B571-2EF83D5C17D9.root'
+'file:///storage/user/christiw/login-1/christiw/LLP/CMSSW_9_4_7/src/cms_lpc_llp/llp_ntupler/F2E310F0-1513-A741-B89D-BC588E298466.root',
+#        '/store/mc/RunIIAutumn18DRPremix/ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/260000/EC536CE3-5405-9F4D-B571-2EF83D5C17D9.root'
         )
 )
 
@@ -76,6 +77,12 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #packedPfCands = cms.InputTag("packedPFCandidates"),
 
     genParticles = cms.InputTag("genParticles"),
+    MuonCSCSimHits = cms.InputTag("g4SimHits", "MuonCSCHits","SIM"),
+    MuonCSCComparatorDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCComparatorDigi", "HLT"),
+    MuonCSCStripDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCStripDigi", "HLT"),
+    MuonCSCWireDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCWireDigi", "HLT"),
+    MuonCSCWireDigiSimLinks = cms.InputTag( "simMuonCSCDigis", "MuonCSCWireDigiSimLinks", "HLT"),
+    MuonCSCStripDigiSimLinks = cms.InputTag("simMuonCSCDigis","MuonCSCStripDigiSimLinks", "HLT"),
 
     #packedGenParticles = cms.InputTag("packedGenParticles"),
     #prunedGenParticles = cms.InputTag("prunedGenParticles"),

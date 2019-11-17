@@ -12,6 +12,7 @@ outputfile=$5
 outputDirectory=$6
 CMSSW_BASE=$7
 homeDir=$8
+year=$9
 currentDir=`pwd`
 #user=${homeDir#*/data/}
 user=${homeDir#*/storage/user/}
@@ -28,14 +29,27 @@ then
 	workDir=`pwd`
 	echo "entering directory: ${workDir}"
 	source /cvmfs/cms.cern.ch/cmsset_default.sh
-	export SCRAM_ARCH=slc6_amd64_gcc630
+	#export SCRAM_ARCH=slc6_amd64_gcc630
+	if [ ${year} == "Summer16" ]
+	then
+		echo "export SCRAM_ARCH=slc6_amd64_gcc530"
+		export SCRAM_ARCH=slc6_amd64_gcc530
+        elif [ ${year} == "Fall17" ]
+	then
+		echo "export SCRAM_ARCH=slc6_amd64_gcc630"
+		export SCRAM_ARCH=slc6_amd64_gcc630
+	else
+		echo "export SCRAM_ARCH=slc6_amd64_gcc700"
+		export SCRAM_ARCH=slc6_amd64_gcc700
+	fi
+
+
 	ulimit -c 0
 	eval `scram runtime -sh`
 	echo `which root`
 
 	cd ${runDir}
 	echo "entering directory: ${runDir}"
-	echo "${CMSSW_BASE}/src/llp_analyzer/RazorRun_T2"
 
 	cp $CMSSW_BASE/src/cms_lpc_llp/llp_ntupler/python/${config} ./
 	#get grid proxy
@@ -45,6 +59,7 @@ then
 
 
 	#run the job
+	ls ${CMSSW_BASE}${inputfilelist}
 	cat ${CMSSW_BASE}${inputfilelist} | awk "NR > (${jobnumber}*${filePerJob}) && NR <= ((${jobnumber}+1)*${filePerJob})" > inputfilelistForThisJob_${jobnumber}.txt
 	
 	
@@ -53,7 +68,8 @@ then
 	echo "Running on these input files:"
 	cat inputfilelistForThisJob_${jobnumber}.txt
 	echo "************************************"
-	sed -i "s\/mnt\'file:/mnt\g" inputfilelistForThisJob_${jobnumber}.txt
+#	sed -i "s\/mnt\'file:/mnt\g" inputfilelistForThisJob_${jobnumber}.txt
+        sed -i "s\/mnt/hadoop\'\g" inputfilelistForThisJob_${jobnumber}.txt
 	sed -i "s:.root:.root',:g" inputfilelistForThisJob_${jobnumber}.txt
 	sed -i "/inputfilename/r inputfilelistForThisJob_${jobnumber}.txt" ${config}
 	sed -i "s/outputfilename/${outputfile}/g" ${config}

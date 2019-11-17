@@ -53,7 +53,6 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   dtCosmicSegmentInputToken_(consumes<DTRecSegment4DCollection>(edm::InputTag("dt4DCosmicSegments"))),
   dtRechitInputToken_(consumes<DTRecHitCollection>(edm::InputTag("dt1DRecHits"))),
   dtCosmicRechitInputToken_(consumes<DTRecHitCollection>(edm::InputTag("dt1DCosmicRecHits"))),
-
   rpcRecHitInputToken_(consumes<RPCRecHitCollection>(edm::InputTag("rpcRecHits"))),
   MuonCSCSimHitsToken_(consumes<vector<PSimHit>>(iConfig.getParameter<edm::InputTag>("MuonCSCSimHits"))),
   MuonCSCComparatorDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCComparatorDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCComparatorDigi"))),
@@ -229,7 +228,7 @@ void displacedJetMuon_ntupler::setBranches()
   // enablePVAllBranches();
   // enablePVTracksBranches();
   // enablePileUpBranches();
-  // enableMuonBranches();
+  enableMuonBranches();
   // enableElectronBranches();
   // enableTauBranches();
   // enableIsoPFCandidateBranches();
