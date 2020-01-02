@@ -1699,16 +1699,16 @@ void displacedJetTiming_ntupler::beginRun(const edm::Run& iRun, const edm::Event
 //------ Method called for each lumi block ------//
 void displacedJetTiming_ntupler::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) {
 /*
-  if (useGen_) {
+  if (useGen_) {  
     iLumi.getByToken(genLumiHeaderToken_,genLumiHeader);
   }
-
+  
   //fill lhe comment lines with SUSY model parameter information
   lheComments = "";
   if (genLumiHeader.isValid() && isFastsim_) {
-	lheComments = genLumiHeader->configDescription();
-  }
-
+	lheComments = genLumiHeader->configDescription();    
+  }    
+  
  std::cout <<"lhe comments : " << lheComments << std::endl;
 */
 }
@@ -1730,7 +1730,7 @@ void displacedJetTiming_ntupler::analyze(const edm::Event& iEvent, const edm::Ev
   // fillPVAll();
   // fillPVTracks();
   //fillTracks(iSetup);
-  fillTracksPV(iSetup);
+  //fillTracksPV(iSetup);
   fillMuons(iEvent);
   fillMuonSystem(iEvent, iSetup);
   fillElectrons(iEvent);
@@ -1908,29 +1908,29 @@ bool displacedJetTiming_ntupler::fillTracks(const edm::EventSetup& iSetup)
   std::string thePropagatorName_ = "PropagatorWithMaterial";
   iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
   StateOnTrackerBound stateOnTracker(thePropagator_.product());
-
+  
   const MagneticField* magneticField_;
   //edm::ESHandle<MagneticField> magneticField;
   edm::ESTransientHandle<MagneticField> magneticField;
-  iSetup.get<IdealMagneticFieldRecord>().get(magneticField);
-  magneticField_ = &*magneticField;
+  iSetup.get<IdealMagneticFieldRecord>().get(magneticField); 
+  magneticField_ = &*magneticField; 
   //std::cout << "B " << magneticField_ << " tracks size " << tracks->size() << std::endl;
-
-  nTracks = tracks->size();
+  
+  nTracks = tracks->size(); 
   for (unsigned int j = 0; j < tracks->size(); j ++){
-    FreeTrajectoryState fts = trajectoryStateTransform::initialFreeState (tracks->at(j),magneticField_);
-    TrajectoryStateOnSurface outer = stateOnTracker(fts);
-    if(!outer.isValid()) continue;
+    FreeTrajectoryState fts = trajectoryStateTransform::initialFreeState (tracks->at(j),magneticField_); 
+    TrajectoryStateOnSurface outer = stateOnTracker(fts); 
+    if(!outer.isValid()) continue; 
     GlobalPoint outerPos = outer.globalPosition();
+    
+    TrackX[j] = outerPos.x(); 
+    TrackY[j] = outerPos.y(); 
+    TrackZ[j] = outerPos.z(); 
 
-    TrackX[j] = outerPos.x();
-    TrackY[j] = outerPos.y();
-    TrackZ[j] = outerPos.z();
+    TrackEta[j] = outerPos.eta(); 
+    TrackPhi[j] = outerPos.phi(); 
 
-    TrackEta[j] = outerPos.eta();
-    TrackPhi[j] = outerPos.phi();
-
-    TrackPt[j] = (tracks->at(j)).pt();
+    TrackPt[j] = (tracks->at(j)).pt(); 
     //if(j<3 && j<tracks->size()) std::cout << "pt " << (tracks->at(j)).pt() << std::endl;
   }
 
@@ -1946,31 +1946,31 @@ bool displacedJetTiming_ntupler::fillTracksPV(const edm::EventSetup& iSetup)
   std::string thePropagatorName_ = "PropagatorWithMaterial";
   iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagatorPV_);
   StateOnTrackerBound stateOnTrackerPV(thePropagatorPV_.product());
-
+  
   const MagneticField* magneticFieldPV_;
   //edm::ESHandle<MagneticField> magneticFieldPV;
   edm::ESTransientHandle<MagneticField> magneticFieldPV;
-  iSetup.get<IdealMagneticFieldRecord>().get(magneticFieldPV);
-  magneticFieldPV_ = &*magneticFieldPV;
+  iSetup.get<IdealMagneticFieldRecord>().get(magneticFieldPV); 
+  magneticFieldPV_ = &*magneticFieldPV; 
 
   for (auto vertex = vertices->begin(); vertex != vertices->end(); vertex++){
     if(vertex->isValid() && !vertex->isFake())
     {
       for(auto pvTrack = vertex->tracks_begin(); pvTrack != vertex->tracks_end(); pvTrack++)
       {
-        FreeTrajectoryState ftspv = trajectoryStateTransform::initialFreeState (**pvTrack, magneticFieldPV_);
-        TrajectoryStateOnSurface outerpv = stateOnTrackerPV(ftspv);
-        if(!outerpv.isValid()) continue;
+        FreeTrajectoryState ftspv = trajectoryStateTransform::initialFreeState (**pvTrack, magneticFieldPV_); 
+        TrajectoryStateOnSurface outerpv = stateOnTrackerPV(ftspv); 
+        if(!outerpv.isValid()) continue; 
         GlobalPoint outerpvPos = outerpv.globalPosition();
+        
+        PVTrackX[npvTracks] = outerpvPos.x(); 
+        PVTrackY[npvTracks] = outerpvPos.y(); 
+        PVTrackZ[npvTracks] = outerpvPos.z(); 
 
-        PVTrackX[npvTracks] = outerpvPos.x();
-        PVTrackY[npvTracks] = outerpvPos.y();
-        PVTrackZ[npvTracks] = outerpvPos.z();
+        PVTrackEta[npvTracks] = outerpvPos.eta(); 
+        PVTrackPhi[npvTracks] = outerpvPos.phi(); 
 
-        PVTrackEta[npvTracks] = outerpvPos.eta();
-        PVTrackPhi[npvTracks] = outerpvPos.phi();
-
-        PVTrackPt[npvTracks] = (*pvTrack)->pt();
+        PVTrackPt[npvTracks] = (*pvTrack)->pt(); 
 
 	npvTracks ++;
       }
@@ -2061,8 +2061,8 @@ bool displacedJetTiming_ntupler::fillMuonSystem(const edm::Event& iEvent, const 
 	    rpcZ[nRpc] = globalPosition.z();
 	    rpcPhi[nRpc] = globalPosition.phi();
 	    rpcEta[nRpc] = globalPosition.eta();
-	    // rpcT[nRpc] = rpcRecHit.time();
-	    // rpcTError[nRpc] = rpcRecHit.timeError();
+	    rpcT[nRpc] = rpcRecHit.time();
+	    rpcTError[nRpc] = rpcRecHit.timeError();
 	    nRpc++;
 	}
     }
@@ -2240,7 +2240,7 @@ bool displacedJetTiming_ntupler::fillElectrons(const edm::Event& iEvent)
     ele_chargedIso[nElectrons] = ele.pfIsolationVariables().sumChargedHadronPt;
     ele_photonIso[nElectrons] = ele.pfIsolationVariables().sumPhotonEt;
     ele_neutralHadIso[nElectrons] = ele.pfIsolationVariables().sumNeutralHadronEt;
-    // ele_MissHits[nElectrons] = ele.gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS);
+    ele_MissHits[nElectrons] = ele.gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS);
 
 
     //---------------
@@ -3423,7 +3423,7 @@ void displacedJetTiming_ntupler::findTrackingVariablesWithoutPropagator(const TL
   reco::Vertex primaryVertex = vertices->at(0);
   std::vector<double> theta2Ds;
   std::vector<double> IP2Ds;
-
+ 
   for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
   	reco::Track generalTrack = generalTracks->at(iTrack);
   	TLorentzVector generalTrackVecTemp;
@@ -3468,10 +3468,10 @@ void displacedJetTiming_ntupler::findTrackingVariablesWithoutPropagator(const TL
       if(!vertex->isValid())continue;
       if (vertex->isFake())continue;
       for(auto pvTrack=vertex->tracks_begin(); pvTrack!=vertex->tracks_end(); pvTrack++){
-    		TLorentzVector pvTrackVecTemp;
-    		pvTrackVecTemp.SetPtEtaPhiM((*pvTrack)->pt(),(*pvTrack)->eta(),(*pvTrack)->phi(),0);
-  		//If pv track associated with jet add pt to ptPVTracks
-    		if ((*pvTrack)->pt() > 1) {
+    	TLorentzVector pvTrackVecTemp;
+    	pvTrackVecTemp.SetPtEtaPhiM((*pvTrack)->pt(),(*pvTrack)->eta(),(*pvTrack)->phi(),0);
+  	//If pv track associated with jet add pt to ptPVTracks
+    	if ((*pvTrack)->pt() > 1) {
     	    if (minDeltaRPVTracks > pvTrackVecTemp.DeltaR(jetVec))
     	    {
     		     minDeltaRPVTracks =  pvTrackVecTemp.DeltaR(jetVec);
@@ -3526,6 +3526,8 @@ void displacedJetTiming_ntupler::findTrackingVariables(const TLorentzVector &jet
   //std::cout << "B " << magneticField_ << " tracks size " << tracks->size() << std::endl;
   
   for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
+
+    //track propagation
     FreeTrajectoryState fts = trajectoryStateTransform::initialFreeState (tracks->at(iTrack),magneticField_); 
     TrajectoryStateOnSurface outer = stateOnTracker(fts); 
     if(!outer.isValid()) continue; 
@@ -3547,6 +3549,43 @@ void displacedJetTiming_ntupler::findTrackingVariables(const TLorentzVector &jet
       }
     }
   }
+  if (ptAllTracks > 0.9){
+      //No matched jets
+      for (auto vertex = vertices->begin(); vertex != vertices->end(); vertex++){
+      double ptPVTracks = 0.;
+      int nTracksPVTemp = 0;
+      if(!vertex->isValid())continue;
+      if (vertex->isFake())continue;
+      for(auto pvTrack=vertex->tracks_begin(); pvTrack!=vertex->tracks_end(); pvTrack++){
+    
+        //track propagation
+        FreeTrajectoryState ftspv = trajectoryStateTransform::initialFreeState (**pvTrack, magneticField_); 
+        TrajectoryStateOnSurface outerpv = stateOnTracker(ftspv); 
+        if(!outerpv.isValid()) continue; 
+        GlobalPoint outerpvPos = outerpv.globalPosition();
+        
+    	TLorentzVector pvTrackVecTemp;
+    	pvTrackVecTemp.SetPtEtaPhiM((*pvTrack)->pt(),outerpvPos.eta(),outerpvPos.phi(),0);
+  	//If pv track associated with jet add pt to ptPVTracks
+    	if ((*pvTrack)->pt() > 1) {
+    	    if (minDeltaRPVTracks > pvTrackVecTemp.DeltaR(jetVec))
+    	    {
+    		     minDeltaRPVTracks =  pvTrackVecTemp.DeltaR(jetVec);
+    	    }
+    	    if (pvTrackVecTemp.DeltaR(jetVec) < 0.4){
+        		ptPVTracks += (*pvTrack)->pt();
+        		ptAllPVTracks += (*pvTrack)->pt();
+        		nTracksPVTemp++;
+    	    }
+    		}
+      }
+      if (ptPVTracks > ptPVTracksMax) {
+      	ptPVTracksMax = ptPVTracks;
+      	nTracksPV = nTracksPVTemp;
+      }
+      alphaMax = ptPVTracksMax/ptAllTracks;
+  	}
+  }
 /*
   for (int iTrack = 0; iTrack < nTracks; iTrack ++){
   	TLorentzVector generalTrackVecTemp;
@@ -3565,7 +3604,7 @@ void displacedJetTiming_ntupler::findTrackingVariables(const TLorentzVector &jet
       	     }
          }
   }
-*/
+
   if (ptAllTracks > 0.9){
     //No matched jets
     for (int ipvTrack = 0; ipvTrack < npvTracks; ipvTrack++){
@@ -3591,6 +3630,7 @@ void displacedJetTiming_ntupler::findTrackingVariables(const TLorentzVector &jet
       alphaMax = ptPVTracksMax/ptAllTracks;
     }
   }
+*/
   std::sort(IP2Ds.begin(),IP2Ds.end());
   if (IP2Ds.size() > 0){
 	   medianIP = IP2Ds[IP2Ds.size()/2];
@@ -3811,7 +3851,7 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
   const double pt_cut = 0.0;
   //int llp_id = 9000006;
   //int llp_id = llpId_;
-
+  
   //define the list of particle IDs that we save as LLPs
   vector<int> llpIDs;
   llpIDs.push_back(9000006);
@@ -3819,7 +3859,7 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
   llpIDs.push_back(1023);
   llpIDs.push_back(1000023);
   llpIDs.push_back(1000025);
-
+  
   for(size_t i=0; i<genParticles->size();i++)
   {
     if( (abs((*genParticles)[i].pdgId()) >= 1 && abs((*genParticles)[i].pdgId()) <= 6 && ( (*genParticles)[i].status() < 30 ))
@@ -3939,7 +3979,7 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
 	for (uint d=0 ; d < llpIDs.size() ; d++) {
 	  if ( abs(gParticleId[i]) == llpIDs[d] ) {
 	    matchedLLPID = gParticleId[i];
-	    matchedLLP = true;
+	    matchedLLP = true;	    
 	  }
 	}
       }
@@ -3949,12 +3989,12 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
 	  gLLP_prod_vertex_x[0] = prunedV[i]->vx();
 	  gLLP_prod_vertex_y[0] = prunedV[i]->vy();
 	  gLLP_prod_vertex_z[0] = prunedV[i]->vz();
-	} else {
+	} else {	
 	  gLLP_prod_vertex_x[1] = prunedV[i]->vx();
 	  gLLP_prod_vertex_y[1] = prunedV[i]->vy();
 	  gLLP_prod_vertex_z[1] = prunedV[i]->vz();
 	}
-
+      
         const reco::Candidate *dau = 0;
         bool foundDaughter = false;
         bool noDaughter = false;
@@ -3965,7 +4005,7 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
           if (tmpParticle->numberOfDaughters() > 0)
           {
             dau = tmpParticle->daughter(0);
-            if (dau && (dau->pdgId() != matchedLLPID))
+            if (dau && (dau->pdgId() != matchedLLPID)) 
             {
               foundDaughter = true;
             } else
@@ -3981,7 +4021,7 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
 
 	if (foundDaughter)
         {
-          if (!_found_first_llp)
+          if (!_found_first_llp) 
           {
 	    _found_first_llp = true;
             gLLP_decay_vertex_x[0] = dau->vx();
@@ -4260,7 +4300,7 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
                   match_jet_index = i_jet;
                 }
               }//end matching to jets using ECAL radius
-
+               
               if ( min_delta_r < 0.4 )
               {
                 gLLP_grandaughter_match_jet_index[index] = match_jet_index;
@@ -4275,10 +4315,10 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
 
               }
 	    }
-            }//loop of all gLLP granddaughters
+            }//loop of all gLLP granddaughters 
+	    
 
-
-            }//loop of all gLLP daughters
+            }//loop of all gLLP daughters 
           }//llp 1 is done here, the following is llp 2
 	  else
           {
@@ -4331,7 +4371,7 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
               // double x_hcal = gLLP_decay_vertex_x[1] + 30. * (tmp.Px()/tmp.E())*gLLP_daughter_travel_time_hcal;
               // double y_hcal = gLLP_decay_vertex_y[1] + 30. * (tmp.Py()/tmp.E())*gLLP_daughter_travel_time_hcal;
               // double z_hcal = gLLP_decay_vertex_z[1] + 30. * (tmp.Pz()/tmp.E())*gLLP_daughter_travel_time_hcal;
-
+              
               gLLP_daughter_travel_time_EB[id+2] = (1./30.)*(ecal_radius-radius)/(tmp.Pt()/tmp.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
 
               //Calculate dt from generation point to ECAL face
@@ -4545,7 +4585,7 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
                   match_jet_index = i_jet;
                 }
               }//end matching to jets using ECAL radius
-
+               
               if ( min_delta_r < 0.4 )
               {
                 gLLP_grandaughter_match_jet_index[index+2] = match_jet_index;
@@ -4560,8 +4600,8 @@ bool displacedJetTiming_ntupler::fillGenParticles(){
 
               }
 	    }
-            }//loop of all gLLP granddaughters
-
+            }//loop of all gLLP granddaughters 
+	    
             }//for daughters loop
           }//if particle ID = 36
         }//if found daughters

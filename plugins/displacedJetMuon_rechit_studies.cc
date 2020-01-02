@@ -1951,7 +1951,7 @@ bool displacedJetMuon_rechit_studies::fillMuonSystem(const edm::Event& iEvent, c
     // cout<<"detid, trackid, channel, fraction,occupancy: "<<cscWireDigiSimLinkDetId[i]<<", "<<cscWireDigiSimLinkSimTrackId[i]<<", "<<cscWireDigiSimLinkChannel[i]<<", "<<cscWireDigiSimLinkFraction[i]<<","<<cscWireDigiSimLinkOccupancy[i]<<endl;
     // cout<<"wires: "<<cscWireDigiSimLinkNWires<<endl;
   }
-  cout<<"wires: "<<cscWireDigiSimLinkNWires<<", "<<nCscWireDigiSimLink<<endl;
+  // cout<<"wires: "<<cscWireDigiSimLinkNWires<<", "<<nCscWireDigiSimLink<<endl;
 
   // for(int i = 0; i < nCscWireDigiSimLink; i++)
   // {
@@ -2115,7 +2115,6 @@ bool displacedJetMuon_rechit_studies::fillMuonSystem(const edm::Event& iEvent, c
     {
       if (detLayers[i] == cscWireDigiSimLinkDetId[j])tmpLayer.wire_digi_occupancy = cscWireDigiSimLinkOccupancy[j];
     }
-    cout<<i<<endl;
     tmpLayer.Me1112 = layer_in_ME1112[i];
     tmpLayer.id = detLayers[i];
     cscLayers.push_back(tmpLayer);
@@ -2137,7 +2136,6 @@ bool displacedJetMuon_rechit_studies::fillMuonSystem(const edm::Event& iEvent, c
     cscDetLayer_match_gParticle_index[i] = cscLayers[i].match_gParticle_index;
 
   }
-  cout<<"here"<<endl;
 
     // cout << gLLP_decay_vertex_z[0] << " " << gLLP_eta[0] << " " << sqrt(gLLP_decay_vertex_x[0]*gLLP_decay_vertex_x[0]+gLLP_decay_vertex_y[0]*gLLP_decay_vertex_y[0]) << "\n";
     // cout << gLLP_decay_vertex_z[1] << " " << gLLP_eta[1] << " " << sqrt(gLLP_decay_vertex_x[1]*gLLP_decay_vertex_x[1]+gLLP_decay_vertex_y[1]*gLLP_decay_vertex_y[1]) << "\n";
@@ -2261,7 +2259,6 @@ bool displacedJetMuon_rechit_studies::fillMuonSystem(const edm::Event& iEvent, c
 	    nCscSeg++;
 	   }
     }
-    cout<<"number of rechits from segments:" <<nRechits_seg<<endl;
     /*
     // //Check for distance of closest approach
     // cout << "nCsc = " << nCsc << "\n";
