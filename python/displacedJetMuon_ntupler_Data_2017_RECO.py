@@ -10,8 +10,8 @@ process.load("Configuration.EventContent.EventContent_cff")
 
 #load input files
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(
-        '/store/data/Run2017F/SingleMuon/RAW-RECO/ZMu-17Nov2017-v1/70023/086D5745-1FEA-E711-865F-0019B9CAFC2B.root'
+    fileNames = cms.untracked.vstring(        
+        '/eos/user/s/sixie/data/RECO/FromRAWSkim/V1/RECO_Data2017.root'
         )
 )
 
@@ -148,10 +148,6 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
 )
 
-process.load('EventFilter.CSCRawToDigi.cscUnpacker_cfi')
-#process.myMuonCSCDigis = process.muonCSCDigis.clone()
-#process.myMuonCSCDigis.InputObjects = 'rawDataCollector'
-process.muonCSCDigis.InputObjects = 'rawDataCollector'
 
 #run
-process.p = cms.Path( process.muonCSCDigis * process.ntuples)
+process.p = cms.Path( process.ntuples)
