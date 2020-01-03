@@ -11,7 +11,8 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(        
-        '/store/group/phys_exotica/delayedjets/RAWSKIM/V2/2016/v2/sixie/SingleMuon/Run2_CSCDTRechitSkimming_V2_2016_Run2016D-v2_v2_v2/191218_181212/0000/EXOLLLPCSCDTDigiCount_1.root'
+        #'file:/afs/cern.ch/work/s/sixie/public/Production/Reco/2016/CMSSW_8_0_29/src/RECO.root'
+        'file:/eos/user/s/sixie/data/RECO/FromRAWSkim/V1/RECO_Data2016.root'
         )
 )
 
@@ -148,10 +149,5 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
 )
 
-process.load('EventFilter.CSCRawToDigi.cscUnpacker_cfi')
-#process.myMuonCSCDigis = process.muonCSCDigis.clone()
-#process.myMuonCSCDigis.InputObjects = 'rawDataCollector'
-process.muonCSCDigis.InputObjects = 'rawDataCollector'
-
 #run
-process.p = cms.Path( process.muonCSCDigis * process.ntuples)
+process.p = cms.Path( process.ntuples)
