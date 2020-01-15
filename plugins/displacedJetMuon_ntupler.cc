@@ -3047,7 +3047,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
   //Fills selected gen particles
   //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
   const double pt_cut = 0.0;
-  int llp_id = 6000113;
+  int llp_id = 9000006;
   bool seenFirstLLP = false;
   bool firstLLP = false;
   for(size_t i=0; i<genParticles->size();i++)
