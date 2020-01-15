@@ -55,11 +55,11 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   dtCosmicRechitInputToken_(consumes<DTRecHitCollection>(edm::InputTag("dt1DCosmicRecHits"))),
   rpcRecHitInputToken_(consumes<RPCRecHitCollection>(edm::InputTag("rpcRecHits"))),
   MuonCSCSimHitsToken_(consumes<vector<PSimHit>>(iConfig.getParameter<edm::InputTag>("MuonCSCSimHits"))),
-  MuonCSCComparatorDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCComparatorDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCComparatorDigi"))),
-  MuonCSCStripDigiToken_(consumes<CSCStripDigiCollection>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigi"))),
-  MuonCSCWireDigiToken_(consumes<CSCWireDigiCollection>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigi"))),
-  MuonCSCStripDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigiSimLinks"))),
-  MuonCSCWireDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigiSimLinks"))),
+  // MuonCSCComparatorDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCComparatorDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCComparatorDigi"))),
+  // MuonCSCStripDigiToken_(consumes<CSCStripDigiCollection>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigi"))),
+  // MuonCSCWireDigiToken_(consumes<CSCWireDigiCollection>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigi"))),
+  // MuonCSCStripDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigiSimLinks"))),
+  // MuonCSCWireDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigiSimLinks"))),
   muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
   electronsToken_(consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
   tausToken_(consumes<reco::PFTauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
@@ -108,6 +108,7 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
   eeRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("eeRecHits"))),
   esRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("esRecHits"))),
+  hcalRecHitsHOToken_(consumes<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>>(edm::InputTag("horeco"))),
   ebeeClustersToken_(consumes<vector<reco::CaloCluster> >(iConfig.getParameter<edm::InputTag>("ebeeClusters"))),
   esClustersToken_(consumes<vector<reco::CaloCluster> >(iConfig.getParameter<edm::InputTag>("esClusters"))),
   conversionsToken_(consumes<vector<reco::Conversion> >(iConfig.getParameter<edm::InputTag>("conversions"))),
@@ -234,6 +235,7 @@ void displacedJetMuon_ntupler::setBranches()
   // enableIsoPFCandidateBranches();
   // enablePhotonBranches();
   enableMuonSystemBranches();
+  enableHORechitBranches();
   // enableEcalRechitBranches();
   enableJetBranches();
   // enableCaloJetBranches();
@@ -713,16 +715,15 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // displacedJetMuonTree->Branch("dtCosmicRechitTime",             dtCosmicRechitTime,             "dtCosmicRechitTime[nDTCosmicRechits]/F");
 
 
-    /*
     displacedJetMuonTree->Branch("nRpc",&nRpc,"nRpc/I");
-    displacedJetMuonTree->Branch("rpcPhi",rpcPhi,"rpcPhi[nRpc]");
-    displacedJetMuonTree->Branch("rpcEta",rpcEta,"rpcEta[nRpc]");
-    displacedJetMuonTree->Branch("rpcX",rpcX,"rpcX[nRpc]");
-    displacedJetMuonTree->Branch("rpcY",rpcY,"rpcY[nRpc]");
-    displacedJetMuonTree->Branch("rpcZ",rpcZ,"rpcZ[nRpc]");
-    displacedJetMuonTree->Branch("rpcT",rpcT,"rpcT[nRpc]");
-    displacedJetMuonTree->Branch("rpcTError",rpcTError,"rpcTError[nRpc]");
-    */
+    displacedJetMuonTree->Branch("rpcPhi",rpcPhi,"rpcPhi[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcEta",rpcEta,"rpcEta[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcX",rpcX,"rpcX[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcY",rpcY,"rpcY[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcZ",rpcZ,"rpcZ[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcT",rpcT,"rpcT[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcBx",rpcBx,"rpcBx[nRpc]/I");
+    displacedJetMuonTree->Branch("rpcTError",rpcTError,"rpcTError[nRpc]/F");
 
 
     displacedJetMuonTree->Branch("nDtSeg",&nDtSeg,"nDtSeg/I");
@@ -797,6 +798,18 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // displacedJetMuonTree->Branch("dtCosmicSegDirZ",dtCosmicSegDirZ,"dtCosmicSegDirZ[nDtCosmicSeg]");
     // displacedJetMuonTree->Branch("dtCosmicSegT",dtCosmicSegT,"dtCosmicSegT[nDtCosmicSeg]");
     // displacedJetMuonTree->Branch("dtCosmicSegTError",dtCosmicSegTError,"dtCosmicSegTError[nDtCosmicSeg]");
+
+};
+void displacedJetMuon_ntupler::enableHORechitBranches()
+{
+  displacedJetMuonTree->Branch("nHORechits", &nHORechits,"nHORechits/I");
+  displacedJetMuonTree->Branch("hoRechit_Eta", hoRechit_Eta,"hoRechit_Eta[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_Phi",hoRechit_Phi, "hoRechit_Phi[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_E", hoRechit_E, "hoRechit_E[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_X", hoRechit_X, "hoRechit_X[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_Y", hoRechit_Y, "hoRechit_Y[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_Z", hoRechit_Z, "hoRechit_Z[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_T", hoRechit_T, "hoRechit_T[nHORechits]/F");
 
 };
 
@@ -1091,6 +1104,7 @@ void displacedJetMuon_ntupler::enableGenParticleBranches()
 //------ Load the miniAOD objects and reset tree variables for each event ------//
 void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all miniAOD objects for the current event
 {
+  iEvent.getByToken(hcalRecHitsHOToken_,hcalRecHitsHO);
   iEvent.getByToken(triggerBitsToken_, triggerBits);
   iEvent.getByToken(hepMCToken_, hepMC);
   iEvent.getByToken(metFilterBitsToken_, metFilterBits);
@@ -1103,13 +1117,13 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(dtCosmicRechitInputToken_,dtCosmicRechits);
 
   iEvent.getByToken(rpcRecHitInputToken_,rpcRecHits);
-  if (!isData) {
-    iEvent.getByToken(MuonCSCSimHitsToken_, MuonCSCSimHits);
-    iEvent.getByToken(MuonCSCStripDigiSimLinksToken_, MuonCSCStripDigiSimLinks);
-    iEvent.getByToken(MuonCSCWireDigiSimLinksToken_, MuonCSCWireDigiSimLinks);
-  }
-  iEvent.getByToken(MuonCSCStripDigiToken_, MuonCSCStripDigi);
-  iEvent.getByToken(MuonCSCWireDigiToken_, MuonCSCWireDigi);
+  // if (!isData) {
+  //   iEvent.getByToken(MuonCSCSimHitsToken_, MuonCSCSimHits);
+  //   iEvent.getByToken(MuonCSCStripDigiSimLinksToken_, MuonCSCStripDigiSimLinks);
+  //   iEvent.getByToken(MuonCSCWireDigiSimLinksToken_, MuonCSCWireDigiSimLinks);
+  // }
+  // iEvent.getByToken(MuonCSCStripDigiToken_, MuonCSCStripDigi);
+  // iEvent.getByToken(MuonCSCWireDigiToken_, MuonCSCWireDigi);
 
   iEvent.getByToken(tracksTag_,tracks);
   iEvent.getByToken(PFCandsToken_, pfCands);
@@ -1190,6 +1204,7 @@ void displacedJetMuon_ntupler::resetBranches()
     resetMCBranches();
     resetTriggerBranches();
     resetEcalRechitBranches();
+    resetHORechitBranches();
 
 };
 
@@ -1619,6 +1634,7 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
       rpcY[i] = 0.0;
       rpcZ[i] = 0.0;
       rpcT[i] = 0.0;
+      rpcBx[i] = 0;
       rpcTError[i] = 0.0;
     }
     nDtSeg = 0;
@@ -1806,6 +1822,22 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jet_energy_frac[i] = 0.0;
     jet_matched[i] = false;
 
+  }
+  return;
+};
+void displacedJetMuon_ntupler::resetHORechitBranches()
+{
+  nHORechits = 0;
+  for ( int i = 0; i < HORECHITARRAYSIZE; i++)
+  {
+
+	hoRechit_Phi[i] = -999.;
+	hoRechit_Eta[i] = -999.;
+	hoRechit_X[i] = -999.;
+	hoRechit_Y[i] = -999.;
+	hoRechit_Z[i] = -999.;
+	hoRechit_E[i] = -999.;
+	hoRechit_T[i] = -999.;
   }
   return;
 };
@@ -2107,6 +2139,7 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
     fillMC();
     fillGenParticles();
   }
+  fillHOSystem(iEvent,iSetup);
   fillMuonSystem(iEvent, iSetup);
 
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
@@ -2167,6 +2200,26 @@ bool displacedJetMuon_ntupler::fillEventInfo(const edm::Event& iEvent)
 };
 
 
+bool displacedJetMuon_ntupler::fillHOSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+    edm::ESHandle<CaloGeometry> geoHandle;
+    iSetup.get<CaloGeometryRecord>().get(geoHandle);
+    const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter);
+    for (HORecHitCollection::const_iterator recHit=hcalRecHitsHO->begin(); recHit!=hcalRecHitsHO->end(); recHit++) {
+	if (recHit->energy() < 1.5) continue;
+	const DetId recHitId = recHit->detid();
+	const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
+	hoRechit_Phi[nHORechits] = recHitPos.phi();
+	hoRechit_Eta[nHORechits] = recHitPos.eta();
+	hoRechit_X[nHORechits] = recHitPos.x();
+	hoRechit_Y[nHORechits] = recHitPos.y();
+	hoRechit_Z[nHORechits] = recHitPos.z();
+	hoRechit_E[nHORechits] = recHit->energy();
+	hoRechit_T[nHORechits] = recHit->time();
+	nHORechits ++;
+    }
+    std::cout << "n ho " << std::endl; 
+    return true;
+}
 bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   edm::ESHandle<CSCGeometry> cscG;
@@ -2180,39 +2233,39 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
   //*****************
   //** DIGIS
   //*****************
-  nCscStripDigis = 0;
-  CSCStripDigiCollection::DigiRangeIterator stripDetIt;
-  for (stripDetIt = MuonCSCStripDigi->begin(); stripDetIt != MuonCSCStripDigi->end(); stripDetIt++){
-     const CSCDetId &id = (*stripDetIt).first;
-     int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
-
-      const CSCStripDigiCollection::Range &range = (*stripDetIt).second;
-      for (CSCStripDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
-        //ADC count is 8 time stamps
-        std::vector<int> myADCVals = digiIt->getADCCounts();
-         bool thisStripFired = false;
-         float thisPedestal = 0.5 * (float)(myADCVals[0] + myADCVals[1]);
-         float threshold = STRIP_DIGI_THRESHOLD;
-         float diff = 0.;
-         for (unsigned int iCount = 0; iCount < myADCVals.size(); iCount++) {
-           diff = (float)myADCVals[iCount] - thisPedestal;
-           if (diff > threshold) {
-             thisStripFired = true;
-           }
-         }
-         if (thisStripFired) nCscStripDigis++;
-      }
-  }
-  nCscWireDigis = 0;
-  CSCWireDigiCollection::DigiRangeIterator wireDetIt;
-  for (wireDetIt = MuonCSCWireDigi->begin(); wireDetIt != MuonCSCWireDigi->end(); wireDetIt++){
-      const CSCWireDigiCollection::Range &range = (*wireDetIt).second;
-      for (CSCWireDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
-
-        nCscWireDigis++;
-      }
-
-  }
+  // nCscStripDigis = 0;
+  // CSCStripDigiCollection::DigiRangeIterator stripDetIt;
+  // for (stripDetIt = MuonCSCStripDigi->begin(); stripDetIt != MuonCSCStripDigi->end(); stripDetIt++){
+  //    const CSCDetId &id = (*stripDetIt).first;
+  //    int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
+  //
+  //     const CSCStripDigiCollection::Range &range = (*stripDetIt).second;
+  //     for (CSCStripDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
+  //       //ADC count is 8 time stamps
+  //       std::vector<int> myADCVals = digiIt->getADCCounts();
+  //        bool thisStripFired = false;
+  //        float thisPedestal = 0.5 * (float)(myADCVals[0] + myADCVals[1]);
+  //        float threshold = STRIP_DIGI_THRESHOLD;
+  //        float diff = 0.;
+  //        for (unsigned int iCount = 0; iCount < myADCVals.size(); iCount++) {
+  //          diff = (float)myADCVals[iCount] - thisPedestal;
+  //          if (diff > threshold) {
+  //            thisStripFired = true;
+  //          }
+  //        }
+  //        if (thisStripFired) nCscStripDigis++;
+  //     }
+  // }
+  // nCscWireDigis = 0;
+  // CSCWireDigiCollection::DigiRangeIterator wireDetIt;
+  // for (wireDetIt = MuonCSCWireDigi->begin(); wireDetIt != MuonCSCWireDigi->end(); wireDetIt++){
+  //     const CSCWireDigiCollection::Range &range = (*wireDetIt).second;
+  //     for (CSCWireDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
+  //
+  //       nCscWireDigis++;
+  //     }
+  //
+  // }
 
 
 
@@ -2901,7 +2954,6 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 
 
-/*
 
     for (const RPCRecHit rpcRecHit : *rpcRecHits){
 	LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
@@ -2917,10 +2969,11 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    rpcPhi[nRpc] = globalPosition.phi();
 	    rpcEta[nRpc] = globalPosition.eta();
 	    rpcT[nRpc] = rpcRecHit.time();
+	    rpcBx[nRpc] = rpcRecHit.BunchX();
 	    rpcTError[nRpc] = rpcRecHit.timeError();
 	    nRpc++;
 	}
-}*/
+    }
 
 
     // for(DTRecHit1DPair dtCosmicRechit: *dtRechits){
@@ -2988,7 +3041,9 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
   //Fills selected gen particles
   //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
   const double pt_cut = 0.0;
-  int llp_id = 9000006;
+  int llp_id = 6000113;
+  bool seenFirstLLP = false;
+  bool firstLLP = false;
   for(size_t i=0; i<genParticles->size();i++)
   {
     if(
@@ -2999,6 +3054,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
        || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
        || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
        || (abs((*genParticles)[i].pdgId()) >= 100 && abs((*genParticles)[i].pdgId()) <= 350)
+       || (abs((*genParticles)[i].pdgId()) == llp_id)
        // || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
        || (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007)
 	)
@@ -3099,16 +3155,22 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
     //---------------------------------------
     if (enableGenLLPInfo_)
     {
+	if (abs(gParticleId[i]) == llp_id){
+	    std::cout <<  gParticleStatus[i] << std::endl;
+	}
       if ( abs(gParticleId[i]) == llp_id  && gParticleStatus[i] == 22 )
       {
-        if (gParticleId[i] == llp_id)
+        if (!seenFirstLLP && gParticleId[i] == llp_id)
         {
+	  seenFirstLLP = true;
+    	  firstLLP = true;
           gLLP_prod_vertex_x[0] = prunedV[i]->vx();
           gLLP_prod_vertex_y[0] = prunedV[i]->vy();
           gLLP_prod_vertex_z[0] = prunedV[i]->vz();
         }
-        else if (gParticleId[i] == -1*llp_id)
+        else if (gParticleId[i] == -1*llp_id || (gParticleId[i] == llp_id && seenFirstLLP))
         {
+    	  firstLLP = false;
           gLLP_prod_vertex_x[1] = prunedV[i]->vx();
           gLLP_prod_vertex_y[1] = prunedV[i]->vy();
           gLLP_prod_vertex_z[1] = prunedV[i]->vz();
@@ -3140,11 +3202,11 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 
         if (foundDaughter)
         {
-          gParticleDecayVertexX[i] = dau->vx();
+		gParticleDecayVertexX[i] = dau->vx();
         	gParticleDecayVertexY[i] = dau->vy();
         	gParticleDecayVertexZ[i] = dau->vz();
 
-          if (gParticleId[i] == llp_id)
+          if (firstLLP)
           {
             gLLP_decay_vertex_x[0] = dau->vx();
             gLLP_decay_vertex_y[0] = dau->vy();
@@ -3267,7 +3329,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 
             }
           }
-          else if (gParticleId[i] == -1*llp_id)
+          else 
           {
             gLLP_decay_vertex_x[1] = dau->vx();
             gLLP_decay_vertex_y[1] = dau->vy();
@@ -3516,7 +3578,6 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
     edm::ESHandle<CaloGeometry> geoHandle;
     iSetup.get<CaloGeometryRecord>().get(geoHandle);
-    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
     //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
     //double ecal_radius = 129.0;
     int n_matched_rechits = 0;
@@ -3524,6 +3585,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     std::vector<double> rechiteta;
     std::vector<double> rechitet;
     std::vector<double> rechitt;
+    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
     for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
     {
       const DetId recHitId = recHit->detid();
