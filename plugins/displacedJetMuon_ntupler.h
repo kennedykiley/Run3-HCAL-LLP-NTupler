@@ -248,6 +248,7 @@ protected:
   bool enableEcalRechits_;
   bool readGenVertexTime_;
   bool enableAK8Jets_;
+  bool readMuonDigis_;
   //bool isFourJet_;
   //bool isQCD_;
 

@@ -1,65 +1,51 @@
-# Auto generated configuration file
-# using: 
-# Revision: 1.19 
-# Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
-# with command line options: step2 --filein file:SUS-RunIIFall17DRPremix-00183_step1.root --fileout file:SUS-RunIIFall17DRPremix-00183.root --mc --eventcontent AODSIM --runUnscheduled --datatier AODSIM --conditions 94X_mc2017_realistic_v17 --step RAW2DIGI,RECO,RECOSIM,EI --nThreads 8 --era Run2_2017 --python_filename SUS-RunIIFall17DRPremix-00183_2_cfg.py --no_exec --customise Configuration/DataProcessing/Utils.addMonitoring -n 10
 import FWCore.ParameterSet.Config as cms
+from FWCore.ParameterSet.VarParsing import VarParsing
+#------ Setup ------#
 
-from Configuration.StandardSequences.Eras import eras
+#initialize the process
+process = cms.Process("displacedJetMuonNtupler")
+process.load("FWCore.MessageService.MessageLogger_cfi")
+process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
+process.load("Configuration.EventContent.EventContent_cff")
 
-process = cms.Process('RECO',eras.Run2_2017)
-
-# import of standard configurations
-process.load('Configuration.StandardSequences.Services_cff')
-process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
-process.load('FWCore.MessageService.MessageLogger_cfi')
-process.load('Configuration.EventContent.EventContent_cff')
-process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('Configuration.StandardSequences.MagneticField_cff')
-process.load('Configuration.StandardSequences.RawToDigi_cff')
-process.load('Configuration.StandardSequences.Reconstruction_cff')
-process.load('Configuration.StandardSequences.RecoSim_cff')
-process.load('CommonTools.ParticleFlow.EITopPAG_cff')
-process.load('Configuration.StandardSequences.EndOfProcess_cff')
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-
-process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(10)
-)
-
-# Input source
+#load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-"/store/group/phys_exotica/privateProduction/DR/step1/RunIIFall17/GENSIM/WplusH_HToSSTobbbb_ms55_pl10000/v2/WplusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_CMSSW_9_4_12_PrivateProduction_Fall17_DR_step1_WplusH_HToSSTobbbb_ms55_pl10000_v2_DR_CaltechT2/191014_015936/0000/SUS-RunIIFall17DRPremix-00183_step1_99.root",
-#    "file:/afs/cern.ch/work/c/christiw/public/LLP/CMSSW_9_4_7/src/cms_lpc_llp/llp_ntupler/SUS-RunIIFall17DRPremix-00183_step1_98.root",
-    ),
-    secondaryFileNames = cms.untracked.vstring()
+    'file:Summer16_RECO.root',    
+    )
 )
 
-process.options = cms.untracked.PSet(
-
-)
-
-# Production Info
-process.configurationMetadata = cms.untracked.PSet(
-    annotation = cms.untracked.string('step2 nevts:10'),
-    name = cms.untracked.string('Applications'),
-    version = cms.untracked.string('$Revision: 1.19 $')
-)
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 #TFileService for output
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string('displacedJetMuon_ntupler_test.root'),
+	fileName = cms.string('outputfilename'),
     closeFileFast = cms.untracked.bool(True)
 )
 
-process.ntuples = cms.EDAnalyzer('displacedJetMuon_rechit_studies',
+#load run conditions
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+process.load('Configuration.Geometry.GeometryIdeal_cff')
+process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+
+#------ Declare the correct global tag ------#
+
+
+process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_v3'
+
+#------ If we add any inputs beyond standard miniAOD event content, import them here ------#
+
+#process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
+
+#------ Analyzer ------#
+
+#list input collections
+process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     isData = cms.bool(False),
-    isAOD = cms.bool(False),
     useGen = cms.bool(True),
     isFastsim = cms.bool(False),
-    enableTriggerInfo = cms.bool(False),
+    enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
     enableGenLLPInfo = cms.bool(True),
@@ -161,67 +147,5 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_rechit_studies',
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
 )
 
-
-# Output definition
-
-
-process.AODSIMoutput = cms.OutputModule("PoolOutputModule",
-    compressionAlgorithm = cms.untracked.string('LZMA'),
-    compressionLevel = cms.untracked.int32(4),
-    dataset = cms.untracked.PSet(
-        dataTier = cms.untracked.string('AODSIM'),
-        filterName = cms.untracked.string('')
-    ),
-    eventAutoFlushCompressedSize = cms.untracked.int32(31457280),
-    fileName = cms.untracked.string('file:SUS-RunIIFall17DRPremix-00183.root'),
-    outputCommands = process.AODSIMEventContent.outputCommands
-)
-
-# Additional output definition
-
-# Other statements
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '94X_mc2017_realistic_v17', '')
-
-# Path and EndPath definitions
-process.raw2digi_step = cms.Path(process.RawToDigi)
-process.reconstruction_step = cms.Path(process.reconstruction)
-process.recosim_step = cms.Path(process.recosim)
-process.eventinterpretaion_step = cms.Path(process.EIsequence)
-process.ntupler_step = cms.Path(process.ntuples)
-process.endjob_step = cms.EndPath(process.endOfProcess)
-process.AODSIMoutput_step = cms.EndPath(process.AODSIMoutput)
-
-# Schedule definition
-process.schedule = cms.Schedule(process.raw2digi_step,process.reconstruction_step,process.recosim_step,process.eventinterpretaion_step,process.endjob_step,process.ntupler_step)
-from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
-associatePatAlgosToolsTask(process)
-
-#Setup FWK for multithreaded
-process.options.numberOfThreads=cms.untracked.uint32(1)
-process.options.numberOfStreams=cms.untracked.uint32(0)
-
-# customisation of the process.
-
-# Automatic addition of the customisation function from Configuration.DataProcessing.Utils
-from Configuration.DataProcessing.Utils import addMonitoring 
-
-#call to customisation function addMonitoring imported from Configuration.DataProcessing.Utils
-process = addMonitoring(process)
-
-# End of customisation functions
-#do not add changes to your config after this point (unless you know what you are doing)
-from FWCore.ParameterSet.Utilities import convertToUnscheduled
-process=convertToUnscheduled(process)
-
-
-# Customisation from command line
-
-#Have logErrorHarvester wait for the same EDProducers to finish as those providing data for the OutputModule
-from FWCore.Modules.logErrorHarvester_cff import customiseLogErrorHarvesterUsingOutputCommands
-process = customiseLogErrorHarvesterUsingOutputCommands(process)
-
-# Add early deletion of temporary data products to reduce peak memory need
-from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
-process = customiseEarlyDelete(process)
-# End adding early deletion
+#run
+process.p = cms.Path( process.ntuples)

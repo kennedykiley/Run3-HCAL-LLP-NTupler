@@ -135,7 +135,7 @@ using namespace std;
 //#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
 
 //------ Array Size Constants ------//
-#define OBJECTARRAYSIZE 5000
+#define OBJECTARRAYSIZE 10000
 #define CSCRECHITARRAYSIZE 6
 #define RECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000

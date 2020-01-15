@@ -41,6 +41,7 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   enableGenLLPInfo_(iConfig.getParameter<bool> ("enableGenLLPInfo")),
   enableEcalRechits_(iConfig.getParameter<bool> ("enableEcalRechits")),
   readGenVertexTime_(iConfig.getParameter<bool> ("readGenVertexTime")),
+  readMuonDigis_(iConfig.getParameter<bool> ("readMuonDigis")),
   triggerPathNamesFile_(iConfig.getParameter<string> ("triggerPathNamesFile")),
   eleHLTFilterNamesFile_(iConfig.getParameter<string> ("eleHLTFilterNamesFile")),
   muonHLTFilterNamesFile_(iConfig.getParameter<string> ("muonHLTFilterNamesFile")),
@@ -1117,13 +1118,17 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(dtCosmicRechitInputToken_,dtCosmicRechits);
 
   iEvent.getByToken(rpcRecHitInputToken_,rpcRecHits);
-  // if (!isData) {
-  //   iEvent.getByToken(MuonCSCSimHitsToken_, MuonCSCSimHits);
-  //   iEvent.getByToken(MuonCSCStripDigiSimLinksToken_, MuonCSCStripDigiSimLinks);
-  //   iEvent.getByToken(MuonCSCWireDigiSimLinksToken_, MuonCSCWireDigiSimLinks);
-  // }
-  // iEvent.getByToken(MuonCSCStripDigiToken_, MuonCSCStripDigi);
-  // iEvent.getByToken(MuonCSCWireDigiToken_, MuonCSCWireDigi);
+  if (!isData) {
+    iEvent.getByToken(MuonCSCSimHitsToken_, MuonCSCSimHits);
+    if (readMuonDigis_) {
+      iEvent.getByToken(MuonCSCStripDigiSimLinksToken_, MuonCSCStripDigiSimLinks);
+      iEvent.getByToken(MuonCSCWireDigiSimLinksToken_, MuonCSCWireDigiSimLinks);
+    }
+  }
+  if (readMuonDigis_) {
+    iEvent.getByToken(MuonCSCStripDigiToken_, MuonCSCStripDigi);
+    iEvent.getByToken(MuonCSCWireDigiToken_, MuonCSCWireDigi);
+  }
 
   iEvent.getByToken(tracksTag_,tracks);
   iEvent.getByToken(PFCandsToken_, pfCands);
@@ -2233,40 +2238,41 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
   //*****************
   //** DIGIS
   //*****************
-  // nCscStripDigis = 0;
-  // CSCStripDigiCollection::DigiRangeIterator stripDetIt;
-  // for (stripDetIt = MuonCSCStripDigi->begin(); stripDetIt != MuonCSCStripDigi->end(); stripDetIt++){
-  //    const CSCDetId &id = (*stripDetIt).first;
-  //    int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
-  //
-  //     const CSCStripDigiCollection::Range &range = (*stripDetIt).second;
-  //     for (CSCStripDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
-  //       //ADC count is 8 time stamps
-  //       std::vector<int> myADCVals = digiIt->getADCCounts();
-  //        bool thisStripFired = false;
-  //        float thisPedestal = 0.5 * (float)(myADCVals[0] + myADCVals[1]);
-  //        float threshold = STRIP_DIGI_THRESHOLD;
-  //        float diff = 0.;
-  //        for (unsigned int iCount = 0; iCount < myADCVals.size(); iCount++) {
-  //          diff = (float)myADCVals[iCount] - thisPedestal;
-  //          if (diff > threshold) {
-  //            thisStripFired = true;
-  //          }
-  //        }
-  //        if (thisStripFired) nCscStripDigis++;
-  //     }
-  // }
-  // nCscWireDigis = 0;
-  // CSCWireDigiCollection::DigiRangeIterator wireDetIt;
-  // for (wireDetIt = MuonCSCWireDigi->begin(); wireDetIt != MuonCSCWireDigi->end(); wireDetIt++){
-  //     const CSCWireDigiCollection::Range &range = (*wireDetIt).second;
-  //     for (CSCWireDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
-  //
-  //       nCscWireDigis++;
-  //     }
-  //
-  // }
+  if (readMuonDigis_) {
+    nCscStripDigis = 0;
+    CSCStripDigiCollection::DigiRangeIterator stripDetIt;
+    for (stripDetIt = MuonCSCStripDigi->begin(); stripDetIt != MuonCSCStripDigi->end(); stripDetIt++){
+      const CSCDetId &id = (*stripDetIt).first;
+      int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
 
+      const CSCStripDigiCollection::Range &range = (*stripDetIt).second;
+      for (CSCStripDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
+        //ADC count is 8 time stamps
+        std::vector<int> myADCVals = digiIt->getADCCounts();
+	bool thisStripFired = false;
+	float thisPedestal = 0.5 * (float)(myADCVals[0] + myADCVals[1]);
+	float threshold = STRIP_DIGI_THRESHOLD;
+	float diff = 0.;
+	for (unsigned int iCount = 0; iCount < myADCVals.size(); iCount++) {
+	  diff = (float)myADCVals[iCount] - thisPedestal;
+	  if (diff > threshold) {
+	    thisStripFired = true;
+	  }
+	}
+	if (thisStripFired) nCscStripDigis++;
+      }
+    }
+    nCscWireDigis = 0;
+    CSCWireDigiCollection::DigiRangeIterator wireDetIt;
+    for (wireDetIt = MuonCSCWireDigi->begin(); wireDetIt != MuonCSCWireDigi->end(); wireDetIt++){
+      const CSCWireDigiCollection::Range &range = (*wireDetIt).second;
+      for (CSCWireDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
+
+        nCscWireDigis++;
+      }
+
+    }
+  }
 
 
 
