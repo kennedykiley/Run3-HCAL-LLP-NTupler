@@ -56,11 +56,11 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   dtCosmicRechitInputToken_(consumes<DTRecHitCollection>(edm::InputTag("dt1DCosmicRecHits"))),
   rpcRecHitInputToken_(consumes<RPCRecHitCollection>(edm::InputTag("rpcRecHits"))),
   MuonCSCSimHitsToken_(consumes<vector<PSimHit>>(iConfig.getParameter<edm::InputTag>("MuonCSCSimHits"))),
-  // MuonCSCComparatorDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCComparatorDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCComparatorDigi"))),
-  // MuonCSCStripDigiToken_(consumes<CSCStripDigiCollection>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigi"))),
-  // MuonCSCWireDigiToken_(consumes<CSCWireDigiCollection>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigi"))),
-  // MuonCSCStripDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigiSimLinks"))),
-  // MuonCSCWireDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigiSimLinks"))),
+  MuonCSCComparatorDigiToken_(consumes<MuonDigiCollection<CSCDetId,CSCComparatorDigi>>(iConfig.getParameter<edm::InputTag>("MuonCSCComparatorDigi"))),
+  MuonCSCStripDigiToken_(consumes<CSCStripDigiCollection>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigi"))),
+  MuonCSCWireDigiToken_(consumes<CSCWireDigiCollection>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigi"))),
+  MuonCSCStripDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCStripDigiSimLinks"))),
+  MuonCSCWireDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigiSimLinks"))),
   muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
   electronsToken_(consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
   tausToken_(consumes<reco::PFTauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
@@ -3047,7 +3047,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
   //Fills selected gen particles
   //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
   const double pt_cut = 0.0;
-  int llp_id = 9000006;
+  int llp_id = 6000113;
   bool seenFirstLLP = false;
   bool firstLLP = false;
   for(size_t i=0; i<genParticles->size();i++)
@@ -3161,9 +3161,6 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
     //---------------------------------------
     if (enableGenLLPInfo_)
     {
-	if (abs(gParticleId[i]) == llp_id){
-	    std::cout <<  gParticleStatus[i] << std::endl;
-	}
       if ( abs(gParticleId[i]) == llp_id  && gParticleStatus[i] == 22 )
       {
         if (!seenFirstLLP && gParticleId[i] == llp_id)
