@@ -63,6 +63,9 @@ using namespace std;
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
+#include "DataFormats/HcalDetId/interface/HcalDetId.h"
+#include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
+#include "DataFormats/HcalRecHit/interface/HORecHit.h"
 
 #include "DataFormats/METReco/interface/GenMETCollection.h"
 #include "DataFormats/METReco/interface/GenMET.h"
@@ -138,6 +141,7 @@ using namespace std;
 #define OBJECTARRAYSIZE 5000
 #define CSCRECHITARRAYSIZE 6
 #define RECHITARRAYSIZE 2000
+#define HORECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
 #define MAX_NPV 1000
 #define MAX_NTRACK 2000
@@ -169,6 +173,7 @@ public:
   void enableIsoPFCandidateBranches();
   void enablePhotonBranches();
   void enableMuonSystemBranches();
+  void enableHORechitBranches();
   void enableEcalRechitBranches();
   void enableJetBranches();
   void enableCaloJetBranches();
@@ -190,6 +195,7 @@ public:
   void resetTauBranches();
   void resetIsoPFCandidateBranches();//need to implement yet
   void resetPhotonBranches();
+  void resetHORechitBranches();//need to implement yet
   void resetEcalRechitBranches();//need to implement yet
   void resetJetBranches();
   void resetCaloJetBranches();
@@ -211,6 +217,7 @@ public:
   bool fillEventInfo(const edm::Event& iEvent);
   bool fillElectrons(const edm::Event& iEvent);
   bool fillMuons(const edm::Event& iEvent);
+  bool fillHOSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillJets(const edm::EventSetup& iSetup);
   bool fillGenParticles();
@@ -332,6 +339,7 @@ protected:
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > ebRecHitsToken_;
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > eeRecHitsToken_;
   edm::EDGetTokenT<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > esRecHitsToken_;
+  edm::EDGetTokenT<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>>       hcalRecHitsHOToken_;
   edm::EDGetTokenT<vector<reco::CaloCluster> > ebeeClustersToken_;
   edm::EDGetTokenT<vector<reco::CaloCluster> > esClustersToken_;
   edm::EDGetTokenT<vector<reco::Conversion> > conversionsToken_;
@@ -399,6 +407,7 @@ protected:
   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > ebRecHits;
   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > eeRecHits;
   edm::Handle<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > esRecHits;
+  edm::Handle<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>> hcalRecHitsHO;
   edm::Handle<vector<reco::CaloCluster> > ebeeClusters;
   edm::Handle<vector<reco::CaloCluster> > esClusters;
   edm::Handle<vector<reco::Conversion> > conversions;
@@ -697,6 +706,15 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  bool ecalRechit_kWeirdflag[RECHITARRAYSIZE];
  bool ecalRechit_kDiWeirdflag[RECHITARRAYSIZE];
 
+ int nHORechits;
+ float hoRechit_Eta[HORECHITARRAYSIZE];
+ float hoRechit_Phi[HORECHITARRAYSIZE];
+ float hoRechit_E[HORECHITARRAYSIZE];
+ float hoRechit_T[HORECHITARRAYSIZE];
+ float hoRechit_X[HORECHITARRAYSIZE];
+ float hoRechit_Y[HORECHITARRAYSIZE];
+ float hoRechit_Z[HORECHITARRAYSIZE];
+
   //Muon system
   int nCscWireDigis;
   int nCscStripDigis;
@@ -870,6 +888,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float rpcY[OBJECTARRAYSIZE];
   float rpcZ[OBJECTARRAYSIZE];
   float rpcT[OBJECTARRAYSIZE];
+  int rpcBx[OBJECTARRAYSIZE];
   float rpcTError[OBJECTARRAYSIZE];
 
 

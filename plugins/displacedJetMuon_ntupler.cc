@@ -109,6 +109,7 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
   eeRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("eeRecHits"))),
   esRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("esRecHits"))),
+  hcalRecHitsHOToken_(consumes<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>>(edm::InputTag("horeco"))),
   ebeeClustersToken_(consumes<vector<reco::CaloCluster> >(iConfig.getParameter<edm::InputTag>("ebeeClusters"))),
   esClustersToken_(consumes<vector<reco::CaloCluster> >(iConfig.getParameter<edm::InputTag>("esClusters"))),
   conversionsToken_(consumes<vector<reco::Conversion> >(iConfig.getParameter<edm::InputTag>("conversions"))),
@@ -235,6 +236,7 @@ void displacedJetMuon_ntupler::setBranches()
   // enableIsoPFCandidateBranches();
   // enablePhotonBranches();
   enableMuonSystemBranches();
+  enableHORechitBranches();
   // enableEcalRechitBranches();
   enableJetBranches();
   // enableCaloJetBranches();
@@ -714,16 +716,15 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // displacedJetMuonTree->Branch("dtCosmicRechitTime",             dtCosmicRechitTime,             "dtCosmicRechitTime[nDTCosmicRechits]/F");
 
 
-    /*
     displacedJetMuonTree->Branch("nRpc",&nRpc,"nRpc/I");
-    displacedJetMuonTree->Branch("rpcPhi",rpcPhi,"rpcPhi[nRpc]");
-    displacedJetMuonTree->Branch("rpcEta",rpcEta,"rpcEta[nRpc]");
-    displacedJetMuonTree->Branch("rpcX",rpcX,"rpcX[nRpc]");
-    displacedJetMuonTree->Branch("rpcY",rpcY,"rpcY[nRpc]");
-    displacedJetMuonTree->Branch("rpcZ",rpcZ,"rpcZ[nRpc]");
-    displacedJetMuonTree->Branch("rpcT",rpcT,"rpcT[nRpc]");
-    displacedJetMuonTree->Branch("rpcTError",rpcTError,"rpcTError[nRpc]");
-    */
+    displacedJetMuonTree->Branch("rpcPhi",rpcPhi,"rpcPhi[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcEta",rpcEta,"rpcEta[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcX",rpcX,"rpcX[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcY",rpcY,"rpcY[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcZ",rpcZ,"rpcZ[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcT",rpcT,"rpcT[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcBx",rpcBx,"rpcBx[nRpc]/I");
+    displacedJetMuonTree->Branch("rpcTError",rpcTError,"rpcTError[nRpc]/F");
 
 
     displacedJetMuonTree->Branch("nDtSeg",&nDtSeg,"nDtSeg/I");
@@ -798,6 +799,18 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // displacedJetMuonTree->Branch("dtCosmicSegDirZ",dtCosmicSegDirZ,"dtCosmicSegDirZ[nDtCosmicSeg]");
     // displacedJetMuonTree->Branch("dtCosmicSegT",dtCosmicSegT,"dtCosmicSegT[nDtCosmicSeg]");
     // displacedJetMuonTree->Branch("dtCosmicSegTError",dtCosmicSegTError,"dtCosmicSegTError[nDtCosmicSeg]");
+
+};
+void displacedJetMuon_ntupler::enableHORechitBranches()
+{
+  displacedJetMuonTree->Branch("nHORechits", &nHORechits,"nHORechits/I");
+  displacedJetMuonTree->Branch("hoRechit_Eta", hoRechit_Eta,"hoRechit_Eta[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_Phi",hoRechit_Phi, "hoRechit_Phi[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_E", hoRechit_E, "hoRechit_E[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_X", hoRechit_X, "hoRechit_X[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_Y", hoRechit_Y, "hoRechit_Y[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_Z", hoRechit_Z, "hoRechit_Z[nHORechits]/F");
+  displacedJetMuonTree->Branch("hoRechit_T", hoRechit_T, "hoRechit_T[nHORechits]/F");
 
 };
 
@@ -1092,6 +1105,7 @@ void displacedJetMuon_ntupler::enableGenParticleBranches()
 //------ Load the miniAOD objects and reset tree variables for each event ------//
 void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all miniAOD objects for the current event
 {
+  iEvent.getByToken(hcalRecHitsHOToken_,hcalRecHitsHO);
   iEvent.getByToken(triggerBitsToken_, triggerBits);
   iEvent.getByToken(hepMCToken_, hepMC);
   iEvent.getByToken(metFilterBitsToken_, metFilterBits);
@@ -1195,6 +1209,7 @@ void displacedJetMuon_ntupler::resetBranches()
     resetMCBranches();
     resetTriggerBranches();
     resetEcalRechitBranches();
+    resetHORechitBranches();
 
 };
 
@@ -1624,6 +1639,7 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
       rpcY[i] = 0.0;
       rpcZ[i] = 0.0;
       rpcT[i] = 0.0;
+      rpcBx[i] = 0;
       rpcTError[i] = 0.0;
     }
     nDtSeg = 0;
@@ -1811,6 +1827,22 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jet_energy_frac[i] = 0.0;
     jet_matched[i] = false;
 
+  }
+  return;
+};
+void displacedJetMuon_ntupler::resetHORechitBranches()
+{
+  nHORechits = 0;
+  for ( int i = 0; i < HORECHITARRAYSIZE; i++)
+  {
+
+	hoRechit_Phi[i] = -999.;
+	hoRechit_Eta[i] = -999.;
+	hoRechit_X[i] = -999.;
+	hoRechit_Y[i] = -999.;
+	hoRechit_Z[i] = -999.;
+	hoRechit_E[i] = -999.;
+	hoRechit_T[i] = -999.;
   }
   return;
 };
@@ -2112,6 +2144,7 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
     fillMC();
     fillGenParticles();
   }
+  fillHOSystem(iEvent,iSetup);
   fillMuonSystem(iEvent, iSetup);
 
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
@@ -2172,6 +2205,25 @@ bool displacedJetMuon_ntupler::fillEventInfo(const edm::Event& iEvent)
 };
 
 
+bool displacedJetMuon_ntupler::fillHOSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+    edm::ESHandle<CaloGeometry> geoHandle;
+    iSetup.get<CaloGeometryRecord>().get(geoHandle);
+    const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter);
+    for (HORecHitCollection::const_iterator recHit=hcalRecHitsHO->begin(); recHit!=hcalRecHitsHO->end(); recHit++) {
+	if (recHit->energy() < 1.5) continue;
+	const DetId recHitId = recHit->detid();
+	const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
+	hoRechit_Phi[nHORechits] = recHitPos.phi();
+	hoRechit_Eta[nHORechits] = recHitPos.eta();
+	hoRechit_X[nHORechits] = recHitPos.x();
+	hoRechit_Y[nHORechits] = recHitPos.y();
+	hoRechit_Z[nHORechits] = recHitPos.z();
+	hoRechit_E[nHORechits] = recHit->energy();
+	hoRechit_T[nHORechits] = recHit->time();
+	nHORechits ++;
+    }
+    return true;
+}
 bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   edm::ESHandle<CSCGeometry> cscG;
@@ -2907,7 +2959,6 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 
 
-/*
 
     for (const RPCRecHit rpcRecHit : *rpcRecHits){
 	LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
@@ -2923,10 +2974,11 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	    rpcPhi[nRpc] = globalPosition.phi();
 	    rpcEta[nRpc] = globalPosition.eta();
 	    rpcT[nRpc] = rpcRecHit.time();
+	    rpcBx[nRpc] = rpcRecHit.BunchX();
 	    rpcTError[nRpc] = rpcRecHit.timeError();
 	    nRpc++;
 	}
-}*/
+    }
 
 
     // for(DTRecHit1DPair dtCosmicRechit: *dtRechits){
@@ -2994,7 +3046,9 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
   //Fills selected gen particles
   //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
   const double pt_cut = 0.0;
-  int llp_id = 9000006;
+  int llp_id = 6000113;
+  bool seenFirstLLP = false;
+  bool firstLLP = false;
   for(size_t i=0; i<genParticles->size();i++)
   {
     if(
@@ -3005,6 +3059,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
        || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
        || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
        || (abs((*genParticles)[i].pdgId()) >= 100 && abs((*genParticles)[i].pdgId()) <= 350)
+       || (abs((*genParticles)[i].pdgId()) == llp_id)
        // || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
        || (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007)
 	)
@@ -3107,14 +3162,17 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
     {
       if ( abs(gParticleId[i]) == llp_id  && gParticleStatus[i] == 22 )
       {
-        if (gParticleId[i] == llp_id)
+        if (!seenFirstLLP && gParticleId[i] == llp_id)
         {
+	  seenFirstLLP = true;
+    	  firstLLP = true;
           gLLP_prod_vertex_x[0] = prunedV[i]->vx();
           gLLP_prod_vertex_y[0] = prunedV[i]->vy();
           gLLP_prod_vertex_z[0] = prunedV[i]->vz();
         }
-        else if (gParticleId[i] == -1*llp_id)
+        else if (gParticleId[i] == -1*llp_id || (gParticleId[i] == llp_id && seenFirstLLP))
         {
+    	  firstLLP = false;
           gLLP_prod_vertex_x[1] = prunedV[i]->vx();
           gLLP_prod_vertex_y[1] = prunedV[i]->vy();
           gLLP_prod_vertex_z[1] = prunedV[i]->vz();
@@ -3146,11 +3204,11 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 
         if (foundDaughter)
         {
-          gParticleDecayVertexX[i] = dau->vx();
+		gParticleDecayVertexX[i] = dau->vx();
         	gParticleDecayVertexY[i] = dau->vy();
         	gParticleDecayVertexZ[i] = dau->vz();
 
-          if (gParticleId[i] == llp_id)
+          if (firstLLP)
           {
             gLLP_decay_vertex_x[0] = dau->vx();
             gLLP_decay_vertex_y[0] = dau->vy();
@@ -3273,7 +3331,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 
             }
           }
-          else if (gParticleId[i] == -1*llp_id)
+          else 
           {
             gLLP_decay_vertex_x[1] = dau->vx();
             gLLP_decay_vertex_y[1] = dau->vy();
@@ -3522,7 +3580,6 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
     edm::ESHandle<CaloGeometry> geoHandle;
     iSetup.get<CaloGeometryRecord>().get(geoHandle);
-    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
     //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
     //double ecal_radius = 129.0;
     int n_matched_rechits = 0;
@@ -3530,6 +3587,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     std::vector<double> rechiteta;
     std::vector<double> rechitet;
     std::vector<double> rechitt;
+    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
     for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
     {
       const DetId recHitId = recHit->detid();
