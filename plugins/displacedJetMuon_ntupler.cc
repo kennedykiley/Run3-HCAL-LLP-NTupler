@@ -2222,7 +2222,6 @@ bool displacedJetMuon_ntupler::fillHOSystem(const edm::Event& iEvent, const edm:
 	hoRechit_T[nHORechits] = recHit->time();
 	nHORechits ++;
     }
-    std::cout << "n ho " << std::endl; 
     return true;
 }
 bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup)
