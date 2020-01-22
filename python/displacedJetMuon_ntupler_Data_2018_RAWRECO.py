@@ -50,6 +50,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     enableCaloJet = cms.bool(True),
     enableGenLLPInfo = cms.bool(False),
     readGenVertexTime = cms.bool(False),#need to be false for displaced samples
+    readMuonDigis = cms.bool(True),
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v1.dat"),
     eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
