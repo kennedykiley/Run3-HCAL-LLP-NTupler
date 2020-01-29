@@ -11,12 +11,16 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/mc/RunIIFall17DRPremix/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11_ext1-v2/920000/8423C2F2-1981-E811-96E1-509A4C83EFAB.root'
-        )
+#'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/D67E96A0-F9BE-E611-A03B-F45214939090.root',
+#'file:/eos/cms//store/group/dpg_bril/comm_bril/lumi/test/MC_test/ggHdddd_AODSIM/ggHdddd_2017/ggHdddd_M55_100mm_CP2_AODSIM/190819_150120/0002/XXTo4J_AODSIM_2757.root'
+#'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/HTo2ZdTo2mu2x_MZd-60_Epsilon-7e-09_TuneCUETP8M1_13TeV_madgraph_pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/70000/1A62E7AD-B8A4-E911-991E-0025901AC3F8.root'
+'/store/mc/RunIIFall17DRPremix/QCD_HT1500to2000_TuneCP5_13TeV-madgraph-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11-v2/1010000/FE7566F2-9A62-E811-974F-FA163EE6807E.root'
+#'/store/mc/RunIIAutumn18DRPremix/QCD_HT700to1000_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/110000/D85B081B-6780-FF4D-A0DF-1385B8FA1DC8.root'
+)
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 500
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.MessageLogger.cerr.FwkReport.reportEvery = 5
 
 #TFileService for output
 process.TFileService = cms.Service("TFileService",
@@ -26,19 +30,41 @@ process.TFileService = cms.Service("TFileService",
 
 #load run conditions
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.load('Configuration.Geometry.GeometryIdeal_cff')
-process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+#process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+# cms geometry
+#process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+#process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+
+# In EGamma POG PostRecoTools twiki, instead of two above
+process.load("Configuration.Geometry.GeometryRecoDB_cff")
+process.load("Configuration.StandardSequences.Services_cff")
+process.load("Configuration.StandardSequences.MagneticField_cff")
+process.load("Geometry.CaloEventSetup.CaloTowerConstituents_cfi")
+
 
 #------ Declare the correct global tag ------#
 
 
+#process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_v3'
 process.GlobalTag.globaltag = '94X_mc2017_realistic_v17'
+#process.GlobalTag.globaltag = '102X_upgrade2018_realistic_v18'
 
 #------ If we add any inputs beyond standard miniAOD event content, import them here ------#
 
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
 
 #------ Analyzer ------#
+
+# For AOD Track variables
+process.MaterialPropagator = cms.ESProducer('PropagatorWithMaterialESProducer',
+    ComponentName = cms.string('PropagatorWithMaterial'),
+    Mass = cms.double(0.105),
+    MaxDPhi = cms.double(1.6),
+    PropagationDirection = cms.string('alongMomentum'),
+    SimpleMagneticField = cms.string(''),
+    ptMin = cms.double(-1.0),
+    useRungeKutta = cms.bool(False)
+)
 
 #list input collections
 process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
@@ -49,7 +75,8 @@ process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
     enableGenLLPInfo = cms.bool(True),
-    readGenVertexTime = cms.bool(False),#need to be false for displaced samples
+    readGenVertexTime = cms.bool(True),#need to be false for displaced samples
+    llpId = cms.int32(1023),
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v1.dat"),
     eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
@@ -63,7 +90,6 @@ process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
     taus = cms.InputTag("hpsPFTauProducer"),
     photons = cms.InputTag("gedPhotons"),
     jetsCalo = cms.InputTag("ak4CaloJets","","RECO"),
-    jetsPF = cms.InputTag("ak4PFJets"),
     jets = cms.InputTag("ak4PFJetsCHS"),
     jetsPuppi = cms.InputTag("ak4PFJets"),
     jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
@@ -137,6 +163,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
 
     gedGsfElectronCores = cms.InputTag("gedGsfElectronCores", "", "RECO"),
     gedPhotonCores = cms.InputTag("gedPhotonCore", "", "RECO"),
+    generalTracks = cms.InputTag("generalTracks", "", "RECO"),
     #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters", "RECO"),
 
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
