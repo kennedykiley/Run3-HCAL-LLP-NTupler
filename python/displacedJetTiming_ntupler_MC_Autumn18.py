@@ -11,12 +11,13 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
+#'/store/mc/RunIIAutumn18DRPremix/QCD_HT700to1000_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/110000/D85B081B-6780-FF4D-A0DF-1385B8FA1DC8.root'
         '/store/mc/RunIIAutumn18DRPremix/ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/260000/EC536CE3-5405-9F4D-B571-2EF83D5C17D9.root'
-        )
+)
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 500
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.MessageLogger.cerr.FwkReport.reportEvery = 5
 
 #TFileService for output
 process.TFileService = cms.Service("TFileService",
@@ -26,19 +27,41 @@ process.TFileService = cms.Service("TFileService",
 
 #load run conditions
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.load('Configuration.Geometry.GeometryIdeal_cff')
-process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+#process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+# cms geometry
+#process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+#process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+
+# In EGamma POG PostRecoTools twiki, instead of two above
+process.load("Configuration.Geometry.GeometryRecoDB_cff")
+process.load("Configuration.StandardSequences.Services_cff")
+process.load("Configuration.StandardSequences.MagneticField_cff")
+process.load("Geometry.CaloEventSetup.CaloTowerConstituents_cfi")
+
 
 #------ Declare the correct global tag ------#
 
 
-process.GlobalTag.globaltag = '102X_upgrade2018_realistic_v19'
+#process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_v3'
+#process.GlobalTag.globaltag = '94X_mc2017_realistic_v17'
+process.GlobalTag.globaltag = '102X_upgrade2018_realistic_v20'
 
 #------ If we add any inputs beyond standard miniAOD event content, import them here ------#
 
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
 
 #------ Analyzer ------#
+
+# For AOD Track variables
+process.MaterialPropagator = cms.ESProducer('PropagatorWithMaterialESProducer',
+    ComponentName = cms.string('PropagatorWithMaterial'),
+    Mass = cms.double(0.105),
+    MaxDPhi = cms.double(1.6),
+    PropagationDirection = cms.string('alongMomentum'),
+    SimpleMagneticField = cms.string(''),
+    ptMin = cms.double(-1.0),
+    useRungeKutta = cms.bool(False)
+)
 
 #list input collections
 process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
@@ -49,7 +72,8 @@ process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
     enableGenLLPInfo = cms.bool(True),
-    readGenVertexTime = cms.bool(False),#need to be false for displaced samples
+    readGenVertexTime = cms.bool(True),#need to be false for displaced samples
+    llpId = cms.int32(1023),
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v1.dat"),
     eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
@@ -63,7 +87,6 @@ process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
     taus = cms.InputTag("hpsPFTauProducer"),
     photons = cms.InputTag("gedPhotons"),
     jetsCalo = cms.InputTag("ak4CaloJets","","RECO"),
-    jetsPF = cms.InputTag("ak4PFJets"),
     jets = cms.InputTag("ak4PFJetsCHS"),
     jetsPuppi = cms.InputTag("ak4PFJets"),
     jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
@@ -137,6 +160,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
 
     gedGsfElectronCores = cms.InputTag("gedGsfElectronCores", "", "RECO"),
     gedPhotonCores = cms.InputTag("gedPhotonCore", "", "RECO"),
+    generalTracks = cms.InputTag("generalTracks", "", "RECO"),
     #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters", "RECO"),
 
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
