@@ -11,7 +11,8 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-'/store/data/Run2016B/DoubleEG/AOD/07Aug17_ver2-v2/90005/FEDB8535-21A1-E711-B86E-0242AC130002.root'
+        #'/store/data/Run2018D/SingleMuon/RAW-RECO/ZMu-PromptReco-v2/000/321/121/00000/661EDBC5-929E-E811-AF23-FA163EBD19B5.root'
+        'file:/afs/cern.ch/work/s/sixie/public/Production/Reco/2018/D/CMSSW_10_2_5_patch1/src/RECO.root'
 )
 )
 
@@ -26,13 +27,22 @@ process.TFileService = cms.Service("TFileService",
 
 #load run conditions
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.load('Configuration.Geometry.GeometryIdeal_cff')
-process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+#process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+# cms geometry
+#process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+#process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+
+# In EGamma POG PostRecoTools twiki, instead of two above
+process.load("Configuration.Geometry.GeometryRecoDB_cff")
+process.load("Configuration.StandardSequences.Services_cff")
+process.load("Configuration.StandardSequences.MagneticField_cff")
+process.load("Geometry.CaloEventSetup.CaloTowerConstituents_cfi")
+
 
 #------ Declare the correct global tag ------#
 
 
-process.GlobalTag.globaltag = '80X_dataRun2_2016LegacyRepro_v4'
+process.GlobalTag.globaltag = '102X_dataRun2_v11'
 
 #------ If we add any inputs beyond standard miniAOD event content, import them here ------#
 

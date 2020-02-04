@@ -11,7 +11,7 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-'/store/data/Run2016B/DoubleEG/AOD/07Aug17_ver2-v2/90005/FEDB8535-21A1-E711-B86E-0242AC130002.root'
+        '/store/data/Run2018D/SingleMuon/AOD/PromptReco-v2/000/321/313/00000/D85E13A1-22A3-E811-98BC-FA163E967705.root'
 )
 )
 
@@ -26,13 +26,22 @@ process.TFileService = cms.Service("TFileService",
 
 #load run conditions
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.load('Configuration.Geometry.GeometryIdeal_cff')
-process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+#process.load('Configuration.StandardSequences.MagneticField_38T_cff')
+# cms geometry
+#process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+#process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+
+# In EGamma POG PostRecoTools twiki, instead of two above
+process.load("Configuration.Geometry.GeometryRecoDB_cff")
+process.load("Configuration.StandardSequences.Services_cff")
+process.load("Configuration.StandardSequences.MagneticField_cff")
+process.load("Geometry.CaloEventSetup.CaloTowerConstituents_cfi")
+
 
 #------ Declare the correct global tag ------#
 
 
-process.GlobalTag.globaltag = '80X_dataRun2_2016LegacyRepro_v4'
+process.GlobalTag.globaltag = '102X_dataRun2_Prompt_v14'
 
 #------ If we add any inputs beyond standard miniAOD event content, import them here ------#
 
