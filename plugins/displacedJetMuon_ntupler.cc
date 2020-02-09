@@ -86,7 +86,17 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
 //  metNoHFToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metsNoHF"))),
   metPuppiToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metsPuppi"))),
   metFilterBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"))),
-  //hbheNoiseFilterToken_(consumes<bool>(iConfig.getParameter<edm::InputTag>("hbheNoiseFilter"))),
+  globalSuperTightHalo2016FilterToken_(consumes<bool>(edm::InputTag("globalSuperTightHalo2016Filter"))),
+  globalTightHalo2016FilterToken_(consumes<bool>(edm::InputTag("globalTightHalo2016Filter"))),
+  BadChargedCandidateFilterToken_(consumes<bool>(edm::InputTag("BadChargedCandidateFilter"))),
+  BadPFMuonFilterToken_(consumes<bool>(edm::InputTag("BadPFMuonFilter"))),
+  EcalDeadCellTriggerPrimitiveFilterToken_(consumes<bool>(edm::InputTag("EcalDeadCellTriggerPrimitiveFilter"))),
+  HBHENoiseFilterToken_(consumes<bool>(edm::InputTag("HBHENoiseFilterResultProducer","HBHENoiseFilterResult"))),
+  HBHEIsoNoiseFilterToken_(consumes<bool>(edm::InputTag("HBHENoiseFilterResultProducer","HBHEIsoNoiseFilterResult"))),
+  ecalBadCalibFilterToken_(consumes<bool>(edm::InputTag("ecalBadCalibReducedMINIAODFilter"))),
+  eeBadScFilterToken_(consumes<bool>(edm::InputTag("eeBadScFilter"))),
+  primaryVertexFilterToken_(consumes<bool>(edm::InputTag("primaryVertexFilter"))),
+
   //hbheTightNoiseFilterToken_(consumes<bool>(iConfig.getParameter<edm::InputTag>("hbheTightNoiseFilter"))),
   //hbheIsoNoiseFilterToken_(consumes<bool>(iConfig.getParameter<edm::InputTag>("hbheIsoNoiseFilter"))),
   //badChargedCandidateFilterToken_(consumes<bool>(iConfig.getParameter<edm::InputTag>("BadChargedCandidateFilter"))),
@@ -988,7 +998,9 @@ void displacedJetMuon_ntupler::enableMetBranches()
   displacedJetMuonTree->Branch("Flag_badMuonFilter", &Flag_badMuonFilter, "Flag_badMuonFilter/O");
   displacedJetMuonTree->Branch("Flag_badGlobalMuonFilter", &Flag_badGlobalMuonFilter, "Flag_badGlobalMuonFilter/O");
   displacedJetMuonTree->Branch("Flag_duplicateMuonFilter", &Flag_duplicateMuonFilter, "Flag_duplicateMuonFilter/O");
-  displacedJetMuonTree->Branch("Flag_CSCTightHaloFilter", &Flag_CSCTightHaloFilter, "Flag_CSCTightHaloFilter/O");
+  displacedJetMuonTree->Branch("Flag_globalSuperTightHalo2016Filter", &Flag_globalSuperTightHalo2016Filter, "Flag_globalSuperTightHalo2016Filter/O");
+  displacedJetMuonTree->Branch("Flag_globalTightHalo2016Filter", &Flag_globalTightHalo2016Filter, "Flag_globalTightHalo2016Filter/O");
+
   displacedJetMuonTree->Branch("Flag_hcalLaserEventFilter", &Flag_hcalLaserEventFilter, "Flag_hcalLaserEventFilter/O");
   displacedJetMuonTree->Branch("Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter, "Flag_EcalDeadCellTriggerPrimitiveFilter/O");
   displacedJetMuonTree->Branch("Flag_EcalDeadCellBoundaryEnergyFilter", &Flag_EcalDeadCellBoundaryEnergyFilter, "Flag_EcalDeadCellBoundaryEnergyFilter/O");
@@ -1004,6 +1016,18 @@ void displacedJetMuon_ntupler::enableMetBranches()
   displacedJetMuonTree->Branch("Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter, "Flag_BadChargedCandidateFilter/O");
   displacedJetMuonTree->Branch("Flag_ecalBadCalibFilter", &Flag_ecalBadCalibFilter, "Flag_ecalBadCalibFilter/O");
   displacedJetMuonTree->Branch("Flag_METFilters", &Flag_METFilters, "Flag_METFilters/O");
+
+  displacedJetMuonTree->Branch("Flag2_globalSuperTightHalo2016Filter", &Flag2_globalSuperTightHalo2016Filter, "Flag2_globalSuperTightHalo2016Filter/O");
+  displacedJetMuonTree->Branch("Flag2_globalTightHalo2016Filter", &Flag2_globalTightHalo2016Filter, "Flag2_globalTightHalo2016Filter/O");
+  displacedJetMuonTree->Branch("Flag2_goodVertices", &Flag2_goodVertices, "Flag2_goodVertices/O");
+  displacedJetMuonTree->Branch("Flag2_BadChargedCandidateFilter", &Flag2_BadChargedCandidateFilter, "Flag2_BadChargedCandidateFilter/O");
+  displacedJetMuonTree->Branch("Flag2_BadPFMuonFilter", &Flag2_BadPFMuonFilter, "Flag2_BadPFMuonFilter/O");
+  displacedJetMuonTree->Branch("Flag2_EcalDeadCellTriggerPrimitiveFilter", &Flag2_EcalDeadCellTriggerPrimitiveFilter, "Flag2_EcalDeadCellTriggerPrimitiveFilter/O");
+  displacedJetMuonTree->Branch("Flag2_HBHENoiseFilter", &Flag2_HBHENoiseFilter, "Flag2_HBHENoiseFilter/O");
+  displacedJetMuonTree->Branch("Flag2_HBHEIsoNoiseFilter", &Flag2_HBHEIsoNoiseFilter, "Flag2_HBHEIsoNoiseFilter/O");
+  displacedJetMuonTree->Branch("Flag2_ecalBadCalibFilter", &Flag2_ecalBadCalibFilter, "Flag2_ecalBadCalibFilter/O");
+  displacedJetMuonTree->Branch("Flag2_eeBadScFilter", &Flag2_eeBadScFilter, "Flag2_eeBadScFilter/O");
+
 };
 
 void displacedJetMuon_ntupler::enableTriggerBranches()
@@ -1109,6 +1133,8 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(triggerBitsToken_, triggerBits);
   iEvent.getByToken(hepMCToken_, hepMC);
   iEvent.getByToken(metFilterBitsToken_, metFilterBits);
+
+
   iEvent.getByToken(verticesToken_, vertices);
   iEvent.getByToken(cscSegmentInputToken_,cscSegments);
   iEvent.getByToken(cscRechitInputToken_,cscRechits);
@@ -1944,7 +1970,8 @@ void displacedJetMuon_ntupler::resetMetBranches()
   Flag_badMuonFilter = false;
   Flag_badGlobalMuonFilter = false;
   Flag_duplicateMuonFilter = false;
-  Flag_CSCTightHaloFilter = false;
+  Flag_globalTightHalo2016Filter = false;
+  Flag_globalSuperTightHalo2016Filter = false;
   Flag_hcalLaserEventFilter = false;
   Flag_EcalDeadCellTriggerPrimitiveFilter = false;
   Flag_EcalDeadCellBoundaryEnergyFilter = false;
@@ -1960,6 +1987,18 @@ void displacedJetMuon_ntupler::resetMetBranches()
   Flag_BadChargedCandidateFilter = false;
   Flag_ecalBadCalibFilter = false;
   Flag_METFilters = false;
+
+  Flag2_globalSuperTightHalo2016Filter = false;
+  Flag2_globalTightHalo2016Filter = false;
+  Flag2_goodVertices = false;
+  Flag2_BadChargedCandidateFilter = false;
+  Flag2_BadPFMuonFilter   = false;
+  Flag2_EcalDeadCellTriggerPrimitiveFilter  = false;
+  Flag2_HBHENoiseFilter  = false;
+  Flag2_HBHEIsoNoiseFilter  = false;
+  Flag2_ecalBadCalibFilter  = false;
+  Flag2_eeBadScFilter  = false;
+
 
   metType1PtJetResUp=-999.;
   metType1PtJetResDown=-999.;
@@ -2144,11 +2183,10 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
     fillMC();
     fillGenParticles();
   }
+
   fillHOSystem(iEvent,iSetup);
   fillMuonSystem(iEvent, iSetup);
-
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
-  
   displacedJetMuonTree->Fill();
 
 };
@@ -2438,7 +2476,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	for(int j = 0; j < nGenParticle; j++)
 	  {
 	    if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
-	    
+
 	    double current_delta_r = deltaR(cscSegClusterEta[nCscSegClusters], cscSegClusterPhi[nCscSegClusters], gParticleEta[j], gParticlePhi[j]);
 	    if (current_delta_r < min_deltaR)
 	      {
@@ -2450,7 +2488,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	  {
 	    cscSegCluster_match_gParticle_minDeltaR[nCscSegClusters] = min_deltaR;
 	    cscSegCluster_match_gParticle_index[nCscSegClusters] = index;
-	    cscSegCluster_match_gParticle_id[nCscSegClusters] = gParticleId[index];	    
+	    cscSegCluster_match_gParticle_id[nCscSegClusters] = gParticleId[index];
 	  }
       }
 
@@ -2605,7 +2643,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscRechitClusterMuonVetoE[nCscRechitClusters]) {
         cscRechitClusterMuonVetoE[nCscRechitClusters] = mu.energy();
       }
-    }   
+    }
 
     //match to segment clusters
     float min_deltaR = 15.;
@@ -2648,7 +2686,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	  cscRechitCluster_match_gParticle_id[nCscRechitClusters] = gParticleId[index];
 	}
     }
-    
+
     nCscRechitClusters++;
   }
 
@@ -3331,7 +3369,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 
             }
           }
-          else 
+          else
           {
             gLLP_decay_vertex_x[1] = dau->vx();
             gLLP_decay_vertex_y[1] = dau->vy();
@@ -3986,22 +4024,48 @@ bool displacedJetMuon_ntupler::fillMet(const edm::Event& iEvent)
   metType0Plus1Pt = 0;
   metType0Plus1Phi = 0;
 
+  //
+  iEvent.getByToken(globalSuperTightHalo2016FilterToken_, globalSuperTightHalo2016Filter);
+  iEvent.getByToken(globalTightHalo2016FilterToken_, globalTightHalo2016Filter);
+  iEvent.getByToken(BadChargedCandidateFilterToken_, BadChargedCandidateFilter);
+  iEvent.getByToken(BadPFMuonFilterToken_, BadPFMuonFilter);
+  iEvent.getByToken(EcalDeadCellTriggerPrimitiveFilterToken_, EcalDeadCellTriggerPrimitiveFilter);
+  iEvent.getByToken(HBHENoiseFilterToken_, HBHENoiseFilter);
+  iEvent.getByToken(HBHEIsoNoiseFilterToken_, HBHEIsoNoiseFilter);
+  iEvent.getByToken(ecalBadCalibFilterToken_, ecalBadCalibReducedMINIAODFilter);
+  iEvent.getByToken(eeBadScFilterToken_, eeBadScFilter);
+  // iEvent.getByToken(primaryVertexFilterToken_, primaryVertexFilter);
+
+
+  Flag2_globalSuperTightHalo2016Filter = *globalSuperTightHalo2016Filter;
+  Flag2_globalTightHalo2016Filter = *globalTightHalo2016Filter;
+  Flag2_BadChargedCandidateFilter = *BadChargedCandidateFilter;
+  Flag2_BadPFMuonFilter = *BadPFMuonFilter;
+  Flag2_EcalDeadCellTriggerPrimitiveFilter = *EcalDeadCellTriggerPrimitiveFilter;
+  Flag2_HBHENoiseFilter = *HBHENoiseFilter;
+  Flag2_HBHEIsoNoiseFilter = *HBHEIsoNoiseFilter;
+  Flag2_ecalBadCalibFilter = *ecalBadCalibReducedMINIAODFilter;
+  Flag2_eeBadScFilter = *eeBadScFilter;
+  // Flag2_goodVertices = *primaryVertexFilter;
+
   const edm::TriggerNames &metNames = iEvent.triggerNames(*metFilterBits);
-    
+
   //*******************************************************************************
   //For Debug printout
   //*******************************************************************************
   // for (unsigned int i = 0, n = metFilterBits->size(); i < n; ++i) {
   // 	std::cout << "MET Filter " << metNames.triggerName(i).c_str() << "\n";
   // }
-    
+
   for(unsigned int i = 0, n = metFilterBits->size(); i < n; ++i){
     if(strcmp(metNames.triggerName(i).c_str(), "Flag_trackingFailureFilter") == 0)
       Flag_trackingFailureFilter = metFilterBits->accept(i);
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_goodVertices") == 0)
       Flag_goodVertices = metFilterBits->accept(i);
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalSuperTightHalo2016Filter") == 0)
-      Flag_CSCTightHaloFilter = metFilterBits->accept(i);
+      Flag_globalSuperTightHalo2016Filter = metFilterBits->accept(i);
+    else if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalTightHalo2016Filter") == 0)
+      Flag_globalTightHalo2016Filter = metFilterBits->accept(i);
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOGFilters") == 0)
       Flag_trkPOGFilters = metFilterBits->accept(i);
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_logErrorTooManyClusters") == 0)
@@ -4025,19 +4089,19 @@ bool displacedJetMuon_ntupler::fillMet(const edm::Event& iEvent)
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_toomanystripclus53X") == 0)
       Flag_trkPOG_toomanystripclus53X = metFilterBits->accept(i);
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_hcalLaserEventFilter") == 0)
-      Flag_hcalLaserEventFilter = metFilterBits->accept(i);     
+      Flag_hcalLaserEventFilter = metFilterBits->accept(i);
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonFilter") == 0)
-      Flag_BadPFMuonFilter = metFilterBits->accept(i);     
+      Flag_BadPFMuonFilter = metFilterBits->accept(i);
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadChargedCandidateFilter") == 0)
-      Flag_BadChargedCandidateFilter = metFilterBits->accept(i);     
+      Flag_BadChargedCandidateFilter = metFilterBits->accept(i);
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_ecalBadCalibFilter") == 0)
-      Flag_ecalBadCalibFilter = metFilterBits->accept(i);     
+      Flag_ecalBadCalibFilter = metFilterBits->accept(i);
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_badMuons") == 0) {
-      Flag_badGlobalMuonFilter = metFilterBits->accept(i);     
+      Flag_badGlobalMuonFilter = metFilterBits->accept(i);
       //cout << "found bad muon flag : " << "\n";
     }
     else if(strcmp(metNames.triggerName(i).c_str(), "Flag_duplicateMuons") == 0)
-      Flag_duplicateMuonFilter = metFilterBits->accept(i);     
+      Flag_duplicateMuonFilter = metFilterBits->accept(i);
   } //loop over met filters
 
 

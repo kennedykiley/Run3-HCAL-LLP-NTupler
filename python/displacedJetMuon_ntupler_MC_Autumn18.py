@@ -7,16 +7,19 @@ process = cms.Process("displacedJetMuonNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
 process.load("Configuration.EventContent.EventContent_cff")
-
+#process.load("RecoMET.METFilters.metFilters_cff")
+process.load("metFilters_cff_2018")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(        
-'file:///storage/user/christiw/login-1/christiw/LLP/CMSSW_9_4_7/src/cms_lpc_llp/llp_ntupler/F2E310F0-1513-A741-B89D-BC588E298466.root',
+#'file:///storage/user/christiw/login-1/christiw/LLP/CMSSW_9_4_7/src/cms_lpc_llp/llp_ntupler/F2E310F0-1513-A741-B89D-BC588E298466.root',
+#'file:///mnt/hadoop/store/mc/RunIIAutumn18DRPremix/WminusH_HToSSTobbbb_WToLNu_MH-125_TuneCP5_13TeV-powheg-pythia8/AODSIM/rp_102X_upgrade2018_realistic_v15-v2/70000/A01CF620-9B12-3044-BF55-C4E34E4D3349.root',
+'file:///storage/user/christiw/login-1/christiw/LLP/CMSSW_10_2_16/src/cms_lpc_llp/llp_ntupler/EGM-RunIIAutumn18DR-00031.root',
 #        '/store/mc/RunIIAutumn18DRPremix/ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/260000/EC536CE3-5405-9F4D-B571-2EF83D5C17D9.root'
         )
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 #TFileService for output
@@ -29,7 +32,7 @@ process.TFileService = cms.Service("TFileService",
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.Geometry.GeometryIdeal_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
-
+process.load('metFilters_cff_2018')
 #------ Declare the correct global tag ------#
 
 
@@ -47,6 +50,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     isData = cms.bool(False),
     useGen = cms.bool(True),
     isFastsim = cms.bool(False),
+    readMuonDigis = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
@@ -113,7 +117,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #trackTime = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModel"),
     #trackTimeReso = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModelResolution"),
 
-    puInfo = cms.InputTag("addPileupInfo", "", "HLT"), #uncomment if no pre-mixing
+    #puInfo = cms.InputTag("addPileupInfo", "", "HLT"), #uncomment if no pre-mixing
     #puInfo = cms.InputTag("mixData", "", "HLT"), #uncomment for samples with pre-mixed pileup
     #hcalNoiseInfo = cms.InputTag("hcalnoise", "", "RECO"),
 
@@ -151,4 +155,5 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
 )
 
 #run
-process.p = cms.Path( process.ntuples)
+#process.p = cms.Path(process.metFilters)
+process.p = cms.Path(process.metFilters+process.ntuples)
