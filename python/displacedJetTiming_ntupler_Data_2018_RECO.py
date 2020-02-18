@@ -11,8 +11,8 @@ process.load("Configuration.EventContent.EventContent_cff")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-#'/store/mc/RunIIAutumn18DRPremix/QCD_HT700to1000_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/110000/D85B081B-6780-FF4D-A0DF-1385B8FA1DC8.root'
-        '/store/mc/RunIIAutumn18DRPremix/ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/260000/EC536CE3-5405-9F4D-B571-2EF83D5C17D9.root'
+        #'/store/data/Run2018D/SingleMuon/RAW-RECO/ZMu-PromptReco-v2/000/321/121/00000/661EDBC5-929E-E811-AF23-FA163EBD19B5.root'
+        'file:/afs/cern.ch/work/s/sixie/public/Production/Reco/2018/D/CMSSW_10_2_5_patch1/src/RECO.root'
 )
 )
 
@@ -42,9 +42,7 @@ process.load("Geometry.CaloEventSetup.CaloTowerConstituents_cfi")
 #------ Declare the correct global tag ------#
 
 
-#process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_v3'
-#process.GlobalTag.globaltag = '94X_mc2017_realistic_v17'
-process.GlobalTag.globaltag = '102X_upgrade2018_realistic_v20'
+process.GlobalTag.globaltag = '102X_dataRun2_v11'
 
 #------ If we add any inputs beyond standard miniAOD event content, import them here ------#
 
@@ -65,14 +63,14 @@ process.MaterialPropagator = cms.ESProducer('PropagatorWithMaterialESProducer',
 
 #list input collections
 process.ntuples = cms.EDAnalyzer('displacedJetTiming_ntupler',
-    isData = cms.bool(False),
-    useGen = cms.bool(True),
+    isData = cms.bool(True),
+    useGen = cms.bool(False),
     isFastsim = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
-    enableEcalRechits = cms.bool(False),
+    enableEcalRechits = cms.bool(True),
     enableCaloJet = cms.bool(True),
     enableGenLLPInfo = cms.bool(True),
-    readGenVertexTime = cms.bool(True),#need to be false for displaced samples
+    readGenVertexTime = cms.bool(False),#need to be false for displaced samples
     llpId = cms.int32(1023),
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v1.dat"),

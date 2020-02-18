@@ -316,6 +316,19 @@ protected:
   edm::EDGetTokenT<reco::PFMETCollection> metNoHFToken_;
   edm::EDGetTokenT<reco::PFMETCollection> metPuppiToken_;
   edm::EDGetTokenT<edm::TriggerResults> metFilterBitsToken_;
+
+
+  edm::EDGetTokenT<bool> globalSuperTightHalo2016FilterToken_;
+  edm::EDGetTokenT<bool> globalTightHalo2016FilterToken_;
+  edm::EDGetTokenT<bool> BadChargedCandidateFilterToken_;
+  edm::EDGetTokenT<bool> BadPFMuonFilterToken_;
+  edm::EDGetTokenT<bool> EcalDeadCellTriggerPrimitiveFilterToken_;
+  edm::EDGetTokenT<bool> HBHENoiseFilterToken_;
+  edm::EDGetTokenT<bool> HBHEIsoNoiseFilterToken_;
+  edm::EDGetTokenT<bool> ecalBadCalibFilterToken_;
+  edm::EDGetTokenT<bool> eeBadScFilterToken_;
+  edm::EDGetTokenT<bool> primaryVertexFilterToken_;
+
   //edm::EDGetTokenT<bool> hbheNoiseFilterToken_;
   //edm::EDGetTokenT<bool> hbheTightNoiseFilterToken_;
   //edm::EDGetTokenT<bool> hbheIsoNoiseFilterToken_;
@@ -390,12 +403,25 @@ protected:
   edm::Handle<GenEventInfoProduct> genInfo;
   edm::Handle<GenLumiInfoHeader> genLumiHeader;
   edm::Handle<std::vector<PileupSummaryInfo> > puInfo;
-//  edm::Handle<HcalNoiseSummary> hcalNoiseInfo;
-  //edm::Handle<bool> hbheNoiseFilter;
-  //edm::Handle<bool> hbheTightNoiseFilter;
-  //edm::Handle<bool> hbheIsoNoiseFilter;
-  //edm::Handle<bool> badChargedCandidateFilter;
-  //edm::Handle<bool> badMuonFilter;
+ // edm::Handle<HcalNoiseSummary> hcalNoiseInfo;
+ //  edm::Handle<bool> hbheNoiseFilter;
+ //  edm::Handle<bool> hbheTightNoiseFilter;
+ //  edm::Handle<bool> hbheIsoNoiseFilter;
+ //  edm::Handle<bool> badChargedCandidateFilter;
+ //  edm::Handle<bool> badMuonFilter;
+  edm::Handle<bool> globalSuperTightHalo2016Filter;
+  edm::Handle<bool> globalTightHalo2016Filter;
+  edm::Handle<bool> BadChargedCandidateFilter;
+  edm::Handle<bool> BadPFMuonFilter;
+  edm::Handle<bool> EcalDeadCellTriggerPrimitiveFilter;
+  edm::Handle<bool> ecalBadCalibReducedMINIAODFilter;
+  edm::Handle<bool> eeBadScFilter;
+  edm::Handle<bool> HBHENoiseFilter;
+  edm::Handle<bool> HBHEIsoNoiseFilter;
+  edm::Handle<bool> primaryVertexFilter;
+
+
+
   edm::Handle<vector<reco::VertexCompositePtrCandidate> > secondaryVertices;
   edm::Handle<double> rhoAll;
   edm::Handle<double> rhoFastjetAll;
@@ -1213,7 +1239,8 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  bool Flag_badMuonFilter;
  bool Flag_badGlobalMuonFilter;
  bool Flag_duplicateMuonFilter;
- bool Flag_CSCTightHaloFilter;
+ bool Flag_globalTightHalo2016Filter;
+ bool Flag_globalSuperTightHalo2016Filter;
  bool Flag_hcalLaserEventFilter;
  bool Flag_EcalDeadCellTriggerPrimitiveFilter;
  bool Flag_EcalDeadCellBoundaryEnergyFilter;
@@ -1229,6 +1256,19 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  bool Flag_BadChargedCandidateFilter;
  bool Flag_ecalBadCalibFilter;
  bool Flag_METFilters;
+
+
+bool Flag2_globalSuperTightHalo2016Filter;
+bool Flag2_globalTightHalo2016Filter;
+bool Flag2_goodVertices;
+bool Flag2_BadChargedCandidateFilter;
+bool Flag2_BadPFMuonFilter;
+bool Flag2_EcalDeadCellTriggerPrimitiveFilter;
+bool Flag2_HBHENoiseFilter;
+bool Flag2_HBHEIsoNoiseFilter;
+bool Flag2_ecalBadCalibFilter;
+bool Flag2_eeBadScFilter;
+
 
 
  //MC
