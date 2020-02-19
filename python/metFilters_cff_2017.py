@@ -35,7 +35,7 @@ ecalBadCalibReducedMINIAODFilter = cms.EDFilter(
 "EcalBadCalibFilter",
 EcalRecHitSource = cms.InputTag("reducedEcalRecHitsEE"),
 ecalMinEt        = cms.double(50.),
-baddetEcal    = baddetEcallist2018, #use baddetEcallist2018  for 2018 analysis
+baddetEcal    = baddetEcallist2017, #use baddetEcallist2018  for 2018 analysis
 taggingMode = cms.bool(True),
 debug = cms.bool(False)
 )
