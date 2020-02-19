@@ -1063,7 +1063,7 @@ void displacedJetMuon_ntupler::enableMCBranches()
   // pdfWeights = new std::vector<float>; pdfWeights->clear();
   // alphasWeights = new std::vector<float>; alphasWeights->clear();
   // if (isFastsim_) {
-  //   displacedJetMuonTree->Branch("lheComments", "std::string",&lheComments);
+  displacedJetMuonTree->Branch("lheComments", "std::string",&lheComments);
   // }
   // displacedJetMuonTree->Branch("scaleWeights", "std::vector<float>",&scaleWeights);
   // displacedJetMuonTree->Branch("pdfWeights", "std::vector<float>",&pdfWeights);
@@ -2155,7 +2155,17 @@ void displacedJetMuon_ntupler::beginRun(const edm::Run& iRun, const edm::EventSe
 
 //------ Method called for each lumi block ------//
 void displacedJetMuon_ntupler::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) {
-
+  if (useGen_) {  
+    iLumi.getByToken(genLumiHeaderToken_,genLumiHeader);
+  }
+   
+  //fill lhe comment lines with SUSY model parameter information
+  lheComments = "";
+  if (genLumiHeader.isValid()) {
+    lheComments = genLumiHeader->configDescription();    
+  }    
+  cout << "LHEComments: " << lheComments << "\n";
+  
 }
 
 
