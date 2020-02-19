@@ -7,7 +7,7 @@ process = cms.Process("displacedJetMuonNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
 process.load("Configuration.EventContent.EventContent_cff")
-process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2018")
+process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2017")
 
 #load input files
 process.source = cms.Source("PoolSource",

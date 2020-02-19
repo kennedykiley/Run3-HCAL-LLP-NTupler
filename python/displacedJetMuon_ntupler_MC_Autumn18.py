@@ -9,6 +9,7 @@ process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
 process.load("Configuration.EventContent.EventContent_cff")
 #process.load("RecoMET.METFilters.metFilters_cff")
 process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2018")
+
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(        
@@ -34,7 +35,6 @@ process.TFileService = cms.Service("TFileService",
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.Geometry.GeometryIdeal_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_cff')
-process.load('cms_lpc_llp.llp_ntupler.metFilters_cff_2018')
 #------ Declare the correct global tag ------#
 
 
@@ -157,5 +157,4 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
 )
 
 #run
-#process.p = cms.Path(process.metFilters)
-process.p = cms.Path(process.metFilters+process.ntuples)
+process.p = cms.Path(process.metFilters * process.ntuples)

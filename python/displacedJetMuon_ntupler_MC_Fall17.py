@@ -7,12 +7,14 @@ process = cms.Process("displacedJetMuonNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
 process.load("Configuration.EventContent.EventContent_cff")
+process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2017")
 
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-'file://storage/user/christiw/login-1/christiw/LLP/CMSSW_9_4_7/src/cms_lpc_llp/llp_ntupler/F2E310F0-1513-A741-B89D-BC588E298466.root',
+        #'file://storage/user/christiw/login-1/christiw/LLP/CMSSW_9_4_7/src/cms_lpc_llp/llp_ntupler/F2E310F0-1513-A741-B89D-BC588E298466.root',
 #        '/store/mc/RunIIFall17DRPremix/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11_ext1-v2/920000/8423C2F2-1981-E811-96E1-509A4C83EFAB.root'
+        '/store/mc/RunIIFall17DRPremix/ggH_HToSSTobbbb_MH-125_TuneCP5_13TeV-powheg-pythia8/GEN-SIM-RECO/PU2017_rp_94X_mc2017_realistic_v11-v1/120000/02D1A78B-AF4E-EA11-9CDB-0242AC1C0502.root'
         )
 )
 
@@ -46,6 +48,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     isData = cms.bool(False),
     useGen = cms.bool(True),
     isFastsim = cms.bool(False),
+    readMuonDigis = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
@@ -76,6 +79,12 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #packedPfCands = cms.InputTag("packedPFCandidates"),
 
     genParticles = cms.InputTag("genParticles"),
+    MuonCSCSimHits = cms.InputTag("g4SimHits", "MuonCSCHits","SIM"),
+    MuonCSCComparatorDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCComparatorDigi", "HLT"),
+    MuonCSCStripDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCStripDigi", "HLT"),
+    MuonCSCWireDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCWireDigi", "HLT"),
+    MuonCSCWireDigiSimLinks = cms.InputTag( "simMuonCSCDigis", "MuonCSCWireDigiSimLinks", "HLT"),
+    MuonCSCStripDigiSimLinks = cms.InputTag("simMuonCSCDigis","MuonCSCStripDigiSimLinks", "HLT"),
 
     #packedGenParticles = cms.InputTag("packedGenParticles"),
     #prunedGenParticles = cms.InputTag("prunedGenParticles"),
@@ -106,8 +115,8 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #trackTime = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModel"),
     #trackTimeReso = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModelResolution"),
 
-    puInfo = cms.InputTag("addPileupInfo", "", "HLT"), #uncomment if no pre-mixing
-    #puInfo = cms.InputTag("mixData", "", "HLT"), #uncomment for samples with pre-mixed pileup
+    #puInfo = cms.InputTag("addPileupInfo", "", "HLT"), #uncomment if no pre-mixing
+    puInfo = cms.InputTag("mixData", "", "HLT"), #uncomment for samples with pre-mixed pileup
     #hcalNoiseInfo = cms.InputTag("hcalnoise", "", "RECO"),
 
     #secondaryVertices = cms.InputTag("inclusiveSecondaryVertices", "", "RECO"),
@@ -144,4 +153,4 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
 )
 
 #run
-process.p = cms.Path( process.ntuples)
+process.p = cms.Path( process.metFilters * process.ntuples)
