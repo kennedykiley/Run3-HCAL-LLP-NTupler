@@ -7,11 +7,13 @@ process = cms.Process("displacedJetMuonNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
 process.load("Configuration.EventContent.EventContent_cff")
+process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2018")
 
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/data/Run2018D/SingleMuon/RAW-RECO/ZMu-PromptReco-v2/000/321/121/00000/661EDBC5-929E-E811-AF23-FA163EBD19B5.root'
+        #'/store/data/Run2018D/SingleMuon/RAW-RECO/ZMu-PromptReco-v2/000/321/121/00000/661EDBC5-929E-E811-AF23-FA163EBD19B5.root'
+        '/store/data/Run2018A/MET/RAW-RECO/HighMET-17Sep2018-v1/60000/FFAF1AE5-6AD4-D942-AFE5-AECA675812FD.root'
         )
 )
 
@@ -154,4 +156,4 @@ process.load('EventFilter.CSCRawToDigi.cscUnpacker_cfi')
 process.muonCSCDigis.InputObjects = 'rawDataCollector'
 
 #run
-process.p = cms.Path( process.muonCSCDigis * process.ntuples)
+process.p = cms.Path( process.muonCSCDigis * process.metFilters * process.ntuples)
