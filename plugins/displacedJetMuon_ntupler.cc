@@ -239,7 +239,7 @@ void displacedJetMuon_ntupler::setBranches()
   enableEventInfoBranches();
   // enablePVAllBranches();
   // enablePVTracksBranches();
-  // enablePileUpBranches();
+  enablePileUpBranches();
   enableMuonBranches();
   enableElectronBranches();
   // enableTauBranches();
