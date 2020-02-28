@@ -1050,15 +1050,15 @@ void displacedJetMuon_ntupler::enableMCBranches()
   // displacedJetMuonTree->Branch("genMetPhiCalo", &genMetPhiCalo, "genMetPhiCalo/F");
   // displacedJetMuonTree->Branch("genMetPtTrue", &genMetPtTrue, "genMetPtTrue/F");
   // displacedJetMuonTree->Branch("genMetPhiTrue", &genMetPhiTrue, "genMetPhiTrue/F");
-  // displacedJetMuonTree->Branch("genVertexX", &genVertexX, "genVertexX/F");
-  // displacedJetMuonTree->Branch("genVertexY", &genVertexY, "genVertexY/F");
-  // displacedJetMuonTree->Branch("genVertexZ", &genVertexZ, "genVertexZ/F");
-  // displacedJetMuonTree->Branch("genVertexT", &genVertexT, "genVertexT/F");
+  displacedJetMuonTree->Branch("genVertexX", &genVertexX, "genVertexX/F");
+  displacedJetMuonTree->Branch("genVertexY", &genVertexY, "genVertexY/F");
+  displacedJetMuonTree->Branch("genVertexZ", &genVertexZ, "genVertexZ/F");
+  displacedJetMuonTree->Branch("genVertexT", &genVertexT, "genVertexT/F");
   displacedJetMuonTree->Branch("genWeight", &genWeight, "genWeight/F");
   displacedJetMuonTree->Branch("genSignalProcessID", &genSignalProcessID, "genSignalProcessID/i");
-  // displacedJetMuonTree->Branch("genQScale", &genQScale, "genQScale/F");
-  // displacedJetMuonTree->Branch("genAlphaQCD", &genAlphaQCD, "genAlphaQCD/F");
-  // displacedJetMuonTree->Branch("genAlphaQED", &genAlphaQED, "genAlphaQED/F");
+  displacedJetMuonTree->Branch("genQScale", &genQScale, "genQScale/F");
+  displacedJetMuonTree->Branch("genAlphaQCD", &genAlphaQCD, "genAlphaQCD/F");
+  displacedJetMuonTree->Branch("genAlphaQED", &genAlphaQED, "genAlphaQED/F");
   // scaleWeights = new std::vector<float>; scaleWeights->clear();
   // pdfWeights = new std::vector<float>; pdfWeights->clear();
   // alphasWeights = new std::vector<float>; alphasWeights->clear();
@@ -3094,7 +3094,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
   //Fills selected gen particles
   //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
   const double pt_cut = 0.0;
-  int llp_id = 6000113;
+  int llp_id = 9000006;
   bool seenFirstLLP = false;
   bool firstLLP = false;
   for(size_t i=0; i<genParticles->size();i++)
