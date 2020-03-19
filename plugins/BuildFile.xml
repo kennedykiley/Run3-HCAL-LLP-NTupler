@@ -11,5 +11,6 @@
 <use name="RecoEgamma/EgammaTools"/>
 <use name="EgammaAnalysis/ElectronTools"/>
 <use name="RecoEcal/EgammaCoreTools"/>
+<use name="RecoTracker/DebugTools"/>
 <use name="cms_lpc_llp/llp_ntupler"/>
 <flags EDM_PLUGIN="1"/>

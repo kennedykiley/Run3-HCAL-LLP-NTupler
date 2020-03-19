@@ -32,12 +32,9 @@ struct largest_muonCscLayers
 displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iConfig):
   //get inputs from config file
   isData_(iConfig.getParameter<bool> ("isData")),
-  //isFourJet_(iConfig.getParameter<bool> ("isFourJet")),
   useGen_(iConfig.getParameter<bool> ("useGen")),
   isFastsim_(iConfig.getParameter<bool> ("isFastsim")),
-  //isQCD_(iConfig.getParameter<bool> ("isQCD")),
   enableTriggerInfo_(iConfig.getParameter<bool> ("enableTriggerInfo")),
-  enableCaloJet_(iConfig.getParameter<bool> ("enableCaloJet")),
   enableGenLLPInfo_(iConfig.getParameter<bool> ("enableGenLLPInfo")),
   enableEcalRechits_(iConfig.getParameter<bool> ("enableEcalRechits")),
   readGenVertexTime_(iConfig.getParameter<bool> ("readGenVertexTime")),
@@ -65,8 +62,6 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   electronsToken_(consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
   tausToken_(consumes<reco::PFTauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
   photonsToken_(consumes<reco::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
-  jetsCaloToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("jetsCalo"))),
-  // jetsPFToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsPF"))),
   jetsToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
   jetsPuppiToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsPuppi"))),
   jetsAK8Token_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsAK8"))),
@@ -97,17 +92,9 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   eeBadScFilterToken_(consumes<bool>(edm::InputTag("eeBadScFilter"))),
   primaryVertexFilterToken_(consumes<bool>(edm::InputTag("primaryVertexFilter"))),
 
-  //hbheTightNoiseFilterToken_(consumes<bool>(iConfig.getParameter<edm::InputTag>("hbheTightNoiseFilter"))),
-  //hbheIsoNoiseFilterToken_(consumes<bool>(iConfig.getParameter<edm::InputTag>("hbheIsoNoiseFilter"))),
-  //badChargedCandidateFilterToken_(consumes<bool>(iConfig.getParameter<edm::InputTag>("BadChargedCandidateFilter"))),
-  //badMuonFilterToken_(consumes<bool>(iConfig.getParameter<edm::InputTag>("BadMuonFilter"))),
-//  lheRunInfoTag_(iConfig.getParameter<edm::InputTag>("lheInfo")),
-//  lheRunInfoToken_(consumes<LHERunInfoProduct,edm::InRun>(lheRunInfoTag_)),
-//  lheInfoToken_(consumes<LHEEventProduct>(iConfig.getParameter<edm::InputTag>("lheInfo"))),
   genInfoToken_(consumes<GenEventInfoProduct>(iConfig.getParameter<edm::InputTag>("genInfo"))),
   genLumiHeaderToken_(consumes<GenLumiInfoHeader,edm::InLumi>(edm::InputTag("generator",""))),
   puInfoToken_(consumes<std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puInfo"))),
-  //hcalNoiseInfoToken_(consumes<HcalNoiseSummary>(iConfig.getParameter<edm::InputTag>("hcalNoiseInfo"))),
   secondaryVerticesToken_(consumes<vector<reco::VertexCompositePtrCandidate> >(iConfig.getParameter<edm::InputTag>("secondaryVertices"))),
   rhoAllToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoAll"))),
   rhoFastjetAllToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoFastjetAll"))),
@@ -120,19 +107,15 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   eeRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("eeRecHits"))),
   esRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("esRecHits"))),
   hcalRecHitsHOToken_(consumes<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>>(edm::InputTag("horeco"))),
+  hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>(edm::InputTag("hbhereco"))),
   ebeeClustersToken_(consumes<vector<reco::CaloCluster> >(iConfig.getParameter<edm::InputTag>("ebeeClusters"))),
   esClustersToken_(consumes<vector<reco::CaloCluster> >(iConfig.getParameter<edm::InputTag>("esClusters"))),
   conversionsToken_(consumes<vector<reco::Conversion> >(iConfig.getParameter<edm::InputTag>("conversions"))),
   singleLegConversionsToken_(consumes<vector<reco::Conversion> >(iConfig.getParameter<edm::InputTag>("singleLegConversions"))),
   gedGsfElectronCoresToken_(consumes<vector<reco::GsfElectronCore> >(iConfig.getParameter<edm::InputTag>("gedGsfElectronCores"))),
   gedPhotonCoresToken_(consumes<vector<reco::PhotonCore> >(iConfig.getParameter<edm::InputTag>("gedPhotonCores"))),
-  generalTrackToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks")))
-  //superClustersToken_(consumes<vector<reco::SuperCluster> >(iConfig.getParameter<edm::InputTag>("superClusters"))),
-  //  lostTracksToken_(consumes<vector<reco::PFCandidate> >(iConfig.getParameter<edm::InputTag>("lostTracks")))
-  // mvaGeneralPurposeValuesMapToken_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaGeneralPurposeValuesMap"))),
-  // mvaGeneralPurposeCategoriesMapToken_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaGeneralPurposeCategoriesMap"))),
-  // mvaHZZValuesMapToken_(consumes<edm::ValueMap<float> >(iConfig.getParameter<edm::InputTag>("mvaHZZValuesMap"))),
-  // mvaHZZCategoriesMapToken_(consumes<edm::ValueMap<int> >(iConfig.getParameter<edm::InputTag>("mvaHZZCategoriesMap")))
+  generalTrackToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks"))),
+  generalTrackHandleToken_(consumes<edm::View<reco::Track>>(edm::InputTag("generalTracks")))
 {
   //declare the TFileService for output
   edm::Service<TFileService> fs;
@@ -142,45 +125,7 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   //displacedJetMuonTree = new TTree("Jets", "selected AOD information");
   NEvents = fs->make<TH1F>("NEvents",";;NEvents;",1,-0.5,0.5);
 
-  /*
-  //set up electron MVA ID
-  std::vector<std::string> myTrigWeights;
-  myTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/TrigIDMVA_25ns_EB_BDT.weights.xml").fullPath().c_str());
-  myTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/TrigIDMVA_25ns_EE_BDT.weights.xml").fullPath().c_str());
 
-  myMVATrig = new EGammaMvaEleEstimatorCSA14();
-  myMVATrig->initialize("BDT",
-  EGammaMvaEleEstimatorCSA14::kTrig,
-  true,
-  myTrigWeights);
-
-  std::vector<std::string> myNonTrigWeights;
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EB1_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EB2_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EE_5_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EB1_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EB2_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-  myNonTrigWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/EIDmva_EE_10_oldNonTrigSpring15_ConvVarCwoBoolean_TMVA412_FullStatLowPt_PairNegWeightsGlobal_BDT.weights.xml").fullPath().c_str());
-
-  myMVANonTrig = new ElectronMVAEstimatorRun2NonTrig();
-  myMVANonTrig->initialize("BDTG method",
-  ElectronMVAEstimatorRun2NonTrig::kPHYS14,
-  true,
-  myNonTrigWeights);
-
-  //set up photon MVA ID
-  std::vector<std::string> myPhotonMVAWeights;
-  myPhotonMVAWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/PhotonIDMVA_Spring15_50ns_v0_EB.weights.xml").fullPath().c_str());
-  myPhotonMVAWeights.push_back(edm::FileInPath("cms_lpc_llp/displacedJetMuon_ntupler/data/PhotonIDMVA_Spring15_50ns_v0_EE.weights.xml").fullPath().c_str());
-  std::vector<std::string> myPhotonMVAMethodNames;
-  myPhotonMVAMethodNames.push_back("BDTG photons barrel");
-  myPhotonMVAMethodNames.push_back("BDTG photons endcap");
-
-  myPhotonMVA = new EGammaMvaPhotonEstimator();
-  myPhotonMVA->initialize(myPhotonMVAMethodNames,myPhotonMVAWeights,
-    EGammaMvaPhotonEstimator::kPhotonMVATypeDefault);
-
-*/
   //------------------------------------------------------------------
   //Read in HLT Trigger Path List from config file
   //------------------------------------------------------------------
@@ -217,13 +162,9 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   //   std::cout << "****************************************************************************\n";
   //   std::cout << "\n";
   // }
+
   if(readGenVertexTime_) genParticles_t0_Token_ = consumes<float>(iConfig.getParameter<edm::InputTag>("genParticles_t0"));
-  /*
-  fJetPhotonRecHitEta = new std::vector<float>; fJetPhotonRecHitEta->clear();
-  fJetPhotonRecHitPhi = new std::vector<float>; fJetPhotonRecHitPhi->clear();
-  fJetPhotonRecHitE = new std::vector<float>; fJetPhotonRecHitE->clear();
-  fJetPhotonRecHitTime = new std::vector<float>; fJetPhotonRecHitTime->clear();
-*/
+
 }
 
 displacedJetMuon_ntupler::~displacedJetMuon_ntupler()
@@ -237,20 +178,18 @@ displacedJetMuon_ntupler::~displacedJetMuon_ntupler()
 void displacedJetMuon_ntupler::setBranches()
 {
   enableEventInfoBranches();
-  // enablePVAllBranches();
-  // enablePVTracksBranches();
-  // enablePileUpBranches();
+  enablePVAllBranches();
+  enablePileUpBranches();
   enableMuonBranches();
   enableElectronBranches();
-  // enableTauBranches();
+  enableTauBranches();
   // enableIsoPFCandidateBranches();
-  // enablePhotonBranches();
+  enablePhotonBranches();
   enableMuonSystemBranches();
   enableHORechitBranches();
-  // enableEcalRechitBranches();
-  enableJetBranches();
-  // enableCaloJetBranches();
-  // enableJetAK8Branches();
+  enableEcalRechitBranches();
+  enableJetBranches();  
+  enableJetAK8Branches();
   enableMetBranches();
   enableTriggerBranches();
   enableMCBranches();
@@ -288,13 +227,6 @@ void displacedJetMuon_ntupler::enablePVAllBranches()
   displacedJetMuonTree->Branch("pvAllSumPy", pvAllSumPy,"pvAllSumPy[nPVAll]/F");
 };
 
-void displacedJetMuon_ntupler::enablePVTracksBranches()
-{
-  displacedJetMuonTree->Branch("nPVTracks", &nPVTracks,"nPVTracks/I");
-  displacedJetMuonTree->Branch("pvTrackPt", pvTrackPt,"pvTrackPt[nPVTracks]/F");
-  displacedJetMuonTree->Branch("pvTrackEta", pvTrackEta,"pvTrackEta[nPVTracks]/F");
-  displacedJetMuonTree->Branch("pvTrackPhi", pvTrackPhi,"pvTrackPhi[nPVTracks]/F");
-};
 
 void displacedJetMuon_ntupler::enablePileUpBranches()
 {
@@ -421,16 +353,7 @@ void displacedJetMuon_ntupler::enableTauBranches()
   displacedJetMuonTree->Branch("tau_leadChargedHadrCandID", tau_leadChargedHadrCandID, "tau_leadChargedHadrCandID[nTaus]/I");
 };
 
-void displacedJetMuon_ntupler::enableIsoPFCandidateBranches()
-{
-  displacedJetMuonTree->Branch("nIsoPFCandidates", &nIsoPFCandidates, "nIsoPFCandidates/i");
-  displacedJetMuonTree->Branch("isoPFCandidatePt", isoPFCandidatePt, "isoPFCandidatePt[nIsoPFCandidates]/F");
-  displacedJetMuonTree->Branch("isoPFCandidateEta", isoPFCandidateEta, "isoPFCandidateEta[nIsoPFCandidates]/F");
-  displacedJetMuonTree->Branch("isoPFCandidatePhi", isoPFCandidatePhi, "isoPFCandidatePhi[nIsoPFCandidates]/F");
-  displacedJetMuonTree->Branch("isoPFCandidateIso04", isoPFCandidateIso04, "isoPFCandidateIso04[nIsoPFCandidates]/F");
-  displacedJetMuonTree->Branch("isoPFCandidateD0", isoPFCandidateD0, "isoPFCandidateD0[nIsoPFCandidates]/F");
-  displacedJetMuonTree->Branch("isoPFCandidatePdgId", isoPFCandidatePdgId, "isoPFCandidatePdgId[nIsoPFCandidates]/I");
-};
+
 
 void displacedJetMuon_ntupler::enablePhotonBranches()
 {
@@ -491,15 +414,6 @@ void displacedJetMuon_ntupler::enablePhotonBranches()
 void displacedJetMuon_ntupler::enableMuonSystemBranches()
 {
 
-    // csc_Phi = new std::vector<float>;
-    // csc_Eta = new std::vector<float>;
-    // csc_X = new std::vector<float>;
-    // csc_Y = new std::vector<float>;
-    // csc_Z = new std::vector<float>;
-    // csc_NRecHits = new std::vector<float>;
-    // csc_T = new std::vector<float>;
-    // csc_Chi2 = new std::vector<float>;
-    //
     displacedJetMuonTree->Branch("nCscWireDigis",&nCscWireDigis,"nCscWireDigis/I");
     displacedJetMuonTree->Branch("nCscStripDigis",&nCscStripDigis,"nCscStripDigis/I");
 
@@ -717,13 +631,6 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("dtRechitClusterNSegmentStation2",            dtRechitClusterNSegmentStation2,            "dtRechitClusterNSegmentStation2[nDtRechitClusters]/I");
     displacedJetMuonTree->Branch("dtRechitClusterNSegmentStation3",            dtRechitClusterNSegmentStation3,            "dtRechitClusterNSegmentStation3[nDtRechitClusters]/I");
     displacedJetMuonTree->Branch("dtRechitClusterNSegmentStation4",            dtRechitClusterNSegmentStation4,            "dtRechitClusterNSegmentStation4[nDtRechitClusters]/I");
-// displacedJetMuonTree->Branch("nDTCosmicRechits",             &nDTCosmicRechits,             "nDTCosmicRechits/I");
-    // displacedJetMuonTree->Branch("dtCosmicRechitX",             dtCosmicRechitX,             "dtCosmicRechitX[nDTCosmicRechits]/F");
-    // displacedJetMuonTree->Branch("dtCosmicRechitY",             dtCosmicRechitY,             "dtCosmicRechitY[nDTCosmicRechits]/F");
-    // displacedJetMuonTree->Branch("dtCosmicRechitZ",             dtCosmicRechitZ,             "dtCosmicRechitZ[nDTCosmicRechits]/F");
-    // displacedJetMuonTree->Branch("dtCosmicRechitEta",             dtCosmicRechitEta,             "dtCosmicRechitEta[nDTCosmicRechits]/F");
-    // displacedJetMuonTree->Branch("dtCosmicRechitPhi",             dtCosmicRechitPhi,             "dtCosmicRechitPhi[nDTCosmicRechits]/F");
-    // displacedJetMuonTree->Branch("dtCosmicRechitTime",             dtCosmicRechitTime,             "dtCosmicRechitTime[nDTCosmicRechits]/F");
 
 
     displacedJetMuonTree->Branch("nRpc",&nRpc,"nRpc/I");
@@ -798,18 +705,6 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     // displacedJetMuonTree->Branch("dtSegClusterVertexN20",             dtSegClusterVertexN20,             "dtSegClusterVertexN20[nDtSegClusters]/I");
     // displacedJetMuonTree->Branch("dtSegClusterVertexN",             dtSegClusterVertexN,             "dtSegClusterVertexN[nDtSegClusters]/I");
 
-    // displacedJetMuonTree->Branch("nDtCosmicSeg",&nDtCosmicSeg,"nDtCosmicSeg/I");
-    // displacedJetMuonTree->Branch("dtCosmicSegPhi",dtCosmicSegPhi,"dtCosmicSegPhi[nDtCosmicSeg]");
-    // displacedJetMuonTree->Branch("dtCosmicSegEta",dtCosmicSegEta,"dtCosmicSegEta[nDtCosmicSeg]");
-    // displacedJetMuonTree->Branch("dtCosmicSegX",dtCosmicSegX,"dtCosmicSegX[nDtCosmicSeg]");
-    // displacedJetMuonTree->Branch("dtCosmicSegY",dtCosmicSegY,"dtCosmicSegY[nDtCosmicSeg]");
-    // displacedJetMuonTree->Branch("dtCosmicSegZ",dtCosmicSegZ,"dtCosmicSegZ[nDtCosmicSeg]");
-    // displacedJetMuonTree->Branch("dtCosmicSegDirX",dtCosmicSegDirX,"dtCosmicSegDirX[nDtCosmicSeg]");
-    // displacedJetMuonTree->Branch("dtCosmicSegDirY",dtCosmicSegDirY,"dtCosmicSegDirY[nDtCosmicSeg]");
-    // displacedJetMuonTree->Branch("dtCosmicSegDirZ",dtCosmicSegDirZ,"dtCosmicSegDirZ[nDtCosmicSeg]");
-    // displacedJetMuonTree->Branch("dtCosmicSegT",dtCosmicSegT,"dtCosmicSegT[nDtCosmicSeg]");
-    // displacedJetMuonTree->Branch("dtCosmicSegTError",dtCosmicSegTError,"dtCosmicSegTError[nDtCosmicSeg]");
-
 };
 void displacedJetMuon_ntupler::enableHORechitBranches()
 {
@@ -838,6 +733,30 @@ void displacedJetMuon_ntupler::enableEcalRechitBranches()
   displacedJetMuonTree->Branch("ecalRechit_kPoorRecoflag", ecalRechit_kPoorRecoflag, "ecalRechit_kPoorRecoflag[nRechits]/O");
   displacedJetMuonTree->Branch("ecalRechit_kWeirdflag", ecalRechit_kWeirdflag, "ecalRechit_kWeirdflag[nRechits]/O");
   displacedJetMuonTree->Branch("ecalRechit_kDiWeirdflag", ecalRechit_kDiWeirdflag, "ecalRechit_kDiWeirdflag[nRechits]/O");
+
+  displacedJetMuonTree->Branch("nHBHERechits", &nHBHERechits,"nHBHERechits/I");
+  displacedJetMuonTree->Branch("hbheRechit_Eta", hbheRechit_Eta,"hbheRechit_Eta[nHBHERechits]/F");
+  displacedJetMuonTree->Branch("hbheRechit_Phi",hbheRechit_Phi, "hbheRechit_Phi[nHBHERechits]/F");
+  displacedJetMuonTree->Branch("hbheRechit_E", hbheRechit_E, "hbheRechit_E[nHBHERechits]/F");
+  displacedJetMuonTree->Branch("hbheRechit_X", hbheRechit_X, "hbheRechit_X[nHBHERechits]/F");
+  displacedJetMuonTree->Branch("hbheRechit_Y", hbheRechit_Y, "hbheRechit_Y[nHBHERechits]/F");
+  displacedJetMuonTree->Branch("hbheRechit_Z", hbheRechit_Z, "hbheRechit_Z[nHBHERechits]/F");
+  displacedJetMuonTree->Branch("hbheRechit_T", hbheRechit_T, "hbheRechit_T[nHBHERechits]/F");
+  displacedJetMuonTree->Branch("hbheRechit_iEta", hbheRechit_iEta,"hbheRechit_iEta[nHBHERechits]/I");
+  displacedJetMuonTree->Branch("hbheRechit_iPhi", hbheRechit_iPhi,"hbheRechit_iPhi[nHBHERechits]/I");
+  displacedJetMuonTree->Branch("hbheRechit_depth", hbheRechit_depth,"hbheRechit_depth[nHBHERechits]/I");
+
+  displacedJetMuonTree->Branch("nTracks", &nTracks,"nTracks/I");
+  displacedJetMuonTree->Branch("track_Pt", track_Pt,"track_Pt[nTracks]/F");
+  displacedJetMuonTree->Branch("track_Eta", track_Eta,"track_Eta[nTracks]/F");
+  displacedJetMuonTree->Branch("track_Phi", track_Phi,"track_Phi[nTracks]/F");
+  displacedJetMuonTree->Branch("track_bestVertexIndex", track_bestVertexIndex,"track_bestVertexIndex[nTracks]/I");
+  displacedJetMuonTree->Branch("track_nMissingInnerHits", track_nMissingInnerHits,"track_nMissingInnerHits[nTracks]/I");
+  displacedJetMuonTree->Branch("track_nMissingOuterHits", track_nMissingOuterHits,"track_nMissingOuterHits[nTracks]/I");
+  displacedJetMuonTree->Branch("track_dxyToBS", track_dxyToBS,"track_dxyToBS[nTracks]/F");
+  displacedJetMuonTree->Branch("track_dxyErr", track_dxyErr,"track_dxyErr[nTracks]/F");
+  displacedJetMuonTree->Branch("track_dzToPV", track_dzToPV,"track_dzToPV[nTracks]/F");
+  displacedJetMuonTree->Branch("track_dzErr", track_dzErr,"track_dzErr[nTracks]/F");
 
 };
 
@@ -902,46 +821,23 @@ void displacedJetMuon_ntupler::enableJetBranches()
   displacedJetMuonTree->Branch("jet_sig_et1",jet_sig_et1,"jet_sig_et1[nJets]/F");
   displacedJetMuonTree->Branch("jet_sig_et2",jet_sig_et2,"jet_sig_et2[nJets]/F");
   displacedJetMuonTree->Branch("jet_energy_frac",jet_energy_frac,"jet_energy_frac[nJets]/F");
-  displacedJetMuonTree->Branch("jet_matched",jet_matched,"jet_matched[nJets]/O");//matched to gen particles
 
+  displacedJetMuonTree->Branch("jetAlphaMax_wp",jetAlphaMax_wp,"jetAlphaMax_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetBetaMax_wp",jetBetaMax_wp,"jetBetaMax_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetGammaMax_ET_wp",jetGammaMax_ET_wp,"jetGammaMax_ET_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetGammaMax_EM_wp",jetGammaMax_EM_wp,"jetGammaMax_EM_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetGammaMax_Hadronic_wp",jetGammaMax_Hadronic_wp,"jetGammaMax_Hadronic_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetGammaMax_wp",jetGammaMax_wp,"jetGammaMax_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetPtAllTracks_wp",jetPtAllTracks_wp,"jetPtAllTracks_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetPtAllPVTracks_wp",jetPtAllPVTracks_wp,"jetPtAllPVTracks_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetMedianTheta2D_wp",jetMedianTheta2D_wp,"jetMedianTheta2D_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetMedianIP_wp",jetMedianIP_wp,"jetMedianIP_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetMinDeltaRAllTracks_wp",jetMinDeltaRAllTracks_wp,"jetMinDeltaRAllTracks_wp[nJets]/F");
+  displacedJetMuonTree->Branch("jetMinDeltaRPVTracks_wp",jetMinDeltaRPVTracks_wp,"jetMinDeltaRPVTracks_wp[nJets]/F");
 
 
 };
 
-void displacedJetMuon_ntupler::enableCaloJetBranches()
-{
-  displacedJetMuonTree->Branch("nCaloJets", &nCaloJets,"nCaloJets/I");
-  displacedJetMuonTree->Branch("calojetE", calojetE,"calojetE[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetEt", calojetEt,"calojetEt[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetPt", calojetPt,"calojetPt[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetEta", calojetEta,"calojetEta[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetPhi", calojetPhi,"calojetPhi[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetMass", calojetMass, "calojetMass[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetJetArea", calojetJetArea, "calojetJetArea[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetPileupE", calojetPileupE, "calojetPileupE[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetPileupId", calojetPileupId, "calojetPileupId[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetPileupIdFlag", calojetPileupIdFlag, "calojetPileupIdFlag[nCaloJets]/I");
-  displacedJetMuonTree->Branch("calojetPassIDLoose", calojetPassIDLoose, "calojetPassIDLoose[nCaloJets]/O");
-  displacedJetMuonTree->Branch("calojetPassIDTight", calojetPassIDTight, "calojetPassIDTight[nCaloJets]/O");
-  displacedJetMuonTree->Branch("calojetNRechits", calojetNRechits,"calojetNRechits[nCaloJets]/I");
-  displacedJetMuonTree->Branch("calojetRechitE", calojetRechitE,"calojetRechitE[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetRechitT", calojetRechitT,"calojetRechitT[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetRechitT_rms", calojetRechitT_rms,"calojetRechitT_rms[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetAlphaMax",calojetAlphaMax,"calojetAlphaMax[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetBetaMax",calojetBetaMax,"calojetBetaMax[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetGammaMax_ET",calojetGammaMax_ET,"calojetGammaMax_ET[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetGammaMax_EM",calojetGammaMax_EM,"calojetGammaMax_EM[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetGammaMax_Hadronic",calojetGammaMax_Hadronic,"calojetGammaMax_Hadronic[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetGammaMax",calojetGammaMax,"calojetGammaMax[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojet_HadronicEnergyFraction", calojet_HadronicEnergyFraction,"calojet_HadronicEnergyFraction[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojet_EMEnergyFraction", calojet_EMEnergyFraction,"calojet_EMEnergyFraction[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetPtAllTracks",calojetPtAllTracks,"calojetPtAllTracks[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetPtAllPVTracks",calojetPtAllPVTracks,"calojetPtAllPVTracks[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetMedianTheta2D",calojetMedianTheta2D,"calojetMedianTheta2D[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetMedianIP",calojetMedianIP,"calojetMedianIP[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetMinDeltaRAllTracks",calojetMinDeltaRAllTracks,"calojetMinDeltaRAllTracks[nCaloJets]/F");
-  displacedJetMuonTree->Branch("calojetMinDeltaRPVTracks",calojetMinDeltaRPVTracks,"calojetMinDeltaRPVTracks[nCaloJets]/F");
-};
 
 
 void displacedJetMuon_ntupler::enableJetAK8Branches()
@@ -1034,9 +930,7 @@ void displacedJetMuon_ntupler::enableTriggerBranches()
 {
   nameHLT = new std::vector<std::string>; nameHLT->clear();
   displacedJetMuonTree->Branch("HLTDecision", &triggerDecision, ("HLTDecision[" + std::to_string(NTriggersMAX) +  "]/O").c_str());
-  displacedJetMuonTree->Branch("HLTPrescale", &triggerHLTPrescale, ("HLTPrescale[" + std::to_string(NTriggersMAX) +  "]/I").c_str());
-  //displacedJetMuonTree->Branch("HLTMR", &HLTMR, "HLTMR/F");
-  //displacedJetMuonTree->Branch("HLTRSQ", &HLTRSQ, "HLTRSQ/F");
+  displacedJetMuonTree->Branch("HLTPrescale", &triggerHLTPrescale, ("HLTPrescale[" + std::to_string(NTriggersMAX) +  "]/I").c_str()); 
 };
 
 void displacedJetMuon_ntupler::enableMCBranches()
@@ -1046,28 +940,26 @@ void displacedJetMuon_ntupler::enableMCBranches()
   displacedJetMuonTree->Branch("genJetPt", genJetPt, "genJetPt[nGenJets]/F");
   displacedJetMuonTree->Branch("genJetEta", genJetEta, "genJetEta[nGenJets]/F");
   displacedJetMuonTree->Branch("genJetPhi", genJetPhi, "genJetPhi[nGenJets]/F");
-  // displacedJetMuonTree->Branch("genMetPtCalo", &genMetPtCalo, "genMetPtCalo/F");
-  // displacedJetMuonTree->Branch("genMetPhiCalo", &genMetPhiCalo, "genMetPhiCalo/F");
-  // displacedJetMuonTree->Branch("genMetPtTrue", &genMetPtTrue, "genMetPtTrue/F");
-  // displacedJetMuonTree->Branch("genMetPhiTrue", &genMetPhiTrue, "genMetPhiTrue/F");
-  // displacedJetMuonTree->Branch("genVertexX", &genVertexX, "genVertexX/F");
-  // displacedJetMuonTree->Branch("genVertexY", &genVertexY, "genVertexY/F");
-  // displacedJetMuonTree->Branch("genVertexZ", &genVertexZ, "genVertexZ/F");
-  // displacedJetMuonTree->Branch("genVertexT", &genVertexT, "genVertexT/F");
+  displacedJetMuonTree->Branch("genMetPtCalo", &genMetPtCalo, "genMetPtCalo/F");
+  displacedJetMuonTree->Branch("genMetPhiCalo", &genMetPhiCalo, "genMetPhiCalo/F");
+  displacedJetMuonTree->Branch("genMetPtTrue", &genMetPtTrue, "genMetPtTrue/F");
+  displacedJetMuonTree->Branch("genMetPhiTrue", &genMetPhiTrue, "genMetPhiTrue/F");
+  displacedJetMuonTree->Branch("genVertexX", &genVertexX, "genVertexX/F");
+  displacedJetMuonTree->Branch("genVertexY", &genVertexY, "genVertexY/F");
+  displacedJetMuonTree->Branch("genVertexZ", &genVertexZ, "genVertexZ/F");
+  displacedJetMuonTree->Branch("genVertexT", &genVertexT, "genVertexT/F");
   displacedJetMuonTree->Branch("genWeight", &genWeight, "genWeight/F");
   displacedJetMuonTree->Branch("genSignalProcessID", &genSignalProcessID, "genSignalProcessID/i");
-  // displacedJetMuonTree->Branch("genQScale", &genQScale, "genQScale/F");
-  // displacedJetMuonTree->Branch("genAlphaQCD", &genAlphaQCD, "genAlphaQCD/F");
-  // displacedJetMuonTree->Branch("genAlphaQED", &genAlphaQED, "genAlphaQED/F");
-  // scaleWeights = new std::vector<float>; scaleWeights->clear();
-  // pdfWeights = new std::vector<float>; pdfWeights->clear();
-  // alphasWeights = new std::vector<float>; alphasWeights->clear();
-  // if (isFastsim_) {
+  displacedJetMuonTree->Branch("genQScale", &genQScale, "genQScale/F");
+  displacedJetMuonTree->Branch("genAlphaQCD", &genAlphaQCD, "genAlphaQCD/F");
+  displacedJetMuonTree->Branch("genAlphaQED", &genAlphaQED, "genAlphaQED/F");
+  scaleWeights = new std::vector<float>; scaleWeights->clear();
+  pdfWeights = new std::vector<float>; pdfWeights->clear();
+  alphasWeights = new std::vector<float>; alphasWeights->clear();
   displacedJetMuonTree->Branch("lheComments", "std::string",&lheComments);
-  // }
-  // displacedJetMuonTree->Branch("scaleWeights", "std::vector<float>",&scaleWeights);
-  // displacedJetMuonTree->Branch("pdfWeights", "std::vector<float>",&pdfWeights);
-  // displacedJetMuonTree->Branch("alphasWeights", "std::vector<float>",&alphasWeights);
+  displacedJetMuonTree->Branch("scaleWeights", "std::vector<float>",&scaleWeights);
+  displacedJetMuonTree->Branch("pdfWeights", "std::vector<float>",&pdfWeights);
+  displacedJetMuonTree->Branch("alphasWeights", "std::vector<float>",&alphasWeights);
 };
 
 void displacedJetMuon_ntupler::enableGenParticleBranches()
@@ -1079,9 +971,6 @@ void displacedJetMuon_ntupler::enableGenParticleBranches()
   displacedJetMuonTree->Branch("gParticleStatus", gParticleStatus, "gParticleStatus[nGenParticle]/I");
   displacedJetMuonTree->Branch("gParticleE", gParticleE, "gParticleE[nGenParticle]/F");
   displacedJetMuonTree->Branch("gParticlePt", gParticlePt, "gParticlePt[nGenParticle]/F");
-  // displacedJetMuonTree->Branch("gParticlePx", gParticlePx, "gParticlePx[nGenParticle]/F");
-  // displacedJetMuonTree->Branch("gParticlePy", gParticlePy, "gParticlePy[nGenParticle]/F");
-  // displacedJetMuonTree->Branch("gParticlePz", gParticlePz, "gParticlePz[nGenParticle]/F");
   displacedJetMuonTree->Branch("gParticleEta", gParticleEta, "gParticleEta[nGenParticle]/F");
   displacedJetMuonTree->Branch("gParticlePhi", gParticlePhi, "gParticlePhi[nGenParticle]/F");
   displacedJetMuonTree->Branch("gParticleProdVertexX", gParticleProdVertexX, "gParticleProdVertexX[nGenParticle]/F");
@@ -1104,25 +993,31 @@ void displacedJetMuon_ntupler::enableGenParticleBranches()
    displacedJetMuonTree->Branch("gLLP_phi", gLLP_phi, "gLLP_phi[2]/F");
    displacedJetMuonTree->Branch("gLLP_csc", gLLP_csc, "gLLP_csc[2]/O");
    displacedJetMuonTree->Branch("gLLP_dt", gLLP_dt, "gLLP_dt[2]/O");
-
    displacedJetMuonTree->Branch("gLLP_travel_time", gLLP_travel_time, "gLLP_travel_time[2]/F");
- //
- //   displacedJetMuonTree->Branch("gLLP_daughter_travel_time", gLLP_daughter_travel_time, "gLLP_daughter_travel_time[4]/F");
- //   displacedJetMuonTree->Branch("gLLP_daughter_pt", gLLP_daughter_pt, "gLLP_daughter_pt[4]/F");
- //   displacedJetMuonTree->Branch("gLLP_daughter_eta", gLLP_daughter_eta, "gLLP_daughter_eta[4]/F");
- //   displacedJetMuonTree->Branch("gLLP_daughter_phi", gLLP_daughter_phi, "gLLP_daughter_phi[4]/F");
- //   displacedJetMuonTree->Branch("gLLP_daughter_eta_ecalcorr", gLLP_daughter_eta_ecalcorr, "gLLP_daughter_eta_ecalcorr[4]/F");
- //   displacedJetMuonTree->Branch("gLLP_daughter_phi_ecalcorr", gLLP_daughter_phi_ecalcorr, "gLLP_daughter_phi_ecalcorr[4]/F");
- //
- //   displacedJetMuonTree->Branch("gLLP_daughter_e", gLLP_daughter_e, "gLLP_daughter_e[4]/F");
- //   displacedJetMuonTree->Branch("photon_travel_time", photon_travel_time, "photon_travel_time[4]/F");
- //   displacedJetMuonTree->Branch("gen_time", gen_time, "gen_time[4]/F");
- //   displacedJetMuonTree->Branch("gen_time_pv", gen_time_pv, "gen_time_pv[4]/F");
- //
- //   displacedJetMuonTree->Branch("gLLP_min_delta_r_match_calojet", gLLP_min_delta_r_match_calojet, "gLLP_min_delta_r_match_calojet[4]/F");
- // displacedJetMuonTree->Branch("gLLP_daughter_match_calojet_index", gLLP_daughter_match_calojet_index, "gLLP_daughter_match_calojet_index[4]/i");
- //   displacedJetMuonTree->Branch("gLLP_daughter_match_jet_index", gLLP_daughter_match_jet_index, "gLLP_daughter_match_jet_index[4]/i");
- //   displacedJetMuonTree->Branch("gLLP_min_delta_r_match_jet", gLLP_min_delta_r_match_jet, "gLLP_min_delta_r_match_jet[4]/F");
+
+   displacedJetMuonTree->Branch("gLLP_daughter_id", gLLP_daughter_id, "gLLP_daughter_id[4]/I");
+   displacedJetMuonTree->Branch("gLLP_daughter_pt", gLLP_daughter_pt, "gLLP_daughter_pt[4]/F");
+   displacedJetMuonTree->Branch("gLLP_daughter_eta", gLLP_daughter_eta, "gLLP_daughter_eta[4]/F");
+   displacedJetMuonTree->Branch("gLLP_daughter_phi", gLLP_daughter_phi, "gLLP_daughter_phi[4]/F");
+   displacedJetMuonTree->Branch("gLLP_daughter_eta_ecalcorr", gLLP_daughter_eta_ecalcorr, "gLLP_daughter_eta_ecalcorr[4]/F");
+   displacedJetMuonTree->Branch("gLLP_daughter_phi_ecalcorr", gLLP_daughter_phi_ecalcorr, "gLLP_daughter_phi_ecalcorr[4]/F");
+   displacedJetMuonTree->Branch("gLLP_daughter_e", gLLP_daughter_e, "gLLP_daughter_e[4]/F");
+   displacedJetMuonTree->Branch("gLLP_daughter_mass", gLLP_daughter_mass, "gLLP_daughter_mass[4]/F");
+
+
+   displacedJetMuonTree->Branch("gLLP_grandaughter_id", gLLP_grandaughter_id, "gLLP_grandaughter_id[4]/I");
+   displacedJetMuonTree->Branch("gLLP_grandaughter_pt", gLLP_grandaughter_pt, "gLLP_grandaughter_pt[4]/F");
+   displacedJetMuonTree->Branch("gLLP_grandaughter_eta", gLLP_grandaughter_eta, "gLLP_grandaughter_eta[4]/F");
+   displacedJetMuonTree->Branch("gLLP_grandaughter_phi", gLLP_grandaughter_phi, "gLLP_grandaughter_phi[4]/F");
+   displacedJetMuonTree->Branch("gLLP_grandaughter_eta_ecalcorr", gLLP_grandaughter_eta_ecalcorr, "gLLP_grandaughter_eta_ecalcorr[4]/F");
+   displacedJetMuonTree->Branch("gLLP_grandaughter_phi_ecalcorr", gLLP_grandaughter_phi_ecalcorr, "gLLP_grandaughter_phi_ecalcorr[4]/F");
+   displacedJetMuonTree->Branch("gLLP_grandaughter_e", gLLP_grandaughter_e, "gLLP_grandaughter_e[4]/F");
+   displacedJetMuonTree->Branch("gLLP_grandaughter_mass", gLLP_grandaughter_mass, "gLLP_grandaughter_mass[4]/F");
+
+
+
+
+
 
 };
 
@@ -1130,6 +1025,7 @@ void displacedJetMuon_ntupler::enableGenParticleBranches()
 void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all miniAOD objects for the current event
 {
   iEvent.getByToken(hcalRecHitsHOToken_,hcalRecHitsHO);
+  iEvent.getByToken(hcalRecHitsHBHEToken_,hcalRecHitsHBHE);
   iEvent.getByToken(triggerBitsToken_, triggerBits);
   iEvent.getByToken(hepMCToken_, hepMC);
   iEvent.getByToken(metFilterBitsToken_, metFilterBits);
@@ -1163,17 +1059,13 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(electronsToken_, electrons);
   iEvent.getByToken(photonsToken_, photons);
   iEvent.getByToken(tausToken_, taus);
-  iEvent.getByToken(jetsCaloToken_, jetsCalo);
-  // iEvent.getByToken(jetsPFToken_, jetsPF);
   iEvent.getByToken(jetsToken_, jets);
   iEvent.getByToken(jetsPuppiToken_, jetsPuppi);
   iEvent.getByToken(jetsAK8Token_, jetsAK8);
   iEvent.getByToken(genMetCaloToken_, genMetsCalo);
   iEvent.getByToken(genMetTrueToken_, genMetsTrue);
   iEvent.getByToken(metToken_, mets);
-  //iEvent.getByToken(metNoHFToken_, metsNoHF);
   iEvent.getByToken(metPuppiToken_, metsPuppi);
-//  iEvent.getByToken(hcalNoiseInfoToken_,hcalNoiseInfo);
   iEvent.getByToken(secondaryVerticesToken_,secondaryVertices);
   iEvent.getByToken(rhoAllToken_,rhoAll);
   iEvent.getByToken(rhoFastjetAllToken_,rhoFastjetAll);
@@ -1192,22 +1084,11 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(gedGsfElectronCoresToken_,gedGsfElectronCores);
   iEvent.getByToken(gedPhotonCoresToken_, gedPhotonCores);
   iEvent.getByToken(generalTrackToken_,generalTracks);
-//  iEvent.getByToken(superClustersToken_,superClusters);
-//  iEvent.getByToken(lostTracksToken_,lostTracks);
-//  iEvent.getByToken(hbheNoiseFilterToken_, hbheNoiseFilter);
-//  iEvent.getByToken(hbheTightNoiseFilterToken_, hbheTightNoiseFilter);
-//  iEvent.getByToken(hbheIsoNoiseFilterToken_, hbheIsoNoiseFilter);
-  //iEvent.getByToken(badChargedCandidateFilterToken_, badChargedCandidateFilter);
-  //iEvent.getByToken(badMuonFilterToken_, badMuonFilter);
+  iEvent.getByToken(generalTrackHandleToken_,generalTrackHandle);
   if(readGenVertexTime_) iEvent.getByToken(genParticles_t0_Token_,genParticles_t0);
   if (useGen_) {
-//    iEvent.getByToken(genParticlesToken_,genParticles);
     iEvent.getByToken(genParticlesToken_,genParticles);
     iEvent.getByToken(genJetsToken_,genJets);
-
-    //for Spring16 fastsim, this has been changed and removed
-//    if (!isFastsim_) iEvent.getByToken(lheInfoToken_, lheInfo);
-
     iEvent.getByToken(genInfoToken_,genInfo);
     iEvent.getByToken(puInfoToken_,puInfo);
   }
@@ -1221,14 +1102,12 @@ void displacedJetMuon_ntupler::resetBranches()
     //reset tree variables
     resetEventInfoBranches();
     resetPVAllBranches();
-    resetPVTracksBranches();
     resetPileUpBranches();
     resetMuonBranches();
     resetElectronBranches();
     resetTauBranches();
     resetPhotonBranches();
     resetJetBranches();
-    resetCaloJetBranches();
     resetMuonSystemBranches();
     resetMetBranches();
     resetGenParticleBranches();
@@ -1274,16 +1153,6 @@ void displacedJetMuon_ntupler::resetPVAllBranches()
   }
 };
 
-void displacedJetMuon_ntupler::resetPVTracksBranches()
-{
-  nPVTracks = 0;
-  for(int i = 0; i < OBJECTARRAYSIZE; i++)
-  {
-    pvTrackPt[i]  = -999.;
-    pvTrackEta[i] = -999.;
-    pvTrackPhi[i] = -999.;
-  }
-};
 
 void displacedJetMuon_ntupler::resetPileUpBranches()
 {
@@ -1491,9 +1360,7 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
   nCscRechitClusters = 0;
   nCscWireDigis = 0;
   nCscStripDigis = 0;
-  for ( int i = 0; i < OBJECTARRAYSIZE; i++)
-  {
-
+  for ( int i = 0; i < CSCRECHITARRAYSIZE; i++) {
     cscRechitsPhi[i] = 0.0;
     cscRechitsEta[i] = 0.0;
     cscRechitsX[i] = 0.0;
@@ -1524,6 +1391,9 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
     cscSegNRecHits[i] = 0;
     cscSegStation[i] = 0;
     cscSegChamber[i] = 0;
+  }
+
+  for ( int i = 0; i < OBJECTARRAYSIZE; i++) {
     cscSegCluster_match_gParticle_id[i] = 999;
     cscSegCluster_match_gParticle_index[i] = 999;
     cscSegCluster_match_gParticle_minDeltaR[i] = 999.;
@@ -1649,149 +1519,120 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
     cscRechitClusterMaxChamberRatio[i] = 0.0;
     cscRechitClusterMaxChamber[i] = 0;
     cscRechitClusterNChamber[i] = 0;
-
-
-
-
-
-
   }
-    nRpc = 0;
-    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
-    {
-      rpcPhi[i] = 0.0;
-      rpcEta[i] = 0.0;
-      rpcX[i] = 0.0;
-      rpcY[i] = 0.0;
-      rpcZ[i] = 0.0;
-      rpcT[i] = 0.0;
-      rpcBx[i] = 0;
-      rpcTError[i] = 0.0;
-    }
-    nDtSeg = 0;
-    nDtRechits = 0;
-    nDtSegClusters = 0;
-    nDtRechitClusters = 0;
-    // nDTCosmicRechits = 0;
-    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
-    {
-      dtRechitX[i] = 0.0;
-      dtRechitY[i] = 0.0;
-      dtRechitZ[i] = 0.0;
-      dtRechitEta[i] = 0.0;
-      dtRechitPhi[i] = 0.0;
-      dtRechitTime[i] = 0.0;
-      dtRechitStation[i] = 0;
-      dtRechitWheel[i] = 0;
-      dtRechitCluster_match_gParticle_id[i] = 999;
-      dtRechitCluster_match_gParticle_index[i] = 999;
-      dtRechitCluster_match_gParticle_minDeltaR[i] = 999.;
-      dtRechitClusterJetVetoPt[i] = 0.0;
-      dtRechitClusterJetVetoE[i] = 0.0;
-      dtRechitClusterCaloJetVeto[i] = 0.0;
-      dtRechitClusterMuonVetoPt[i] = 0.0;
-      dtRechitClusterMuonVetoE[i] = 0.0;
-      dtRechitClusterX[i] = 0.0;
-      dtRechitClusterY[i] = 0.0;
-      dtRechitClusterZ[i] = 0.0;
-      dtRechitClusterTime[i] = 0.0;
-      dtRechitClusterTimeSpread[i] = 0.0;
-      dtRechitClusterGenMuonDeltaR[i] = 0.0;
-      dtRechitClusterMajorAxis[i] = 0.0;
-      dtRechitClusterMinorAxis[i] = 0.0;
-      dtRechitClusterXSpread[i] = 0.0;
-      dtRechitClusterYSpread[i] = 0.0;
-      dtRechitClusterZSpread[i] = 0.0;
-      dtRechitClusterEtaPhiSpread[i] = 0.0;
-      dtRechitClusterEtaSpread[i] = 0.0;
-      dtRechitClusterPhiSpread[i] = 0.0;
-      dtRechitClusterEta[i] = 0.0;
-      dtRechitClusterPhi[i] = 0.0;
-      dtRechitClusterSize[i] = 0;
-      dtRechitClusterNSegmentStation1[i] = 0;
-      dtRechitClusterNSegmentStation2[i] = 0;
-      dtRechitClusterNSegmentStation3[i] = 0;
-      dtRechitClusterNSegmentStation4[i] = 0;
-      dtRechitClusterMaxStationRatio[i] = 0.0;
-      dtRechitClusterMaxStation[i] = 0;
-      dtRechitClusterNStation[i] = 0;
-      dtRechitClusterMaxChamberRatio[i] = 0.0;
-      dtRechitClusterMaxChamber[i] = 0;
-      dtRechitClusterNChamber[i] = 0;
-      // dtCosmicRechitX[i] = 0.0;
-      // dtCosmicRechitY[i] = 0.0;
-      // dtCosmicRechitZ[i] = 0.0;
-      // dtCosmicRechitEta[i] = 0.0;
-      // dtCosmicRechitPhi[i] = 0.0;
-      // dtCosmicRechitTime[i] = 0.0;
+  
+  nRpc = 0;
+  for ( int i = 0; i < OBJECTARRAYSIZE; i++) {
+    rpcPhi[i] = 0.0;
+    rpcEta[i] = 0.0;
+    rpcX[i] = 0.0;
+    rpcY[i] = 0.0;
+    rpcZ[i] = 0.0;
+    rpcT[i] = 0.0;
+    rpcBx[i] = 0;
+    rpcTError[i] = 0.0;
+  }
 
-    }
+  nDtSeg = 0;
+  nDtRechits = 0;
+  nDtSegClusters = 0;
+  nDtRechitClusters = 0;
+  for ( int i = 0; i < CSCRECHITARRAYSIZE; i++) {
+    dtRechitX[i] = 0.0;
+    dtRechitY[i] = 0.0;
+    dtRechitZ[i] = 0.0;
+    dtRechitEta[i] = 0.0;
+    dtRechitPhi[i] = 0.0;
+    dtRechitTime[i] = 0.0;
+    dtRechitStation[i] = 0;
+    dtRechitWheel[i] = 0;
 
+    dtSegPhi[i] = 0.0;
+    dtSegEta[i] = 0.0;
+    dtSegX[i] = 0.0;
+    dtSegY[i] = 0.0;
+    dtSegZ[i] = 0.0;
+    dtSegStation[i] = 0;
+    dtSegWheel[i] = 0;
+    dtSegTime[i] = -9999.0;
+    dtSegTimeError[i] = -9999.0;
+  }
+  
+  for ( int i = 0; i < OBJECTARRAYSIZE; i++) {
+    dtRechitCluster_match_gParticle_id[i] = 999;
+    dtRechitCluster_match_gParticle_index[i] = 999;
+    dtRechitCluster_match_gParticle_minDeltaR[i] = 999.;
+    dtRechitClusterJetVetoPt[i] = 0.0;
+    dtRechitClusterJetVetoE[i] = 0.0;
+    dtRechitClusterCaloJetVeto[i] = 0.0;
+    dtRechitClusterMuonVetoPt[i] = 0.0;
+    dtRechitClusterMuonVetoE[i] = 0.0;
+    dtRechitClusterX[i] = 0.0;
+    dtRechitClusterY[i] = 0.0;
+    dtRechitClusterZ[i] = 0.0;
+    dtRechitClusterTime[i] = 0.0;
+    dtRechitClusterTimeSpread[i] = 0.0;
+    dtRechitClusterGenMuonDeltaR[i] = 0.0;
+    dtRechitClusterMajorAxis[i] = 0.0;
+    dtRechitClusterMinorAxis[i] = 0.0;
+    dtRechitClusterXSpread[i] = 0.0;
+    dtRechitClusterYSpread[i] = 0.0;
+    dtRechitClusterZSpread[i] = 0.0;
+    dtRechitClusterEtaPhiSpread[i] = 0.0;
+    dtRechitClusterEtaSpread[i] = 0.0;
+    dtRechitClusterPhiSpread[i] = 0.0;
+    dtRechitClusterEta[i] = 0.0;
+    dtRechitClusterPhi[i] = 0.0;
+    dtRechitClusterSize[i] = 0;
+    dtRechitClusterNSegmentStation1[i] = 0;
+    dtRechitClusterNSegmentStation2[i] = 0;
+    dtRechitClusterNSegmentStation3[i] = 0;
+    dtRechitClusterNSegmentStation4[i] = 0;
+    dtRechitClusterMaxStationRatio[i] = 0.0;
+    dtRechitClusterMaxStation[i] = 0;
+    dtRechitClusterNStation[i] = 0;
+    dtRechitClusterMaxChamberRatio[i] = 0.0;
+    dtRechitClusterMaxChamber[i] = 0;
+    dtRechitClusterNChamber[i] = 0;    
+ 
+    dtSegCluster_match_gParticle_id[i] = 999;
+    dtSegCluster_match_gParticle_index[i] = 999;
+    dtSegCluster_match_gParticle_minDeltaR[i] = 999.;
+    dtSegClusterJetVetoPt[i] = 0.0;
+    dtSegClusterJetVetoE[i] = 0.0;
+    dtSegClusterCaloJetVeto[i] = 0.0;
+    dtSegClusterMuonVetoPt[i] = 0.0;
+    dtSegClusterMuonVetoE[i] = 0.0;
+    dtSegClusterX[i] = 0.0;
+    dtSegClusterY[i] = 0.0;
+    dtSegClusterZ[i] = 0.0;
+    dtSegClusterTime[i] = 0.0;
+    dtSegClusterTimeSpread[i] = 0.0;
+    dtSegClusterGenMuonDeltaR[i] = 0.0;
+    dtSegClusterMajorAxis[i] = 0.0;
+    dtSegClusterMinorAxis[i] = 0.0;
+    dtSegClusterXSpread[i] = 0.0;
+    dtSegClusterYSpread[i] = 0.0;
+    dtSegClusterZSpread[i] = 0.0;
+    dtSegClusterEtaPhiSpread[i] = 0.0;
+    dtSegClusterEtaSpread[i] = 0.0;
+    dtSegClusterPhiSpread[i] = 0.0;
+    dtSegClusterEta[i] = 0.0;
+    dtSegClusterPhi[i] = 0.0;
+    dtSegClusterSize[i] = 0;
+    dtSegClusterNSegmentStation1[i] = 0;
+    dtSegClusterNSegmentStation2[i] = 0;
+    dtSegClusterNSegmentStation3[i] = 0;
+    dtSegClusterNSegmentStation4[i] = 0;
+    dtSegClusterMaxStationRatio[i] = 0.0;
+    dtSegClusterMaxStation[i] = 0;
+    dtSegClusterNStation[i] = 0;
+    dtSegClusterMaxChamberRatio[i] = 0.0;
+    dtSegClusterMaxChamber[i] = 0;
+    dtSegClusterNChamber[i] = 0;
+  }
 
-
-    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
-    {
-      dtSegPhi[i] = 0.0;
-      dtSegEta[i] = 0.0;
-      dtSegX[i] = 0.0;
-      dtSegY[i] = 0.0;
-      dtSegZ[i] = 0.0;
-      dtSegStation[i] = 0;
-      dtSegWheel[i] = 0;
-      dtSegTime[i] = -9999.0;
-      dtSegTimeError[i] = -9999.0;
-
-      dtSegCluster_match_gParticle_id[i] = 999;
-      dtSegCluster_match_gParticle_index[i] = 999;
-      dtSegCluster_match_gParticle_minDeltaR[i] = 999.;
-      dtSegClusterJetVetoPt[i] = 0.0;
-      dtSegClusterJetVetoE[i] = 0.0;
-      dtSegClusterCaloJetVeto[i] = 0.0;
-      dtSegClusterMuonVetoPt[i] = 0.0;
-      dtSegClusterMuonVetoE[i] = 0.0;
-      dtSegClusterX[i] = 0.0;
-      dtSegClusterY[i] = 0.0;
-      dtSegClusterZ[i] = 0.0;
-      dtSegClusterTime[i] = 0.0;
-      dtSegClusterTimeSpread[i] = 0.0;
-      dtSegClusterGenMuonDeltaR[i] = 0.0;
-      dtSegClusterMajorAxis[i] = 0.0;
-      dtSegClusterMinorAxis[i] = 0.0;
-      dtSegClusterXSpread[i] = 0.0;
-      dtSegClusterYSpread[i] = 0.0;
-      dtSegClusterZSpread[i] = 0.0;
-      dtSegClusterEtaPhiSpread[i] = 0.0;
-      dtSegClusterEtaSpread[i] = 0.0;
-      dtSegClusterPhiSpread[i] = 0.0;
-      dtSegClusterEta[i] = 0.0;
-      dtSegClusterPhi[i] = 0.0;
-      dtSegClusterSize[i] = 0;
-      dtSegClusterNSegmentStation1[i] = 0;
-      dtSegClusterNSegmentStation2[i] = 0;
-      dtSegClusterNSegmentStation3[i] = 0;
-      dtSegClusterNSegmentStation4[i] = 0;
-      dtSegClusterMaxStationRatio[i] = 0.0;
-      dtSegClusterMaxStation[i] = 0;
-      dtSegClusterNStation[i] = 0;
-      dtSegClusterMaxChamberRatio[i] = 0.0;
-      dtSegClusterMaxChamber[i] = 0;
-      dtSegClusterNChamber[i] = 0;
-    }
-    nDtCosmicSeg = 0;
-    for ( int i = 0; i < OBJECTARRAYSIZE; i++)
-    {
-      dtCosmicSegPhi[i] = 0.0;
-      dtCosmicSegEta[i] = 0.0;
-      dtCosmicSegX[i] = 0.0;
-      dtCosmicSegY[i] = 0.0;
-      dtCosmicSegZ[i] = 0.0;
-      dtCosmicSegDirX[i] = 0.0;
-      dtCosmicSegDirY[i] = 0.0;
-      dtCosmicSegDirZ[i] = 0.0;
-      dtCosmicSegT[i] = -9999.0;
-      dtCosmicSegTError[i] = -9999.0;
-    }
-    return;
+  return;
 };
 void displacedJetMuon_ntupler::resetJetBranches()
 {
@@ -1851,9 +1692,41 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jet_sig_et1[i] = -99.0;
     jet_sig_et2[i] = -99.0;
     jet_energy_frac[i] = 0.0;
-    jet_matched[i] = false;
 
+    jetGammaMax_wp[i] = -99.0;
+    jetGammaMax_EM_wp[i] = -99.0;
+    jetGammaMax_Hadronic_wp[i] = -99.0;
+    jetGammaMax_ET_wp[i] = -99.0;
+    jetAlphaMax_wp[i] = -99.0;
+    jetBetaMax_wp[i] = -99.0;
+    jetPtAllTracks_wp[i] = -99.0;
+    jetPtAllPVTracks_wp[i] = -99.0;
+    jetMedianTheta2D_wp[i] = -99.0;
+    jetMedianIP_wp[i] = -99.0;
+    jetMinDeltaRAllTracks_wp[i] =-99.0;
+    jetMinDeltaRPVTracks_wp[i] = -99.0;
   }
+
+  nFatJets = 0;
+  for ( int i = 0; i < OBJECTARRAYSIZE; i++) {
+    fatJetE[i] = 0.0;
+    fatJetPt[i] = 0.0;
+    fatJetEta[i] = 0.0;
+    fatJetPhi[i] = 0.0;
+    fatJetCorrectedPt[i] = 0.0;
+    fatJetCorrectedEta[i] = 0.0;
+    fatJetCorrectedPhi[i] = 0.0;
+    fatJetPrunedM[i] = 0.0;
+    fatJetTrimmedM[i] = 0.0;
+    fatJetFilteredM[i] = 0.0;
+    fatJetSoftDropM[i] = 0.0;
+    fatJetCorrectedSoftDropM[i] = 0.0;
+    fatJetUncorrectedSoftDropM[i] = 0.0;
+    fatJetTau1[i] = 0.0;
+    fatJetTau2[i] = 0.0;
+    fatJetTau3[i] = 0.0;     
+  }
+
   return;
 };
 void displacedJetMuon_ntupler::resetHORechitBranches()
@@ -1875,9 +1748,7 @@ void displacedJetMuon_ntupler::resetHORechitBranches()
 void displacedJetMuon_ntupler::resetEcalRechitBranches()
 {
   nRechits = 0;
-  for ( int i = 0; i < RECHITARRAYSIZE; i++)
-  {
-
+  for ( int i = 0; i < RECHITARRAYSIZE; i++) {
     ecalRechit_Eta[i] = -999.;
     ecalRechit_Phi[i] = -999.;
     ecalRechit_E[i] = -999.;
@@ -1889,49 +1760,37 @@ void displacedJetMuon_ntupler::resetEcalRechitBranches()
     ecalRechit_kPoorRecoflag[i] = false;
     ecalRechit_kWeirdflag[i] = false;
     ecalRechit_kDiWeirdflag[i] = false;
-
   }
-  return;
-};
-void displacedJetMuon_ntupler::resetCaloJetBranches()
-{
-  nCaloJets = 0;
-  for ( int i = 0; i < OBJECTARRAYSIZE; i++)
-  {
-    calojetE[i] = 0.0;
-    calojetEt[i] = 0.0;
-    calojetPt[i] = 0.0;
-    calojetEta[i] = 0.0;
-    calojetPhi[i] = 0.0;
-    calojetMass[i] =  -99.0;
-    calojetJetArea[i] = -99.0;
-    calojetPileupE[i] = -99.0;
-    calojetPileupId[i] = -99.0;
-    calojetPileupIdFlag[i] = -1;
-    calojetPassIDLoose[i] = false;
-    calojetPassIDTight[i] = false;
 
-    calojetNRechits[i] = 0;
-    calojetRechitE[i] = 0.0;
-    calojetRechitT[i] = 0.0;
-    calojetRechitT_rms[i] = 0.0;
-
-    calojetAlphaMax[i] = -99.0;
-    calojetBetaMax[i] = -99.0;
-    calojetGammaMax[i] = -99.0;
-    calojetGammaMax_EM[i] = -99.0;
-    calojetGammaMax_Hadronic[i] = -99.0;
-    calojetGammaMax_ET[i] = -99.0;
-    calojetPtAllTracks[i] = -99.0;
-    calojetPtAllPVTracks[i] = -99.0;
-    calojetMedianTheta2D[i] = -99.0;
-    calojetMedianIP[i] = -99.0;
-    calojetMinDeltaRAllTracks[i] =-99.0;
-    calojetMinDeltaRPVTracks[i] = -99.0;
-
-    calojet_HadronicEnergyFraction[i] = -666.;
-    calojet_EMEnergyFraction[i] = -666.;
+  nHBHERechits = 0;
+  for ( int i = 0; i < RECHITARRAYSIZE; i++) {
+    hbheRechit_Phi[i] = -999.;
+    hbheRechit_Eta[i] = -999.;
+    hbheRechit_X[i] = -999.;
+    hbheRechit_Y[i] = -999.;
+    hbheRechit_Z[i] = -999.;
+    hbheRechit_E[i] = -999.;
+    hbheRechit_T[i] = -999.;
+    hbheRechit_iEta[i] = -999;
+    hbheRechit_iPhi[i] = -999;
+    hbheRechit_depth[i] = -999;
   }
+
+  nTracks = 0;
+  for ( int i = 0; i < RECHITARRAYSIZE; i++) {
+    track_Pt[i] = -999.;
+    track_Eta[i] = -999.;
+    track_Phi[i] = -999.;
+    track_bestVertexIndex[i] = -1;
+    track_nMissingInnerHits[i] = -1;
+    track_nMissingOuterHits[i] = -1;
+    track_angle[i] = -999.;
+    track_dxyToBS[i] = -999.;
+    track_dxyErr[i] = -999.;
+    track_dzToPV[i] = -999.;
+    track_dzErr[i] = -999.;
+  }
+
   return;
 };
 
@@ -2082,25 +1941,46 @@ void displacedJetMuon_ntupler::resetGenParticleBranches()
 
   for ( int i = 0; i < LLP_DAUGHTER_ARRAY_SIZE; i++ )
   {
+    gLLP_daughter_id[i] = 0;
     gLLP_daughter_pt[i] = -666.;
     gLLP_daughter_eta[i] = -666.;
     gLLP_daughter_phi[i] = -666.;
     gLLP_daughter_eta_ecalcorr[i] = -666.;
     gLLP_daughter_phi_ecalcorr[i] = -666.;
     gLLP_daughter_e[i] = -666.;
+    gLLP_daughter_mass[i] = -666.;
+
     gLLP_daughter_travel_time[i] = -666.;
     gen_time[i] = -666.;
     gen_time_pv[i] = -666.;
     photon_travel_time[i] = -666.;
     photon_travel_time_pv[i] = -666.;
-    gLLP_daughter_match_calojet_index[i] = 666;
-    gLLP_daughter_match_jet_index[i] = 666;
-    gLLP_min_delta_r_match_calojet[i] = -666.;
-    gLLP_min_delta_r_match_jet[i] = -666.;
-
-
-
 }
+
+ //grandaughters
+  for ( int i = 0; i < LLP_GRAND_DAUGHTER_ARRAY_SIZE; i++ ) {
+    // gLLP_grandaughter_EB[i] = false;
+    // gLLP_grandaughter_ETL[i] = false;
+
+    // gLLP_grandaughter_photon_travel_time_EB[i] = -666.;
+    // gLLP_grandaughter_photon_travel_time_ETL[i] = -666.;
+
+    // gLLP_grandaughter_travel_time_EB[i] = -666.;
+    // gLLP_grandaughter_travel_time_ETL[i] = -666.;
+
+    // gen_time_grandaughter_EB[i] = -666.;
+    // gen_time_grandaughter_ETL[i] = -666.;
+
+    gLLP_grandaughter_id[i] = 0;
+    gLLP_grandaughter_pt[i] = -666.;
+    gLLP_grandaughter_eta[i] = -666.;
+    gLLP_grandaughter_phi[i] = -666.;
+    gLLP_grandaughter_eta_ecalcorr[i] = -666.;
+    gLLP_grandaughter_phi_ecalcorr[i] = -666.;
+    gLLP_grandaughter_e[i] = -666.;
+    gLLP_grandaughter_mass[i] = -666.;
+  }
+
   return;
 };
 
@@ -2183,18 +2063,19 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
 
   resetBranches();
   fillEventInfo(iEvent);
-  fillJets(iSetup);
+  fillPVAll();  
   fillMuons(iEvent);
   fillElectrons(iEvent);
+  fillPhotons(iEvent, iSetup);  
+  fillJets(iSetup);
   fillMet(iEvent);
-  // fillCaloJets(iSetup);
+  
   if (!isData) {
     fillPileUp();
     fillMC();
     fillGenParticles();
   }
-
-  fillHOSystem(iEvent,iSetup);
+  //fillHOSystem(iEvent,iSetup);
   fillMuonSystem(iEvent, iSetup);
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
   displacedJetMuonTree->Fill();
@@ -2289,8 +2170,8 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     nCscStripDigis = 0;
     CSCStripDigiCollection::DigiRangeIterator stripDetIt;
     for (stripDetIt = MuonCSCStripDigi->begin(); stripDetIt != MuonCSCStripDigi->end(); stripDetIt++){
-      const CSCDetId &id = (*stripDetIt).first;
-      int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
+      // const CSCDetId &id = (*stripDetIt).first;
+      // int tempDetId = CSCDetId::rawIdMaker(CSCDetId::endcap(id), CSCDetId::station(id), CSCDetId::ring(id), CSCDetId::chamber(id), CSCDetId::layer(id));
 
       const CSCStripDigiCollection::Range &range = (*stripDetIt).second;
       for (CSCStripDigiCollection::const_iterator digiIt = range.first; digiIt != range.second; ++digiIt) {
@@ -2516,7 +2397,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 
 
-  cout << "Number of rec hits: "<<cscRechits->size()<<endl;
+  //cout << "Number of rec hits: "<<cscRechits->size()<<endl;
   points.clear();
   for (const CSCRecHit2D cscRechit : *cscRechits) {
     LocalPoint  cscRecHitLocalPosition       = cscRechit.localPosition();
@@ -2876,7 +2757,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
   //************************************************************************************************************
 
 
-  cout<<"number of dt rechits: " <<dtRechits->size()<<endl;
+  //cout<<"number of dt rechits: " <<dtRechits->size()<<endl;
   points.clear();
   for(DTRecHit1DPair dtRechit: *dtRechits){
     LocalPoint  localPosition       = dtRechit.localPosition();
@@ -3004,111 +2885,53 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
     nDtRechitClusters++;
   }
 
-
-
-
-
-    for (const RPCRecHit rpcRecHit : *rpcRecHits){
-	LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
-	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
-	DetId geoid = rpcRecHit.geographicalId();
-	RPCDetId rpcdetid = RPCDetId(geoid);
-	const RPCChamber * rpcchamber = rpcG->chamber(rpcdetid);
-	if (rpcchamber) {
-	    GlobalPoint globalPosition = rpcchamber->toGlobal(rpcRecHitLocalPosition);
-	    rpcX[nRpc] = globalPosition.x();
-	    rpcY[nRpc] = globalPosition.y();
-	    rpcZ[nRpc] = globalPosition.z();
-	    rpcPhi[nRpc] = globalPosition.phi();
-	    rpcEta[nRpc] = globalPosition.eta();
-	    rpcT[nRpc] = rpcRecHit.time();
-	    rpcBx[nRpc] = rpcRecHit.BunchX();
-	    rpcTError[nRpc] = rpcRecHit.timeError();
-	    nRpc++;
-	}
+  for (const RPCRecHit rpcRecHit : *rpcRecHits){
+    LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
+    // LocalError  segmentLocalDirectionError = iDT->localDirectionError();
+    DetId geoid = rpcRecHit.geographicalId();
+    RPCDetId rpcdetid = RPCDetId(geoid);
+    const RPCChamber * rpcchamber = rpcG->chamber(rpcdetid);
+    if (rpcchamber) {
+      GlobalPoint globalPosition = rpcchamber->toGlobal(rpcRecHitLocalPosition);
+      rpcX[nRpc] = globalPosition.x();
+      rpcY[nRpc] = globalPosition.y();
+      rpcZ[nRpc] = globalPosition.z();
+      rpcPhi[nRpc] = globalPosition.phi();
+      rpcEta[nRpc] = globalPosition.eta();
+      rpcT[nRpc] = rpcRecHit.time();
+      rpcBx[nRpc] = rpcRecHit.BunchX();
+      rpcTError[nRpc] = rpcRecHit.timeError();
+      nRpc++;
     }
-
-
-    // for(DTRecHit1DPair dtCosmicRechit: *dtRechits){
-    //   LocalPoint  localPosition       = dtCosmicRechit.localPosition();
-    //   DetId geoid = dtCosmicRechit.geographicalId();
-    //   DTChamberId dtdetid = DTChamberId(geoid);
-    //   const DTChamber * dtchamber = dtG->chamber(dtdetid);
-    //   if (dtchamber) {
-    //     GlobalPoint globalPosition = dtchamber->toGlobal(localPosition);
-  	//     dtCosmicRechitPhi[nDTCosmicRechits] = globalPosition.phi();
-  	//     dtCosmicRechitEta[nDTCosmicRechits] = globalPosition.eta();
-  	//     dtCosmicRechitX[nDTCosmicRechits] = globalPosition.x();
-  	//     dtCosmicRechitY[nDTCosmicRechits] = globalPosition.y();
-  	//     dtCosmicRechitZ[nDTCosmicRechits] = globalPosition.z();
-  	//     dtCosmicRechitTime[nDTCosmicRechits] = dtCosmicRechit.digiTime();
-    //     nDTCosmicRechits++;
-    //   }
-    // }
-
-
-
-
-  for(DTRecSegment4D dtCosmicSegment : *dtCosmicSegments){
-    const DTRecSegment4D dtCosmicSegment_copy = dtCosmicSegment;
-    const DTChamberRecSegment2D* phiSeg = dtCosmicSegment_copy.phiSegment();
-
-  	LocalPoint  segmentLocalPosition       = dtCosmicSegment.localPosition();
-  	LocalVector segmentLocalDirection      = dtCosmicSegment.localDirection();
-  	// LocalError  segmentLocalPositionError  = iDT->localPositionError();
-  	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
-  	DetId geoid = dtCosmicSegment.geographicalId();
-  	DTChamberId dtdetid = DTChamberId(geoid);
-  	const DTChamber * dtchamber = dtG->chamber(dtdetid);
-  	if (dtchamber) {
-  	    GlobalPoint globalPosition = dtchamber->toGlobal(segmentLocalPosition);
-  	    GlobalVector globalDirection = dtchamber->toGlobal(segmentLocalDirection);
-
-  	    dtCosmicSegPhi[nDtCosmicSeg] = globalPosition.phi();
-  	    dtCosmicSegEta[nDtCosmicSeg] = globalPosition.eta();
-  	    dtCosmicSegX[nDtCosmicSeg] = globalPosition.x();
-  	    dtCosmicSegY[nDtCosmicSeg] = globalPosition.y();
-  	    dtCosmicSegZ[nDtCosmicSeg] = globalPosition.z();
-  	    dtCosmicSegDirX[nDtCosmicSeg] = globalDirection.x();
-  	    dtCosmicSegDirY[nDtCosmicSeg] = globalDirection.y();
-  	    dtCosmicSegDirZ[nDtCosmicSeg] = globalDirection.z();
-  	    if (phiSeg)
-	      {
-      		if(phiSeg->ist0Valid())
-    		  {
-    		    dtCosmicSegT[nDtCosmicSeg] = phiSeg->t0();
-    		    dtCosmicSegTError[nDtCosmicSeg] = -1;
-    		  }
-	      }
-
-  	    nDtCosmicSeg++;
-  	}
-
   }
-
-
-    return true;
+  
+  return true;
 }
 bool displacedJetMuon_ntupler::fillGenParticles(){
   std::vector<const reco::Candidate*> prunedV;//Allows easier comparison for mother finding
   //Fills selected gen particles
-  //double pt_cut = isFourJet ? 20.:20.;//this needs to be done downstream
   const double pt_cut = 0.0;
-  int llp_id = 6000113;
-  bool seenFirstLLP = false;
-  bool firstLLP = false;
+  // int llp_id = 6000113;
+
+  vector<int> llpIDs;
+  llpIDs.push_back(9000006);
+  llpIDs.push_back(9000007);
+  llpIDs.push_back(1023);
+  llpIDs.push_back(1000023);
+  llpIDs.push_back(1000025);
+
   for(size_t i=0; i<genParticles->size();i++)
   {
     if(
        (abs((*genParticles)[i].pdgId()) >= 1 && abs((*genParticles)[i].pdgId()) <= 6 && ( (*genParticles)[i].status() < 30 ))
        || (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
        || (abs((*genParticles)[i].pdgId()) == 21 && (*genParticles)[i].status() < 30)
-       || (abs((*genParticles)[i].pdgId()) >= 23 && abs((*genParticles)[i].pdgId()) <= 25 && ( (*genParticles)[i].status() < 30))
-       || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
+       || (abs((*genParticles)[i].pdgId()) == 22 && (*genParticles)[i].pt() > 10.0 )
+       || (abs((*genParticles)[i].pdgId()) >= 23 && abs((*genParticles)[i].pdgId()) <= 25)
        || (abs((*genParticles)[i].pdgId()) >= 32 && abs((*genParticles)[i].pdgId()) <= 42)
        || (abs((*genParticles)[i].pdgId()) >= 100 && abs((*genParticles)[i].pdgId()) <= 350)
-       || (abs((*genParticles)[i].pdgId()) == llp_id)
-       // || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
+       || (abs((*genParticles)[i].pdgId()) == 1023)
+       || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
        || (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007)
 	)
        {
@@ -3119,9 +2942,9 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
   }
   //Total number of gen particles
   nGenParticle = prunedV.size();
+  bool _found_first_llp = false;
   //Look for mother particle and Fill gen variables
-  for(unsigned int i = 0; i < prunedV.size(); i++)
-  {
+  for(unsigned int i = 0; i < prunedV.size(); i++) {
     gParticleId[i] = prunedV[i]->pdgId();
     gParticleStatus[i] = prunedV[i]->status();
     gParticleE[i] = prunedV[i]->energy();
@@ -3136,47 +2959,8 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
     gParticleProdVertexZ[i] = prunedV[i]->vz();
     gParticleMotherId[i] = 0;
     gParticleMotherIndex[i] = -1;
-
-    /*
-    //For Neutralinos we try to find the decay vertex locaton.
-    //Algorithm: Find the first daughter particle that is not a neutralino,
-    //and call that the daughter. get the creation vertex of that daughter.
-    if ( (gParticleId[i] == 1000022 && gParticleStatus[i] == 22) )
-    {
-      const reco::Candidate *dau = 0;
-      bool foundDaughter = false;
-      bool noDaughter = false;
-      const reco::Candidate *tmpParticle = prunedV[i];
-
-      while (!foundDaughter && !noDaughter)
-      {
-        if (tmpParticle->numberOfDaughters() > 0)
-        {
-          dau = tmpParticle->daughter(0);
-          if (dau && dau->pdgId() != 1000022){
-            foundDaughter = true;
-          }
-          else{
-            tmpParticle = dau;
-          }
-        }
-        else
-        {
-          noDaughter = true;
-        }
-      }
-
-      if (foundDaughter)
-      {
-        gParticleDecayVertexX[i] = dau->vx();
-        gParticleDecayVertexY[i] = dau->vy();
-        gParticleDecayVertexZ[i] = dau->vz();
-      }
-    }
-*/
-
-    if(prunedV[i]->numberOfMothers() > 0)
-    {
+   
+    if(prunedV[i]->numberOfMothers() > 0) {
       //find the ID of the first mother that has a different ID than the particle itself
       const reco::Candidate* firstMotherWithDifferentID = findFirstMotherWithDifferentID(prunedV[i]);
       if (firstMotherWithDifferentID)
@@ -3189,38 +2973,40 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 
       //find the mother and keep going up the mother chain if the ID's are the same
       const reco::Candidate* originalMotherWithSameID = findOriginalMotherWithSameID(prunedV[i]);
-      for(unsigned int j = 0; j < prunedV.size(); j++)
-      {
-        if(prunedV[j] == originalMotherWithSameID)
-        {
+      for(unsigned int j = 0; j < prunedV.size(); j++) {
+        if(prunedV[j] == originalMotherWithSameID) {
           gParticleMotherIndex[i] = j;
           break;
         }
       }
-    }
-    else
-    {
+    } else {
       gParticleMotherIndex[i] = -1;
     }
 
     //---------------------------------------
     //Find LLPs production and decay vertices
     //---------------------------------------
-    if (enableGenLLPInfo_)
-    {
-      if ( abs(gParticleId[i]) == llp_id  && gParticleStatus[i] == 22 )
-      {
-        if (!seenFirstLLP && gParticleId[i] == llp_id)
-        {
-	  seenFirstLLP = true;
-    	  firstLLP = true;
+    if (enableGenLLPInfo_) {
+
+      //match with one of the entries in the llpIDs List
+      bool matchedLLP = false;
+      int matchedLLPID = 0;
+      if (gParticleStatus[i] == 22) {
+	for (uint d=0 ; d < llpIDs.size() ; d++) {
+	  if ( abs(gParticleId[i]) == llpIDs[d] ) {
+	    matchedLLPID = gParticleId[i];
+	    matchedLLP = true;	    
+	  }
+	}
+      }
+
+      if ( matchedLLP ) {
+        if (!_found_first_llp) {	 
           gLLP_prod_vertex_x[0] = prunedV[i]->vx();
           gLLP_prod_vertex_y[0] = prunedV[i]->vy();
           gLLP_prod_vertex_z[0] = prunedV[i]->vz();
         }
-        else if (gParticleId[i] == -1*llp_id || (gParticleId[i] == llp_id && seenFirstLLP))
-        {
-    	  firstLLP = false;
+        else {    	  
           gLLP_prod_vertex_x[1] = prunedV[i]->vx();
           gLLP_prod_vertex_y[1] = prunedV[i]->vy();
           gLLP_prod_vertex_z[1] = prunedV[i]->vz();
@@ -3231,34 +3017,27 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
         bool noDaughter = false;
         const reco::Candidate *tmpParticle = prunedV[i];
 
-        while (!foundDaughter && !noDaughter)
-        {
-          if (tmpParticle->numberOfDaughters() > 0)
-          {
+        while (!foundDaughter && !noDaughter) {
+          if (tmpParticle->numberOfDaughters() > 0) {
             dau = tmpParticle->daughter(0);
-            if (dau && (dau->pdgId() != llp_id && dau->pdgId() != llp_id+1))
-            {
+            if (dau && (dau->pdgId() != matchedLLPID)) {
               foundDaughter = true;
-            } else
-            {
+            } else {
               tmpParticle = dau;
             }
-          }
-          else
-          {
+          } else {
             noDaughter = true;
           }
         }
 
-        if (foundDaughter)
-        {
-		gParticleDecayVertexX[i] = dau->vx();
-        	gParticleDecayVertexY[i] = dau->vy();
-        	gParticleDecayVertexZ[i] = dau->vz();
+        if (foundDaughter) {
+	  gParticleDecayVertexX[i] = dau->vx();
+	  gParticleDecayVertexY[i] = dau->vy();
+	  gParticleDecayVertexZ[i] = dau->vz();
 
-          if (firstLLP)
-          {
-            gLLP_decay_vertex_x[0] = dau->vx();
+          if (!_found_first_llp) {
+	    _found_first_llp = true;
+	    gLLP_decay_vertex_x[0] = dau->vx();
             gLLP_decay_vertex_y[0] = dau->vy();
             gLLP_decay_vertex_z[0] = dau->vz();
             gLLP_pt[0] = sqrt(gParticlePx[i]*gParticlePx[i]+gParticlePy[i]*gParticlePy[i]);
@@ -3271,7 +3050,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
                                     +pow(gLLP_decay_vertex_z[0]-gLLP_prod_vertex_z[0],2))/(30. * gLLP_beta[0]);//1/30 is to convert cm to ns
 
             double radius = sqrt( pow(gLLP_decay_vertex_x[0],2) + pow(gLLP_decay_vertex_y[0],2) );
-            if (abs(gLLP_eta[0]) < 2.4 && abs(gLLP_eta[0]) > 0.9
+	    if (abs(gLLP_eta[0]) < 2.4 && abs(gLLP_eta[0]) > 0.9
                && abs(gLLP_decay_vertex_z[0])<1100 && abs(gLLP_decay_vertex_z[0])>568
                && radius < 695.5) gLLP_csc[0] = true;
            if (radius < 740 && radius > 400 && abs(gLLP_decay_vertex_z[0])< 650 ) gLLP_dt[0] = true;
@@ -3280,18 +3059,19 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
             double EB_z = 268.36447217; // 129*sinh(1.479)
             double EE_z = 298.5; //where Ecal Endcap starts in z direction
 
-            for (unsigned int id = 0; id < tmpParticle->numberOfDaughters(); id++ )
-            {
-            //std::cout << "====================" << std::endl;
-            //std::cout << " -> "<< tmpParticle->daughter(id)->pdgId() << std::endl;
-              if( id > 1 ) break;
+            for (unsigned int id = 0; id < tmpParticle->numberOfDaughters(); id++ ) {
+	      //std::cout << "====================" << std::endl;
+	      //std::cout << " -> "<< tmpParticle->daughter(id)->pdgId() << std::endl;
+              if( id > 1 ) break; //only allow 2 daughters
               TLorentzVector tmp;
               tmp.SetPxPyPzE(tmpParticle->daughter(id)->px(), tmpParticle->daughter(id)->py(), tmpParticle->daughter(id)->pz(), tmpParticle->daughter(id)->energy());
               if(tmp.Pt()<pt_cut) continue;
-              gLLP_daughter_pt[id] = tmp.Pt();
+	      gLLP_daughter_id[id] = tmpParticle->daughter(id)->pdgId();
+	      gLLP_daughter_pt[id] = tmp.Pt();
               gLLP_daughter_eta[id] = tmp.Eta();
               gLLP_daughter_phi[id] = tmp.Phi();
               gLLP_daughter_e[id]  = tmp.E();
+	      gLLP_daughter_mass[id]  = tmp.M();
 
               // double gLLP_daughter_travel_time_hcal= (1./30.)*(hcal_radius-radius)/(tmp.Pt()/tmp.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
 
@@ -3304,27 +3084,19 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
               // double y_hcal = gLLP_decay_vertex_y[0] + 30. * (tmp.Py()/tmp.E())*gLLP_daughter_travel_time_hcal;
               // double z_hcal = gLLP_decay_vertex_z[0] + 30. * (tmp.Pz()/tmp.E())*gLLP_daughter_travel_time_hcal;
 
-              if( fabs(z_ecal) < EB_z && radius <= ecal_radius &&  fabs(gLLP_decay_vertex_z[0]) < EE_z)
-              {
+              if( fabs(z_ecal) < EB_z && radius <= ecal_radius &&  fabs(gLLP_decay_vertex_z[0]) < EE_z) {
                 photon_travel_time[id] = (1./30) * sqrt(pow(ecal_radius,2)+pow(z_ecal,2));
                 photon_travel_time_pv[id] = (1./30) * sqrt(pow(x_ecal-genVertexX,2) + pow(y_ecal-genVertexY,2) + pow(z_ecal-genVertexZ,2));
                 gen_time_pv[id] =  gLLP_travel_time[0] + gLLP_daughter_travel_time[id] - photon_travel_time_pv[id] + genVertexT;
                 gen_time[id] = gLLP_travel_time[0] + gLLP_daughter_travel_time[id] - photon_travel_time[id] + genVertexT;
 
-              }
-              else
-              {
+              } else {
                 gLLP_daughter_travel_time[id] = -666;
                 gen_time_pv[id] = -666.;
                 gen_time[id] = -666.;
                 photon_travel_time[id] = -666.;
                 photon_travel_time_pv[id] = -666.;
               }
-              double min_delta_r = 666.;
-              double min_delta_r_calo = 666.;
-              unsigned int match_jet_index = 666;
-              unsigned int match_calojet_index = 666;
-
 
           // Correction of eta and phi based on ecal points
               double phi = atan((y_ecal-genVertexY)/(x_ecal-genVertexX));
@@ -3336,51 +3108,45 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
               double eta = -1.0*TMath::Sign(1.0, z_ecal-genVertexZ)*log(tan(theta/2));
               gLLP_daughter_eta_ecalcorr[id] = eta;
               gLLP_daughter_phi_ecalcorr[id] = phi;
-              for ( int i_jet = 0; i_jet < nCaloJets; i_jet++ )
-              {
-                double current_delta_r = deltaR(gLLP_daughter_eta_ecalcorr[id], gLLP_daughter_phi_ecalcorr[id], calojetEta[i_jet], calojetPhi[i_jet]);
-                if ( current_delta_r < min_delta_r_calo )
-                {
-                  // min_delta_r_nocorr = deltaR(gLLP_daughter_eta[id], gLLP_daughter_phi[id], jetEta[i_jet], jetPhi[i_jet]);
-                  min_delta_r_calo = current_delta_r;
-                  match_calojet_index = i_jet;
-                }
-                  // std::cout << i_jet << " min dR = " << min_delta_r_calo << std::endl;
-              }
-              for ( int i_jet = 0; i_jet < nJets; i_jet++ )
-              {
-                double current_delta_r = deltaR(gLLP_daughter_eta_ecalcorr[id], gLLP_daughter_phi_ecalcorr[id], jetEta[i_jet], jetPhi[i_jet]);
-                if ( current_delta_r < min_delta_r )
-                {
-                  min_delta_r = current_delta_r;
-                  match_jet_index = i_jet;
-            //std::cout << i_jet << " min dR = " << min_delta_r << std::endl;
-                }
-              }//end matching to jets using ECAL radius
-              // std::cout<<"min delta r "<<min_delta_r<<std::endl;
-
-              if ( min_delta_r < 0.3 )
-              {
-                gLLP_daughter_match_jet_index[id] = match_jet_index;
-                gLLP_min_delta_r_match_jet[id] = min_delta_r;
-                jet_matched[match_jet_index] = true;
-                // std::cout<<"gllp daughted match jet index "<<gLLP_daughter_match_jet_index[id]<<std::endl;
-
-                // std::cout<<"matched "<<jet_matched[match_jet_index]<<std::endl;
-              }
-
-              if (min_delta_r_calo < 0.3)
-              {
-                gLLP_daughter_match_calojet_index[id] = match_calojet_index;
-                gLLP_min_delta_r_match_calojet[id] = min_delta_r_calo;
-
-              }
+             
+                       
+	      //*********************************
+	      //grandaughters
+	      //*********************************
+	      if(tmpParticle->daughter(id)->numberOfDaughters() > 0) {
+		const reco::Candidate *tmpDauParticle = tmpParticle->daughter(id);
+		for (unsigned int index = 0; index < tmpDauParticle->numberOfDaughters(); index++ ) {
+		  if( index > 1 ) break; //only allow two granddaughters
+					   //std::cout <<"index " << index << " -> "<< tmpDauParticle->daughter(index)->pdgId() << std::endl;
+		  TLorentzVector tmpdau;
+		  tmpdau.SetPxPyPzE(tmpDauParticle->daughter(index)->px(), tmpDauParticle->daughter(index)->py(), tmpDauParticle->daughter(index)->pz(), tmpDauParticle->daughter(index)->energy());
+		  if(tmpdau.Pt()<pt_cut) continue;
+		  gLLP_grandaughter_id[index] = tmpDauParticle->daughter(index)->pdgId();
+		  gLLP_grandaughter_pt[index] = tmpdau.Pt();
+		  gLLP_grandaughter_eta[index] = tmpdau.Eta();
+		  gLLP_grandaughter_phi[index] = tmpdau.Phi();
+		  gLLP_grandaughter_e[index]  = tmpdau.E();
+		  gLLP_grandaughter_mass[index]  = tmpdau.M();
 
 
-            }
-          }
-          else
-          {
+		  // Correction of eta and phi based on ecal points
+		  double phi = atan((y_ecal-genVertexY)/(x_ecal-genVertexX));
+		  if  (x_ecal < 0.0) {
+		    phi = TMath::Pi() + phi;
+		  }
+		  phi = deltaPhi(phi,0.0);
+		  double theta = atan(sqrt(pow(x_ecal-genVertexX,2)+pow(y_ecal-genVertexY,2))/abs(z_ecal-genVertexZ));
+		  double eta = -1.0*TMath::Sign(1.0, z_ecal-genVertexZ)*log(tan(theta/2));
+		  gLLP_grandaughter_eta_ecalcorr[index] = eta;
+		  gLLP_grandaughter_phi_ecalcorr[index] = phi;
+             		
+		}
+	      }//loop over all gLLP granddaughters 	 
+
+            }//loop over all gLLP daughters
+
+          } //end if first llp
+          else {
             gLLP_decay_vertex_x[1] = dau->vx();
             gLLP_decay_vertex_y[1] = dau->vy();
             gLLP_decay_vertex_z[1] = dau->vz();
@@ -3394,9 +3160,9 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
                     +pow(gLLP_decay_vertex_z[1]-gLLP_prod_vertex_z[1],2))/(30. * gLLP_beta[1]);//1/30 is to convert cm to ns
             double radius = sqrt( pow(gLLP_decay_vertex_x[1],2) + pow(gLLP_decay_vertex_y[1],2) );
             if (abs(gLLP_eta[1]) < 2.4 && abs(gLLP_eta[1]) > 0.9
-               && abs(gLLP_decay_vertex_z[1])<1100 && abs(gLLP_decay_vertex_z[1])>568
-               && radius < 695.5) gLLP_csc[1] = true;
-           if (radius < 740 && radius > 400 && abs(gLLP_decay_vertex_z[1])< 650 ) gLLP_dt[1] = true;
+		&& abs(gLLP_decay_vertex_z[1])<1100 && abs(gLLP_decay_vertex_z[1])>568
+		&& radius < 695.5) gLLP_csc[1] = true;
+	    if (radius < 740 && radius > 400 && abs(gLLP_decay_vertex_z[1])< 650 ) gLLP_dt[1] = true;
 
             double ecal_radius = 129.0;
             // double hcal_radius = 179.0;
@@ -3412,11 +3178,13 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
               TLorentzVector tmp;
               tmp.SetPxPyPzE(tmpParticle->daughter(id)->px(), tmpParticle->daughter(id)->py(), tmpParticle->daughter(id)->pz(), tmpParticle->daughter(id)->energy());
               if(tmp.Pt()<pt_cut) continue;
-              gLLP_daughter_pt[id+2] = tmp.Pt();
+	      gLLP_daughter_id[id+2] = tmpParticle->daughter(id)->pdgId();
+	      gLLP_daughter_pt[id+2] = tmp.Pt();
               gLLP_daughter_eta[id+2] = tmp.Eta();
               gLLP_daughter_phi[id+2] = tmp.Phi();
               gLLP_daughter_e[id+2]  = tmp.E();
-              //gLLP_daughter_travel_time[id+2] = (1./30.)*(ecal_radius-radius)/(tmp.Pt()/tmp.E()) - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
+	      gLLP_daughter_mass[id+2]  = tmp.M();
+	      //gLLP_daughter_travel_time[id+2] = (1./30.)*(ecal_radius-radius)/(tmp.Pt()/tmp.E()) - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
               // double gLLP_daughter_travel_time_hcal = (1./30.)*(hcal_radius-radius)/(tmp.Pt()/tmp.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
               gLLP_daughter_travel_time[id+2] = (1./30.)*(ecal_radius-radius)/(tmp.Pt()/tmp.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
 
@@ -3436,9 +3204,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
                 gen_time_pv[id+2] =  gLLP_travel_time[1] + gLLP_daughter_travel_time[id+2] - photon_travel_time_pv[id+2] + genVertexT;
                 gen_time[id+2] = gLLP_travel_time[1] + gLLP_daughter_travel_time[id+2] - photon_travel_time[id+2] + genVertexT;
 
-              }
-              else
-              {
+              } else {
                 gLLP_daughter_travel_time[id+2] = -666;
                 gen_time_pv[id+2] = -666.;
                 gen_time[id+2] = -666.;
@@ -3446,10 +3212,6 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
                 photon_travel_time_pv[id+2] = -666.;
               }
 
-              double min_delta_r = 666.;
-              double min_delta_r_calo = 666.;
-              unsigned int match_jet_index = 666;
-              unsigned int match_calojet_index = 666;
 
               //Corrections for angles based on ECAL radius
               double phi = atan((y_ecal-genVertexY)/(x_ecal-genVertexX));
@@ -3460,55 +3222,45 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
               double theta = atan(sqrt(pow(x_ecal-genVertexX,2)+pow(y_ecal-genVertexY,2))/abs(z_ecal-genVertexZ));
               double eta = -1.0*TMath::Sign(1.0,z_ecal-genVertexZ)*log(tan(theta/2));
               gLLP_daughter_eta_ecalcorr[id+2] = eta;
-              gLLP_daughter_phi_ecalcorr[id+2] = phi;
-              for ( int i_jet = 0; i_jet < nCaloJets; i_jet++ )
-              {
-                double current_delta_r = deltaR(gLLP_daughter_eta_ecalcorr[id+2], gLLP_daughter_phi_ecalcorr[id+2], calojetEta[i_jet], calojetPhi[i_jet]);
-                if ( current_delta_r < min_delta_r_calo )
-                {
-                  // min_delta_r_nocorr = deltaR(gLLP_daughter_eta[id], gLLP_daughter_phi[id], jetEta[i_jet], jetPhi[i_jet]);
-                  min_delta_r_calo = current_delta_r;
-                  match_calojet_index = i_jet;
-                 }
-                      //std::cout << i_jet << " min dR = " << min_delta_r << std::endl;
-             }// end matching to calojets
-              for ( int i_jet = 0; i_jet < nJets; i_jet++ )
-              {
-                double current_delta_r = deltaR(gLLP_daughter_eta_ecalcorr[id+2], gLLP_daughter_phi_ecalcorr[id+2] , jetEta[i_jet], jetPhi[i_jet]);
-                if ( current_delta_r < min_delta_r )
-                {
-                  min_delta_r = current_delta_r;
-                  match_jet_index = i_jet;
-                }
-              }//end matching to jets ecal
+              gLLP_daughter_phi_ecalcorr[id+2] = phi;                                       
 
-              if ( min_delta_r < 0.3 )
-              {
-                gLLP_daughter_match_jet_index[id+2] = match_jet_index;
-                gLLP_min_delta_r_match_jet[id+2] = min_delta_r;
-                jet_matched[match_jet_index] = true;
-                // std::cout<<"gllp daughted match jet index "<<gLLP_daughter_match_jet_index[id+2]<<std::endl;
+	      //grandaughters
+	      if(tmpParticle->daughter(id)->numberOfDaughters() > 0) {
+		const reco::Candidate *tmpDauParticle = tmpParticle->daughter(id);
+		for (unsigned int index = 0; index < tmpDauParticle->numberOfDaughters(); index++ ) {
+		  if( index > 1 ) break;
+		  //std::cout <<"index " << index << " -> "<< tmpDauParticle->daughter(index)->pdgId() << std::endl;
+		  TLorentzVector tmpdau;
+		  tmpdau.SetPxPyPzE(tmpDauParticle->daughter(index)->px(), tmpDauParticle->daughter(index)->py(), tmpDauParticle->daughter(index)->pz(), tmpDauParticle->daughter(index)->energy());
+		  if(tmpdau.Pt()<pt_cut) continue;
+		  gLLP_grandaughter_id[index+2] = tmpDauParticle->daughter(index)->pdgId();
+		  gLLP_grandaughter_pt[index+2] = tmpdau.Pt();
+		  gLLP_grandaughter_eta[index+2] = tmpdau.Eta();
+		  gLLP_grandaughter_phi[index+2] = tmpdau.Phi();
+		  gLLP_grandaughter_e[index+2]  = tmpdau.E();
+		  gLLP_grandaughter_mass[index+2]  = tmpdau.M();
 
-                // std::cout<<"matched "<<jet_matched[match_jet_index]<<std::endl;
-              }
-              if ( min_delta_r_calo < 0.3 )
-              {
-                gLLP_daughter_match_calojet_index[id+2] = match_calojet_index;
-                gLLP_min_delta_r_match_calojet[id+2] = min_delta_r_calo;
-              }
 
+
+
+		  // Correction of eta and phi based on ecal points
+		  double phi = atan((y_ecal-genVertexY)/(x_ecal-genVertexX));
+		  if  (x_ecal < 0.0){
+		    phi = TMath::Pi() + phi;
+		  }
+		  phi = deltaPhi(phi,0.0);
+		  double theta = atan(sqrt(pow(x_ecal-genVertexX,2)+pow(y_ecal-genVertexY,2))/abs(z_ecal-genVertexZ));
+		  double eta = -1.0*TMath::Sign(1.0, z_ecal-genVertexZ)*log(tan(theta/2));
+		  gLLP_grandaughter_eta_ecalcorr[index+2] = eta;
+		  gLLP_grandaughter_phi_ecalcorr[index+2] = phi;		   		 
+		    
+		} //loop of all gLLP granddaughters 	      
+	      } //if daughter has granddaughters 	    
             }//for daughters loop
           }//if particle ID = 36
         }//if found daughters
-      }
-
-
-
-    }
-
-
-
-
+      } //if LLP matched
+    } //end if enableGenLLPInfo
   }// for loop of genParticles
   return true;
 };
@@ -3517,9 +3269,38 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 {
 
-  for (const reco::PFJet &j : *jets)
-  {
-    if (j.pt() < 25) continue;
+  edm::ESHandle<CaloGeometry> geoHandle;
+  iSetup.get<CaloGeometryRecord>().get(geoHandle);
+  const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
+  const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+  const CaloSubdetectorGeometry *hbGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
+  const CaloSubdetectorGeometry *heGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
+  const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter);
+
+  vector<bool> SaveThisEBRechit; SaveThisEBRechit.clear();
+  vector<bool> SaveThisEERechit; SaveThisEERechit.clear();
+  vector<bool> SaveThisHCALRechit; SaveThisHCALRechit.clear();
+  vector<bool> SaveThisHORechit; SaveThisHORechit.clear();
+  vector<bool> SaveThisTrack; SaveThisTrack.clear();
+  //reset these save flags
+  for (uint q=0; q<ebRecHits->size(); q++) {
+    SaveThisEBRechit.push_back(false);    
+  }
+  for (uint q=0; q<eeRecHits->size(); q++) {
+    SaveThisEERechit.push_back(false);    
+  }
+  for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
+    SaveThisTrack.push_back(false);  
+  }
+  for (uint q=0; q<hcalRecHitsHBHE->size(); q++) {
+    SaveThisHCALRechit.push_back(false);    
+  }
+  for (uint q=0; q<hcalRecHitsHO->size(); q++) {
+    SaveThisHORechit.push_back(false);    
+  }
+	
+  for (const reco::PFJet &j : *jets) {
+    if (j.pt() < 20) continue;
     //if (fabs(j.eta()) > 2.4) continue;
     //-------------------
     //Fill Jet-Level Info
@@ -3569,7 +3350,13 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     //---------------------------
     float alphaMax(0.0),medianTheta2D(0.0),medianIP(0.0),minDeltaRAllTracks(0.0),minDeltaRPVTracks(0.0),ptAllTracks(0.0), ptAllPVTracks(0.0);
     int nTracksPV(0);
-    //findTrackingVariables(thisJet,iSetup,alphaMax,medianTheta2D,medianIP,nTracksPV,ptAllPVTracks,ptAllTracks, minDeltaRAllTracks, minDeltaRPVTracks);
+
+    findTrackingVariables(thisJet,iSetup,alphaMax,medianTheta2D,medianIP,nTracksPV,ptAllPVTracks,ptAllTracks, minDeltaRAllTracks, minDeltaRPVTracks);
+
+    float alphaMax_wp(0.0),medianTheta2D_wp(0.0),medianIP_wp(0.0),minDeltaRAllTracks_wp(0.0),minDeltaRPVTracks_wp(0.0),ptAllTracks_wp(0.0), ptAllPVTracks_wp(0.0);
+    int nTracksPV_wp(0);
+    findTrackingVariablesWithoutPropagator(thisJet,iSetup,alphaMax_wp,medianTheta2D_wp,medianIP_wp,nTracksPV_wp,ptAllPVTracks_wp,ptAllTracks_wp, minDeltaRAllTracks_wp, minDeltaRPVTracks_wp);
+
     //jetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
     jetAlphaMax[nJets] = alphaMax;
     jetBetaMax[nJets] = alphaMax * ptAllTracks/(j.pt());
@@ -3584,7 +3371,20 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     jetMinDeltaRAllTracks[nJets] = minDeltaRAllTracks;
     jetMinDeltaRPVTracks[nJets] = minDeltaRPVTracks;
 
-    //---------------------------
+    jetAlphaMax_wp[nJets] = alphaMax_wp;
+    jetBetaMax_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.pt());
+    jetGammaMax_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.energy());
+    jetGammaMax_EM_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.energy()*(j.chargedEmEnergyFraction()+j.neutralEmEnergyFraction()));
+    jetGammaMax_Hadronic_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.energy()*(j.chargedHadronEnergyFraction()+j.neutralHadronEnergyFraction()));
+    jetGammaMax_ET_wp[nJets] = alphaMax_wp * ptAllTracks_wp/j.et();
+    jetMedianTheta2D_wp[nJets] = medianTheta2D_wp;
+    jetMedianIP_wp[nJets] = medianIP_wp;
+    jetPtAllPVTracks_wp[nJets] = ptAllPVTracks_wp;
+    jetPtAllTracks_wp[nJets] = ptAllTracks_wp;
+    jetMinDeltaRAllTracks_wp[nJets] = minDeltaRAllTracks_wp;
+    jetMinDeltaRPVTracks_wp[nJets] = minDeltaRPVTracks_wp;
+
+     //---------------------------
     //find photons inside the jet
     //---------------------------
     /*
@@ -3626,56 +3426,44 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     //---------------------------
     // geometry (from ECAL ELF)
 
-    edm::ESHandle<CaloGeometry> geoHandle;
-    iSetup.get<CaloGeometryRecord>().get(geoHandle);
-    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
     //double ecal_radius = 129.0;
     int n_matched_rechits = 0;
     std::vector<double> rechitphi;
     std::vector<double> rechiteta;
     std::vector<double> rechitet;
     std::vector<double> rechitt;
-    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-    for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
-    {
+    
+    for (uint q=0; q<ebRecHits->size(); q++) {
+    // for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit) {
+      const EcalRecHit *recHit = &(*ebRecHits)[q];
       const DetId recHitId = recHit->detid();
       const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
-
-      if (enableEcalRechits_ && recHit->energy() > 0.5 && recHit->timeError() > 0.0 && recHit->timeError() < 100.0)
-      {
-        ecalRechit_Eta[nRechits] = recHitPos.eta();
-        ecalRechit_Phi[nRechits] = recHitPos.phi();
-        ecalRechit_E[nRechits] = recHit->energy();
-        ecalRechit_T[nRechits] = recHit->time();
-        ecalRechit_E_Error[nRechits] = recHit->energyError();
-        ecalRechit_T_Error[nRechits] = recHit->timeError();
-        ecalRechit_kSaturatedflag[nRechits] = recHit->checkFlag(EcalRecHit::kSaturated);
-        ecalRechit_kLeadingEdgeRecoveredflag[nRechits] = recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered);
-        ecalRechit_kPoorRecoflag[nRechits] = recHit->checkFlag(EcalRecHit::kPoorReco);
-        ecalRechit_kWeirdflag[nRechits]= recHit->checkFlag(EcalRecHit::kWeird);
-        ecalRechit_kDiWeirdflag[nRechits] = recHit->checkFlag(EcalRecHit::kDiWeird);
-        nRechits ++;
-
+      
+      //save the rechits that are within DR 0.5 of the jet axis
+      if ( jetPt[nJets] > 30 && 
+	   deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.5
+	   && recHit->energy() > 0.2	  
+	  ) {
+	SaveThisEBRechit[q] = true;
+	//cout << "Save this Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
       }
 
       if (recHit->checkFlag(EcalRecHit::kSaturated) || recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit->checkFlag(EcalRecHit::kPoorReco) || recHit->checkFlag(EcalRecHit::kWeird) || recHit->checkFlag(EcalRecHit::kDiWeird)) continue;
       if (recHit->timeError() < 0 || recHit->timeError() > 100) continue;
       if (abs(recHit->time()) > 12.5) continue;
 
-      if ( deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.4)
-      {
+      //Calculate jet timestamps
+      if ( jetPt[nJets] > 30 && deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.4) {
         //double rechit_x = ecal_radius * cos(recHitPos.phi());
         //double rechit_y = ecal_radius * sin(recHitPos.phi());
         //double rechit_z = ecal_radius * sinh(recHitPos.eta());
         //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
-        if ( deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.15)
-        {
+        if ( deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.15) {
           if (recHit->energy() > Rechit_cut) jet_energy_frac[nJets] += recHit->energy();
         }
 
-        if (recHit->energy() > Rechit_cut)
-        {
-    	    // jetRechitT_Error[nJets] += 0.0;
+        if (recHit->energy() > Rechit_cut) {
+	  // jetRechitT_Error[nJets] += 0.0;
           jetRechitE_Error[nJets] += recHit->energyError() * recHit->energyError();
           jetRechitE[nJets] += recHit->energy();
           jetRechitT[nJets] += recHit->time()*recHit->energy();
@@ -3686,9 +3474,23 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
           rechitt.push_back(recHit->time());
           n_matched_rechits++;
         }
-
       }
-    }
+    }//loop over EB rechits
+
+    for (uint q=0; q<eeRecHits->size(); q++) {
+      const EcalRecHit *recHit = &(*eeRecHits)[q];
+      const DetId recHitId = recHit->detid();
+      const auto recHitPos = endcapGeometry->getGeometry(recHitId)->getPosition();
+      
+      //save the rechits that are within DR 0.5 of the jet axis
+      if ( jetPt[nJets] > 30 && 
+	   deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.5
+	   && recHit->energy() > 0.2	  
+	  ) {
+	SaveThisEERechit[q] = true;
+	//cout << "Save this Rechit: " << q << " | " << SaveThisEERechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
+      }
+    }//loop over EE rechits
 
     jetRechitT[nJets] = jetRechitT[nJets]/jetRechitE[nJets];
     jetNRechits[nJets] = n_matched_rechits;
@@ -3700,8 +3502,376 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     jet_sig_et2[nJets] = sig2;
     jet_energy_frac[nJets] = jet_energy_frac[nJets]/jetRechitE[nJets];
 
+    //loop over hcal hits
+    for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
+      const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
+
+      double hiteta = -999;
+      double hitphi = -999;
+      if (recHit->energy() < 0.1) continue;
+      const HcalDetId recHitId = recHit->detid();
+      if (recHit->detid().subdetId() == HcalBarrel) {
+	const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+	hiteta = recHitPos.eta();
+	hitphi = recHitPos.phi();    
+      } else if (recHit->detid().subdetId() == HcalEndcap) {
+	const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
+	hiteta = recHitPos.eta();
+	hitphi = recHitPos.phi();    
+      } else {
+	cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
+      }
+
+      if ( jetPt[nJets] > 30 && 
+	   deltaR(jetEta[nJets], jetPhi[nJets], hiteta, hitphi)  < 0.5	   
+	   ) {
+	SaveThisHCALRechit[iHit] = true;
+      }
+    }
+
+    //loop over HO hits
+    for (unsigned int iHit = 0; iHit < hcalRecHitsHO->size(); iHit ++){
+      const HORecHit *recHit = &(*hcalRecHitsHO)[iHit];
+      const DetId recHitId = recHit->detid();
+      double hiteta = -999;
+      double hitphi = -999;
+      if (recHit->energy() < 0.1) continue;
+      const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
+      hiteta = recHitPos.eta();
+      hitphi = recHitPos.phi();    
+    
+      //save all HO rechits which have more than 1.5 GeV of energy  
+      if (recHit->energy() > 1.5) SaveThisHORechit[iHit] = true;
+      if ( jetPt[nJets] > 30 && 
+	   deltaR(jetEta[nJets], jetPhi[nJets], hiteta, hitphi)  < 0.5	   
+	   ) {
+	SaveThisHORechit[iHit] = true;
+      }
+    }
+
+    //loop over tracks
+    for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
+      reco::Track generalTrack = generalTracks->at(iTrack);      
+      if ( jetPt[nJets] > 30 && 
+	   deltaR(jetEta[nJets], jetPhi[nJets], generalTrack.eta(), generalTrack.phi())  < 0.5
+	   && generalTrack.pt() > 1	   
+	  ) {
+	SaveThisTrack[iTrack] = true;
+      }
+    }
+
+
     nJets++;
   } //loop over jets
+
+
+
+
+
+  //********************************************************
+  // AK8 Jets
+  //********************************************************
+  for (const reco::PFJet &j : *jetsAK8)
+  {
+    if (j.pt() < 50) continue;
+    //-------------------
+    //Fill Jet-Level Info
+    //-------------------
+  
+    fatJetE[nFatJets] = j.energy();
+    fatJetPt[nFatJets] = j.pt();
+    fatJetEta[nFatJets] = j.eta();
+    fatJetPhi[nFatJets] = j.phi();
+    
+    for (uint q=0; q<ebRecHits->size(); q++) {
+      const EcalRecHit *recHit = &(*ebRecHits)[q];
+      const DetId recHitId = recHit->detid();
+      const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
+      
+      //save the rechits that are within DR 0.5 of the jet axis
+      if ( deltaR(fatJetEta[nFatJets], fatJetPhi[nFatJets], recHitPos.eta(), recHitPos.phi())  < 1.0
+    	   && recHit->energy() > 0.2
+    	   && recHit->timeError() > 0.0 
+    	   && recHit->timeError() < 100.0
+    	   ) {
+    	SaveThisEBRechit[q] = true;
+      }
+    }
+
+    for (uint q=0; q<eeRecHits->size(); q++) {
+      const EcalRecHit *recHit = &(*eeRecHits)[q];
+      const DetId recHitId = recHit->detid();
+      const auto recHitPos = endcapGeometry->getGeometry(recHitId)->getPosition();
+      
+      //save the rechits that are within DR 0.5 of the jet axis
+      if ( deltaR(fatJetEta[nFatJets], fatJetPhi[nFatJets], recHitPos.eta(), recHitPos.phi())  < 1.0
+    	   && recHit->energy() > 0.2    	   
+    	   ) {
+    	SaveThisEERechit[q] = true;
+      }
+    }
+    
+    //loop over hcal hits
+    for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
+      const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
+      
+      double hiteta = -999;
+      double hitphi = -999;
+      if (recHit->energy() < 0.1) continue;
+      const HcalDetId recHitId = recHit->detid();
+      if (recHit->detid().subdetId() == HcalBarrel) {
+	const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+	hiteta = recHitPos.eta();
+	hitphi = recHitPos.phi();    
+      } else if (recHit->detid().subdetId() == HcalEndcap) {
+	const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
+	hiteta = recHitPos.eta();
+	hitphi = recHitPos.phi();    
+      } else {
+	cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
+      }
+      
+      if ( deltaR(fatJetEta[nFatJets], fatJetPhi[nFatJets], hiteta, hitphi)  < 1.0 ) {
+	SaveThisHCALRechit[iHit] = true;
+      }
+    }
+    
+
+    //loop over HO hits
+    for (unsigned int iHit = 0; iHit < hcalRecHitsHO->size(); iHit ++){
+      const HORecHit *recHit = &(*hcalRecHitsHO)[iHit];
+      const DetId recHitId = recHit->detid();
+      double hiteta = -999;
+      double hitphi = -999;
+      if (recHit->energy() < 0.1) continue;
+      const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
+      hiteta = recHitPos.eta();
+      hitphi = recHitPos.phi();    
+    
+      //save all HO rechits which have more than 1.5 GeV of energy  
+      if (recHit->energy() > 1.5) SaveThisHORechit[iHit] = true;
+      if ( deltaR(fatJetEta[nFatJets], fatJetPhi[nFatJets], hiteta, hitphi)  < 1.0	   
+	   ) {
+	SaveThisHORechit[iHit] = true;
+      }
+    }
+
+
+
+    //loop over tracks
+    for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
+      reco::Track generalTrack = generalTracks->at(iTrack);      
+      if ( deltaR(fatJetEta[nFatJets], fatJetPhi[nFatJets], generalTrack.eta(), generalTrack.phi())  < 1.0
+	   && generalTrack.pt() > 1	   
+	   ) {
+	SaveThisTrack[iTrack] = true;
+      }
+    }
+    
+    
+    
+    nFatJets++;
+  }
+
+  //********************************************************
+  // Save EB Rechits inside Jets and AK8 Jets
+  //********************************************************
+  for (uint q=0; q<ebRecHits->size(); q++) { 
+    const EcalRecHit *recHit = &(*ebRecHits)[q];
+    const DetId recHitId = recHit->detid();
+    const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();       
+    if (SaveThisEBRechit[q]) {
+      ecalRechit_Eta[nRechits] = recHitPos.eta();
+      ecalRechit_Phi[nRechits] = recHitPos.phi();
+      ecalRechit_E[nRechits] = recHit->energy();
+      ecalRechit_T[nRechits] = recHit->time();
+      ecalRechit_E_Error[nRechits] = recHit->energyError();
+      ecalRechit_T_Error[nRechits] = recHit->timeError();
+      ecalRechit_kSaturatedflag[nRechits] = recHit->checkFlag(EcalRecHit::kSaturated);
+      ecalRechit_kLeadingEdgeRecoveredflag[nRechits] = recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered);
+      ecalRechit_kPoorRecoflag[nRechits] = recHit->checkFlag(EcalRecHit::kPoorReco);
+      ecalRechit_kWeirdflag[nRechits]= recHit->checkFlag(EcalRecHit::kWeird);
+      ecalRechit_kDiWeirdflag[nRechits] = recHit->checkFlag(EcalRecHit::kDiWeird);      
+      nRechits++;       
+    } 
+    //cout << "After Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";    
+  }
+  
+  //********************************************************
+  // Save EE Rechits inside Jets and AK8 Jets
+  //********************************************************
+  for (uint q=0; q<eeRecHits->size(); q++) { 
+    const EcalRecHit *recHit = &(*eeRecHits)[q];
+    const DetId recHitId = recHit->detid();
+    const auto recHitPos = endcapGeometry->getGeometry(recHitId)->getPosition();       
+    if (SaveThisEERechit[q]) {
+      ecalRechit_Eta[nRechits] = recHitPos.eta();
+      ecalRechit_Phi[nRechits] = recHitPos.phi();
+      ecalRechit_E[nRechits] = recHit->energy();
+      ecalRechit_T[nRechits] = recHit->time();
+      ecalRechit_E_Error[nRechits] = recHit->energyError();
+      ecalRechit_T_Error[nRechits] = recHit->timeError();
+      ecalRechit_kSaturatedflag[nRechits] = recHit->checkFlag(EcalRecHit::kSaturated);
+      ecalRechit_kLeadingEdgeRecoveredflag[nRechits] = recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered);
+      ecalRechit_kPoorRecoflag[nRechits] = recHit->checkFlag(EcalRecHit::kPoorReco);
+      ecalRechit_kWeirdflag[nRechits]= recHit->checkFlag(EcalRecHit::kWeird);
+      ecalRechit_kDiWeirdflag[nRechits] = recHit->checkFlag(EcalRecHit::kDiWeird);      
+      nRechits++;       
+    }
+    //cout << "After Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";    
+  }
+
+  //********************************************************
+  // Save Tracks inside Jets and AK8 Jets
+  //********************************************************
+  // Magnetic field
+  edm::ESHandle<MagneticField> magneticField;
+  iSetup.get<IdealMagneticFieldRecord>().get(magneticField);
+  magneticField_ = &*magneticField;
+  std::string thePropagatorName_ = "PropagatorWithMaterial";
+  iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
+  StateOnTrackerBound stateOnTracker(thePropagator_.product());
+
+  for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
+    
+
+    // reco::Track generalTrack = generalTracks->at(iTrack);
+    // //const auto& generalTrack = generalTracks->at(iTrack);
+    // // TLorentzVector generalTrackVecTemp;
+    // // generalTrackVecTemp.SetPtEtaPhiM(generalTrack.pt(),generalTrack.eta(),generalTrack.phi(),0);
+
+    if (SaveThisTrack[iTrack]) {
+      
+      reco::TrackBaseRef tref(generalTrackHandle,iTrack);
+      // make transient track (unfolding effects of B field ?)
+      reco::TransientTrack tt(generalTrackHandle->at(iTrack),magneticField_);
+    
+      if(!tt.isValid()) {
+	std::cout << "Error: Transient Track not valid (" 
+		  << tref->pt() << " " << tref->eta() << " " << tref->phi() 
+		  << "). Skipping the track\n";
+	continue;
+      }
+        
+      track_Pt[nTracks] = tref->pt();
+      track_Eta[nTracks] = tref->eta();
+      track_Phi[nTracks] = tref->phi();
+      
+      //find the best vertex for this track
+      float maxWeight = 0; 
+      int bestVertexIndex = -1;
+      for(int k = 0; k < (int)vertices->size();k++){        
+	if(vertices->at(k).trackWeight(tref) > maxWeight){  
+	  maxWeight = vertices->at(k).trackWeight(tref);    
+	  bestVertexIndex = k;                                               
+	}                                                          
+      }                                                          
+      track_bestVertexIndex[nTracks] = bestVertexIndex;
+
+      track_nMissingInnerHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
+      track_nMissingOuterHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
+
+      track_dxyToBS[nTracks] = tref->dxy(*beamSpot);
+      track_dxyErr[nTracks] = tref->dxyError();
+      track_dzToPV[nTracks] = tref->dz(beamSpot->position());
+      track_dzErr[nTracks] = tref->dzError();
+
+      //********************************************************
+      // For track angle
+      //********************************************************
+      // get track trajectory info
+      static GetTrackTrajInfo getTrackTrajInfo; 
+      vector<GetTrackTrajInfo::Result> trajInfo = getTrackTrajInfo.analyze(iSetup, (*tref));
+      if ( trajInfo.size() > 0 && trajInfo[0].valid) {
+      	// get inner tracker hit from trajectory state 
+      	const TrajectoryStateOnSurface& tsosInnerHit = trajInfo[0].detTSOS;
+	
+      	//  here's the track angle
+      	// find beamspot x,y coordinates
+      	const reco::BeamSpot& pat_beamspot = (*beamSpot);
+      	TVector2 bmspot(pat_beamspot.x0(),pat_beamspot.y0());
+      	// find track trajectory state on surface inner hit
+      	GlobalPoint  innerPos = tsosInnerHit.globalPosition();
+      	GlobalVector innerMom = tsosInnerHit.globalMomentum();
+	
+      	// calculate the difference between inner hit and beamspot
+      	TVector2 sv(innerPos.x(),innerPos.y());
+      	TVector2 diff = (sv-bmspot);
+      	//cout<<"bs x: "<<bmspot.X()<<" y: "<<bmspot.Y()<<endl;
+      	//cout<<" sv x: "<<sv.X()<<" y: "<<sv.Y()<<endl;
+      	//cout<<" diff phi: "<<diff.Phi()<<endl;
+      	TVector2 momentum(innerMom.x(),innerMom.y());
+      	//cout<<" p x: "<<momentum.X()<<" y: "<<momentum.Y()<<endl;
+      	//cout<<" p phi: "<<momentum.Phi()<<endl;
+      	//cout<<" dPhi: "<<diff.DeltaPhi(momentum)<<endl;
+      	track_angle[nTracks] = fabs( diff.DeltaPhi(momentum) ) ;
+      }
+
+
+
+      nTracks++; //increment saved tracks
+    } //end if save this Track    
+  } //loop over tracks
+
+  //********************************************************
+  // Save HCAL Rechits inside Jets and AK8 Jets
+  //********************************************************
+  for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
+    const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
+    const HcalDetId recHitId = recHit->detid();
+
+    //cout << "HCALREchit " << iHit << " : " << recHit->detid().subdetId() << " : " << recHitId.depth() << " " << recHitId.ieta() << " " << recHitId.iphi() << " "
+	 // << " | " << recHit->energy() << " " 
+	 // << "\n";
+    hbheRechit_iEta[nHBHERechits]  = recHitId.ieta();
+    hbheRechit_iPhi[nHBHERechits]  = recHitId.iphi();
+    hbheRechit_depth[nHBHERechits]  = recHitId.depth();
+
+    if (SaveThisHCALRechit[iHit]) {
+      if (recHit->energy() < 0.1) continue;      
+      if (recHit->detid().subdetId() == HcalBarrel) {
+	const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+	hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
+	hbheRechit_Eta[nHBHERechits] = recHitPos.eta();
+	hbheRechit_X[nHBHERechits] = recHitPos.x();
+	hbheRechit_Y[nHBHERechits] = recHitPos.y();
+	hbheRechit_Z[nHBHERechits] = recHitPos.z();     
+      } else if (recHit->detid().subdetId() == HcalEndcap) {
+	const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
+	hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
+	hbheRechit_Eta[nHBHERechits] = recHitPos.eta();
+	hbheRechit_X[nHBHERechits] = recHitPos.x();
+	hbheRechit_Y[nHBHERechits] = recHitPos.y();
+	hbheRechit_Z[nHBHERechits] = recHitPos.z();      
+      } else {
+	cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
+      }
+    
+      hbheRechit_E[nHORechits] = recHit->energy();
+      hbheRechit_T[nHORechits] = recHit->time();
+    
+      nHBHERechits++;
+    }
+  }
+  
+  //********************************************************
+  // Save HO Rechits inside Jets and AK8 Jets
+  //********************************************************
+  for (unsigned int iHit = 0; iHit < hcalRecHitsHO->size(); iHit ++){
+    const HORecHit *recHit = &(*hcalRecHitsHO)[iHit];
+    if (SaveThisHORechit[iHit]) {
+      const DetId recHitId = recHit->detid();
+      const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
+      hoRechit_Phi[nHORechits] = recHitPos.phi();
+      hoRechit_Eta[nHORechits] = recHitPos.eta();
+      hoRechit_X[nHORechits] = recHitPos.x();
+      hoRechit_Y[nHORechits] = recHitPos.y();
+      hoRechit_Z[nHORechits] = recHitPos.z();
+      hoRechit_E[nHORechits] = recHit->energy();
+      hoRechit_T[nHORechits] = recHit->time();
+      nHORechits ++;
+    }
+  }
 
   return true;
 };
@@ -3802,11 +3972,6 @@ bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
   return true;
 };
 
-bool displacedJetMuon_ntupler::passCaloJetID( const reco::CaloJet *jetCalo, int cutLevel) {
-  bool result = false;
-
-  return result;
-}//passJetID CaloJet
 
 bool displacedJetMuon_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
   bool result = false;
@@ -3859,7 +4024,7 @@ bool displacedJetMuon_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) 
   return result;
 }//passJetID PFJet
 
-void displacedJetMuon_ntupler::findTrackingVariables(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks)
+void displacedJetMuon_ntupler::findTrackingVariablesWithoutPropagator(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks)
 {
   int nTracksAll = 0;
   //Displaced jet stuff
@@ -3869,15 +4034,15 @@ void displacedJetMuon_ntupler::findTrackingVariables(const TLorentzVector &jetVe
   reco::Vertex primaryVertex = vertices->at(0);
   std::vector<double> theta2Ds;
   std::vector<double> IP2Ds;
+ 
   for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
   	reco::Track generalTrack = generalTracks->at(iTrack);
   	TLorentzVector generalTrackVecTemp;
   	generalTrackVecTemp.SetPtEtaPhiM(generalTrack.pt(),generalTrack.eta(),generalTrack.phi(),0);
 
   	if (generalTrack.pt() > 1) {
-	    if (minDeltaRAllTracks > generalTrackVecTemp.DeltaR(jetVec))
-	    {
-		    minDeltaRAllTracks =  generalTrackVecTemp.DeltaR(jetVec);
+	    if (minDeltaRAllTracks > generalTrackVecTemp.DeltaR(jetVec)) {
+	      minDeltaRAllTracks =  generalTrackVecTemp.DeltaR(jetVec);
 	    }
 	    if (generalTrackVecTemp.DeltaR(jetVec) < 0.4){
     		nTracksAll ++;
@@ -3913,10 +4078,10 @@ void displacedJetMuon_ntupler::findTrackingVariables(const TLorentzVector &jetVe
       if(!vertex->isValid())continue;
       if (vertex->isFake())continue;
       for(auto pvTrack=vertex->tracks_begin(); pvTrack!=vertex->tracks_end(); pvTrack++){
-    		TLorentzVector pvTrackVecTemp;
-    		pvTrackVecTemp.SetPtEtaPhiM((*pvTrack)->pt(),(*pvTrack)->eta(),(*pvTrack)->phi(),0);
-  		//If pv track associated with jet add pt to ptPVTracks
-    		if ((*pvTrack)->pt() > 1) {
+    	TLorentzVector pvTrackVecTemp;
+    	pvTrackVecTemp.SetPtEtaPhiM((*pvTrack)->pt(),(*pvTrack)->eta(),(*pvTrack)->phi(),0);
+  	//If pv track associated with jet add pt to ptPVTracks
+    	if ((*pvTrack)->pt() > 1) {
     	    if (minDeltaRPVTracks > pvTrackVecTemp.DeltaR(jetVec))
     	    {
     		     minDeltaRPVTracks =  pvTrackVecTemp.DeltaR(jetVec);
@@ -3945,6 +4110,146 @@ void displacedJetMuon_ntupler::findTrackingVariables(const TLorentzVector &jetVe
   }
 };
 
+void displacedJetMuon_ntupler::findTrackingVariables(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks)
+{
+  int nTracksAll = 0;
+  //Displaced jet stuff
+  double ptPVTracksMax = 0.;
+  minDeltaRAllTracks = 15;
+  minDeltaRPVTracks = 15;
+  reco::Vertex primaryVertex = vertices->at(0);
+  std::vector<double> theta2Ds;
+  std::vector<double> IP2Ds;
+
+  // propagator
+  //edm::ESHandle<Propagator> thePropagator_;
+  edm::ESTransientHandle<Propagator> thePropagator_;
+  std::string thePropagatorName_ = "PropagatorWithMaterial";
+  iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
+  StateOnTrackerBound stateOnTracker(thePropagator_.product());
+  
+  const MagneticField* magneticField_;
+  //edm::ESHandle<MagneticField> magneticField;
+  edm::ESTransientHandle<MagneticField> magneticField;
+  iSetup.get<IdealMagneticFieldRecord>().get(magneticField); 
+  magneticField_ = &*magneticField; 
+  //std::cout << "B " << magneticField_ << " tracks size " << tracks->size() << std::endl;
+  
+  for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
+
+    //track propagation
+    FreeTrajectoryState fts = trajectoryStateTransform::initialFreeState (tracks->at(iTrack),magneticField_); 
+    TrajectoryStateOnSurface outer = stateOnTracker(fts); 
+    if(!outer.isValid()) continue; 
+    GlobalPoint outerPos = outer.globalPosition();
+    
+  	TLorentzVector generalTrackVecTemp;
+  	generalTrackVecTemp.SetPtEtaPhiM((generalTracks->at(iTrack)).pt(), outerPos.eta(), outerPos.phi(), 0);
+
+  	if ((generalTracks->at(iTrack)).pt() > 1) {
+	    if (minDeltaRAllTracks > generalTrackVecTemp.DeltaR(jetVec))
+	    {
+		    minDeltaRAllTracks =  generalTrackVecTemp.DeltaR(jetVec);
+	    }
+	    if (generalTrackVecTemp.DeltaR(jetVec) < 0.4){
+    		nTracksAll ++;
+    		//tot pt for alpha
+    		ptAllTracks += (generalTracks->at(iTrack)).pt();
+
+      }
+    }
+  }
+  if (ptAllTracks > 0.9){
+      //No matched jets
+      for (auto vertex = vertices->begin(); vertex != vertices->end(); vertex++){
+      double ptPVTracks = 0.;
+      int nTracksPVTemp = 0;
+      if(!vertex->isValid())continue;
+      if (vertex->isFake())continue;
+      for(auto pvTrack=vertex->tracks_begin(); pvTrack!=vertex->tracks_end(); pvTrack++){
+    
+        //track propagation
+        FreeTrajectoryState ftspv = trajectoryStateTransform::initialFreeState (**pvTrack, magneticField_); 
+        TrajectoryStateOnSurface outerpv = stateOnTracker(ftspv); 
+        if(!outerpv.isValid()) continue; 
+        GlobalPoint outerpvPos = outerpv.globalPosition();
+        
+    	TLorentzVector pvTrackVecTemp;
+    	pvTrackVecTemp.SetPtEtaPhiM((*pvTrack)->pt(),outerpvPos.eta(),outerpvPos.phi(),0);
+  	//If pv track associated with jet add pt to ptPVTracks
+    	if ((*pvTrack)->pt() > 1) {
+    	    if (minDeltaRPVTracks > pvTrackVecTemp.DeltaR(jetVec))
+    	    {
+    		     minDeltaRPVTracks =  pvTrackVecTemp.DeltaR(jetVec);
+    	    }
+    	    if (pvTrackVecTemp.DeltaR(jetVec) < 0.4){
+        		ptPVTracks += (*pvTrack)->pt();
+        		ptAllPVTracks += (*pvTrack)->pt();
+        		nTracksPVTemp++;
+    	    }
+    		}
+      }
+      if (ptPVTracks > ptPVTracksMax) {
+      	ptPVTracksMax = ptPVTracks;
+      	nTracksPV = nTracksPVTemp;
+      }
+      alphaMax = ptPVTracksMax/ptAllTracks;
+  	}
+  }
+/*
+  for (int iTrack = 0; iTrack < nTracks; iTrack ++){
+  	TLorentzVector generalTrackVecTemp;
+  	generalTrackVecTemp.SetPtEtaPhiM(TrackPt[iTrack], TrackEta[iTrack], TrackPhi[iTrack], 0);
+
+  	if (TrackPt[iTrack] > 1) {
+	    if (minDeltaRAllTracks > generalTrackVecTemp.DeltaR(jetVec))
+	    {
+		    minDeltaRAllTracks =  generalTrackVecTemp.DeltaR(jetVec);
+	    }
+	    if (generalTrackVecTemp.DeltaR(jetVec) < 0.4){
+    		nTracksAll ++;
+    		//tot pt for alpha
+    		ptAllTracks += TrackPt[iTrack];
+
+      	     }
+         }
+  }
+
+  if (ptAllTracks > 0.9){
+    //No matched jets
+    for (int ipvTrack = 0; ipvTrack < npvTracks; ipvTrack++){
+      double ptPVTracks = 0.;
+      int nTracksPVTemp = 0;
+      TLorentzVector pvTrackVecTemp;
+      pvTrackVecTemp.SetPtEtaPhiM(PVTrackPt[ipvTrack], PVTrackEta[ipvTrack], PVTrackPhi[ipvTrack], 0);
+      if (PVTrackPt[ipvTrack] > 1) {
+    	    if (minDeltaRPVTracks > pvTrackVecTemp.DeltaR(jetVec))
+    	    {
+    		     minDeltaRPVTracks =  pvTrackVecTemp.DeltaR(jetVec);
+    	    }
+    	    if (pvTrackVecTemp.DeltaR(jetVec) < 0.4){
+        		ptPVTracks += PVTrackPt[ipvTrack];
+        		ptAllPVTracks += PVTrackPt[ipvTrack];
+        		nTracksPVTemp++;
+    	    }
+    	}
+      if (ptPVTracks > ptPVTracksMax) {
+      	ptPVTracksMax = ptPVTracks;
+      	nTracksPV = nTracksPVTemp;
+      }
+      alphaMax = ptPVTracksMax/ptAllTracks;
+    }
+  }
+*/
+  std::sort(IP2Ds.begin(),IP2Ds.end());
+  if (IP2Ds.size() > 0){
+	   medianIP = IP2Ds[IP2Ds.size()/2];
+  }
+  std::sort(theta2Ds.begin(),theta2Ds.end());
+  if (theta2Ds.size() > 0){
+    medianTheta2D = theta2Ds[theta2Ds.size()/2];
+  }
+};
 void displacedJetMuon_ntupler::jet_second_moments(std::vector<double> &et,std::vector<double> &eta,std::vector<double> &phi,double &sig1,double &sig2)
 {
   double mean_eta = 0.0;
@@ -4129,7 +4434,7 @@ bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
   //Expensive option in terms of ntuple size
   //------------------------------------------------------------------
   nameHLT->clear();
-  cout<<triggerBits->size()<<endl;
+  //cout<<triggerBits->size()<<endl;
   for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i)
   {
     string hltPathNameReq = "HLT_";
@@ -4196,17 +4501,17 @@ bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
   return true;
 };
 
-bool displacedJetMuon_ntupler::fillMC()
-{
-  for(const reco::GenJet &j : *genJets)
-  {
+bool displacedJetMuon_ntupler::fillMC() {
+  for(const reco::GenJet &j : *genJets) {
     //std::cout << nGenJets << std::endl;
-    genJetE[nGenJets] = j.energy();
-    genJetPt[nGenJets] = j.pt();
-    genJetEta[nGenJets] = j.eta();
-    genJetPhi[nGenJets] = j.phi();
-    genJetMET[nGenJets] = j.invisibleEnergy();
-    nGenJets++;
+    if (j.pt() > 10) {
+      genJetE[nGenJets] = j.energy();
+      genJetPt[nGenJets] = j.pt();
+      genJetEta[nGenJets] = j.eta();
+      genJetPhi[nGenJets] = j.phi();
+      genJetMET[nGenJets] = j.invisibleEnergy();
+      nGenJets++;
+    }
   }
 
   const reco::GenMET &GenMetCalo = genMetsCalo->front();
@@ -4218,15 +4523,11 @@ bool displacedJetMuon_ntupler::fillMC()
   genMetPhiTrue = GenMetTrue.phi();
 
   bool foundGenVertex = false;
-  for(size_t i=0; i<genParticles->size();i++)
-  {
-    if (!foundGenVertex)
-    {
-      for (unsigned int j=0; j<(*genParticles)[i].numberOfDaughters(); ++j)
-      {
+  for(size_t i=0; i<genParticles->size();i++) {
+    if (!foundGenVertex) {
+      for (unsigned int j=0; j<(*genParticles)[i].numberOfDaughters(); ++j) {
         const reco::Candidate *dau = (*genParticles)[i].daughter(j);
-        if (dau)
-        {
+        if (dau) {
           genVertexX = dau->vx();
           genVertexY = dau->vy();
           genVertexZ = dau->vz();
@@ -4247,121 +4548,10 @@ bool displacedJetMuon_ntupler::fillMC()
   return true;
 };
 
-bool displacedJetMuon_ntupler::fillCaloJets(const edm::EventSetup& iSetup)
-{
-  for (const reco::CaloJet &j : *jetsCalo) {
-
-    //if (j.pt() < 20) continue;
-    //if (fabs(j.eta()) > 2.4) continue;
-
-    //-------------------
-    //Fill Jet-Level Info
-    //-------------------
-    calojetE[nCaloJets] = j.energy();
-    calojetEt[nCaloJets] = j.et();
-    calojetPt[nCaloJets] = j.pt();
-    calojetEta[nCaloJets] = j.eta();
-    calojetPhi[nCaloJets] = j.phi();
-    calojetMass[nCaloJets] = j.mass();
-    calojet_HadronicEnergyFraction[nCaloJets] = j.energyFractionHadronic();
-    calojet_EMEnergyFraction[nCaloJets] = j.emEnergyFraction();
-
-    TLorentzVector thisJet;
-    thisJet.SetPtEtaPhiE(calojetPt[nCaloJets], calojetEta[nCaloJets], calojetPhi[nCaloJets], calojetE[nCaloJets]);
-    //calojetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-    float alphaMax(0.0),medianTheta2D(0.0),medianIP(0.0),minDeltaRAllTracks(0.0),minDeltaRPVTracks(0.0),ptAllTracks(0.0), ptAllPVTracks(0.0);
-    int nTracksPV(0);
-    //findTrackingVariables(thisJet,iSetup,alphaMax,medianTheta2D,medianIP,nTracksPV,ptAllPVTracks,ptAllTracks, minDeltaRAllTracks, minDeltaRPVTracks);
-    //jetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-    calojetAlphaMax[nCaloJets] = alphaMax;
-    calojetBetaMax[nCaloJets] = alphaMax * ptAllTracks/j.pt();
-    calojetGammaMax[nCaloJets] = alphaMax * ptAllTracks/(j.energy());
-    calojetGammaMax_EM[nCaloJets] = alphaMax * ptAllTracks/(j.energy()*j.emEnergyFraction());
-    calojetGammaMax_Hadronic[nCaloJets] =  alphaMax * ptAllTracks/(j.energy()*j.energyFractionHadronic());
-    calojetGammaMax_ET[nCaloJets] = alphaMax * ptAllTracks/j.et();
-
-    calojetMedianTheta2D[nCaloJets] = medianTheta2D;
-    calojetMedianIP[nCaloJets] = medianIP;
-    calojetPtAllPVTracks[nCaloJets] = ptAllPVTracks;
-    calojetPtAllTracks[nCaloJets] = ptAllTracks;
-    calojetMinDeltaRAllTracks[nCaloJets] = minDeltaRAllTracks;
-    calojetMinDeltaRPVTracks[nCaloJets] = minDeltaRPVTracks;
-
-    calojetJetArea[nCaloJets] = j.jetArea();
-    calojetPileupE[nCaloJets] = j.pileup();
-
-    calojetPileupIdFlag[nCaloJets] = 0;
-    calojetPassIDLoose[nCaloJets] = passCaloJetID(&j, 0);
-    calojetPassIDTight[nCaloJets] = passCaloJetID(&j, 1);
-
-
-    //---------------------------
-    //Find RecHits Inside the Jet
-    //---------------------------
-    // geometry (from ECAL ELF)
-
-    edm::ESHandle<CaloGeometry> geoHandle;
-    iSetup.get<CaloGeometryRecord>().get(geoHandle);
-    const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-    //const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
-    //double ecal_radius = 129.0;
-    int n_matched_rechits = 0;
-    for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit)
-    {
-      if (recHit->checkFlag(EcalRecHit::kSaturated) || recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit->checkFlag(EcalRecHit::kPoorReco) || recHit->checkFlag(EcalRecHit::kWeird) || recHit->checkFlag(EcalRecHit::kDiWeird)) continue;
-      if (recHit->timeError() < 0 || recHit->timeError() > 100) continue;
-      if ( recHit->checkFlag(0) )
-      {
-        const DetId recHitId = recHit->detid();
-        const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
-        if ( deltaR(calojetEta[nCaloJets], calojetPhi[nCaloJets], recHitPos.eta(), recHitPos.phi())  < 0.4)
-        {
-          //double rechit_x = ecal_radius * cos(recHitPos.phi());
-          //double rechit_y = ecal_radius * sin(recHitPos.phi());
-          //double rechit_z = ecal_radius * sinh(recHitPos.eta());
-          //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
-
-          if (recHit->energy() > Rechit_cut)
-          {
-            calojetRechitE[nCaloJets] += recHit->energy();
-            calojetRechitT[nCaloJets] += recHit->time()*recHit->energy();
-            calojetRechitT_rms[nCaloJets] += recHit->time()*recHit->time();
-
-            n_matched_rechits++;
-          }
-
-        }
-      }
-    }
-    //cout << "Last Nphoton: " << fJetNPhotons << "\n";
-    //std::cout << "n: " << n_matched_rechits << std::endl;
-    if (calojetRechitE[nCaloJets] > 0.0 ){
-      calojetNRechits[nCaloJets] = n_matched_rechits;
-      calojetRechitT[nCaloJets] = calojetRechitT[nCaloJets]/calojetRechitE[nCaloJets];
-      calojetRechitT_rms[nCaloJets] = sqrt(calojetRechitT_rms[nCaloJets]);
-      nCaloJets++;
-    }
-  } //loop over calojets
-
-  return true;
-};
 
 
 bool displacedJetMuon_ntupler::fillElectrons(const edm::Event& iEvent)
 {
-
-  // Get MVA values and categories (optional)
-  // edm::Handle<edm::ValueMap<float> > mvaGeneralPurposeValues;
-  // edm::Handle<edm::ValueMap<int> > mvaGeneralPurposeCategories;
-  // edm::Handle<edm::ValueMap<float> > mvaHZZValues;
-  // edm::Handle<edm::ValueMap<int> > mvaHZZCategories;
-  // iEvent.getByToken(mvaGeneralPurposeValuesMapToken_,mvaGeneralPurposeValues);
-  // iEvent.getByToken(mvaGeneralPurposeCategoriesMapToken_,mvaGeneralPurposeCategories);
-  // iEvent.getByToken(mvaHZZValuesMapToken_,mvaHZZValues);
-  // iEvent.getByToken(mvaHZZCategoriesMapToken_,mvaHZZCategories);
-
-  // setupEgammaPostRecoSeq
-
 
   for(const pat::Electron &ele : *electrons) {
     if(ele.pt() < 5) continue;
@@ -4493,6 +4683,379 @@ bool displacedJetMuon_ntupler::fillPileUp()
     nPUmean[nBunchXing] = pu.getTrueNumInteractions();
     nBunchXing++;
   }
+  return true;
+};
+
+
+bool displacedJetMuon_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup)
+{
+  noZS::EcalClusterLazyTools *lazyToolnoZS = new noZS::EcalClusterLazyTools(iEvent, iSetup, ebRecHitsToken_, eeRecHitsToken_);
+  for (const reco::Photon &pho : *photons) {
+    if (pho.pt() < 20) continue;
+    std::vector<float> vCov = lazyToolnoZS->localCovariances( *(pho.superCluster()->seed()) );
+    //-------------------------------------------------
+    //default photon 4-mometum already vertex corrected
+    //-------------------------------------------------
+     phoE[nPhotons]   = pho.energy();
+    phoPt[nPhotons]  = pho.pt();
+    phoEta[nPhotons] = pho.eta(); //correct this for the vertex
+    phoPhi[nPhotons] = pho.phi(); //correct this for the vertex
+  
+    phoSigmaIetaIeta[nPhotons] = pho.sigmaIetaIeta();
+    phoFull5x5SigmaIetaIeta[nPhotons] = pho.full5x5_sigmaIetaIeta();
+    phoR9[nPhotons] = pho.full5x5_r9();
+    pho_HoverE[nPhotons] = pho.hadTowOverEm();
+    pho_isConversion[nPhotons] = pho.hasConversionTracks();
+
+    //------------------------------------------
+    // Fill default miniAOD isolation quantities
+    //------------------------------------------
+    pho_pfIsoChargedHadronIso[nPhotons] = pho.chargedHadronIso();
+    pho_pfIsoChargedHadronIsoWrongVtx[nPhotons] = pho.chargedHadronIsoWrongVtx();
+    pho_pfIsoNeutralHadronIso[nPhotons] = pho.neutralHadronIso();
+    pho_pfIsoPhotonIso[nPhotons] = pho.photonIso();
+    pho_pfIsoModFrixione[nPhotons] = pho.getPflowIsolationVariables().modFrixione;
+    pho_pfIsoSumPUPt[nPhotons] = pho.sumPUPt();
+    //-----------------------
+    // super cluster position and time
+    //-----------------------
+    pho_superClusterEnergy[nPhotons] = pho.superCluster()->energy();
+    pho_superClusterRawEnergy[nPhotons] = pho.superCluster()->rawEnergy();
+    pho_superClusterEta[nPhotons]    = pho.superCluster()->eta();
+    pho_superClusterPhi[nPhotons]    = pho.superCluster()->phi();
+    pho_superClusterX[nPhotons]      = pho.superCluster()->x();
+    pho_superClusterY[nPhotons]      = pho.superCluster()->y();
+    pho_superClusterZ[nPhotons]      = pho.superCluster()->z();
+    pho_hasPixelSeed[nPhotons]       = pho.hasPixelSeed();
+
+    pho_superClusterSeedX[nPhotons]      = pho.superCluster()->seed()->x();
+    pho_superClusterSeedY[nPhotons]      = pho.superCluster()->seed()->y();
+    pho_superClusterSeedZ[nPhotons]      = pho.superCluster()->seed()->z();
+
+    pho_superClusterSeedE[nPhotons]      = pho.superCluster()->seed()->energy();
+
+  
+    //------------------------------------------------------
+    //Compute PF isolation
+    //absolute uncorrected isolations with footprint removal
+    //------------------------------------------------------
+    const float coneSizeDR = 0.3;
+    const float dxyMax = 0.1;
+    const float dzMax = 0.2;
+    float chargedIsoSumAllVertices[MAX_NPV];
+    for (int q=0;q<MAX_NPV;++q) chargedIsoSumAllVertices[q] = 0.0;
+    float chargedIsoSum = 0;
+    float chargedIsoSum_NewPV_NoTiming = 0;
+    float chargedIsoSum_NewPV_Timing50_TrkVtx = 0;
+    float chargedIsoSum_NewPV_Timing80_TrkVtx = 0;
+    float chargedIsoSum_NewPV_Timing100_TrkVtx = 0;
+    float chargedIsoSum_NewPV_Timing120_TrkVtx = 0;
+    float chargedIsoSum_NewPV_Timing50_TrkPho = 0;
+    float chargedIsoSum_NewPV_Timing80_TrkPho = 0;
+    float chargedIsoSum_NewPV_Timing100_TrkPho = 0;
+    float chargedIsoSum_NewPV_Timing120_TrkPho = 0;
+
+    float neutralHadronIsoSum = 0;
+    float photonIsoSum = 0;
+    // First, find photon direction with respect to the good PV
+    math::XYZVector photon_directionWrtVtx(pho.superCluster()->x() - myPV->x(),pho.superCluster()->y() - myPV->y(),pho.superCluster()->z() - myPV->z());
+    //math::XYZVector photon_directionWrtVtx_GenMatch(pho.superCluster()->x() - myPV_GenMatch->x(),pho.superCluster()->y() - myPV_GenMatch->y(),pho.superCluster()->z() - myPV_GenMatch->z());
+
+    // old PV, Loop over all PF candidates
+    for (const reco::PFCandidate &candidate : *pfCands)
+    {
+      // Check if this candidate is within the isolation cone
+      float dR=deltaR(photon_directionWrtVtx.Eta(),photon_directionWrtVtx.Phi(),
+      candidate.eta(), candidate.phi());
+      if( dR > coneSizeDR ) continue;
+
+      // Check if this candidate is not in the footprint
+
+      //bool inFootprint = false;
+      //for (auto itr : pho.associatedPackedPFCandidates()) {
+      //if ( &(*itr) == &candidate) {
+      //inFootprint = true;
+      //  }
+      //}
+      //if( inFootprint ) continue;
+
+      // Find candidate type
+      reco::PFCandidate::ParticleType thisCandidateType = reco::PFCandidate::X;
+
+      // the neutral hadrons and charged hadrons can be of pdgId types
+      // only 130 (K0L) and +-211 (pi+-) in packed candidates
+      const int pdgId = candidate.pdgId();
+      if( pdgId == 22 )
+      thisCandidateType = reco::PFCandidate::gamma;
+      else if( abs(pdgId) == 130) // PDG ID for K0L
+      thisCandidateType = reco::PFCandidate::h0;
+      else if( abs(pdgId) == 211) // PDG ID for pi+-
+      thisCandidateType = reco::PFCandidate::h;
+
+
+      // Increment the appropriate isolation sum
+      if( thisCandidateType == reco::PFCandidate::h ){
+        // for charged hadrons, additionally check consistency
+        // with the PV
+        float dxy = -999, dz = -999;
+
+        //For the primary vertex
+        dz = candidate.trackRef()->dz(myPV->position());
+        dxy =candidate.trackRef()->dxy(myPV->position());
+        if (fabs(dz) <= dzMax && fabs(dxy) <= dxyMax) {
+          chargedIsoSum += candidate.pt();
+        }
+
+        //loop over all vertices
+        for(int q = 0; q < nPVAll; q++){
+          if(!(vertices->at(q).isValid() && !vertices->at(q).isFake())) continue;
+
+          dz = candidate.trackRef()->dz(vertices->at(q).position());
+          dxy =candidate.trackRef()->dxy(vertices->at(q).position());
+          if (fabs(dz) > dzMax) continue;
+          if(fabs(dxy) > dxyMax) continue;
+          // The candidate is eligible, increment the isolation
+          chargedIsoSumAllVertices[q] += candidate.pt();
+        }
+      }
+      if( thisCandidateType == reco::PFCandidate::h0 )
+      neutralHadronIsoSum += candidate.pt();
+      if( thisCandidateType == reco::PFCandidate::gamma )
+      photonIsoSum += candidate.pt();
+    }
+
+
+    //fill the proper variables
+    for(int q = 0; q < nPVAll; q++) {
+      pho_sumChargedHadronPtAllVertices[nPhotons][q] = chargedIsoSumAllVertices[q];
+    }
+    pho_sumChargedHadronPt[nPhotons] = chargedIsoSum;
+
+    pho_sumChargedHadronPt_NewPV_NoTiming[nPhotons] = chargedIsoSum_NewPV_NoTiming;
+
+    pho_sumChargedHadronPt_NewPV_Timing50_TrkVtx[nPhotons] = chargedIsoSum_NewPV_Timing50_TrkVtx;
+    pho_sumChargedHadronPt_NewPV_Timing80_TrkVtx[nPhotons] = chargedIsoSum_NewPV_Timing80_TrkVtx;
+    pho_sumChargedHadronPt_NewPV_Timing100_TrkVtx[nPhotons] = chargedIsoSum_NewPV_Timing100_TrkVtx;
+    pho_sumChargedHadronPt_NewPV_Timing120_TrkVtx[nPhotons] = chargedIsoSum_NewPV_Timing120_TrkVtx;
+
+    pho_sumChargedHadronPt_NewPV_Timing50_TrkPho[nPhotons] = chargedIsoSum_NewPV_Timing50_TrkPho;
+    pho_sumChargedHadronPt_NewPV_Timing80_TrkPho[nPhotons] = chargedIsoSum_NewPV_Timing80_TrkPho;
+    pho_sumChargedHadronPt_NewPV_Timing100_TrkPho[nPhotons] = chargedIsoSum_NewPV_Timing100_TrkPho;
+    pho_sumChargedHadronPt_NewPV_Timing120_TrkPho[nPhotons] = chargedIsoSum_NewPV_Timing120_TrkPho;
+
+    pho_sumNeutralHadronEt[nPhotons] = neutralHadronIsoSum;
+    pho_sumPhotonEt[nPhotons] = photonIsoSum;
+
+
+    //-------------------------------------------------
+    //Compute Worst Isolation Looping over all vertices
+    //-------------------------------------------------
+    const double ptMin = 0.0;
+    const float dRvetoBarrel = 0.0;
+    const float dRvetoEndcap = 0.0;
+    float dRveto = 0;
+    if (pho.isEB()) dRveto = dRvetoBarrel;
+    else dRveto = dRvetoEndcap;
+
+    float worstIsolation = 999;
+    std::vector<float> allIsolations;
+    for(unsigned int ivtx=0; ivtx<vertices->size(); ++ivtx) {
+
+      // Shift the photon according to the vertex
+      reco::VertexRef vtx(vertices, ivtx);
+      math::XYZVector photon_directionWrtVtx(pho.superCluster()->x() - vtx->x(),
+      pho.superCluster()->y() - vtx->y(),
+      pho.superCluster()->z() - vtx->z());
+
+      float sum = 0;
+      // Loop over all PF candidates
+      for (const reco::PFCandidate &candidate : *pfCands) {
+
+        //require that PFCandidate is a charged hadron
+        const int pdgId = candidate.pdgId();
+        if( abs(pdgId) != 211) continue;
+
+        if (candidate.pt() < ptMin)
+        continue;
+
+        float dxy = -999, dz = -999;
+        dz = candidate.trackRef()->dz(myPV->position());
+        dxy =candidate.trackRef()->dxy(myPV->position());
+        if( fabs(dxy) > dxyMax) continue;
+        if ( fabs(dz) > dzMax) continue;
+
+        float dR = deltaR(photon_directionWrtVtx.Eta(), photon_directionWrtVtx.Phi(),
+        candidate.eta(),      candidate.phi());
+        if(dR > coneSizeDR || dR < dRveto) continue;
+
+        sum += candidate.pt();
+      }
+
+      allIsolations.push_back(sum);
+    }
+
+    if( allIsolations.size()>0 )
+    worstIsolation = * std::max_element( allIsolations.begin(), allIsolations.end() );
+
+    pho_sumWorstVertexChargedHadronPt[nPhotons] = worstIsolation;
+
+    //-----------------------
+    //Photon ID MVA variable
+    //-----------------------
+    //pho_IDMVA[nPhotons] = myPhotonMVA->mvaValue( pho,  *rhoAll, photonIsoSum, chargedIsoSum, worstIsolation,lazyToolnoZS, false);
+
+    //---------------------
+    //Regression
+    //---------------------
+    pho_RegressionE[nPhotons]            = pho.getCorrectedEnergy( pho.getCandidateP4type() );
+    pho_RegressionEUncertainty[nPhotons] = pho.getCorrectedEnergyError( pho.getCandidateP4type() );
+
+
+    //conversion matching for beamspot pointing
+    const reco::Conversion *convmatch = 0;
+    double drmin = std::numeric_limits<double>::max();
+    //double leg conversions
+    for (const reco::Conversion &conv : *conversions) {
+      if (conv.refittedPairMomentum().rho()<10.) continue;
+      if (!conv.conversionVertex().isValid()) continue;
+      if (TMath::Prob(conv.conversionVertex().chi2(),  conv.conversionVertex().ndof())<1e-6) continue;
+
+      math::XYZVector mom(conv.refittedPairMomentum());
+      math::XYZPoint scpos(pho.superCluster()->position());
+      math::XYZPoint cvtx(conv.conversionVertex().position());
+      math::XYZVector cscvector = scpos - cvtx;
+
+      double dr = reco::deltaR(mom,cscvector);
+
+      if (dr<drmin && dr<0.1) {
+        drmin = dr;
+        convmatch = &conv;
+      }
+    }
+    if (!convmatch) {
+      drmin = std::numeric_limits<double>::max();
+      //single leg conversions
+      for (const reco::Conversion &conv : *singleLegConversions) {
+        math::XYZVector mom(conv.tracksPin()[0]);
+        math::XYZPoint scpos(pho.superCluster()->position());
+        math::XYZPoint cvtx(conv.conversionVertex().position());
+        math::XYZVector cscvector = scpos - cvtx;
+
+        double dr = reco::deltaR(mom,cscvector);
+
+        if (dr<drmin && dr<0.1) {
+          drmin = dr;
+          convmatch = &conv;
+        }
+      }
+    }
+
+    //matched conversion, compute conversion type
+    //and extrapolation to beamline
+    //FIXME Both of these additional two requirements are inconsistent and make the conversion
+    //selection depend on poorly defined criteria, but we keep them for sync purposes
+    //if (convmatch && pho.hasConversionTracks() && conversions->size()>0) {
+    if (convmatch){// && pho.hasConversionTracks() && conversions->size()>0) {
+      int ntracks = convmatch->nTracks();
+
+      math::XYZVector mom(ntracks==2 ? convmatch->refittedPairMomentum() : convmatch->tracksPin()[0]);
+      math::XYZPoint scpos(pho.superCluster()->position());
+      math::XYZPoint cvtx(convmatch->conversionVertex().position());
+      math::XYZVector cscvector = scpos - cvtx;
+
+      double z = cvtx.z();
+      double rho = cvtx.rho();
+
+      int legtype = ntracks==2 ? 0 : 1;
+      int dettype = pho.isEB() ? 0 : 1;
+      int postype =0;
+
+      if (pho.isEB()) {
+        if (rho<15.) {
+          postype = 0;
+        }
+        else if (rho>=15. && rho<60.) {
+          postype = 1;
+        }
+        else {
+          postype = 2;
+        }
+      }
+      else {
+        if (std::abs(z) < 50.) {
+          postype = 0;
+        }
+        else if (std::abs(z) >= 50. && std::abs(z) < 100.) {
+          postype = 1;
+        }
+        else {
+          postype = 2;
+        }
+      }
+
+      pho_convType[nPhotons] = legtype + 2*dettype + 4*postype;
+      pho_convTrkZ[nPhotons] = cvtx.z() - ((cvtx.x()-beamSpot->x0())*mom.x()+(cvtx.y()-beamSpot->y0())*mom.y())/mom.rho() * mom.z()/mom.rho();
+      pho_convTrkClusZ[nPhotons] = cvtx.z() - ((cvtx.x()-beamSpot->x0())*cscvector.x()+(cvtx.y()-beamSpot->y0())*cscvector.y())/cscvector.rho() * cscvector.z()/cscvector.rho();
+    }
+
+    nPhotons++;
+  }
+
+ 
+  delete lazyToolnoZS;
+  return true;
+
+};
+
+double displacedJetMuon_ntupler::deltaPhi(double phi1, double phi2)
+{
+  double dphi = phi1-phi2;
+  while (dphi > TMath::Pi())
+  {
+    dphi -= TMath::TwoPi();
+  }
+  while (dphi <= -TMath::Pi())
+  {
+    dphi += TMath::TwoPi();
+  }
+  return dphi;
+};
+
+double displacedJetMuon_ntupler::deltaR(double eta1, double phi1, double eta2, double phi2)
+{
+  double dphi = deltaPhi(phi1,phi2);
+  double deta = eta1 - eta2;
+  return sqrt( dphi*dphi + deta*deta);
+};
+
+bool displacedJetMuon_ntupler::fillPVAll()
+{
+  nPVAll = std::min(int(vertices->size()),int(MAX_NPV));
+  for (int ipv = 0; ipv < nPVAll; ++ipv)
+  {
+    const reco::Vertex &vtx = vertices->at(ipv);
+    pvAllX[ipv] = vtx.x();
+    pvAllY[ipv] = vtx.y();
+    pvAllZ[ipv] = vtx.z();
+  }
+
+  double pvAllSumPtSqD[MAX_NPV];
+  double pvAllSumPxD[MAX_NPV];
+  double pvAllSumPyD[MAX_NPV];
+
+  for (int ipv=0; ipv<nPVAll; ++ipv)
+  {
+    pvAllSumPtSqD[ipv] = 0.;
+    pvAllSumPxD[ipv]   = 0.;
+    pvAllSumPyD[ipv]   = 0.;
+  }
+
+  for (int ipv=0; ipv<nPVAll; ++ipv) {
+    pvAllLogSumPtSq[ipv] = log(pvAllSumPtSqD[ipv]);
+    pvAllSumPx[ipv] = pvAllSumPxD[ipv];
+    pvAllSumPy[ipv] = pvAllSumPyD[ipv];
+  }
+
   return true;
 };
 
