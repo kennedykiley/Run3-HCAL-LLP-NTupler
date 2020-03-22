@@ -33,6 +33,7 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   //get inputs from config file
   isData_(iConfig.getParameter<bool> ("isData")),
   useGen_(iConfig.getParameter<bool> ("useGen")),
+  isRECO_(iConfig.getParameter<bool> ("isRECO")),
   isFastsim_(iConfig.getParameter<bool> ("isFastsim")),
   enableTriggerInfo_(iConfig.getParameter<bool> ("enableTriggerInfo")),
   enableGenLLPInfo_(iConfig.getParameter<bool> ("enableGenLLPInfo")),
@@ -107,8 +108,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
   eeRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("eeRecHits"))),
   esRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("esRecHits"))),
-  hcalRecHitsHOToken_(consumes<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>>(edm::InputTag("horeco"))),
-  hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>(edm::InputTag("hbhereco"))),
+  hcalRecHitsHOToken_(consumes<edm::SortedCollection<HORecHit,edm::StrictWeakOrdering<HORecHit>>>(edm::InputTag("reducedHcalRecHits","horeco"))),
+  hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>(edm::InputTag("reducedHcalRecHits","hbhereco"))),
   ebeeClustersToken_(consumes<vector<reco::CaloCluster> >(iConfig.getParameter<edm::InputTag>("ebeeClusters"))),
   esClustersToken_(consumes<vector<reco::CaloCluster> >(iConfig.getParameter<edm::InputTag>("esClusters"))),
   conversionsToken_(consumes<vector<reco::Conversion> >(iConfig.getParameter<edm::InputTag>("conversions"))),
@@ -2476,199 +2477,199 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 
 
-  //************************************************************************************************************
-  //************************************************************************************************************
-  //** CSC RECHITS
-  //************************************************************************************************************
-  //************************************************************************************************************
+    //************************************************************************************************************
+    //************************************************************************************************************
+    //** CSC RECHITS
+    //************************************************************************************************************
+    //************************************************************************************************************
 
+    if (isRECO_) {
 
+      //cout << "Number of rec hits: "<<cscRechits->size()<<endl;
+      points.clear();
+      for (const CSCRecHit2D cscRechit : *cscRechits) {
+	LocalPoint  cscRecHitLocalPosition       = cscRechit.localPosition();
+	// LocalError  segmentLocalDirectionError = iDT->localDirectionError();
+	CSCDetId cscdetid = cscRechit.cscDetId();
+	cscRechitsDetId[ncscRechits] = CSCDetId::rawIdMaker(CSCDetId::endcap(cscdetid), CSCDetId::station(cscdetid), CSCDetId::ring(cscdetid), CSCDetId::chamber(cscdetid), CSCDetId::layer(cscdetid));
+	int endcap = CSCDetId::endcap(cscdetid) == 1 ? 1 : -1;
+	const CSCChamber* cscchamber = cscG->chamber(cscdetid);
+	if (cscchamber) {
+	  GlobalPoint globalPosition = cscchamber->toGlobal(cscRecHitLocalPosition);
+	  cscRechitsX[ncscRechits] = globalPosition.x();
+	  cscRechitsY[ncscRechits] = globalPosition.y();
+	  cscRechitsZ[ncscRechits] = globalPosition.z();
+	  cscRechitsPhi[ncscRechits] = globalPosition.phi();
+	  cscRechitsEta[ncscRechits] = globalPosition.eta();
+	  cscRechitsE[ncscRechits] = cscRechit.energyDepositedInLayer();//not saved
+	  cscRechitsTpeak[ncscRechits] = cscRechit.tpeak();
+	  cscRechitsTwire[ncscRechits] = cscRechit.wireTime();
+	  cscRechitsQuality[ncscRechits] = cscRechit.quality();
+	  cscRechitsChamber[ncscRechits] = endcap * (CSCDetId::station(cscdetid)*10 + CSCDetId::ring(cscdetid));
+	  if (CSCDetId::ring(cscdetid) == 4) cscRechitsChamber[ncscRechits] = endcap * (CSCDetId::station(cscdetid)*10 + 1);
+	  // cscRechitsRing[ncscRechits] = CSCDetId::ring(cscdetid);
 
-  //cout << "Number of rec hits: "<<cscRechits->size()<<endl;
-  points.clear();
-  for (const CSCRecHit2D cscRechit : *cscRechits) {
-    LocalPoint  cscRecHitLocalPosition       = cscRechit.localPosition();
-    // LocalError  segmentLocalDirectionError = iDT->localDirectionError();
-    CSCDetId cscdetid = cscRechit.cscDetId();
-    cscRechitsDetId[ncscRechits] = CSCDetId::rawIdMaker(CSCDetId::endcap(cscdetid), CSCDetId::station(cscdetid), CSCDetId::ring(cscdetid), CSCDetId::chamber(cscdetid), CSCDetId::layer(cscdetid));
-    int endcap = CSCDetId::endcap(cscdetid) == 1 ? 1 : -1;
-    const CSCChamber* cscchamber = cscG->chamber(cscdetid);
-    if (cscchamber) {
-      GlobalPoint globalPosition = cscchamber->toGlobal(cscRecHitLocalPosition);
-      cscRechitsX[ncscRechits] = globalPosition.x();
-      cscRechitsY[ncscRechits] = globalPosition.y();
-      cscRechitsZ[ncscRechits] = globalPosition.z();
-      cscRechitsPhi[ncscRechits] = globalPosition.phi();
-      cscRechitsEta[ncscRechits] = globalPosition.eta();
-      cscRechitsE[ncscRechits] = cscRechit.energyDepositedInLayer();//not saved
-      cscRechitsTpeak[ncscRechits] = cscRechit.tpeak();
-      cscRechitsTwire[ncscRechits] = cscRechit.wireTime();
-      cscRechitsQuality[ncscRechits] = cscRechit.quality();
-      cscRechitsChamber[ncscRechits] = endcap * (CSCDetId::station(cscdetid)*10 + CSCDetId::ring(cscdetid));
-      if (CSCDetId::ring(cscdetid) == 4) cscRechitsChamber[ncscRechits] = endcap * (CSCDetId::station(cscdetid)*10 + 1);
-      // cscRechitsRing[ncscRechits] = CSCDetId::ring(cscdetid);
+	  cscRechitsStation[ncscRechits] = endcap *CSCDetId::station(cscdetid);
+	  // cscRechitsChannels[ncscRechits] = cscRechit.channels();
+	  cscRechitsNStrips[ncscRechits] = cscRechit.nStrips();
+	  cscRechitsHitWire[ncscRechits] = cscRechit.hitWire();
+	  cscRechitsWGroupsBX[ncscRechits] = cscRechit.wgroupsBX();
+	  cscRechitsNWireGroups[ncscRechits] = cscRechit.nWireGroups();
 
-      cscRechitsStation[ncscRechits] = endcap *CSCDetId::station(cscdetid);
-      // cscRechitsChannels[ncscRechits] = cscRechit.channels();
-      cscRechitsNStrips[ncscRechits] = cscRechit.nStrips();
-      cscRechitsHitWire[ncscRechits] = cscRechit.hitWire();
-      cscRechitsWGroupsBX[ncscRechits] = cscRechit.wgroupsBX();
-      cscRechitsNWireGroups[ncscRechits] = cscRechit.nWireGroups();
+	  Point p;
+	  p.phi = cscRechitsPhi[ncscRechits];
+	  p.eta = cscRechitsEta[ncscRechits];
+	  p.x = cscRechitsX[ncscRechits];
+	  p.y = cscRechitsY[ncscRechits];
+	  p.z = cscRechitsZ[ncscRechits];
+	  p.t = cscRechitsTpeak[ncscRechits];
+	  p.station = cscRechitsStation[ncscRechits];
+	  p.chamber = cscRechitsChamber[ncscRechits];
+	  p.clusterID = UNCLASSIFIED;
+	  points.push_back(p);
 
-      Point p;
-	    p.phi = cscRechitsPhi[ncscRechits];
-	    p.eta = cscRechitsEta[ncscRechits];
-	    p.x = cscRechitsX[ncscRechits];
-	    p.y = cscRechitsY[ncscRechits];
-	    p.z = cscRechitsZ[ncscRechits];
-	    p.t = cscRechitsTpeak[ncscRechits];
-	    p.station = cscRechitsStation[ncscRechits];
-	    p.chamber = cscRechitsChamber[ncscRechits];
-	    p.clusterID = UNCLASSIFIED;
-	    points.push_back(p);
-
-      ncscRechits++;
-    }
-  }
-  //Do DBSCAN Clustering
-  int min_point = 50;  //minimum number of segments to call it a cluster
-  float epsilon = 0.2; //cluster radius parameter
-  DBSCAN ds(min_point, epsilon, points);
-  ds.run();
-  ds.result();
-  ds.clusterMoments();
-  // ds.vertexing();
-  ds.sort_clusters();
-  //Save cluster information
-  for ( auto &tmp : ds.CscCluster ) {
-    cscRechitClusterX[nCscRechitClusters] =tmp.x;
-    cscRechitClusterY[nCscRechitClusters] =tmp.y;
-    cscRechitClusterZ[nCscRechitClusters] =tmp.z;
-    cscRechitClusterTime[nCscRechitClusters] = tmp.t;
-    cscRechitClusterEta[nCscRechitClusters] =tmp.eta;
-    cscRechitClusterPhi[nCscRechitClusters] = tmp.phi;
-    cscRechitClusterMajorAxis[nCscRechitClusters] =tmp.MajorAxis;
-    cscRechitClusterMinorAxis[nCscRechitClusters] =tmp.MinorAxis;
-    cscRechitClusterXSpread[nCscRechitClusters] =tmp.XSpread;
-    cscRechitClusterYSpread[nCscRechitClusters] =tmp.YSpread;
-    cscRechitClusterZSpread[nCscRechitClusters] =tmp.ZSpread;
-    cscRechitClusterEtaPhiSpread[nCscRechitClusters] =tmp.EtaPhiSpread;
-    cscRechitClusterEtaSpread[nCscRechitClusters] =tmp.EtaSpread;
-    cscRechitClusterPhiSpread[nCscRechitClusters] = tmp.PhiSpread;
-    cscRechitClusterTimeSpread[nCscRechitClusters] = tmp.TSpread;
-    cscRechitClusterSize[nCscRechitClusters] = tmp.nCscSegments;
-
-    cscRechitClusterNRechitChamberPlus11[nCscRechitClusters] = tmp.nCscSegmentChamberPlus11;
-    cscRechitClusterNRechitChamberPlus12[nCscRechitClusters] = tmp.nCscSegmentChamberPlus12;
-    cscRechitClusterNRechitChamberPlus13[nCscRechitClusters] = tmp.nCscSegmentChamberPlus13;
-    cscRechitClusterNRechitChamberPlus21[nCscRechitClusters] = tmp.nCscSegmentChamberPlus21;
-    cscRechitClusterNRechitChamberPlus22[nCscRechitClusters] = tmp.nCscSegmentChamberPlus22;
-    cscRechitClusterNRechitChamberPlus31[nCscRechitClusters] = tmp.nCscSegmentChamberPlus31;
-    cscRechitClusterNRechitChamberPlus32[nCscRechitClusters] = tmp.nCscSegmentChamberPlus32;
-    cscRechitClusterNRechitChamberPlus41[nCscRechitClusters] = tmp.nCscSegmentChamberPlus41;
-    cscRechitClusterNRechitChamberPlus42[nCscRechitClusters] = tmp.nCscSegmentChamberPlus42;
-    cscRechitClusterNRechitChamberMinus11[nCscRechitClusters] = tmp.nCscSegmentChamberMinus11;
-    cscRechitClusterNRechitChamberMinus12[nCscRechitClusters] = tmp.nCscSegmentChamberMinus12;
-    cscRechitClusterNRechitChamberMinus13[nCscRechitClusters] = tmp.nCscSegmentChamberMinus13;
-    cscRechitClusterNRechitChamberMinus21[nCscRechitClusters] = tmp.nCscSegmentChamberMinus21;
-    cscRechitClusterNRechitChamberMinus22[nCscRechitClusters] = tmp.nCscSegmentChamberMinus22;
-    cscRechitClusterNRechitChamberMinus31[nCscRechitClusters] = tmp.nCscSegmentChamberMinus31;
-    cscRechitClusterNRechitChamberMinus32[nCscRechitClusters] = tmp.nCscSegmentChamberMinus32;
-    cscRechitClusterNRechitChamberMinus41[nCscRechitClusters] = tmp.nCscSegmentChamberMinus41;
-    cscRechitClusterNRechitChamberMinus42[nCscRechitClusters] = tmp.nCscSegmentChamberMinus42;
-    cscRechitClusterMaxChamber[nCscRechitClusters] = tmp.maxChamber;
-    cscRechitClusterMaxChamberRatio[nCscRechitClusters] = 1.0*tmp.maxChamberSegment/tmp.nCscSegments;
-    cscRechitClusterNChamber[nCscRechitClusters] = tmp.nChamber;
-    cscRechitClusterMaxStation[nCscRechitClusters] = tmp.maxStation;
-    cscRechitClusterMaxStationRatio[nCscRechitClusters] = 1.0*tmp.maxStationSegment/tmp.nCscSegments;
-    cscRechitClusterNStation[nCscRechitClusters] = tmp.nStation;
-
-    cscRechitClusterMe11Ratio[nCscRechitClusters] = tmp.Me11Ratio;
-    cscRechitClusterMe12Ratio[nCscRechitClusters] = tmp.Me12Ratio;
-    // cscRechitClusterVertexR[nCscRechitClusters] = tmp.vertex_r;
-    // cscRechitClusterVertexZ[nCscRechitClusters] = tmp.vertex_z;
-    // cscRechitClusterVertexChi2[nCscRechitClusters] = tmp.vertex_chi2;
-    // cscRechitClusterVertexDis[nCscRechitClusters] = tmp.vertex_dis;
-    // cscRechitClusterVertexN[nCscRechitClusters] = tmp.vertex_n;
-    // cscRechitClusterVertexN1[nCscRechitClusters] = tmp.vertex_n1;
-    // cscRechitClusterVertexN5[nCscRechitClusters] = tmp.vertex_n5;
-    // cscRechitClusterVertexN15[nCscRechitClusters] = tmp.vertex_n15;
-    // cscRechitClusterVertexN20[nCscRechitClusters] = tmp.vertex_n20;
-    // cscRechitClusterVertexN10[nCscRechitClusters] = tmp.vertex_n10;
-
-    //Jet veto/ muon veto
-    cscRechitClusterJetVetoPt[nCscRechitClusters] = 0.0;
-    cscRechitClusterJetVetoE[nCscRechitClusters] = 0.0;
-    cscRechitClusterCaloJetVeto[nCscRechitClusters] = 0.0;
-    cscRechitClusterMuonVetoPt[nCscRechitClusters] = 0.0;
-    cscRechitClusterMuonVetoE[nCscRechitClusters] = 0.0;
-    for (const reco::PFJet &j : *jets) {
-      //if (j.pt() < 10) continue;
-      if (fabs(j.eta())>3.0) continue;
-      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscRechitClusterJetVetoPt[nCscRechitClusters] ) {
-        cscRechitClusterJetVetoPt[nCscRechitClusters]  = j.pt();
+	  ncscRechits++;
+	}
       }
-      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscRechitClusterJetVetoE[nCscRechitClusters] ) {
-        cscRechitClusterJetVetoE[nCscRechitClusters]  = j.energy();
-      }
-    }
-    for(const pat::Muon &mu : *muons) {
-    //if (mu.pt() < 20.0) continue;
-      if (fabs(mu.eta()) > 3.0) continue;
-      if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > cscRechitClusterMuonVetoPt[nCscRechitClusters]) {
-        cscRechitClusterMuonVetoPt[nCscRechitClusters] = mu.pt();
-      }
-      if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscRechitClusterMuonVetoE[nCscRechitClusters]) {
-        cscRechitClusterMuonVetoE[nCscRechitClusters] = mu.energy();
-      }
-    }
+      //Do DBSCAN Clustering
+      int min_point = 50;  //minimum number of segments to call it a cluster
+      float epsilon = 0.2; //cluster radius parameter
+      DBSCAN ds(min_point, epsilon, points);
+      ds.run();
+      ds.result();
+      ds.clusterMoments();
+      // ds.vertexing();
+      ds.sort_clusters();
+      //Save cluster information
+      for ( auto &tmp : ds.CscCluster ) {
+	cscRechitClusterX[nCscRechitClusters] =tmp.x;
+	cscRechitClusterY[nCscRechitClusters] =tmp.y;
+	cscRechitClusterZ[nCscRechitClusters] =tmp.z;
+	cscRechitClusterTime[nCscRechitClusters] = tmp.t;
+	cscRechitClusterEta[nCscRechitClusters] =tmp.eta;
+	cscRechitClusterPhi[nCscRechitClusters] = tmp.phi;
+	cscRechitClusterMajorAxis[nCscRechitClusters] =tmp.MajorAxis;
+	cscRechitClusterMinorAxis[nCscRechitClusters] =tmp.MinorAxis;
+	cscRechitClusterXSpread[nCscRechitClusters] =tmp.XSpread;
+	cscRechitClusterYSpread[nCscRechitClusters] =tmp.YSpread;
+	cscRechitClusterZSpread[nCscRechitClusters] =tmp.ZSpread;
+	cscRechitClusterEtaPhiSpread[nCscRechitClusters] =tmp.EtaPhiSpread;
+	cscRechitClusterEtaSpread[nCscRechitClusters] =tmp.EtaSpread;
+	cscRechitClusterPhiSpread[nCscRechitClusters] = tmp.PhiSpread;
+	cscRechitClusterTimeSpread[nCscRechitClusters] = tmp.TSpread;
+	cscRechitClusterSize[nCscRechitClusters] = tmp.nCscSegments;
 
-    //match to segment clusters
-    float min_deltaR = 15.;
-    int index = 999;
+	cscRechitClusterNRechitChamberPlus11[nCscRechitClusters] = tmp.nCscSegmentChamberPlus11;
+	cscRechitClusterNRechitChamberPlus12[nCscRechitClusters] = tmp.nCscSegmentChamberPlus12;
+	cscRechitClusterNRechitChamberPlus13[nCscRechitClusters] = tmp.nCscSegmentChamberPlus13;
+	cscRechitClusterNRechitChamberPlus21[nCscRechitClusters] = tmp.nCscSegmentChamberPlus21;
+	cscRechitClusterNRechitChamberPlus22[nCscRechitClusters] = tmp.nCscSegmentChamberPlus22;
+	cscRechitClusterNRechitChamberPlus31[nCscRechitClusters] = tmp.nCscSegmentChamberPlus31;
+	cscRechitClusterNRechitChamberPlus32[nCscRechitClusters] = tmp.nCscSegmentChamberPlus32;
+	cscRechitClusterNRechitChamberPlus41[nCscRechitClusters] = tmp.nCscSegmentChamberPlus41;
+	cscRechitClusterNRechitChamberPlus42[nCscRechitClusters] = tmp.nCscSegmentChamberPlus42;
+	cscRechitClusterNRechitChamberMinus11[nCscRechitClusters] = tmp.nCscSegmentChamberMinus11;
+	cscRechitClusterNRechitChamberMinus12[nCscRechitClusters] = tmp.nCscSegmentChamberMinus12;
+	cscRechitClusterNRechitChamberMinus13[nCscRechitClusters] = tmp.nCscSegmentChamberMinus13;
+	cscRechitClusterNRechitChamberMinus21[nCscRechitClusters] = tmp.nCscSegmentChamberMinus21;
+	cscRechitClusterNRechitChamberMinus22[nCscRechitClusters] = tmp.nCscSegmentChamberMinus22;
+	cscRechitClusterNRechitChamberMinus31[nCscRechitClusters] = tmp.nCscSegmentChamberMinus31;
+	cscRechitClusterNRechitChamberMinus32[nCscRechitClusters] = tmp.nCscSegmentChamberMinus32;
+	cscRechitClusterNRechitChamberMinus41[nCscRechitClusters] = tmp.nCscSegmentChamberMinus41;
+	cscRechitClusterNRechitChamberMinus42[nCscRechitClusters] = tmp.nCscSegmentChamberMinus42;
+	cscRechitClusterMaxChamber[nCscRechitClusters] = tmp.maxChamber;
+	cscRechitClusterMaxChamberRatio[nCscRechitClusters] = 1.0*tmp.maxChamberSegment/tmp.nCscSegments;
+	cscRechitClusterNChamber[nCscRechitClusters] = tmp.nChamber;
+	cscRechitClusterMaxStation[nCscRechitClusters] = tmp.maxStation;
+	cscRechitClusterMaxStationRatio[nCscRechitClusters] = 1.0*tmp.maxStationSegment/tmp.nCscSegments;
+	cscRechitClusterNStation[nCscRechitClusters] = tmp.nStation;
 
-    for(int j = 0; j < nCscSegClusters; j++)
-    {
-      double current_delta_r = deltaR(cscRechitClusterEta[nCscRechitClusters], cscRechitClusterPhi[nCscRechitClusters], cscSegClusterEta[j], cscSegClusterPhi[j]);
-      if (current_delta_r < min_deltaR)
-      {
-        min_deltaR = current_delta_r;
-        index = j;
-      }
-    }
-    if (min_deltaR < 0.4)
-    {
-      cscRechitCluster_match_cscSegCluster_minDeltaR[nCscRechitClusters] = min_deltaR;
-      cscRechitCluster_match_cscSegCluster_index[nCscRechitClusters] = index;
-    }
-    min_deltaR = 15.;
-    index = 999;
+	cscRechitClusterMe11Ratio[nCscRechitClusters] = tmp.Me11Ratio;
+	cscRechitClusterMe12Ratio[nCscRechitClusters] = tmp.Me12Ratio;
+	// cscRechitClusterVertexR[nCscRechitClusters] = tmp.vertex_r;
+	// cscRechitClusterVertexZ[nCscRechitClusters] = tmp.vertex_z;
+	// cscRechitClusterVertexChi2[nCscRechitClusters] = tmp.vertex_chi2;
+	// cscRechitClusterVertexDis[nCscRechitClusters] = tmp.vertex_dis;
+	// cscRechitClusterVertexN[nCscRechitClusters] = tmp.vertex_n;
+	// cscRechitClusterVertexN1[nCscRechitClusters] = tmp.vertex_n1;
+	// cscRechitClusterVertexN5[nCscRechitClusters] = tmp.vertex_n5;
+	// cscRechitClusterVertexN15[nCscRechitClusters] = tmp.vertex_n15;
+	// cscRechitClusterVertexN20[nCscRechitClusters] = tmp.vertex_n20;
+	// cscRechitClusterVertexN10[nCscRechitClusters] = tmp.vertex_n10;
+
+	//Jet veto/ muon veto
+	cscRechitClusterJetVetoPt[nCscRechitClusters] = 0.0;
+	cscRechitClusterJetVetoE[nCscRechitClusters] = 0.0;
+	cscRechitClusterCaloJetVeto[nCscRechitClusters] = 0.0;
+	cscRechitClusterMuonVetoPt[nCscRechitClusters] = 0.0;
+	cscRechitClusterMuonVetoE[nCscRechitClusters] = 0.0;
+	for (const reco::PFJet &j : *jets) {
+	  //if (j.pt() < 10) continue;
+	  if (fabs(j.eta())>3.0) continue;
+	  if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscRechitClusterJetVetoPt[nCscRechitClusters] ) {
+	    cscRechitClusterJetVetoPt[nCscRechitClusters]  = j.pt();
+	  }
+	  if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscRechitClusterJetVetoE[nCscRechitClusters] ) {
+	    cscRechitClusterJetVetoE[nCscRechitClusters]  = j.energy();
+	  }
+	}
+	for(const pat::Muon &mu : *muons) {
+	  //if (mu.pt() < 20.0) continue;
+	  if (fabs(mu.eta()) > 3.0) continue;
+	  if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > cscRechitClusterMuonVetoPt[nCscRechitClusters]) {
+	    cscRechitClusterMuonVetoPt[nCscRechitClusters] = mu.pt();
+	  }
+	  if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscRechitClusterMuonVetoE[nCscRechitClusters]) {
+	    cscRechitClusterMuonVetoE[nCscRechitClusters] = mu.energy();
+	  }
+	}
+
+	//match to segment clusters
+	float min_deltaR = 15.;
+	int index = 999;
+
+	for(int j = 0; j < nCscSegClusters; j++)
+	  {
+	    double current_delta_r = deltaR(cscRechitClusterEta[nCscRechitClusters], cscRechitClusterPhi[nCscRechitClusters], cscSegClusterEta[j], cscSegClusterPhi[j]);
+	    if (current_delta_r < min_deltaR)
+	      {
+		min_deltaR = current_delta_r;
+		index = j;
+	      }
+	  }
+	if (min_deltaR < 0.4)
+	  {
+	    cscRechitCluster_match_cscSegCluster_minDeltaR[nCscRechitClusters] = min_deltaR;
+	    cscRechitCluster_match_cscSegCluster_index[nCscRechitClusters] = index;
+	  }
+	min_deltaR = 15.;
+	index = 999;
 
 
-    if (!isData) {
-      //match to genparticles
-      for(int j = 0; j < nGenParticle; j++)
-	{
-	  if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
-	  double current_delta_r = deltaR(cscRechitClusterEta[nCscRechitClusters], cscRechitClusterPhi[nCscRechitClusters], gParticleEta[j], gParticlePhi[j]);
-	  if (current_delta_r < min_deltaR)
+	if (!isData) {
+	  //match to genparticles
+	  for(int j = 0; j < nGenParticle; j++)
 	    {
-	      min_deltaR = current_delta_r;
-	      index = j;
+	      if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
+	      double current_delta_r = deltaR(cscRechitClusterEta[nCscRechitClusters], cscRechitClusterPhi[nCscRechitClusters], gParticleEta[j], gParticlePhi[j]);
+	      if (current_delta_r < min_deltaR)
+		{
+		  min_deltaR = current_delta_r;
+		  index = j;
+		}
+	    }
+	  if (min_deltaR < 0.4)
+	    {
+	      cscRechitCluster_match_gParticle_minDeltaR[nCscRechitClusters] = min_deltaR;
+	      cscRechitCluster_match_gParticle_index[nCscRechitClusters] = index;
+	      cscRechitCluster_match_gParticle_id[nCscRechitClusters] = gParticleId[index];
 	    }
 	}
-      if (min_deltaR < 0.4)
-	{
-	  cscRechitCluster_match_gParticle_minDeltaR[nCscRechitClusters] = min_deltaR;
-	  cscRechitCluster_match_gParticle_index[nCscRechitClusters] = index;
-	  cscRechitCluster_match_gParticle_id[nCscRechitClusters] = gParticleId[index];
-	}
+
+	nCscRechitClusters++;
+      }
+
     }
-
-    nCscRechitClusters++;
-  }
-
-
 
   //************************************************************************************************************
   //************************************************************************************************************
@@ -2837,140 +2838,141 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 
 
 
-  //************************************************************************************************************
-  //************************************************************************************************************
-  //** DT RECHITS
-  //************************************************************************************************************
-  //************************************************************************************************************
+    //************************************************************************************************************
+    //************************************************************************************************************
+    //** DT RECHITS
+    //************************************************************************************************************
+    //************************************************************************************************************
 
+    if (isRECO_) {
+      //cout<<"number of dt rechits: " <<dtRechits->size()<<endl;
+      points.clear();
+      for(DTRecHit1DPair dtRechit: *dtRechits){
+	LocalPoint  localPosition       = dtRechit.localPosition();
+	DetId geoid = dtRechit.geographicalId();
+	DTChamberId dtdetid = DTChamberId(geoid);
+	const DTChamber * dtchamber = dtG->chamber(dtdetid);
+	if (dtchamber) {
+	  GlobalPoint globalPosition = dtchamber->toGlobal(localPosition);
+	  dtRechitPhi[nDtRechits] = globalPosition.phi();
+	  dtRechitEta[nDtRechits] = globalPosition.eta();
+	  dtRechitX[nDtRechits] = globalPosition.x();
+	  dtRechitY[nDtRechits] = globalPosition.y();
+	  dtRechitZ[nDtRechits] = globalPosition.z();
+	  dtRechitTime[nDtRechits] = dtRechit.digiTime();
+	  dtRechitStation[nDtRechits] = dtdetid.station();
+	  dtRechitWheel[nDtRechits] = dtdetid.wheel();
+	  Point p;
+	  p.phi = dtRechitPhi[nDtRechits];
+	  p.eta = dtRechitEta[nDtRechits];
+	  p.x = dtRechitX[nDtRechits];
+	  p.y = dtRechitY[nDtRechits];
+	  p.z = dtRechitZ[nDtRechits];
+	  p.t = dtRechitTime[nDtRechits];
+	  p.station = dtRechitStation[nDtRechits];
+	  p.chamber = dtRechitWheel[nDtRechits];
+	  p.clusterID = UNCLASSIFIED;
+	  points.push_back(p);
 
-  //cout<<"number of dt rechits: " <<dtRechits->size()<<endl;
-  points.clear();
-  for(DTRecHit1DPair dtRechit: *dtRechits){
-    LocalPoint  localPosition       = dtRechit.localPosition();
-    DetId geoid = dtRechit.geographicalId();
-    DTChamberId dtdetid = DTChamberId(geoid);
-    const DTChamber * dtchamber = dtG->chamber(dtdetid);
-    if (dtchamber) {
-      GlobalPoint globalPosition = dtchamber->toGlobal(localPosition);
-      dtRechitPhi[nDtRechits] = globalPosition.phi();
-      dtRechitEta[nDtRechits] = globalPosition.eta();
-      dtRechitX[nDtRechits] = globalPosition.x();
-      dtRechitY[nDtRechits] = globalPosition.y();
-      dtRechitZ[nDtRechits] = globalPosition.z();
-      dtRechitTime[nDtRechits] = dtRechit.digiTime();
-      dtRechitStation[nDtRechits] = dtdetid.station();
-      dtRechitWheel[nDtRechits] = dtdetid.wheel();
-      Point p;
-      p.phi = dtRechitPhi[nDtRechits];
-      p.eta = dtRechitEta[nDtRechits];
-      p.x = dtRechitX[nDtRechits];
-      p.y = dtRechitY[nDtRechits];
-      p.z = dtRechitZ[nDtRechits];
-      p.t = dtRechitTime[nDtRechits];
-      p.station = dtRechitStation[nDtRechits];
-      p.chamber = dtRechitWheel[nDtRechits];
-      p.clusterID = UNCLASSIFIED;
-      points.push_back(p);
-
-      nDtRechits++;
-    }
-  }
-  //Do DBSCAN Clustering
-  int min_point_dtrechit = 50;  //minimum number of segments to call it a cluster
-  float epsilon_dtrechit = 0.2; //cluster radius parameter
-  DBSCAN ds_dtRechit(min_point_dtrechit, epsilon_dtrechit, points);
-  ds_dtRechit.run();
-  ds_dtRechit.result();
-  ds_dtRechit.clusterMoments();
-  // ds_dtseg.vertexing();
-  ds_dtRechit.sort_clusters();
-
-  //Save cluster information
-  for ( auto &tmp : ds_dtRechit.CscCluster ) {
-    dtRechitClusterX[nDtRechitClusters] =tmp.x;
-    dtRechitClusterY[nDtRechitClusters] =tmp.y;
-    dtRechitClusterZ[nDtRechitClusters] =tmp.z;
-    dtRechitClusterTime[nDtRechitClusters] = tmp.t;
-    dtRechitClusterEta[nDtRechitClusters] =tmp.eta;
-    dtRechitClusterPhi[nDtRechitClusters] = tmp.phi;
-    dtRechitClusterMajorAxis[nDtRechitClusters] =tmp.MajorAxis;
-    dtRechitClusterMinorAxis[nDtRechitClusters] =tmp.MinorAxis;
-    dtRechitClusterXSpread[nDtRechitClusters] =tmp.XSpread;
-    dtRechitClusterYSpread[nDtRechitClusters] =tmp.YSpread;
-    dtRechitClusterZSpread[nDtRechitClusters] =tmp.ZSpread;
-    dtRechitClusterEtaPhiSpread[nDtRechitClusters] =tmp.EtaPhiSpread;
-    dtRechitClusterEtaSpread[nDtRechitClusters] =tmp.EtaSpread;
-    dtRechitClusterPhiSpread[nDtRechitClusters] = tmp.PhiSpread;
-    dtRechitClusterTimeSpread[nDtRechitClusters] = tmp.TSpread;
-    dtRechitClusterSize[nDtRechitClusters] = tmp.nCscSegments;
-
-    dtRechitClusterNSegmentStation1[nDtRechitClusters] = tmp.nDtSegmentStation1;
-    dtRechitClusterNSegmentStation2[nDtRechitClusters] = tmp.nDtSegmentStation2;
-    dtRechitClusterNSegmentStation3[nDtRechitClusters] = tmp.nDtSegmentStation3;
-    dtRechitClusterNSegmentStation4[nDtRechitClusters] = tmp.nDtSegmentStation4;
-
-    dtRechitClusterMaxChamber[nDtRechitClusters] = tmp.maxChamber;
-    dtRechitClusterMaxChamberRatio[nDtRechitClusters] = 1.0*tmp.maxChamberSegment/tmp.nCscSegments;
-    dtRechitClusterNChamber[nDtRechitClusters] = tmp.nChamber;
-    dtRechitClusterMaxStation[nDtRechitClusters] = tmp.maxStation;
-    dtRechitClusterMaxStationRatio[nDtRechitClusters] = 1.0*tmp.maxStationSegment/tmp.nCscSegments;
-    dtRechitClusterNStation[nDtRechitClusters] = tmp.nStation;
-
-
-    //Jet veto/ muon veto
-    dtRechitClusterJetVetoPt[nDtRechitClusters] = 0.0;
-    dtRechitClusterJetVetoE[nDtRechitClusters] = 0.0;
-    dtRechitClusterCaloJetVeto[nDtRechitClusters] = 0.0;
-    dtRechitClusterMuonVetoPt[nDtRechitClusters] = 0.0;
-    dtRechitClusterMuonVetoE[nDtRechitClusters] = 0.0;
-
-    for (const reco::PFJet &j : *jets) {
-      //if (j.pt() < 10) continue;
-      if (fabs(j.eta())>3.0) continue;
-      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > dtRechitClusterJetVetoPt[nDtRechitClusters] ) {
-        dtRechitClusterJetVetoPt[nDtRechitClusters]  = j.pt();
+	  nDtRechits++;
+	}
       }
-      if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > dtRechitClusterJetVetoE[nDtRechitClusters] ) {
-        dtRechitClusterJetVetoE[nDtRechitClusters]  = j.energy();
-      }
-    }
-    for(const pat::Muon &mu : *muons) {
-//if (mu.pt() < 20.0) continue;
-      if (fabs(mu.eta()) > 3.0) continue;
-      if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > dtRechitClusterMuonVetoPt[nDtRechitClusters]) {
-        dtRechitClusterMuonVetoPt[nDtRechitClusters] = mu.pt();
-      }
-      if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > dtRechitClusterMuonVetoE[nDtRechitClusters]) {
-        dtRechitClusterMuonVetoE[nDtRechitClusters] = mu.energy();
-      }
-    }
+      //Do DBSCAN Clustering
+      int min_point_dtrechit = 50;  //minimum number of segments to call it a cluster
+      float epsilon_dtrechit = 0.2; //cluster radius parameter
+      DBSCAN ds_dtRechit(min_point_dtrechit, epsilon_dtrechit, points);
+      ds_dtRechit.run();
+      ds_dtRechit.result();
+      ds_dtRechit.clusterMoments();
+      // ds_dtseg.vertexing();
+      ds_dtRechit.sort_clusters();
 
-    if (!isData) {
-      //match to genparticles
-      float min_deltaR = 15.;
-      int index = 999;
-      for(int j = 0; j < nGenParticle; j++)
-	{
-	  if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
+      //Save cluster information
+      for ( auto &tmp : ds_dtRechit.CscCluster ) {
+	dtRechitClusterX[nDtRechitClusters] =tmp.x;
+	dtRechitClusterY[nDtRechitClusters] =tmp.y;
+	dtRechitClusterZ[nDtRechitClusters] =tmp.z;
+	dtRechitClusterTime[nDtRechitClusters] = tmp.t;
+	dtRechitClusterEta[nDtRechitClusters] =tmp.eta;
+	dtRechitClusterPhi[nDtRechitClusters] = tmp.phi;
+	dtRechitClusterMajorAxis[nDtRechitClusters] =tmp.MajorAxis;
+	dtRechitClusterMinorAxis[nDtRechitClusters] =tmp.MinorAxis;
+	dtRechitClusterXSpread[nDtRechitClusters] =tmp.XSpread;
+	dtRechitClusterYSpread[nDtRechitClusters] =tmp.YSpread;
+	dtRechitClusterZSpread[nDtRechitClusters] =tmp.ZSpread;
+	dtRechitClusterEtaPhiSpread[nDtRechitClusters] =tmp.EtaPhiSpread;
+	dtRechitClusterEtaSpread[nDtRechitClusters] =tmp.EtaSpread;
+	dtRechitClusterPhiSpread[nDtRechitClusters] = tmp.PhiSpread;
+	dtRechitClusterTimeSpread[nDtRechitClusters] = tmp.TSpread;
+	dtRechitClusterSize[nDtRechitClusters] = tmp.nCscSegments;
 
-	  double current_delta_r = deltaR(dtRechitClusterEta[nDtRechitClusters], dtRechitClusterPhi[nDtRechitClusters], gParticleEta[j], gParticlePhi[j]);
-	  if (current_delta_r < min_deltaR)
+	dtRechitClusterNSegmentStation1[nDtRechitClusters] = tmp.nDtSegmentStation1;
+	dtRechitClusterNSegmentStation2[nDtRechitClusters] = tmp.nDtSegmentStation2;
+	dtRechitClusterNSegmentStation3[nDtRechitClusters] = tmp.nDtSegmentStation3;
+	dtRechitClusterNSegmentStation4[nDtRechitClusters] = tmp.nDtSegmentStation4;
+
+	dtRechitClusterMaxChamber[nDtRechitClusters] = tmp.maxChamber;
+	dtRechitClusterMaxChamberRatio[nDtRechitClusters] = 1.0*tmp.maxChamberSegment/tmp.nCscSegments;
+	dtRechitClusterNChamber[nDtRechitClusters] = tmp.nChamber;
+	dtRechitClusterMaxStation[nDtRechitClusters] = tmp.maxStation;
+	dtRechitClusterMaxStationRatio[nDtRechitClusters] = 1.0*tmp.maxStationSegment/tmp.nCscSegments;
+	dtRechitClusterNStation[nDtRechitClusters] = tmp.nStation;
+
+
+	//Jet veto/ muon veto
+	dtRechitClusterJetVetoPt[nDtRechitClusters] = 0.0;
+	dtRechitClusterJetVetoE[nDtRechitClusters] = 0.0;
+	dtRechitClusterCaloJetVeto[nDtRechitClusters] = 0.0;
+	dtRechitClusterMuonVetoPt[nDtRechitClusters] = 0.0;
+	dtRechitClusterMuonVetoE[nDtRechitClusters] = 0.0;
+
+	for (const reco::PFJet &j : *jets) {
+	  //if (j.pt() < 10) continue;
+	  if (fabs(j.eta())>3.0) continue;
+	  if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > dtRechitClusterJetVetoPt[nDtRechitClusters] ) {
+	    dtRechitClusterJetVetoPt[nDtRechitClusters]  = j.pt();
+	  }
+	  if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > dtRechitClusterJetVetoE[nDtRechitClusters] ) {
+	    dtRechitClusterJetVetoE[nDtRechitClusters]  = j.energy();
+	  }
+	}
+	for(const pat::Muon &mu : *muons) {
+	  //if (mu.pt() < 20.0) continue;
+	  if (fabs(mu.eta()) > 3.0) continue;
+	  if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > dtRechitClusterMuonVetoPt[nDtRechitClusters]) {
+	    dtRechitClusterMuonVetoPt[nDtRechitClusters] = mu.pt();
+	  }
+	  if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > dtRechitClusterMuonVetoE[nDtRechitClusters]) {
+	    dtRechitClusterMuonVetoE[nDtRechitClusters] = mu.energy();
+	  }
+	}
+
+	if (!isData) {
+	  //match to genparticles
+	  float min_deltaR = 15.;
+	  int index = 999;
+	  for(int j = 0; j < nGenParticle; j++)
 	    {
-	      min_deltaR = current_delta_r;
-	      index = j;
+	      if (abs(gParticleId[j]) >= 100 && abs(gParticleId[j]) <=350) continue;
+
+	      double current_delta_r = deltaR(dtRechitClusterEta[nDtRechitClusters], dtRechitClusterPhi[nDtRechitClusters], gParticleEta[j], gParticlePhi[j]);
+	      if (current_delta_r < min_deltaR)
+		{
+		  min_deltaR = current_delta_r;
+		  index = j;
+		}
+	    }
+	  if (min_deltaR < 0.4)
+	    {
+	      dtRechitCluster_match_gParticle_minDeltaR[nDtRechitClusters] = min_deltaR;
+	      dtRechitCluster_match_gParticle_index[nDtRechitClusters] = index;
+	      dtRechitCluster_match_gParticle_id[nDtRechitClusters] = gParticleId[index];
 	    }
 	}
-      if (min_deltaR < 0.4)
-	{
-	  dtRechitCluster_match_gParticle_minDeltaR[nDtRechitClusters] = min_deltaR;
-	  dtRechitCluster_match_gParticle_index[nDtRechitClusters] = index;
-	  dtRechitCluster_match_gParticle_id[nDtRechitClusters] = gParticleId[index];
-	}
-    }
 
-    nDtRechitClusters++;
-  }
+	nDtRechitClusters++;
+      }
+    }
 
   for (const RPCRecHit rpcRecHit : *rpcRecHits){
     LocalPoint  rpcRecHitLocalPosition       = rpcRecHit.localPosition();
@@ -3612,6 +3614,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 	   deltaR(jetEta[nJets], jetPhi[nJets], hiteta, hitphi)  < 0.5	   
 	   ) {
 	SaveThisHCALRechit[iHit] = true;
+	//cout << "SaveThisRechit : " << recHit->energy() << " " << hiteta << " " << hitphi << "\n";
       }
     }
 
@@ -3915,12 +3918,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     //cout << "HCALREchit " << iHit << " : " << recHit->detid().subdetId() << " : " << recHitId.depth() << " " << recHitId.ieta() << " " << recHitId.iphi() << " "
 	 // << " | " << recHit->energy() << " " 
 	 // << "\n";
-    hbheRechit_iEta[nHBHERechits]  = recHitId.ieta();
-    hbheRechit_iPhi[nHBHERechits]  = recHitId.iphi();
-    hbheRechit_depth[nHBHERechits]  = recHitId.depth();
 
     if (SaveThisHCALRechit[iHit]) {
-      if (recHit->energy() < 0.1) continue;      
+      hbheRechit_iEta[nHBHERechits]  = recHitId.ieta();
+      hbheRechit_iPhi[nHBHERechits]  = recHitId.iphi();
+      hbheRechit_depth[nHBHERechits]  = recHitId.depth();
       if (recHit->detid().subdetId() == HcalBarrel) {
 	const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
 	hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
@@ -3939,8 +3941,12 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 	cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
       }
     
-      hbheRechit_E[nHORechits] = recHit->energy();
-      hbheRechit_T[nHORechits] = recHit->time();
+      hbheRechit_E[nHBHERechits] = recHit->energy();
+      hbheRechit_T[nHBHERechits] = recHit->time();
+
+      //if (hbheRechit_E[nHORechits] < -1) {
+      //cout << "HCAL Hit: " << << hbheRechit_Eta[nHORechits] << " " << hbheRechit_Phi[nHBHERechits] << " : " << hbheRechit_E[nHORechits] << " | " << nHORechits << "\n";
+	//}
     
       nHBHERechits++;
     }
