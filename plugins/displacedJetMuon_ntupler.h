@@ -43,7 +43,7 @@ using namespace std;
 #include "TrackingTools/TrajectoryState/interface/FreeTrajectoryState.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
 #include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
-#include "RecoTracker/DebugTools/interface/GetTrackTrajInfo.h"
+#include "cms_lpc_llp/llp_ntupler/interface/GetTrackTrajInfo.h"
 
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
 
