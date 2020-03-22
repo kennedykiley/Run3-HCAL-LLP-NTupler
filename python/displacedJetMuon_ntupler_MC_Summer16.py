@@ -5,9 +5,9 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 #initialize the process
 process = cms.Process("displacedJetMuonNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
-process.load("PhysicsTools.PatAlgos.producersLayer1.patCandidates_cff")
 process.load("Configuration.EventContent.EventContent_cff")
 process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2017")
+
 
 #load input files
 process.source = cms.Source("PoolSource",
@@ -17,6 +17,10 @@ process.source = cms.Source("PoolSource",
         #'/store/mc/RunIISummer16DR80Premix/WminusH_HToSSTobbbb_WToLNu_MH-125_MS-40_ctauS-10000_TuneCUETP8M1_13TeV-powheg-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/7C808D45-EDCD-E611-B093-14187741278B.root'
         '/store/mc/RunIISummer16DR80Premix/ggH_HToSSTobbbb_MH-125_TuneCUETP8M1_13TeV-powheg-pythia8/GEN-SIM-RECO/PUMoriond17_rp_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/00001/04C9F41B-6652-EA11-9B02-001E675A68BF.root'
         )
+)
+
+process.options = cms.untracked.PSet(
+
 )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
@@ -40,10 +44,27 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 
 process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_v3'
 
-#------ If we add any inputs beyond standard miniAOD event content, import them here ------#
-
+#------ If we add any inputs beyond standard event content, import them here ------#
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
 
+
+process.output = cms.OutputModule("PoolOutputModule",
+    compressionAlgorithm = cms.untracked.string('LZMA'),
+    compressionLevel = cms.untracked.int32(4),
+    dataset = cms.untracked.PSet(
+        dataTier = cms.untracked.string(''),
+        filterName = cms.untracked.string('')
+    ),
+    dropMetaData = cms.untracked.string('ALL'),
+    eventAutoFlushCompressedSize = cms.untracked.int32(-900),
+    fastCloning = cms.untracked.bool(False),
+    fileName = cms.untracked.string('miniAOD-prod_PAT.root'),
+    outputCommands = cms.untracked.vstring('keep *'),
+)
+
+
+
+  
 #------ Analyzer ------#
 
 # For AOD Track variables
@@ -90,7 +111,9 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     jetsPF = cms.InputTag("ak4PFJets"),
     jets = cms.InputTag("ak4PFJetsCHS"),
     jetsPuppi = cms.InputTag("ak4PFJets"),
-    jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
+    #jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
+    jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
+
     mets = cms.InputTag("pfMet"),
     #metsNoHF = cms.InputTag("pfMet30"),
     metsPuppi = cms.InputTag("pfMet"),
@@ -173,6 +196,31 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
 )
 
-#run
-process.p = cms.Path( process.metFilters * process.ntuples)
+#Add jettiness for AK8 jets
+process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
+process.NjettinessAK8CHS = process.Njettiness.clone()
+
+#Define Execution Paths
+process.outputPath = cms.EndPath(process.output)
+process.p = cms.Path(process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+process.schedule = cms.Schedule(process.p)
+
+
+#Define Jet Tool Box Stuff
+listBtagDiscriminatorsAK4 = [ 
+                'pfJetProbabilityBJetTags',
+                'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+                'pfCombinedMVAV2BJetTags',
+                'pfCombinedCvsLJetTags',
+                'pfCombinedCvsBJetTags',
+                ]
+from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
+#jetToolbox( process, 'ak8', 'ak8JetSubs', 'jetSequence', PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addPruning=True, addSoftDrop=True, addTrimming=True, addFiltering=True, addMassDrop=True, addNsub=True, addNsubSubjets=True, addPrunedSubjets=True, addPUJetID=True, addQJets=True, addQGTagger=True, miniAOD=False )   ### For example
+jetToolbox( process, 'ak8', 'ak8JetSubs', "out", PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addSoftDrop=True, addNsub=True, addNsubSubjets=True, miniAOD=False )   ### For example
+
+
+#Add PAT tasks for jet Toolbox to execution schedule
+from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
+associatePatAlgosToolsTask(process)
+
 

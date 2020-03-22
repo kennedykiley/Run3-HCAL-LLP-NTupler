@@ -64,7 +64,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   photonsToken_(consumes<reco::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
   jetsToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
   jetsPuppiToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsPuppi"))),
-  jetsAK8Token_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsAK8"))),
+  //jetsAK8Token_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsAK8"))),
+  jetsAK8Token_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jetsAK8"))),
   PFCandsToken_(consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
   PFClustersToken_(consumes<reco::PFClusterCollection>(iConfig.getParameter<edm::InputTag>("pfClusters"))),
   //genParticlesToken_(consumes<edm::View<reco::GenParticle> >(iConfig.getParameter<edm::InputTag>("genParticles"))),
@@ -122,8 +123,24 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
 
   //set up output tree
   displacedJetMuonTree = fs->make<TTree>("llp", "selected AOD information for llp analyses");
-  //displacedJetMuonTree = new TTree("Jets", "selected AOD information");
   NEvents = fs->make<TH1F>("NEvents",";;NEvents;",1,-0.5,0.5);
+  if (!isData_) {
+    sumWeights = fs->make<TH1D>("sumWeights",";;sumWeights;",1,-0.5,0.5);
+    sumScaleWeights = fs->make<TH1D>("sumScaleWeights",";;sumScaleWeights;",9,-0.5,8.5);
+    sumPdfWeights = fs->make<TH1D>("sumPdfWeights",";;sumPdfWeights;",100,-0.5,99.5);
+    sumAlphasWeights = fs->make<TH1D>("sumAlphasWeights",";;sumAlphasWeights;",2,-0.5,1.5);
+    
+    sumWeights->Sumw2();
+    sumScaleWeights->Sumw2();
+    sumPdfWeights->Sumw2();
+    sumAlphasWeights->Sumw2();
+  }
+  else {
+    sumWeights = 0;
+    sumScaleWeights = 0;
+    sumPdfWeights = 0;
+    sumAlphasWeights = 0;
+  }
 
 
   //------------------------------------------------------------------
@@ -766,7 +783,6 @@ void displacedJetMuon_ntupler::enableJetBranches()
   displacedJetMuonTree->Branch("jetE", jetE,"jetE[nJets]/F");
   displacedJetMuonTree->Branch("jetPt", jetPt,"jetPt[nJets]/F");
   displacedJetMuonTree->Branch("jetEta", jetEta,"jetEta[nJets]/F");
-  displacedJetMuonTree->Branch("jetEt", jetEt,"jetEt[nJets]/F");
 
   displacedJetMuonTree->Branch("jetPhi", jetPhi,"jetPhi[nJets]/F");
   displacedJetMuonTree->Branch("jetCSV", jetCSV,"jetCSV[nJets]/F");
@@ -1040,7 +1056,7 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(dtCosmicRechitInputToken_,dtCosmicRechits);
 
   iEvent.getByToken(rpcRecHitInputToken_,rpcRecHits);
-  if (!isData) {
+  if (!isData_) {
     iEvent.getByToken(MuonCSCSimHitsToken_, MuonCSCSimHits);
     if (readMuonDigis_) {
       iEvent.getByToken(MuonCSCStripDigiSimLinksToken_, MuonCSCStripDigiSimLinks);
@@ -1640,7 +1656,6 @@ void displacedJetMuon_ntupler::resetJetBranches()
   for ( int i = 0; i < OBJECTARRAYSIZE; i++)
   {
     jetE[i] = 0.0;
-    jetEt[i] = 0.0;
     jetPt[i] = 0.0;
     jetEta[i] = 0.0;
     jetPhi[i] = 0.0;
@@ -2014,6 +2029,10 @@ void displacedJetMuon_ntupler::resetMCBranches()
   genAlphaQCD = -999.;
   genAlphaQED = -999.;
 
+  scaleWeights->clear();
+  pdfWeights->clear();
+  alphasWeights->clear();
+
   return;
 };
 
@@ -2028,6 +2047,74 @@ void displacedJetMuon_ntupler::resetTriggerBranches()
 //------ Method called for each run ------//
 
 void displacedJetMuon_ntupler::beginRun(const edm::Run& iRun, const edm::EventSetup& iSetup) {
+
+  //read LHE header if present and determine which weights to read for pdf and alphas uncertainties based on the 
+  //central pdf set used
+  //This is semi-hardcoded for now to work with current centrally produced samples
+  //covering SUSY signal samples, LO madgraph, NLO madgraph_aMC@NLO, and NLO powheg
+  //generated with nnpdf30
+  //More robust selection will require some parsing of <initrwgt> block
+  
+  if (!isData_) {
+  
+      //hardcode this for now. All SUSY signals use 5 flavor scheme, LO madgraph
+      //to do it properly, we would need to parse the LHE header
+      int pdfidx = 263000; 
+            
+      if (pdfidx == 263000) {
+	//NNPDF30_lo_as_0130 (nf5) for LO madgraph samples and SUSY signals
+	//pdfweightshelper.Init(100,60,edm::FileInPath("SUSYBSMAnalysis/RazorTuplizer/data/NNPDF30_lo_as_0130_hessian_60.csv"));
+	firstPdfWeight = 11;
+	lastPdfWeight = 110;
+	firstAlphasWeight = -1;
+	lastAlphasWeight = -1;      
+      }
+      else if (pdfidx == 263400) {
+	//NNPdf30_lo_as_0130_nf4 for LO madgraph samples
+	//pdfweightshelper.Init(100,60,edm::FileInPath("SUSYBSMAnalysis/RazorTuplizer/data/NNPDF30_lo_as_0130_nf_4_hessian_60.csv"));
+	firstPdfWeight = 112;
+	lastPdfWeight = 211;
+	firstAlphasWeight = -1;
+	lastAlphasWeight = -1;            
+      }
+      else if (pdfidx == 260000 || pdfidx == -1) {
+	//NNPdf30_nlo_as_0118 (nf5) for NLO powheg samples
+	//(work around apparent bug in current powheg samples by catching "-1" as well)
+	//pdfweightshelper.Init(100,60,edm::FileInPath("SUSYBSMAnalysis/RazorTuplizer/data/NNPDF30_nlo_as_0118_hessian_60.csv"));
+	firstPdfWeight = 10;
+	lastPdfWeight = 109;
+	firstAlphasWeight = 110;
+	lastAlphasWeight = 111; 
+      }
+      else if (pdfidx == 292200) {
+	//NNPdf30_nlo_as_0118 (nf5) with built-in alphas variations for NLO aMC@NLO samples
+	//pdfweightshelper.Init(100,60,edm::FileInPath("SUSYBSMAnalysis/RazorTuplizer/data/NNPDF30_nlo_as_0118_hessian_60.csv"));
+	firstPdfWeight = 10;
+	lastPdfWeight = 109;
+	firstAlphasWeight = 110;
+	lastAlphasWeight = 111; 
+      }   
+      else if (pdfidx == 292000) {
+	//NNPdf30_nlo_as_0118_nf4 with built-in alphas variations for NLO aMC@NLO samples
+	//pdfweightshelper.Init(100,60,edm::FileInPath("SUSYBSMAnalysis/RazorTuplizer/data/NNPDF30_nlo_as_0118_nf_4_hessian_60.csv"));
+	firstPdfWeight = 10;
+	lastPdfWeight = 109;
+	firstAlphasWeight = 110;
+	lastAlphasWeight = 111;
+      }
+      else {
+	firstPdfWeight = -1;
+	lastPdfWeight = -1;
+	firstAlphasWeight = -1;
+	lastAlphasWeight = -1;
+      }    
+  } else {
+    firstPdfWeight = -1;
+    lastPdfWeight = -1;
+    firstAlphasWeight = -1;
+    lastAlphasWeight = -1;
+  }      
+  
 
 
 }
@@ -3310,7 +3397,6 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     jetEta[nJets] = j.eta();
     jetPhi[nJets] = j.phi();
     jetMass[nJets] = j.mass();
-    jetEt[nJets] = j.et();
 
     TLorentzVector thisJet;
     thisJet.SetPtEtaPhiE(jetPt[nJets], jetEta[nJets], jetPhi[nJets], jetE[nJets]);
@@ -3558,7 +3644,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 	  ) {
 	SaveThisTrack[iTrack] = true;
       }
-    }
+    } 
 
 
     nJets++;
@@ -3571,18 +3657,24 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
   //********************************************************
   // AK8 Jets
   //********************************************************
-  for (const reco::PFJet &j : *jetsAK8)
-  {
+  for (const pat::Jet &j : *jetsAK8) {  
+  //for (const reco::PFJet &j : *jetsAK8) {
     if (j.pt() < 50) continue;
     //-------------------
     //Fill Jet-Level Info
     //-------------------
   
-    fatJetE[nFatJets] = j.energy();
-    fatJetPt[nFatJets] = j.pt();
-    fatJetEta[nFatJets] = j.eta();
-    fatJetPhi[nFatJets] = j.phi();
-    
+    fatJetE[nFatJets] = j.correctedP4(0).E();
+    fatJetPt[nFatJets] = j.correctedP4(0).Pt();
+    fatJetEta[nFatJets] = j.correctedP4(0).Eta();
+    fatJetPhi[nFatJets] = j.correctedP4(0).Phi();    
+    fatJetSoftDropM[nFatJets] = (float) j.userFloat("ak8PFJetsCHSSoftDropMass");
+    fatJetTau1[nFatJets] =  (float) j.userFloat("NjettinessAK8CHS:tau1");
+    fatJetTau2[nFatJets] =  (float) j.userFloat("NjettinessAK8CHS:tau2");
+    fatJetTau3[nFatJets] =  (float) j.userFloat("NjettinessAK8CHS:tau3");
+
+
+
     for (uint q=0; q<ebRecHits->size(); q++) {
       const EcalRecHit *recHit = &(*ebRecHits)[q];
       const DetId recHitId = recHit->detid();
@@ -4545,6 +4637,58 @@ bool displacedJetMuon_ntupler::fillMC() {
   genAlphaQCD = genInfo->alphaQCD();
   genAlphaQED = genInfo->alphaQED();
 
+  //get lhe weights for systematic uncertainties:      
+  double nomlheweight = genInfo->weights()[0];
+      
+  //fill scale variation weights
+  if (genInfo->weights().size()>=10) {  
+    for (unsigned int iwgt=1; iwgt<10; ++iwgt) {
+      //normalize to 
+      double wgtval = genInfo->weights()[iwgt]*genWeight/genInfo->weights()[1];
+      scaleWeights->push_back(wgtval);
+    }
+  }
+   
+  //fill pdf variation weights
+  if (firstPdfWeight>=0 && lastPdfWeight>=0 && lastPdfWeight<int(genInfo->weights().size()) && (lastPdfWeight-firstPdfWeight+1)==100) {
+        
+    //fill pdf variation weights after converting with mc2hessian transformation
+    std::array<double, 100> inpdfweights;
+    for (int iwgt=firstPdfWeight, ipdf=0; iwgt<=lastPdfWeight; ++iwgt, ++ipdf) {
+      inpdfweights[ipdf] = genInfo->weights()[iwgt]/genInfo->weights()[firstPdfWeight-1];
+    }
+        
+    std::array<double, 60> outpdfweights;
+    pdfweightshelper.DoMC2Hessian(inpdfweights.data(),outpdfweights.data());
+        
+    for (unsigned int iwgt=0; iwgt<60; ++iwgt) {
+      double wgtval = outpdfweights[iwgt]*genWeight;
+      pdfWeights->push_back(wgtval);
+    }       
+              
+    //fill alpha_s variation weights
+    if (firstAlphasWeight>=0 && lastAlphasWeight>=0 && lastAlphasWeight<int(genInfo->weights().size())) {
+      for (int iwgt = firstAlphasWeight; iwgt<=lastAlphasWeight; ++iwgt) {
+	double wgtval = genInfo->weights()[iwgt]*genWeight/nomlheweight;
+	alphasWeights->push_back(wgtval);
+      }
+    }        
+        
+  }
+  
+  //fill sum of weights histograms
+  sumWeights->Fill(0.,genWeight);
+  
+  for (unsigned int iwgt=0; iwgt<scaleWeights->size(); ++iwgt) {
+    sumScaleWeights->Fill(double(iwgt),(*scaleWeights)[iwgt]);
+  }
+  for (unsigned int iwgt=0; iwgt<pdfWeights->size(); ++iwgt) {
+    sumPdfWeights->Fill(double(iwgt),(*pdfWeights)[iwgt]);     
+  }
+  for (unsigned int iwgt=0; iwgt<alphasWeights->size(); ++iwgt) {
+    sumAlphasWeights->Fill(double(iwgt),(*alphasWeights)[iwgt]);
+  }        
+  
   return true;
 };
 

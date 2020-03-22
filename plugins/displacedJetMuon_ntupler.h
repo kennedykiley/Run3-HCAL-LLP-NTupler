@@ -170,7 +170,7 @@ using namespace std;
 #include "cms_lpc_llp/llp_ntupler/interface/EGammaMvaEleEstimatorCSA14.h"
 #include "cms_lpc_llp/llp_ntupler/interface/ElectronMVAEstimatorRun2NonTrig.h"
 #include "cms_lpc_llp/llp_ntupler/interface/EGammaMvaPhotonEstimator.h"
-//#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
+#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
 
 //------ Array Size Constants ------//
 #define OBJECTARRAYSIZE 5000
@@ -339,7 +339,8 @@ protected:
   // edm::EDGetTokenT<reco::PFJetCollection> jetsPFToken_;
   edm::EDGetTokenT<reco::PFJetCollection> jetsToken_;
   edm::EDGetTokenT<reco::PFJetCollection> jetsPuppiToken_;
-  edm::EDGetTokenT<reco::PFJetCollection> jetsAK8Token_;
+  //edm::EDGetTokenT<reco::PFJetCollection> jetsAK8Token_;
+  edm::EDGetTokenT<pat::JetCollection> jetsAK8Token_;
   edm::EDGetTokenT<reco::PFCandidateCollection> PFCandsToken_;
   edm::EDGetTokenT<reco::PFClusterCollection> PFClustersToken_;
 //  edm::EDGetTokenT<edm::View<reco::GenParticle> > prunedGenParticlesToken_;
@@ -430,7 +431,8 @@ protected:
   // edm::Handle<reco::PFJetCollection> jetsPF;
   edm::Handle<reco::PFJetCollection> jets;
   edm::Handle<reco::PFJetCollection> jetsPuppi;
-  edm::Handle<reco::PFJetCollection> jetsAK8;
+  // edm::Handle<reco::PFJetCollection> jetsAK8;
+  edm::Handle<pat::JetCollection> jetsAK8;
   edm::Handle<reco::GenMETCollection> genMetsCalo;
   edm::Handle<reco::GenMETCollection> genMetsTrue;
   //edm::Handle<reco::GenMETCollection> mets;
@@ -1086,7 +1088,6 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  //AK4 Jets
  int nJets;
  float jetE[OBJECTARRAYSIZE];
- float jetEt[OBJECTARRAYSIZE];
  float jetPt[OBJECTARRAYSIZE];
  float jetEta[OBJECTARRAYSIZE];
  float jetPhi[OBJECTARRAYSIZE];
@@ -1410,7 +1411,7 @@ bool Flag2_eeBadScFilter;
  const float pvTrack_pt_cut = 1.0;
 
  //pdf weight helper
- //RazorPDFWeightsHelper pdfweightshelper;
+  RazorPDFWeightsHelper pdfweightshelper;
 
 
 
