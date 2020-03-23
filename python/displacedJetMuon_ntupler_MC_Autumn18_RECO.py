@@ -43,7 +43,6 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 
 #------ Declare the correct global tag ------#
 
-
 process.GlobalTag.globaltag = '102X_upgrade2018_realistic_v19'
 
 #------ If we add any inputs beyond standard event content, import them here ------#
@@ -90,6 +89,7 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     isData = cms.bool(False),
     useGen = cms.bool(True),
+    isRECO = cms.bool(True),                                
     isFastsim = cms.bool(False),
     readMuonDigis = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
