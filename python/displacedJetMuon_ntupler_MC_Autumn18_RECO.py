@@ -111,7 +111,8 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     photons = cms.InputTag("gedPhotons"),
     jetsCalo = cms.InputTag("ak4CaloJets","","RECO"),
     jetsPF = cms.InputTag("ak4PFJets"),
-    jets = cms.InputTag("ak4PFJetsCHS"),
+    #jets = cms.InputTag("ak4PFJetsCHS"),
+    jets = cms.InputTag("selectedPatJets"),
     jetsPuppi = cms.InputTag("ak4PFJets"),
     #jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
     jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
@@ -202,6 +203,71 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
 process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
 process.NjettinessAK8CHS = process.Njettiness.clone()
 
+#PAT Stuff
+process.load('PhysicsTools.PatAlgos.producersLayer1.tauProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.jetProducer_cff')
+
+process.patCandidatesTask = cms.Task(
+    #makePatElectronsTask,
+    #makePatMuonsTask,
+    process.makePatTausTask,
+    #makePatPhotonsTask,
+    #makePatOOTPhotonsTask,
+    process.makePatJetsTask,
+    #makePatMETsTask
+    )
+process.patCandidates = cms.Sequence(process.patCandidatesTask)
+
+
+process.load('PhysicsTools.PatAlgos.selectionLayer1.tauSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi')
+process.selectedPatCandidatesTask = cms.Task(
+     #selectedPatElectrons,
+     #selectedPatMuons,
+    process.selectedPatTaus,
+     #selectedPatPhotons,
+     #selectedPatOOTPhotons,
+    process.selectedPatJets
+ )
+process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
+
+process.load('PhysicsTools.PatAlgos.slimming.slimmedTaus_cfi')
+process.load('PhysicsTools.PatAlgos.slimming.packedPFCandidates_cff')
+process.slimmingTask = cms.Task(
+    process.packedPFCandidatesTask,
+     # lostTracks,
+     # isolatedTracks,
+     # offlineSlimmedPrimaryVertices,
+     # primaryVertexAssociation,
+     # genParticlesTask,
+     # selectedPatTrigger,
+     # slimmedPatTrigger,
+     # slimmedCaloJets,
+     # slimmedJets,
+     # slimmedJetsAK8,
+     # slimmedGenJets,
+     # slimmedGenJetsAK8,
+     # slimmedElectrons,
+     # slimmedMuons,
+     # slimmedPhotons,
+     # slimmedOOTPhotons,
+    process.slimmedTaus,
+     # slimmedSecondaryVertices,
+     # slimmedKshortVertices,
+     # slimmedLambdaVertices,
+     # slimmedMETs,
+     # metFilterPathsTask,
+     # reducedEgamma,
+     # bunchSpacingProducer,
+     # oniaPhotonCandidates
+    )
+process.patTask = cms.Task(
+    process.patCandidatesTask,
+    process.selectedPatCandidatesTask,
+    #process.slimmingTask,
+    #process.bunchSpacingProducer
+)
+
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
 process.p = cms.Path(process.NjettinessAK8CHS * process.metFilters * process.ntuples )
@@ -225,4 +291,22 @@ jetToolbox( process, 'ak8', 'ak8JetSubs', "out", PUMethod='CHS', bTagDiscriminat
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
+
+#miniAOD_customize stuff
+process.patTaus.isoDeposits = cms.PSet()
+process.selectedPatTaus.cut = cms.string("pt > 18. && tauID('decayModeFindingNewDMs')> 0.5")
+process.selectedPatJets.cut = cms.string("pt > 10")
+
+process.patJets.discriminatorSources = cms.VInputTag(
+    cms.InputTag("pfJetBProbabilityBJetTags"),
+    cms.InputTag("pfJetProbabilityBJetTags"),
+    cms.InputTag("pfTrackCountingHighEffBJetTags"),
+    cms.InputTag("pfSimpleSecondaryVertexHighEffBJetTags"),
+    cms.InputTag("pfSimpleInclusiveSecondaryVertexHighEffBJetTags"),
+    cms.InputTag("pfCombinedSecondaryVertexV2BJetTags"),
+    cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
+    cms.InputTag("softPFMuonBJetTags"),
+    cms.InputTag("softPFElectronBJetTags"),
+    cms.InputTag("pfCombinedMVAV2BJetTags"),   
+    )
 

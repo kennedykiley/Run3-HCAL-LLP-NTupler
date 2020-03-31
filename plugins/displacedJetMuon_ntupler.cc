@@ -61,9 +61,10 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   MuonCSCWireDigiSimLinksToken_(consumes<edm::DetSetVector<StripDigiSimLink>>(iConfig.getParameter<edm::InputTag>("MuonCSCWireDigiSimLinks"))),
   muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
   electronsToken_(consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
-  tausToken_(consumes<reco::PFTauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
+  tausToken_(consumes<pat::TauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
   photonsToken_(consumes<reco::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
-  jetsToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
+  //jetsToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
+  jetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jets"))),
   jetsPuppiToken_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsPuppi"))),
   //jetsAK8Token_(consumes<reco::PFJetCollection>(iConfig.getParameter<edm::InputTag>("jetsAK8"))),
   jetsAK8Token_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("jetsAK8"))),
@@ -803,14 +804,19 @@ void displacedJetMuon_ntupler::enableJetBranches()
   displacedJetMuonTree->Branch("jetPassEleFrac", jetPassEleFrac, "jetPassEleFrac[nJets]/O");
   displacedJetMuonTree->Branch("jetPartonFlavor", jetPartonFlavor, "jetPartonFlavor[nJets]/I");
   displacedJetMuonTree->Branch("jetHadronFlavor", jetHadronFlavor, "jetHadronFlavor[nJets]/I");
-  displacedJetMuonTree->Branch("jetChargedEMEnergyFraction", jetChargedEMEnergyFraction, "jetChargedEMEnergyFraction[nJets]/F");
-  displacedJetMuonTree->Branch("jetNeutralEMEnergyFraction", jetNeutralEMEnergyFraction, "jetNeutralEMEnergyFraction[nJets]/F");
+  displacedJetMuonTree->Branch("jetElectronEnergyFraction", jetElectronEnergyFraction, "jetElectronEnergyFraction[nJets]/F");
+  displacedJetMuonTree->Branch("jetPhotonEnergyFraction", jetPhotonEnergyFraction, "jetPhotonEnergyFraction[nJets]/F");
   displacedJetMuonTree->Branch("jetChargedHadronEnergyFraction", jetChargedHadronEnergyFraction, "jetChargedHadronEnergyFraction[nJets]/F");
   displacedJetMuonTree->Branch("jetNeutralHadronEnergyFraction", jetNeutralHadronEnergyFraction, "jetNeutralHadronEnergyFraction[nJets]/F");
   displacedJetMuonTree->Branch("jetMuonEnergyFraction", jetMuonEnergyFraction, "jetMuonEnergyFraction[nJets]/F");
   displacedJetMuonTree->Branch("jetHOEnergyFraction", jetHOEnergyFraction, "jetHOEnergyFraction[nJets]/F");
   displacedJetMuonTree->Branch("jetHFHadronEnergyFraction", jetHFHadronEnergyFraction, "jetHFHadronEnergyFraction[nJets]/F");
   displacedJetMuonTree->Branch("jetHFEMEnergyFraction",jetHFEMEnergyFraction, "jetHFEMEnergyFraction[nJets]/F");
+  displacedJetMuonTree->Branch("jetChargedHadronMultiplicity", jetChargedHadronMultiplicity, "jetChargedHadronMultiplicity[nJets]/I");
+  displacedJetMuonTree->Branch("jetNeutralHadronMultiplicity", jetNeutralHadronMultiplicity, "jetNeutralHadronMultiplicity[nJets]/I");
+  displacedJetMuonTree->Branch("jetPhotonMultiplicity", jetPhotonMultiplicity, "jetPhotonMultiplicity[nJets]/I");
+  displacedJetMuonTree->Branch("jetElectronMultiplicity", jetElectronMultiplicity, "jetElectronMultiplicity[nJets]/I");
+  displacedJetMuonTree->Branch("jetMuonMultiplicity", jetMuonMultiplicity, "jetMuonMultiplicity[nJets]/I");
   displacedJetMuonTree->Branch("jetAllMuonPt", jetAllMuonPt,"jetAllMuonPt[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonEta", jetAllMuonEta,"jetAllMuonEta[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonPhi", jetAllMuonPhi,"jetAllMuonPhi[nJets]/F");
@@ -1673,14 +1679,19 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jetPassEleFrac[i] = false;
     jetPartonFlavor[i] = 0;
     jetHadronFlavor[i] = 0;
-    jetChargedEMEnergyFraction[i] = -99.0;
-    jetNeutralEMEnergyFraction[i] = -99.0;
+    jetElectronEnergyFraction[i] = -99.0;
+    jetPhotonEnergyFraction[i] = -99.0;
     jetChargedHadronEnergyFraction[i] = -99.0;
     jetNeutralHadronEnergyFraction[i] = -99.0;
     jetMuonEnergyFraction[i] = -99.0;
     jetHOEnergyFraction[i] = -99.0;
     jetHFHadronEnergyFraction[i] = -99.0;
     jetHFEMEnergyFraction[i] = -99.0;
+    jetChargedHadronMultiplicity[i] = 0;
+    jetNeutralHadronMultiplicity[i] = 0;
+    jetPhotonMultiplicity[i] = 0;
+    jetElectronMultiplicity[i] = 0;
+    jetMuonMultiplicity[i] = 0;
     jetAllMuonPt[i] = 0.0;
     jetAllMuonEta[i] = 0.0;
     jetAllMuonPhi[i] = 0.0;
@@ -2155,6 +2166,7 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
   fillMuons(iEvent);
   fillElectrons(iEvent);
   fillPhotons(iEvent, iSetup);  
+  fillTaus();
   fillJets(iSetup);
   fillMet(iEvent);
   
@@ -2427,7 +2439,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       cscSegClusterMuonVetoPt[nCscSegClusters] = 0.0;
       cscSegClusterMuonVetoE[nCscSegClusters] = 0.0;
 
-      for (const reco::PFJet &j : *jets) {
+      for (const pat::Jet &j : *jets) {
         //if (j.pt() < 10) continue;
         if (fabs(j.eta())>3.0) continue;
         if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscSegClusterJetVetoPt[nCscSegClusters] ) {
@@ -2603,7 +2615,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	cscRechitClusterCaloJetVeto[nCscRechitClusters] = 0.0;
 	cscRechitClusterMuonVetoPt[nCscRechitClusters] = 0.0;
 	cscRechitClusterMuonVetoE[nCscRechitClusters] = 0.0;
-	for (const reco::PFJet &j : *jets) {
+	for (const pat::Jet &j : *jets) {
 	  //if (j.pt() < 10) continue;
 	  if (fabs(j.eta())>3.0) continue;
 	  if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscRechitClusterJetVetoPt[nCscRechitClusters] ) {
@@ -2789,7 +2801,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       dtSegClusterMuonVetoPt[nDtSegClusters] = 0.0;
       dtSegClusterMuonVetoE[nDtSegClusters] = 0.0;
 
-      for (const reco::PFJet &j : *jets) {
+      for (const pat::Jet &j : *jets) {
         //if (j.pt() < 10) continue;
         if (fabs(j.eta())>3.0) continue;
         if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > dtSegClusterJetVetoPt[nDtSegClusters] ) {
@@ -2926,7 +2938,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	dtRechitClusterMuonVetoPt[nDtRechitClusters] = 0.0;
 	dtRechitClusterMuonVetoE[nDtRechitClusters] = 0.0;
 
-	for (const reco::PFJet &j : *jets) {
+	for (const pat::Jet &j : *jets) {
 	  //if (j.pt() < 10) continue;
 	  if (fabs(j.eta())>3.0) continue;
 	  if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > dtRechitClusterJetVetoPt[nDtRechitClusters] ) {
@@ -3387,11 +3399,12 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
   for (uint q=0; q<hcalRecHitsHO->size(); q++) {
     SaveThisHORechit.push_back(false);    
   }
-	
-  for (const reco::PFJet &j : *jets) {
+
+  for (const pat::Jet &j : *jets) {
     if (j.pt() < 20) continue;
     //if (fabs(j.eta()) > 2.4) continue;
-    //-------------------
+
+     //-------------------
     //Fill Jet-Level Info
     //-------------------
     jetE[nJets] = j.energy();
@@ -3402,7 +3415,6 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
     TLorentzVector thisJet;
     thisJet.SetPtEtaPhiE(jetPt[nJets], jetEta[nJets], jetPhi[nJets], jetE[nJets]);
-    //jetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
 
     jetJetArea[nJets] = j.jetArea();
     jetPileupE[nJets] = j.pileup();
@@ -3414,24 +3426,26 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     jetPassEleFrac[nJets]  = ( j.electronEnergyFraction() < 0.90 );
 
 
-    // if (useGen_) {
-    //   jetPartonFlavor = j.partonFlavour();
-    //   jetHadronFlavor = j.hadronFlavour();
-    // }
-
-    jetChargedEMEnergyFraction[nJets] = j.chargedEmEnergyFraction();
-    jetNeutralEMEnergyFraction[nJets] = j.neutralEmEnergyFraction();
+    if (!isData_) {
+      jetPartonFlavor[nJets] = j.partonFlavour();
+      jetHadronFlavor[nJets] = j.hadronFlavour();
+    }
+    
+    jetElectronEnergyFraction[nJets] = j.electronEnergyFraction();
+    jetPhotonEnergyFraction[nJets] = j.neutralEmEnergyFraction();
     jetChargedHadronEnergyFraction[nJets] = j.chargedHadronEnergyFraction();
     jetNeutralHadronEnergyFraction[nJets] = j.neutralHadronEnergyFraction();
-    // jet_charged_hadron_multiplicity[nJets] = j.chargedHadronMultiplicity();
-    // jet_neutral_hadron_multiplicity[nJets] = j.neutralHadronMultiplicity();
-    //jet_photon_multiplicity[nJets] = j.photonMultiplicity();
-    //jet_electron_multiplicity[nJets] = j.electronMultiplicity();
-    //jet_muon_multiplicity[nJets] = j.muonMultiplicity();
+    jetMuonEnergyFraction[nJets] = j.muonEnergyFraction();
+
+    jetChargedHadronMultiplicity[nJets] = j.chargedHadronMultiplicity();
+    jetNeutralHadronMultiplicity[nJets] = j.neutralHadronMultiplicity();
+    jetPhotonMultiplicity[nJets] = j.photonMultiplicity();
+    jetElectronMultiplicity[nJets] = j.electronMultiplicity();
+    jetMuonMultiplicity[nJets] = j.muonMultiplicity();
     //jet_HF_hadron_multiplicity[nJets] = j.HFHadronMultiplicity();
     //jet_HF_em_multiplicity[nJets] = j.HFEMMultiplicity();
-    // jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
-    // jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
+    //jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
+    //jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
 
     //---------------------------
     //Trackless variables
@@ -3445,7 +3459,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     int nTracksPV_wp(0);
     findTrackingVariablesWithoutPropagator(thisJet,iSetup,alphaMax_wp,medianTheta2D_wp,medianIP_wp,nTracksPV_wp,ptAllPVTracks_wp,ptAllTracks_wp, minDeltaRAllTracks_wp, minDeltaRPVTracks_wp);
 
-    //jetCISV = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    jetCISV[nJets] = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
     jetAlphaMax[nJets] = alphaMax;
     jetBetaMax[nJets] = alphaMax * ptAllTracks/(j.pt());
     jetGammaMax[nJets] = alphaMax * ptAllTracks/(j.energy());
@@ -4071,7 +4085,7 @@ bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
 };
 
 
-bool displacedJetMuon_ntupler::passJetID( const reco::PFJet *jet, int cutLevel) {
+bool displacedJetMuon_ntupler::passJetID( const pat::Jet *jet, int cutLevel) {
   bool result = false;
 
   double NHF = jet->neutralHadronEnergyFraction();
@@ -5208,6 +5222,66 @@ bool displacedJetMuon_ntupler::fillPVAll()
 
   return true;
 };
+
+bool displacedJetMuon_ntupler::fillTaus(){
+  for (const pat::Tau &tau : *taus) {
+    if (tau.pt() < 18) continue;
+    tauE[nTaus] = tau.energy();
+    tauPt[nTaus] = tau.pt();
+    tauEta[nTaus] = tau.eta();
+    tauPhi[nTaus] = tau.phi();
+    
+    tau_IsLoose[nTaus] = bool(tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits"));
+    tau_IsMedium[nTaus] = bool(tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits"));
+    tau_IsTight[nTaus] = bool(tau.tauID("byTightCombinedIsolationDeltaBetaCorr3Hits"));
+    tau_passEleVetoLoose[nTaus] = bool(tau.tauID("againstElectronLooseMVA6"));
+    tau_passEleVetoMedium[nTaus] = bool(tau.tauID("againstElectronMediumMVA6"));
+    tau_passEleVetoTight[nTaus] = bool(tau.tauID("againstElectronTightMVA6"));
+    tau_passMuVetoLoose[nTaus] = bool(tau.tauID("againstMuonLoose3"));
+    //tau_passMuVetoMedium[nTaus] = bool(tau.tauID("")); //doesn't exist anymore in miniAOD 2015 v2
+    tau_passMuVetoTight[nTaus] = bool(tau.tauID("againstMuonTight3") );  
+    tau_combinedIsoDeltaBetaCorr3Hits[nTaus] = tau.tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+    tau_chargedIsoPtSum[nTaus] = tau.tauID("chargedIsoPtSum");
+    tau_neutralIsoPtSum[nTaus] = tau.tauID("neutralIsoPtSum");
+    tau_puCorrPtSum[nTaus] = tau.tauID("puCorrPtSum");
+    tau_eleVetoMVA[nTaus] = tau.tauID("againstElectronMVA6Raw") ;
+    tau_eleVetoCategory[nTaus] = tau.tauID("againstElectronMVA6category");
+    //tau_muonVetoMVA[nTaus] = tau.tauID("againstMuonMVAraw"); //doesn't exist anymore in miniAOD 2015 v2
+    tau_isoMVAnewDMwLT[nTaus] = tau.tauID("byIsolationMVArun2v1DBnewDMwLTraw");
+    //tau_isoMVAnewDMwoLT[nTaus] = tau.tauID("byIsolationMVA3newDMwoLTraw") ; //doesn't exist anymore in miniAOD 2015 v2 
+
+    tau_ID[nTaus] = 
+      1 * bool(tau.tauID("decayModeFinding")) +
+      2 * bool(tau.tauID("decayModeFindingNewDMs")) +
+      4 * bool(tau.tauID("againstElectronVLooseMVA6")) +
+      8 * bool(tau.tauID("againstElectronVTightMVA6")) +
+      16 * bool(tau.tauID("byVLooseIsolationMVArun2v1DBnewDMwLT")) +
+      32 * bool(tau.tauID("byLooseIsolationMVArun2v1DBnewDMwLT")) +
+      64 * bool(tau.tauID("byMediumIsolationMVArun2v1DBnewDMwLT")) +
+      128 * bool(tau.tauID("byTightIsolationMVArun2v1DBnewDMwLT")) +
+      256 * bool(tau.tauID("byVTightIsolationMVArun2v1DBnewDMwLT")) +
+      512 * bool(tau.tauID("byVVTightIsolationMVArun2v1DBnewDMwLT"));
+
+    tau_leadCandPt[nTaus] = 0;
+    tau_leadCandID[nTaus] = 0;
+    tau_leadChargedHadrCandPt[nTaus] = 0;
+    tau_leadChargedHadrCandID[nTaus] = 0;
+    if (tau.leadCand().isNonnull()) {
+      tau_leadCandPt[nTaus] = tau.leadCand()->pt();
+      tau_leadCandID[nTaus] = tau.leadCand()->pdgId();
+    }
+    if (tau.leadChargedHadrCand().isNonnull()) { 
+      tau_leadChargedHadrCandPt[nTaus] = tau.leadChargedHadrCand()->pt();
+      tau_leadChargedHadrCandID[nTaus] = tau.leadChargedHadrCand()->pdgId();
+    }
+      
+    nTaus++;
+  }
+
+  return true;
+};
+
+
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(displacedJetMuon_ntupler);

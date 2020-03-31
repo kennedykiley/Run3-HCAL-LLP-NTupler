@@ -242,7 +242,7 @@ public:
   void resetTriggerBranches();
 
   //------ HELPER FUNCTIONS ------//
-  bool passJetID( const reco::PFJet *jet, int cutLevel);
+  bool passJetID( const pat::Jet *jet, int cutLevel);
   double deltaPhi(double phi1, double phi2);
   double deltaR(double eta1, double phi1, double eta2, double phi2);
   void findTrackingVariables(const TLorentzVector &jetVec,const edm::EventSetup& iSetup,float &alphaMax,float &medianTheta2D,float &medianIP, int &nTracksPV,float &ptAllPVTracks,float &ptAllTracks,float &minDeltaRAllTracks, float &minDeltaRPVTracks);
@@ -259,6 +259,7 @@ public:
   bool fillPileUp();
   bool fillElectrons(const edm::Event& iEvent);
   bool fillMuons(const edm::Event& iEvent);
+  bool fillTaus();
   bool fillHOSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup);
@@ -334,11 +335,11 @@ protected:
 
   edm::EDGetTokenT<reco::MuonCollection> muonsToken_;
   edm::EDGetTokenT<reco::GsfElectronCollection> electronsToken_;
-  edm::EDGetTokenT<reco::PFTauCollection> tausToken_;
+  edm::EDGetTokenT<pat::TauCollection> tausToken_;
   edm::EDGetTokenT<reco::PhotonCollection> photonsToken_;
   edm::EDGetTokenT<reco::CaloJetCollection> jetsCaloToken_;
-  // edm::EDGetTokenT<reco::PFJetCollection> jetsPFToken_;
-  edm::EDGetTokenT<reco::PFJetCollection> jetsToken_;
+   edm::EDGetTokenT<pat::JetCollection> jetsToken_;
+  //edm::EDGetTokenT<reco::PFJetCollection> jetsToken_;
   edm::EDGetTokenT<reco::PFJetCollection> jetsPuppiToken_;
   //edm::EDGetTokenT<reco::PFJetCollection> jetsAK8Token_;
   edm::EDGetTokenT<pat::JetCollection> jetsAK8Token_;
@@ -427,10 +428,10 @@ protected:
   edm::Handle<reco::MuonCollection> muons;
   edm::Handle<reco::GsfElectronCollection> electrons;
   edm::Handle<reco::PhotonCollection> photons;
-  edm::Handle<reco::PFTauCollection> taus;
+  edm::Handle<pat::TauCollection> taus;
   edm::Handle<reco::CaloJetCollection> jetsCalo;
-  // edm::Handle<reco::PFJetCollection> jetsPF;
-  edm::Handle<reco::PFJetCollection> jets;
+  edm::Handle<pat::JetCollection> jets;
+  //edm::Handle<reco::PFJetCollection> jets;
   edm::Handle<reco::PFJetCollection> jetsPuppi;
   // edm::Handle<reco::PFJetCollection> jetsAK8;
   edm::Handle<pat::JetCollection> jetsAK8;
@@ -1109,14 +1110,19 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  bool  jetPassEleFrac[OBJECTARRAYSIZE];
  int   jetPartonFlavor[OBJECTARRAYSIZE];
  int   jetHadronFlavor[OBJECTARRAYSIZE];
- float jetChargedEMEnergyFraction[OBJECTARRAYSIZE];
- float jetNeutralEMEnergyFraction[OBJECTARRAYSIZE];
+ float jetElectronEnergyFraction[OBJECTARRAYSIZE];
+ float jetPhotonEnergyFraction[OBJECTARRAYSIZE];
  float jetChargedHadronEnergyFraction[OBJECTARRAYSIZE];
  float jetNeutralHadronEnergyFraction[OBJECTARRAYSIZE];
  float jetMuonEnergyFraction[OBJECTARRAYSIZE];
  float jetHOEnergyFraction[OBJECTARRAYSIZE];
  float jetHFHadronEnergyFraction[OBJECTARRAYSIZE];
  float jetHFEMEnergyFraction[OBJECTARRAYSIZE];
+ int   jetChargedHadronMultiplicity[OBJECTARRAYSIZE];
+ int   jetNeutralHadronMultiplicity[OBJECTARRAYSIZE];
+ int   jetElectronMultiplicity[OBJECTARRAYSIZE];
+ int   jetPhotonMultiplicity[OBJECTARRAYSIZE];
+ int   jetMuonMultiplicity[OBJECTARRAYSIZE];
  float jetAllMuonPt[OBJECTARRAYSIZE];
  float jetAllMuonEta[OBJECTARRAYSIZE];
  float jetAllMuonPhi[OBJECTARRAYSIZE];
