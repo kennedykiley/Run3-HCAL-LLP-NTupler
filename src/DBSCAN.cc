@@ -26,14 +26,19 @@ int DBSCAN::run()
     nClusters = clusterID-1;
     return (clusterID-1);
 }
-
 int DBSCAN::result(){
 
+  // for (unsigned int i = 0;i < m_pointSize;i++)
+  // {
+  //   cscLabels.push_back(m_points[i].clusterID);
+  //
+  // }
   for(int i = 0; i < nClusters; i++)
   {
-    float avg_x(0.0), avg_y(0.0), avg_z(0.0), avg_t(0.0);
+    float avg_x(0.0), avg_y(0.0), avg_z(0.0), avg_t(0.0), avg_tTotal(0.0);
     float avg_eta(0.0), avg_phi(0.0);
     int size(0);
+    vector<float> wireTimes;
     vector<Point>::iterator iter;
     for(iter = m_points.begin(); iter != m_points.end(); ++iter)
     {
@@ -45,13 +50,41 @@ int DBSCAN::result(){
           avg_y += iter->y;
           avg_z += iter->z;
           avg_t += iter->t;
+          avg_tTotal += iter->twire;
+          wireTimes.push_back(iter->twire);
           size ++;
       }
     }
     avg_x = avg_x/size;
     avg_y = avg_y/size;
     avg_z = avg_z/size;
+    avg_tTotal = (avg_t + avg_tTotal)/(2 * size);
     avg_t = avg_t/size;
+
+    // prune wire time
+    //The wire times have a long tail that has to be pruned.  The strip times (tpeak) are fine
+    bool modified = true;
+    while (modified) {
+      modified = false;
+      double maxDiff = -1;
+      std::vector<float>::iterator maxHit;
+      for (std::vector<float>::iterator itWT = wireTimes.begin(); itWT != wireTimes.end(); ++itWT) {
+        float diff = fabs(*itWT - avg_tTotal);
+        if (diff > maxDiff) {
+          maxDiff = diff;
+          maxHit = itWT;
+        }
+      }
+      if (maxDiff > 26) {
+        int N = size + wireTimes.size();
+        avg_tTotal = (avg_tTotal * N - (*maxHit)) / (N - 1);
+        wireTimes.erase(maxHit);
+        modified = true;
+      }
+    }
+
+
+    // calculate cluster eta and phi
     avg_phi = atan(avg_y/avg_x);
     if  (avg_x < 0.0){
       avg_phi = TMath::Pi() + avg_phi;
@@ -59,12 +92,14 @@ int DBSCAN::result(){
     avg_phi = deltaPhi(avg_phi,0.0);
     avg_eta = atan(sqrt(pow(avg_x,2)+pow(avg_y,2))/abs(avg_z));
     avg_eta = -1.0*TMath::Sign(1.0, avg_z)*log(tan(avg_eta/2));
+
     clusterEta.push_back(avg_eta);
     clusterPhi.push_back(avg_phi);
     clusterX.push_back(avg_x);
     clusterY.push_back(avg_y);
     clusterZ.push_back(avg_z);
     clusterTime.push_back(avg_t);
+    clusterTimeTotal.push_back(avg_tTotal);
     clusterSize.push_back(size);
 
 
@@ -78,7 +113,7 @@ int DBSCAN::clusterMoments()
   for(int i = 0; i < nClusters; i++)
   {
     float m11(0.0), m12(0.0), m22(0.0);
-    float XSpread(0.0), YSpread(0.0), ZSpread(0.0), TSpread(0.0);
+    float XSpread(0.0), YSpread(0.0), ZSpread(0.0), TSpread(0.0), XYSpread(0.0);
     vector<Point>::iterator iter;
     for(iter = m_points.begin(); iter != m_points.end(); ++iter)
     {
@@ -96,6 +131,7 @@ int DBSCAN::clusterMoments()
           m11 += (iter->eta-clusterEta[i])*(iter->eta-clusterEta[i]);
           m12 += (iter->eta-clusterEta[i])* deltaPhi(iter->phi,clusterPhi[i]);
           m22 += deltaPhi(iter->phi,clusterPhi[i])*deltaPhi(iter->phi,clusterPhi[i]);
+          XYSpread += (iter->x - clusterX[i])*(iter->y - clusterY[i]);
           XSpread += (iter->x - clusterX[i]) * (iter->x - clusterX[i]);
           YSpread += (iter->y - clusterY[i]) * (iter->y - clusterY[i]);
           ZSpread += (iter->z - clusterZ[i]) * (iter->z - clusterZ[i]);
@@ -108,6 +144,7 @@ int DBSCAN::clusterMoments()
     clusterXSpread.push_back(sqrt(XSpread/(float)clusterSize[i]));
     clusterYSpread.push_back(sqrt(YSpread/(float)clusterSize[i]));
     clusterZSpread.push_back(sqrt(ZSpread/(float)clusterSize[i]));
+    clusterXYSpread.push_back(sqrt(abs(XYSpread)/(float)clusterSize[i]));
     clusterTimeSpread.push_back(sqrt(TSpread/(float)clusterSize[i]));
     clusterEtaSpread.push_back(sqrt(m11/clusterSize[i]));
     clusterEtaPhiSpread.push_back(sqrt(abs(m12)/clusterSize[i]));
@@ -194,9 +231,11 @@ void DBSCAN::sort_clusters()
     tmpCluster.eta = clusterEta[i];
     tmpCluster.phi = clusterPhi[i];
     tmpCluster.t = clusterTime[i];
+    tmpCluster.tTotal = clusterTimeTotal[i];
     tmpCluster.MajorAxis = clusterMajorAxis[i];
     tmpCluster.MinorAxis = clusterMinorAxis[i];
     tmpCluster.XSpread = clusterXSpread[i];
+    tmpCluster.XYSpread = clusterXYSpread[i];
     tmpCluster.YSpread = clusterYSpread[i];
     tmpCluster.ZSpread = clusterZSpread[i];
     tmpCluster.TSpread = clusterTimeSpread[i];
@@ -467,7 +506,9 @@ vector<int> DBSCAN::calculateCluster(Point point)
 inline double DBSCAN::calculateDistance( Point pointCore, Point pointTarget )
 {
     // return sqrt(pow(pointCore.x - pointTarget.x,2)+pow(pointCore.y - pointTarget.y,2)+pow(pointCore.z - pointTarget.z,2));
-    return sqrt(pow(pointCore.eta - pointTarget.eta,2)+pow(deltaPhi(pointCore.phi, pointTarget.phi),2));
+    // return sqrt(pow(pointCore.eta - pointTarget.eta,2)+pow(deltaPhi(pointCore.phi, pointTarget.phi),2));
+    return sqrt(pow(pointCore.eta - pointTarget.eta,2)+pow(deltaPhi(pointCore.phi, pointTarget.phi),2)+pow((pointCore.t - pointTarget.t)/100.0,2));
+
 }
 double DBSCAN::deltaPhi(double phi1, double phi2)
 {
