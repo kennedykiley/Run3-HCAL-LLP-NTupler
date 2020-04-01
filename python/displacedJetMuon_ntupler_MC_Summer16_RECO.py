@@ -41,7 +41,6 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 
 #------ Declare the correct global tag ------#
 
-
 process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_v3'
 
 #------ If we add any inputs beyond standard event content, import them here ------#
@@ -106,7 +105,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     vertices = cms.InputTag("offlinePrimaryVertices", "", "RECO"),
     muons = cms.InputTag("muons"),
     electrons = cms.InputTag("gedGsfElectrons"),
-    taus = cms.InputTag("hpsPFTauProducer"),
+    taus = cms.InputTag("selectedPatTaus"),
     photons = cms.InputTag("gedPhotons"),
     jetsCalo = cms.InputTag("ak4CaloJets","","RECO"),
     jetsPF = cms.InputTag("ak4PFJets"),
@@ -196,18 +195,69 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters", "RECO"),
 
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
+
+    electron_cutbasedID_decisions_veto = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-veto", ""),
+    electron_cutbasedID_decisions_loose = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-loose", ""),
+    electron_cutbasedID_decisions_medium = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-medium", ""),
+    electron_cutbasedID_decisions_tight = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-tight", ""),
+    electron_mvaIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wp80", ""),
+    electron_mvaIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wp90", ""),
+    electron_mvaIsoID_decisions_wpHZZ = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wpHZZ", ""),
+    electron_mvaIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wpLoose", ""),
+    electron_mvaNoIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-GeneralPurpose-V1-wp80", ""),
+    electron_mvaNoIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-GeneralPurpose-V1-wp90", ""),
+    electron_mvaNoIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-HZZ-V1-wpLoose", ""),
+    photon_cutbasedID_decisions_loose = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-loose", ""),
+    photon_cutbasedID_decisions_medium = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-medium", ""),
+    photon_cutbasedID_decisions_tight = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-tight", ""),
+    photon_mvaID_decisions_wp80 = cms.InputTag("egmPhotonIDs", "mvaPhoID-Spring16-nonTrig-V1-wp80", ""),
+    photon_mvaID_decisions_wp90 = cms.InputTag("egmPhotonIDs", "mvaPhoID-Spring16-nonTrig-V1-wp90", ""),
 )
 
 #Add jettiness for AK8 jets
 process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
 process.NjettinessAK8CHS = process.Njettiness.clone()
 
+
+from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
+electron_id_config = cms.PSet(electron_ids = cms.vstring([                   
+                    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Summer16_80X_V1_cff',
+                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring16_GeneralPurpose_V1_cff',
+                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring16_HZZ_V1_cff',
+                    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Fall17_94X_V2_cff',
+                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_noIso_V2_cff', 
+                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_iso_V2_cff',
+                    ]))  
+photon_id_config = cms.PSet(photon_ids = cms.vstring([                   
+            'RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring16_V2p2_cff',
+            'RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring16_nonTrig_V1_cff',
+            "RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Fall17_94X_V2_cff",
+            "RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Fall17_94X_V2_cff"            
+                    ]))  
+
+
+                 
+switchOnVIDElectronIdProducer(process,DataFormat.AOD)
+switchOnVIDPhotonIdProducer(process,DataFormat.AOD) 
+    #process.egmGsfElectronIDs.physicsObjectSrc = \
+    #    cms.InputTag("reducedEgamma","reducedGedGsfElectrons")
+    #process.electronMVAValueMapProducer.src = \
+    #    cms.InputTag('reducedEgamma','reducedGedGsfElectrons')
+    #process.electronRegressionValueMapProducer.src = \
+    #    cms.InputTag('reducedEgamma','reducedGedGsfElectrons')
+for idmod in electron_id_config.electron_ids.value():
+    setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
+for idmod in photon_id_config.photon_ids.value():
+    setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
+
+
 #PAT Stuff
 process.load('PhysicsTools.PatAlgos.producersLayer1.tauProducer_cff')
 process.load('PhysicsTools.PatAlgos.producersLayer1.jetProducer_cff')
+#process.load('PhysicsTools.PatAlgos.producersLayer1.electronProducer_cff')
 
 process.patCandidatesTask = cms.Task(
-    #makePatElectronsTask,
+    #process.makePatElectronsTask,
     #makePatMuonsTask,
     process.makePatTausTask,
     #makePatPhotonsTask,
@@ -220,8 +270,9 @@ process.patCandidates = cms.Sequence(process.patCandidatesTask)
 
 process.load('PhysicsTools.PatAlgos.selectionLayer1.tauSelector_cfi')
 process.load('PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi')
+#process.load('PhysicsTools.PatAlgos.selectionLayer1.electronSelector_cfi')
 process.selectedPatCandidatesTask = cms.Task(
-     #selectedPatElectrons,
+    #process.selectedPatElectrons,
      #selectedPatMuons,
     process.selectedPatTaus,
      #selectedPatPhotons,
@@ -269,7 +320,7 @@ process.patTask = cms.Task(
 
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+process.p = cms.Path(process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
 process.schedule = cms.Schedule(process.p)
 
 
@@ -287,6 +338,7 @@ jetToolbox( process, 'ak8', 'ak8JetSubs', "out", PUMethod='CHS', bTagDiscriminat
 
 
 #Add PAT tasks for jet Toolbox to execution schedule
+process.schedule.associate(process.patTask)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 

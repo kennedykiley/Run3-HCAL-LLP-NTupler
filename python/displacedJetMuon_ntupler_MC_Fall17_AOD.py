@@ -322,7 +322,7 @@ process.patTask = cms.Task(
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
 process.p = cms.Path(process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
-process.schedule = cms.Schedule(process.p, process.outputPath )
+process.schedule = cms.Schedule(process.p )
 
 
 #Define Jet Tool Box Stuff
