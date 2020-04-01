@@ -2170,20 +2170,20 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
   //resetting output tree branches
 
   resetBranches();
-  // fillEventInfo(iEvent);
-  // fillPVAll();
-  // fillMuons(iEvent);
-  // fillElectrons(iEvent);
-  // fillPhotons(iEvent, iSetup);
-  // fillTaus();
-  // fillJets(iSetup);
-  // fillMet(iEvent);
-  //
-  // if (!isData) {
-  //   fillPileUp();
-  //   fillMC();
-  //   fillGenParticles();
-  // }
+  fillEventInfo(iEvent);
+  fillPVAll();
+  fillMuons(iEvent);
+  fillElectrons(iEvent);
+  fillPhotons(iEvent, iSetup);
+  fillTaus();
+  fillJets(iSetup);
+  fillMet(iEvent);
+
+  if (!isData) {
+    fillPileUp();
+    fillMC();
+    fillGenParticles();
+  }
   //fillHOSystem(iEvent,iSetup);
   fillMuonSystem(iEvent, iSetup);
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
@@ -2448,26 +2448,26 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       cscSegClusterMuonVetoPt[nCscSegClusters] = 0.0;
       cscSegClusterMuonVetoE[nCscSegClusters] = 0.0;
 
-  //     for (const pat::Jet &j : *jets) {
-  //       //if (j.pt() < 10) continue;
-  //       if (fabs(j.eta())>3.0) continue;
-  //       if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscSegClusterJetVetoPt[nCscSegClusters] ) {
-  //         cscSegClusterJetVetoPt[nCscSegClusters]  = j.pt();
-  //       }
-  //       if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscSegClusterJetVetoE[nCscSegClusters] ) {
-  //         cscSegClusterJetVetoE[nCscSegClusters]  = j.energy();
-  //       }
-  //     }
-  //     for(const pat::Muon &mu : *muons) {
-	// //if (mu.pt() < 20.0) continue;
-  //       if (fabs(mu.eta()) > 3.0) continue;
-  //       if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > cscSegClusterMuonVetoPt[nCscSegClusters]) {
-  //         cscSegClusterMuonVetoPt[nCscSegClusters] = mu.pt();
-  //       }
-  //       if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscSegClusterMuonVetoE[nCscSegClusters]) {
-  //         cscSegClusterMuonVetoE[nCscSegClusters] = mu.energy();
-  //       }
-  //     }
+      for (const pat::Jet &j : *jets) {
+        //if (j.pt() < 10) continue;
+        if (fabs(j.eta())>3.0) continue;
+        if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscSegClusterJetVetoPt[nCscSegClusters] ) {
+          cscSegClusterJetVetoPt[nCscSegClusters]  = j.pt();
+        }
+        if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscSegClusterJetVetoE[nCscSegClusters] ) {
+          cscSegClusterJetVetoE[nCscSegClusters]  = j.energy();
+        }
+      }
+      for(const pat::Muon &mu : *muons) {
+	//if (mu.pt() < 20.0) continue;
+        if (fabs(mu.eta()) > 3.0) continue;
+        if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > cscSegClusterMuonVetoPt[nCscSegClusters]) {
+          cscSegClusterMuonVetoPt[nCscSegClusters] = mu.pt();
+        }
+        if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscSegClusterMuonVetoE[nCscSegClusters]) {
+          cscSegClusterMuonVetoE[nCscSegClusters] = mu.energy();
+        }
+      }
 
       if (!isData) {
 	//match to genparticles
@@ -2633,26 +2633,26 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	cscRechitClusterCaloJetVeto[nCscRechitClusters] = 0.0;
 	cscRechitClusterMuonVetoPt[nCscRechitClusters] = 0.0;
 	cscRechitClusterMuonVetoE[nCscRechitClusters] = 0.0;
-	// for (const pat::Jet &j : *jets) {
-	//   //if (j.pt() < 10) continue;
-	//   if (fabs(j.eta())>3.0) continue;
-	//   if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscRechitClusterJetVetoPt[nCscRechitClusters] ) {
-	//     cscRechitClusterJetVetoPt[nCscRechitClusters]  = j.pt();
-	//   }
-	//   if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscRechitClusterJetVetoE[nCscRechitClusters] ) {
-	//     cscRechitClusterJetVetoE[nCscRechitClusters]  = j.energy();
-	//   }
-	// }
-	// for(const pat::Muon &mu : *muons) {
-	//   //if (mu.pt() < 20.0) continue;
-	//   if (fabs(mu.eta()) > 3.0) continue;
-	//   if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > cscRechitClusterMuonVetoPt[nCscRechitClusters]) {
-	//     cscRechitClusterMuonVetoPt[nCscRechitClusters] = mu.pt();
-	//   }
-	//   if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscRechitClusterMuonVetoE[nCscRechitClusters]) {
-	//     cscRechitClusterMuonVetoE[nCscRechitClusters] = mu.energy();
-	//   }
-	// }
+	for (const pat::Jet &j : *jets) {
+	  //if (j.pt() < 10) continue;
+	  if (fabs(j.eta())>3.0) continue;
+	  if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > cscRechitClusterJetVetoPt[nCscRechitClusters] ) {
+	    cscRechitClusterJetVetoPt[nCscRechitClusters]  = j.pt();
+	  }
+	  if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > cscRechitClusterJetVetoE[nCscRechitClusters] ) {
+	    cscRechitClusterJetVetoE[nCscRechitClusters]  = j.energy();
+	  }
+	}
+	for(const pat::Muon &mu : *muons) {
+	  //if (mu.pt() < 20.0) continue;
+	  if (fabs(mu.eta()) > 3.0) continue;
+	  if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > cscRechitClusterMuonVetoPt[nCscRechitClusters]) {
+	    cscRechitClusterMuonVetoPt[nCscRechitClusters] = mu.pt();
+	  }
+	  if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > cscRechitClusterMuonVetoE[nCscRechitClusters]) {
+	    cscRechitClusterMuonVetoE[nCscRechitClusters] = mu.energy();
+	  }
+	}
 
 	//match to segment clusters
 	float min_deltaR = 15.;
@@ -2819,26 +2819,26 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       dtSegClusterMuonVetoPt[nDtSegClusters] = 0.0;
       dtSegClusterMuonVetoE[nDtSegClusters] = 0.0;
 
-  //     for (const pat::Jet &j : *jets) {
-  //       //if (j.pt() < 10) continue;
-  //       if (fabs(j.eta())>3.0) continue;
-  //       if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > dtSegClusterJetVetoPt[nDtSegClusters] ) {
-  //         dtSegClusterJetVetoPt[nDtSegClusters]  = j.pt();
-  //       }
-  //       if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > dtSegClusterJetVetoE[nDtSegClusters] ) {
-  //         dtSegClusterJetVetoE[nDtSegClusters]  = j.energy();
-  //       }
-  //     }
-  //     for(const pat::Muon &mu : *muons) {
-  // //if (mu.pt() < 20.0) continue;
-  //       if (fabs(mu.eta()) > 3.0) continue;
-  //       if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > dtSegClusterMuonVetoPt[nDtSegClusters]) {
-  //         dtSegClusterMuonVetoPt[nDtSegClusters] = mu.pt();
-  //       }
-  //       if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > dtSegClusterMuonVetoE[nDtSegClusters]) {
-  //         dtSegClusterMuonVetoE[nDtSegClusters] = mu.energy();
-  //       }
-  //     }
+      for (const pat::Jet &j : *jets) {
+        //if (j.pt() < 10) continue;
+        if (fabs(j.eta())>3.0) continue;
+        if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > dtSegClusterJetVetoPt[nDtSegClusters] ) {
+          dtSegClusterJetVetoPt[nDtSegClusters]  = j.pt();
+        }
+        if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > dtSegClusterJetVetoE[nDtSegClusters] ) {
+          dtSegClusterJetVetoE[nDtSegClusters]  = j.energy();
+        }
+      }
+      for(const pat::Muon &mu : *muons) {
+  //if (mu.pt() < 20.0) continue;
+        if (fabs(mu.eta()) > 3.0) continue;
+        if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > dtSegClusterMuonVetoPt[nDtSegClusters]) {
+          dtSegClusterMuonVetoPt[nDtSegClusters] = mu.pt();
+        }
+        if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > dtSegClusterMuonVetoE[nDtSegClusters]) {
+          dtSegClusterMuonVetoE[nDtSegClusters] = mu.energy();
+        }
+      }
 
       if (!isData) {
 	//match to genparticles
@@ -2956,26 +2956,26 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	dtRechitClusterMuonVetoPt[nDtRechitClusters] = 0.0;
 	dtRechitClusterMuonVetoE[nDtRechitClusters] = 0.0;
 
-	// for (const pat::Jet &j : *jets) {
-	//   //if (j.pt() < 10) continue;
-	//   if (fabs(j.eta())>3.0) continue;
-	//   if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > dtRechitClusterJetVetoPt[nDtRechitClusters] ) {
-	//     dtRechitClusterJetVetoPt[nDtRechitClusters]  = j.pt();
-	//   }
-	//   if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > dtRechitClusterJetVetoE[nDtRechitClusters] ) {
-	//     dtRechitClusterJetVetoE[nDtRechitClusters]  = j.energy();
-	//   }
-	// }
-	// for(const pat::Muon &mu : *muons) {
-	//   //if (mu.pt() < 20.0) continue;
-	//   if (fabs(mu.eta()) > 3.0) continue;
-	//   if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > dtRechitClusterMuonVetoPt[nDtRechitClusters]) {
-	//     dtRechitClusterMuonVetoPt[nDtRechitClusters] = mu.pt();
-	//   }
-	//   if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > dtRechitClusterMuonVetoE[nDtRechitClusters]) {
-	//     dtRechitClusterMuonVetoE[nDtRechitClusters] = mu.energy();
-	//   }
-	// }
+	for (const pat::Jet &j : *jets) {
+	  //if (j.pt() < 10) continue;
+	  if (fabs(j.eta())>3.0) continue;
+	  if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.pt() > dtRechitClusterJetVetoPt[nDtRechitClusters] ) {
+	    dtRechitClusterJetVetoPt[nDtRechitClusters]  = j.pt();
+	  }
+	  if (deltaR(tmp.eta, tmp.phi, j.eta(),j.phi()) < 0.4 && j.energy() > dtRechitClusterJetVetoE[nDtRechitClusters] ) {
+	    dtRechitClusterJetVetoE[nDtRechitClusters]  = j.energy();
+	  }
+	}
+	for(const pat::Muon &mu : *muons) {
+	  //if (mu.pt() < 20.0) continue;
+	  if (fabs(mu.eta()) > 3.0) continue;
+	  if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.pt() > dtRechitClusterMuonVetoPt[nDtRechitClusters]) {
+	    dtRechitClusterMuonVetoPt[nDtRechitClusters] = mu.pt();
+	  }
+	  if (deltaR(tmp.eta, tmp.phi, mu.eta(), mu.phi()) < 0.4 && mu.energy() > dtRechitClusterMuonVetoE[nDtRechitClusters]) {
+	    dtRechitClusterMuonVetoE[nDtRechitClusters] = mu.energy();
+	  }
+	}
 
 	if (!isData) {
 	  //match to genparticles
