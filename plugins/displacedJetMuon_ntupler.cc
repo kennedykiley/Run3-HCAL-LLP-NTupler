@@ -118,7 +118,23 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   gedGsfElectronCoresToken_(consumes<vector<reco::GsfElectronCore> >(iConfig.getParameter<edm::InputTag>("gedGsfElectronCores"))),
   gedPhotonCoresToken_(consumes<vector<reco::PhotonCore> >(iConfig.getParameter<edm::InputTag>("gedPhotonCores"))),
   generalTrackToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks"))),
-  generalTrackHandleToken_(consumes<edm::View<reco::Track>>(edm::InputTag("generalTracks")))
+  generalTrackHandleToken_(consumes<edm::View<reco::Track>>(edm::InputTag("generalTracks"))),
+  electron_cutbasedID_decisions_veto_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_veto"))),
+  electron_cutbasedID_decisions_loose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_loose"))),
+  electron_cutbasedID_decisions_medium_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_medium"))),
+  electron_cutbasedID_decisions_tight_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_tight"))),
+  electron_mvaIsoID_decisions_wp80_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_mvaIsoID_decisions_wp80"))),
+ electron_mvaIsoID_decisions_wp90_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_mvaIsoID_decisions_wp90"))),
+ electron_mvaIsoID_decisions_wpHZZ_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_mvaIsoID_decisions_wpHZZ"))),
+ electron_mvaIsoID_decisions_wpLoose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_mvaIsoID_decisions_wpLoose"))),
+  electron_mvaNoIsoID_decisions_wp80_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_mvaNoIsoID_decisions_wp80"))),
+ electron_mvaNoIsoID_decisions_wp90_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_mvaNoIsoID_decisions_wp90"))),
+ electron_mvaNoIsoID_decisions_wpLoose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_mvaNoIsoID_decisions_wpLoose"))),
+  photon_cutbasedID_decisions_loose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_loose"))),
+  photon_cutbasedID_decisions_medium_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_medium"))),
+  photon_cutbasedID_decisions_tight_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_tight"))),
+  photon_mvaID_decisions_wp80_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_mvaID_decisions_wp80"))),
+  photon_mvaID_decisions_wp90_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_mvaID_decisions_wp90")))
 {
   //declare the TFileService for output
   edm::Service<TFileService> fs;
@@ -337,7 +353,17 @@ void displacedJetMuon_ntupler::enableElectronBranches()
   displacedJetMuonTree->Branch("ele_passTPOneProbeFilter", ele_passTPOneProbeFilter, "ele_passTPOneProbeFilter[nElectrons]/O");
   displacedJetMuonTree->Branch("ele_passTPTwoProbeFilter", ele_passTPTwoProbeFilter, "ele_passTPTwoProbeFilter[nElectrons]/O");
   displacedJetMuonTree->Branch("ele_passHLTFilter", &ele_passHLTFilter, Form("ele_passHLTFilter[nElectrons][%d]/O",MAX_ElectronHLTFilters));
-
+  displacedJetMuonTree->Branch("ele_passCutBasedIDVeto", ele_passCutBasedIDVeto, "ele_passCutBasedIDVeto[nElectrons]/O");
+  displacedJetMuonTree->Branch("ele_passCutBasedIDLoose", ele_passCutBasedIDLoose, "ele_passCutBasedIDLoose[nElectrons]/O");
+  displacedJetMuonTree->Branch("ele_passCutBasedIDMedium", ele_passCutBasedIDMedium, "ele_passCutBasedIDMedium[nElectrons]/O");
+  displacedJetMuonTree->Branch("ele_passCutBasedIDTight", ele_passCutBasedIDTight, "ele_passCutBasedIDTight[nElectrons]/O");
+  displacedJetMuonTree->Branch("ele_passMVAIsoIDWP80", ele_passMVAIsoIDWP80, "ele_passMVAIsoIDWP80[nElectrons]/O");
+  displacedJetMuonTree->Branch("ele_passMVAIsoIDWP90", ele_passMVAIsoIDWP90, "ele_passMVAIsoIDWP90[nElectrons]/O"); 
+  displacedJetMuonTree->Branch("ele_passMVAIsoIDWP9HZZ", ele_passMVAIsoIDWPHZZ, "ele_passMVAIsoIDWPHZZ[nElectrons]/O");
+  displacedJetMuonTree->Branch("ele_passMVAIsoIDWPLoose", ele_passMVAIsoIDWPLoose, "ele_passMVAIsoIDWPLoose[nElectrons]/O");
+  displacedJetMuonTree->Branch("ele_passMVANoIsoIDWP80", ele_passMVANoIsoIDWP80, "ele_passMVANoIsoIDWP80[nElectrons]/O");
+  displacedJetMuonTree->Branch("ele_passMVANoIsoIDWP90", ele_passMVANoIsoIDWP90, "ele_passMVANoIsoIDWP90[nElectrons]/O");  
+  displacedJetMuonTree->Branch("ele_passMVANoIsoIDWPLoose", ele_passMVANoIsoIDWPLoose, "ele_passMVANoIsoIDWPLoose[nElectrons]/O");  
 };
 
 void displacedJetMuon_ntupler::enableTauBranches()
@@ -416,6 +442,11 @@ void displacedJetMuon_ntupler::enablePhotonBranches()
   displacedJetMuonTree->Branch("pho_superClusterZ", pho_superClusterZ, "pho_superClusterZ[nPhotons]/F");
   displacedJetMuonTree->Branch("pho_hasPixelSeed", pho_hasPixelSeed, "pho_hasPixelSeed[nPhotons]/O");
   displacedJetMuonTree->Branch("pho_passHLTFilter", &pho_passHLTFilter, Form("pho_passHLTFilter[nPhotons][%d]/O",MAX_PhotonHLTFilters));
+  displacedJetMuonTree->Branch("pho_passCutBasedIDLoose", pho_passCutBasedIDLoose, "pho_passCutBasedIDLoose[nPhotons]/O");
+  displacedJetMuonTree->Branch("pho_passCutBasedIDMedium", pho_passCutBasedIDMedium, "pho_passCutBasedIDMedium[nPhotons]/O");
+  displacedJetMuonTree->Branch("pho_passCutBasedIDTight", pho_passCutBasedIDTight, "pho_passCutBasedIDTight[nPhotons]/O");
+  displacedJetMuonTree->Branch("pho_passMVAIDWP80", pho_passMVAIDWP80, "pho_passMVAIDWP80[nPhotons]/O");
+  displacedJetMuonTree->Branch("pho_passMVAIDWP90", pho_passMVAIDWP90, "pho_passMVAIDWP90[nPhotons]/O");
   displacedJetMuonTree->Branch("pho_convType", pho_convType, "pho_convType[nPhotons]/I");
   displacedJetMuonTree->Branch("pho_convTrkZ", pho_convTrkZ, "pho_convTrkZ[nPhotons]/F");
   displacedJetMuonTree->Branch("pho_convTrkClusZ", pho_convTrkClusZ, "pho_convTrkClusZ[nPhotons]/F");
@@ -1110,6 +1141,22 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(singleLegConversionsToken_,singleLegConversions);
   iEvent.getByToken(gedGsfElectronCoresToken_,gedGsfElectronCores);
   iEvent.getByToken(gedPhotonCoresToken_, gedPhotonCores);
+  iEvent.getByToken(electron_cutbasedID_decisions_veto_Token_, electron_cutbasedID_decisions_veto);
+  iEvent.getByToken(electron_cutbasedID_decisions_loose_Token_, electron_cutbasedID_decisions_loose);
+  iEvent.getByToken(electron_cutbasedID_decisions_medium_Token_, electron_cutbasedID_decisions_medium);
+  iEvent.getByToken(electron_cutbasedID_decisions_tight_Token_, electron_cutbasedID_decisions_tight);
+  iEvent.getByToken(electron_mvaIsoID_decisions_wp80_Token_, electron_mvaIsoID_decisions_wp80);
+  iEvent.getByToken(electron_mvaIsoID_decisions_wp90_Token_, electron_mvaIsoID_decisions_wp90);
+  iEvent.getByToken(electron_mvaIsoID_decisions_wpHZZ_Token_, electron_mvaIsoID_decisions_wpHZZ);
+  iEvent.getByToken(electron_mvaIsoID_decisions_wpLoose_Token_, electron_mvaIsoID_decisions_wpLoose);
+  iEvent.getByToken(electron_mvaNoIsoID_decisions_wp80_Token_, electron_mvaNoIsoID_decisions_wp80);
+  iEvent.getByToken(electron_mvaNoIsoID_decisions_wp90_Token_, electron_mvaNoIsoID_decisions_wp90);
+  iEvent.getByToken(electron_mvaNoIsoID_decisions_wpLoose_Token_, electron_mvaNoIsoID_decisions_wpLoose);
+  iEvent.getByToken(photon_cutbasedID_decisions_loose_Token_, photon_cutbasedID_decisions_loose);
+  iEvent.getByToken(photon_cutbasedID_decisions_medium_Token_, photon_cutbasedID_decisions_medium);
+  iEvent.getByToken(photon_cutbasedID_decisions_tight_Token_, photon_cutbasedID_decisions_tight);
+  iEvent.getByToken(photon_mvaID_decisions_wp80_Token_, photon_mvaID_decisions_wp80);
+  iEvent.getByToken(photon_mvaID_decisions_wp90_Token_,photon_mvaID_decisions_wp90);
   iEvent.getByToken(generalTrackToken_,generalTracks);
   iEvent.getByToken(generalTrackHandleToken_,generalTrackHandle);
   if(readGenVertexTime_) iEvent.getByToken(genParticles_t0_Token_,genParticles_t0);
@@ -1272,6 +1319,17 @@ void displacedJetMuon_ntupler::resetElectronBranches()
     ele_photonAndNeutralHadronMiniIso[i] = -99.0;
     ele_chargedPileupMiniIso[i] = -99.0;
     ele_activityMiniIsoAnnulus[i] = -99.0;
+    ele_passCutBasedIDVeto[i] = false;
+    ele_passCutBasedIDLoose[i] = false;
+    ele_passCutBasedIDMedium[i] = false;
+    ele_passCutBasedIDTight[i] = false;
+    ele_passMVAIsoIDWP80[i] = false;
+    ele_passMVAIsoIDWP90[i] = false;
+    ele_passMVAIsoIDWPHZZ[i] = false;
+    ele_passMVAIsoIDWPLoose[i] = false;
+    ele_passMVANoIsoIDWP80[i] = false;
+    ele_passMVANoIsoIDWP90[i] = false;
+    ele_passMVANoIsoIDWPLoose[i] = false;    
     ele_passSingleEleTagFilter[i] = false;
     ele_passTPOneTagFilter[i] = false;
     ele_passTPTwoTagFilter[i] = false;
@@ -1360,7 +1418,14 @@ void displacedJetMuon_ntupler::resetPhotonBranches()
     pho_superClusterY[i]      = -99.0;
     pho_superClusterZ[i]      = -99.0;
     pho_hasPixelSeed[i] = false;
+    pho_passCutBasedIDLoose[i] = false;
+    pho_passCutBasedIDMedium[i] = false;
+    pho_passCutBasedIDTight[i] = false;
+    pho_passMVAIDWP80[i] = false;
+    pho_passMVAIDWP90[i] = false;
     for (int q=0;q<MAX_PhotonHLTFilters;q++) pho_passHLTFilter[i][q] = false;
+
+
     pho_convType[i] = -99;
     pho_convTrkZ[i] = -99.;
     pho_convTrkClusZ[i] = -99.;
@@ -4735,7 +4800,12 @@ bool displacedJetMuon_ntupler::fillMC() {
 bool displacedJetMuon_ntupler::fillElectrons(const edm::Event& iEvent)
 {
 
-  for(const pat::Electron &ele : *electrons) {
+  //for(const pat::Electron &ele : *electrons) {
+  for (uint i = 0; i < electrons->size(); ++i){
+    const reco::GsfElectron ele = (*electrons)[i];
+    //const auto eleRef = electrons->ptrAt(i);
+    reco::GsfElectronRef eleRef(electrons, i);
+
     if(ele.pt() < 5) continue;
     eleE[nElectrons] = ele.energy();
     elePt[nElectrons] = ele.pt();
@@ -4764,8 +4834,18 @@ bool displacedJetMuon_ntupler::fillElectrons(const edm::Event& iEvent)
     ele_photonIso[nElectrons] = ele.pfIsolationVariables().sumPhotonEt;
     ele_neutralHadIso[nElectrons] = ele.pfIsolationVariables().sumNeutralHadronEt;
     ele_MissHits[nElectrons] = ele.gsfTrack()->hitPattern().numberOfAllHits(reco::HitPattern::MISSING_INNER_HITS);
-
-
+    ele_passCutBasedIDVeto[nElectrons] = (*electron_cutbasedID_decisions_veto)[eleRef];
+    ele_passCutBasedIDLoose[nElectrons] = (*electron_cutbasedID_decisions_loose)[eleRef];
+    ele_passCutBasedIDMedium[nElectrons] = (*electron_cutbasedID_decisions_medium)[eleRef];
+    ele_passCutBasedIDTight[nElectrons] = (*electron_cutbasedID_decisions_tight)[eleRef];
+    ele_passMVAIsoIDWP80[nElectrons] = (*electron_mvaIsoID_decisions_wp80)[eleRef];
+    ele_passMVAIsoIDWP90[nElectrons] = (*electron_mvaIsoID_decisions_wp90)[eleRef];
+    ele_passMVAIsoIDWPHZZ[nElectrons] = (*electron_mvaIsoID_decisions_wpHZZ)[eleRef];
+    ele_passMVAIsoIDWPLoose[nElectrons] = (*electron_mvaIsoID_decisions_wpLoose)[eleRef];
+    ele_passMVANoIsoIDWP80[nElectrons] = (*electron_mvaNoIsoID_decisions_wp80)[eleRef];
+    ele_passMVANoIsoIDWP90[nElectrons] = (*electron_mvaNoIsoID_decisions_wp90)[eleRef];
+    ele_passMVANoIsoIDWPLoose[nElectrons] = (*electron_mvaNoIsoID_decisions_wpLoose)[eleRef];
+ 
     //---------------
     //Conversion Veto
     //---------------
@@ -4872,7 +4952,11 @@ bool displacedJetMuon_ntupler::fillPileUp()
 bool displacedJetMuon_ntupler::fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   noZS::EcalClusterLazyTools *lazyToolnoZS = new noZS::EcalClusterLazyTools(iEvent, iSetup, ebRecHitsToken_, eeRecHitsToken_);
-  for (const reco::Photon &pho : *photons) {
+  //for (const reco::Photon &pho : *photons) {
+  for (uint i=0; i < photons->size() ; i++) {
+    const reco::Photon pho = (*photons)[i];
+    reco::PhotonRef phoRef(photons, i);
+   
     if (pho.pt() < 20) continue;
     std::vector<float> vCov = lazyToolnoZS->localCovariances( *(pho.superCluster()->seed()) );
     //-------------------------------------------------
@@ -4888,6 +4972,11 @@ bool displacedJetMuon_ntupler::fillPhotons(const edm::Event& iEvent, const edm::
     phoR9[nPhotons] = pho.full5x5_r9();
     pho_HoverE[nPhotons] = pho.hadTowOverEm();
     pho_isConversion[nPhotons] = pho.hasConversionTracks();
+    pho_passCutBasedIDLoose[nPhotons] = (*photon_cutbasedID_decisions_loose)[phoRef];
+    pho_passCutBasedIDMedium[nPhotons] = (*photon_cutbasedID_decisions_medium)[phoRef];
+    pho_passCutBasedIDTight[nPhotons] = (*photon_cutbasedID_decisions_tight)[phoRef];
+    pho_passMVAIDWP80[nPhotons] = (*photon_mvaID_decisions_wp80)[phoRef];
+    pho_passMVAIDWP90[nPhotons] = (*photon_mvaID_decisions_wp90)[phoRef];
 
     //------------------------------------------
     // Fill default miniAOD isolation quantities

@@ -406,8 +406,22 @@ protected:
   edm::EDGetTokenT<edm::View<reco::Track> > generalTrackHandleToken_;
   edm::EDGetTokenT<float> genParticles_t0_Token_;
 
-
-
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_cutbasedID_decisions_veto_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_cutbasedID_decisions_loose_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_cutbasedID_decisions_medium_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_cutbasedID_decisions_tight_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_mvaIsoID_decisions_wp80_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_mvaIsoID_decisions_wp90_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_mvaIsoID_decisions_wpHZZ_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_mvaIsoID_decisions_wpLoose_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_mvaNoIsoID_decisions_wp80_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_mvaNoIsoID_decisions_wp90_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > electron_mvaNoIsoID_decisions_wpLoose_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > photon_cutbasedID_decisions_loose_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > photon_cutbasedID_decisions_medium_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > photon_cutbasedID_decisions_tight_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > photon_mvaID_decisions_wp80_Token_;
+  edm::EDGetTokenT<edm::ValueMap<bool> > photon_mvaID_decisions_wp90_Token_;
   edm::EDGetTokenT<edm::ValueMap<float> > mvaGeneralPurposeValuesMapToken_;
   edm::EDGetTokenT<edm::ValueMap<int> > mvaGeneralPurposeCategoriesMapToken_;
   edm::EDGetTokenT<edm::ValueMap<float> > mvaHZZValuesMapToken_;
@@ -464,8 +478,22 @@ protected:
   edm::Handle<bool> HBHENoiseFilter;
   edm::Handle<bool> HBHEIsoNoiseFilter;
   edm::Handle<bool> primaryVertexFilter;
-
-
+  edm::Handle<edm::ValueMap<bool> > electron_cutbasedID_decisions_veto;
+  edm::Handle<edm::ValueMap<bool> > electron_cutbasedID_decisions_loose;
+  edm::Handle<edm::ValueMap<bool> > electron_cutbasedID_decisions_medium;
+  edm::Handle<edm::ValueMap<bool> > electron_cutbasedID_decisions_tight;
+  edm::Handle<edm::ValueMap<bool> > electron_mvaIsoID_decisions_wp80;
+  edm::Handle<edm::ValueMap<bool> > electron_mvaIsoID_decisions_wp90;
+  edm::Handle<edm::ValueMap<bool> > electron_mvaIsoID_decisions_wpHZZ;
+  edm::Handle<edm::ValueMap<bool> > electron_mvaIsoID_decisions_wpLoose;
+  edm::Handle<edm::ValueMap<bool> > electron_mvaNoIsoID_decisions_wp80;
+  edm::Handle<edm::ValueMap<bool> > electron_mvaNoIsoID_decisions_wp90;
+  edm::Handle<edm::ValueMap<bool> > electron_mvaNoIsoID_decisions_wpLoose;
+  edm::Handle<edm::ValueMap<bool> > photon_cutbasedID_decisions_loose;
+  edm::Handle<edm::ValueMap<bool> > photon_cutbasedID_decisions_medium;
+  edm::Handle<edm::ValueMap<bool> > photon_cutbasedID_decisions_tight;
+  edm::Handle<edm::ValueMap<bool> > photon_mvaID_decisions_wp80;
+  edm::Handle<edm::ValueMap<bool> > photon_mvaID_decisions_wp90;
 
   edm::Handle<vector<reco::VertexCompositePtrCandidate> > secondaryVertices;
   edm::Handle<double> rhoAll;
@@ -638,6 +666,17 @@ protected:
  float ele_photonAndNeutralHadronMiniIso[OBJECTARRAYSIZE];
  float ele_chargedPileupMiniIso[OBJECTARRAYSIZE];
  float ele_activityMiniIsoAnnulus[OBJECTARRAYSIZE];
+ bool ele_passCutBasedIDVeto[OBJECTARRAYSIZE];
+ bool ele_passCutBasedIDLoose[OBJECTARRAYSIZE];
+ bool ele_passCutBasedIDMedium[OBJECTARRAYSIZE];
+ bool ele_passCutBasedIDTight[OBJECTARRAYSIZE];
+ bool ele_passMVAIsoIDWP80[OBJECTARRAYSIZE];
+ bool ele_passMVAIsoIDWP90[OBJECTARRAYSIZE];
+ bool ele_passMVAIsoIDWPHZZ[OBJECTARRAYSIZE];
+ bool ele_passMVAIsoIDWPLoose[OBJECTARRAYSIZE];
+ bool ele_passMVANoIsoIDWP80[OBJECTARRAYSIZE];
+ bool ele_passMVANoIsoIDWP90[OBJECTARRAYSIZE];
+ bool ele_passMVANoIsoIDWPLoose[OBJECTARRAYSIZE];
  bool ele_passSingleEleTagFilter[OBJECTARRAYSIZE];
  bool ele_passTPOneTagFilter[OBJECTARRAYSIZE];
  bool ele_passTPTwoTagFilter[OBJECTARRAYSIZE];
@@ -729,6 +768,11 @@ protected:
  float pho_superClusterZ[OBJECTARRAYSIZE];
  bool pho_hasPixelSeed[OBJECTARRAYSIZE];
  bool pho_passHLTFilter[OBJECTARRAYSIZE][MAX_PhotonHLTFilters];
+ bool pho_passCutBasedIDLoose[OBJECTARRAYSIZE];
+ bool pho_passCutBasedIDMedium[OBJECTARRAYSIZE];
+ bool pho_passCutBasedIDTight[OBJECTARRAYSIZE];
+ bool pho_passMVAIDWP80[OBJECTARRAYSIZE];
+ bool pho_passMVAIDWP90[OBJECTARRAYSIZE];
  int pho_convType[OBJECTARRAYSIZE];
  float pho_convTrkZ[OBJECTARRAYSIZE];
  float pho_convTrkClusZ[OBJECTARRAYSIZE];
