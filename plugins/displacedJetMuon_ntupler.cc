@@ -824,6 +824,7 @@ void displacedJetMuon_ntupler::enableJetBranches()
   displacedJetMuonTree->Branch("jetPhi", jetPhi,"jetPhi[nJets]/F");
   displacedJetMuonTree->Branch("jetCSV", jetCSV,"jetCSV[nJets]/F");
   displacedJetMuonTree->Branch("jetCISV", jetCISV,"jetCISV[nJets]/F");
+  displacedJetMuonTree->Branch("jetCMVA", jetCMVA,"jetCMVA[nJets]/F");
   displacedJetMuonTree->Branch("jetProbb", jetProbb,"jetProbb[nJets]/F");
   displacedJetMuonTree->Branch("jetProbc", jetProbc,"jetProbc[nJets]/F");
   displacedJetMuonTree->Branch("jetProbudsg", jetProbudsg,"jetProbudsg[nJets]/F");
@@ -852,6 +853,9 @@ void displacedJetMuon_ntupler::enableJetBranches()
   displacedJetMuonTree->Branch("jetPhotonMultiplicity", jetPhotonMultiplicity, "jetPhotonMultiplicity[nJets]/I");
   displacedJetMuonTree->Branch("jetElectronMultiplicity", jetElectronMultiplicity, "jetElectronMultiplicity[nJets]/I");
   displacedJetMuonTree->Branch("jetMuonMultiplicity", jetMuonMultiplicity, "jetMuonMultiplicity[nJets]/I");
+  displacedJetMuonTree->Branch("jetPileupDiscriminant", jetPileupDiscriminant,"jetPileupDiscriminant[nJets]/F");
+  displacedJetMuonTree->Branch("jetPileupID", jetPileupID,"jetPileupID[nJets]/F");
+  //displacedJetMuonTree->Branch("jetQGLikelihood", jetQGLikelihood,"jetQGLikelihood[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonPt", jetAllMuonPt,"jetAllMuonPt[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonEta", jetAllMuonEta,"jetAllMuonEta[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonPhi", jetAllMuonPhi,"jetAllMuonPhi[nJets]/F");
@@ -1742,6 +1746,7 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jetPhi[i] = 0.0;
     jetCSV[i] = 0.0;
     jetCISV[i] = 0.0;
+    jetCMVA[i] = 0.0;
     jetMass[i] =  -99.0;
     jetJetArea[i] = -99.0;
     jetPileupE[i] = -99.0;
@@ -1766,6 +1771,9 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jetPhotonMultiplicity[i] = 0;
     jetElectronMultiplicity[i] = 0;
     jetMuonMultiplicity[i] = 0;
+    jetPileupDiscriminant[i] = -999;
+    jetPileupID[i] = 0;
+    jetQGLikelihood[i] = -999;
     jetAllMuonPt[i] = 0.0;
     jetAllMuonEta[i] = 0.0;
     jetAllMuonPhi[i] = 0.0;
@@ -3530,6 +3538,10 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     //jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
     //jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
 
+    jetPileupDiscriminant[nJets] = j.userFloat("pileupJetId:fullDiscriminant");
+    jetPileupID[nJets] = j.userInt("pileupJetId:fullId"); //A bit map for loose, medium, and tight working points
+    //jetQGLikelihood[nJets]  = j.userFloat("QGLikelihood");
+ 
     //---------------------------
     //Trackless variables
     //---------------------------
@@ -3543,6 +3555,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     findTrackingVariablesWithoutPropagator(thisJet,iSetup,alphaMax_wp,medianTheta2D_wp,medianIP_wp,nTracksPV_wp,ptAllPVTracks_wp,ptAllTracks_wp, minDeltaRAllTracks_wp, minDeltaRPVTracks_wp);
 
     jetCISV[nJets] = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    jetCMVA[nJets] = j.bDiscriminator("pfCombinedMVAV2BJetTags");
     jetAlphaMax[nJets] = alphaMax;
     jetBetaMax[nJets] = alphaMax * ptAllTracks/(j.pt());
     jetGammaMax[nJets] = alphaMax * ptAllTracks/(j.energy());
