@@ -853,9 +853,21 @@ void displacedJetMuon_ntupler::enableJetBranches()
   displacedJetMuonTree->Branch("jetPhotonMultiplicity", jetPhotonMultiplicity, "jetPhotonMultiplicity[nJets]/I");
   displacedJetMuonTree->Branch("jetElectronMultiplicity", jetElectronMultiplicity, "jetElectronMultiplicity[nJets]/I");
   displacedJetMuonTree->Branch("jetMuonMultiplicity", jetMuonMultiplicity, "jetMuonMultiplicity[nJets]/I");
-  displacedJetMuonTree->Branch("jetPileupDiscriminant", jetPileupDiscriminant,"jetPileupDiscriminant[nJets]/F");
-  displacedJetMuonTree->Branch("jetPileupID", jetPileupID,"jetPileupID[nJets]/F");
   //displacedJetMuonTree->Branch("jetQGLikelihood", jetQGLikelihood,"jetQGLikelihood[nJets]/F");
+  displacedJetMuonTree->Branch("jetNSV", jetNSV, "jetNSV[nJets]/I");
+  displacedJetMuonTree->Branch("jetNSVCand", jetNSVCand, "jetNSVCand[nJets]/I");
+  displacedJetMuonTree->Branch("jetNVertexTracks", jetNVertexTracks, "jetNVertexTracks[nJets]/I");
+  displacedJetMuonTree->Branch("jetNSelectedTracks", jetNSelectedTracks, "jetNSelectedTracks[nJets]/I");
+  displacedJetMuonTree->Branch("jetDRSVJet", jetDRSVJet, "jetDRSVJet[nJets]/F");
+  displacedJetMuonTree->Branch("jetFlightDist2D", jetFlightDist2D, "jetFlightDist2D[nJets]/F");
+  displacedJetMuonTree->Branch("jetFlightDist2DError", jetFlightDist2DError, "jetFlightDist2DError[nJets]/F");
+  displacedJetMuonTree->Branch("jetFlightDist3D", jetFlightDist3D, "jetFlightDist3D[nJets]/F");
+  displacedJetMuonTree->Branch("jetFlightDist3DError", jetFlightDist3DError, "jetFlightDist3DError[nJets]/F");
+  displacedJetMuonTree->Branch("jetSV_x", jetSV_x, "jetSV_x[nJets]/F");
+  displacedJetMuonTree->Branch("jetSV_y", jetSV_y, "jetSV_y[nJets]/F");
+  displacedJetMuonTree->Branch("jetSV_z", jetSV_z, "jetSV_z[nJets]/F");
+  displacedJetMuonTree->Branch("jetSVNTracks", jetSVNTracks, "jetSVNTracks[nJets]/I");
+  displacedJetMuonTree->Branch("jetSVMass", jetSVMass, "jetSVMass[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonPt", jetAllMuonPt,"jetAllMuonPt[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonEta", jetAllMuonEta,"jetAllMuonEta[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonPhi", jetAllMuonPhi,"jetAllMuonPhi[nJets]/F");
@@ -1363,19 +1375,19 @@ void displacedJetMuon_ntupler::resetTauBranches()
     tau_passMuVetoMedium[i] = false;
     tau_passMuVetoTight[i] = false;
     tau_ID[i] = 0;//tauID Bits
-    tau_combinedIsoDeltaBetaCorr3Hits[i] = -999.;;
-    tau_chargedIsoPtSum[i] = -999.;;
-    tau_neutralIsoPtSum[i] = -999.;;
-    tau_puCorrPtSum[i] = -999.;;
-    tau_eleVetoMVA[i] = -999.;;
-    tau_eleVetoCategory[i] = -999.;;
-    tau_muonVetoMVA[i] = -999.;;
-    tau_isoMVAnewDMwLT[i] = -999.;;
-    tau_isoMVAnewDMwoLT[i] = -999.;;
-    tau_leadCandPt[i] = -999.;;
-    tau_leadCandID[i] = -999.;;
-    tau_leadChargedHadrCandPt[i] = -999.;;
-    tau_leadChargedHadrCandID[i] = -999.;;
+    tau_combinedIsoDeltaBetaCorr3Hits[i] = -999.;
+    tau_chargedIsoPtSum[i] = -999.;
+    tau_neutralIsoPtSum[i] = -999.;
+    tau_puCorrPtSum[i] = -999.;
+    tau_eleVetoMVA[i] = -999.;
+    tau_eleVetoCategory[i] = -999.;
+    tau_muonVetoMVA[i] = -999.;
+    tau_isoMVAnewDMwLT[i] = -999.;
+    tau_isoMVAnewDMwoLT[i] = -999.;
+    tau_leadCandPt[i] = -999.;
+    tau_leadCandID[i] = -999.;
+    tau_leadChargedHadrCandPt[i] = -999.;
+    tau_leadChargedHadrCandID[i] = -999.;
   }
 };
 
@@ -1771,9 +1783,21 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jetPhotonMultiplicity[i] = 0;
     jetElectronMultiplicity[i] = 0;
     jetMuonMultiplicity[i] = 0;
-    jetPileupDiscriminant[i] = -999;
-    jetPileupID[i] = 0;
     jetQGLikelihood[i] = -999;
+    jetNSV[i] = 0;
+    jetNSVCand[i] = 0;
+    jetNVertexTracks[i] = 0;
+    jetNSelectedTracks[i] = 0;
+    jetDRSVJet[i] = -999;
+    jetFlightDist2D[i] = -999;
+    jetFlightDist2DError[i] = -999;
+    jetFlightDist3D[i] = -999;
+    jetFlightDist3DError[i] = -999;
+    jetSV_x[i] = -999;
+    jetSV_y[i] = -999;
+    jetSV_z[i] = -999;
+    jetSVNTracks[i] = 0;
+    jetSVMass[i] = -999;
     jetAllMuonPt[i] = 0.0;
     jetAllMuonEta[i] = 0.0;
     jetAllMuonPhi[i] = 0.0;
@@ -3509,8 +3533,8 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
     jetJetArea[nJets] = j.jetArea();
     jetPileupE[nJets] = j.pileup();
-
-    jetPileupIdFlag[nJets] = 0;
+    jetPileupId[nJets] = j.userFloat("pileupJetId:fullDiscriminant");
+    jetPileupIdFlag[nJets] = j.userInt("pileupJetId:fullId"); //A bit map for loose, medium, and tight working points
     jetPassIDLoose[nJets] = passJetID(&j, 0);
     jetPassIDTight[nJets] = passJetID(&j, 1);
     jetPassMuFrac[nJets]  = ( j.muonEnergyFraction() < 0.80 );
@@ -3537,11 +3561,34 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     //jet_HF_em_multiplicity[nJets] = j.HFEMMultiplicity();
     //jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
     //jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
-
-    jetPileupDiscriminant[nJets] = j.userFloat("pileupJetId:fullDiscriminant");
-    jetPileupID[nJets] = j.userInt("pileupJetId:fullId"); //A bit map for loose, medium, and tight working points
     //jetQGLikelihood[nJets]  = j.userFloat("QGLikelihood");
  
+    //---------------------------
+    //Secondary vertex stuff
+    //---------------------------
+    if (j.tagInfoLabels().size() > 0){      
+      if(j.hasTagInfo("pfSecondaryVertex")){
+	jetNSV[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertices();
+	jetNSVCand[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexCandidates();
+	jetNVertexTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks();
+	jetNSelectedTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nSelectedTracks();
+	if (j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->taggingVariables().getList(reco::btau::vertexJetDeltaR,false).size() > 0) {
+	  jetDRSVJet[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->taggingVariables().getList(reco::btau::vertexJetDeltaR,false)[0];
+	}
+	if(j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertices() > 0) {
+	  jetFlightDist2D[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, true).value();
+	  jetFlightDist2DError[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, true).error();
+	  jetFlightDist3D[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, false).value();
+	  jetFlightDist3DError[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, false).error();
+	  jetSV_x[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vx();
+	  jetSV_y[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vy();
+	  jetSV_z[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vz();
+	  jetSVNTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks(0);
+	  jetSVMass[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).mass();
+	}
+      }
+    }
+    
     //---------------------------
     //Trackless variables
     //---------------------------
