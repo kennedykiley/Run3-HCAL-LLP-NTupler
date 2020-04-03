@@ -365,6 +365,10 @@ process.patJets.discriminatorSources = cms.VInputTag(
     cms.InputTag("softPFElectronBJetTags"),
     cms.InputTag("pfCombinedMVAV2BJetTags"),   
     )
+process.patJets.addTagInfos     = cms.bool(True)
+process.patJets.tagInfoSources  = cms.VInputTag( 'pfImpactParameterTagInfos'
+                                                 ,'pfSecondaryVertexTagInfos'
+                                                 ,'pfInclusiveSecondaryVertexFinderTagInfos')
 process.patJets.addGenPartonMatch   = cms.bool(False)
 process.patJets.embedGenPartonMatch = cms.bool(False)
 process.patJets.genPartonMatch      = ''
