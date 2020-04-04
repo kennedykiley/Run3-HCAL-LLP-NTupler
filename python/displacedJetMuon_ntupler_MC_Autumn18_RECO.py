@@ -350,6 +350,12 @@ process.patTaus.isoDeposits = cms.PSet()
 process.selectedPatTaus.cut = cms.string("pt > 18. && tauID('decayModeFindingNewDMs')> 0.5")
 process.selectedPatJets.cut = cms.string("pt > 10")
 
+## PU JetID
+process.load("RecoJets.JetProducers.PileupJetID_cfi")
+process.patTask.add(process.pileUpJetIDTask)
+process.patJets.userData.userFloats.src = [ cms.InputTag("pileupJetId:fullDiscriminant"), ]
+process.patJets.userData.userInts.src = [ cms.InputTag("pileupJetId:fullId"), ]
+
 process.patJets.discriminatorSources = cms.VInputTag(
     cms.InputTag("pfJetBProbabilityBJetTags"),
     cms.InputTag("pfJetProbabilityBJetTags"),
