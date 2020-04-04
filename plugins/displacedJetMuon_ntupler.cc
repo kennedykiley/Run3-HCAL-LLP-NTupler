@@ -80,7 +80,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   //triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
   genMetCaloToken_(consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMetsCalo"))),
   genMetTrueToken_(consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMetsTrue"))),
-  metToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
+  //metToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
+  metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
 //  metNoHFToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metsNoHF"))),
   metPuppiToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metsPuppi"))),
   metFilterBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"))),
@@ -943,19 +944,10 @@ void displacedJetMuon_ntupler::enableMetBranches()
   displacedJetMuonTree->Branch("metPt", &metPt, "metPt/F");
   displacedJetMuonTree->Branch("metPhi", &metPhi, "metPhi/F");
   displacedJetMuonTree->Branch("sumMET", &sumMET, "sumMET/F");
-  displacedJetMuonTree->Branch("metType0Pt", &metType0Pt, "metType0Pt/F");
-  displacedJetMuonTree->Branch("metType0Phi", &metType0Phi, "metType0Phi/F");
-  displacedJetMuonTree->Branch("metType1Pt_raw", &metType1Pt_raw, "metType1Pt_raw/F");
+  displacedJetMuonTree->Branch("metUncorrectedPt", &metUncorrectedPt, "metUncorrectedPt/F");
+  displacedJetMuonTree->Branch("metUncorrectedPhi", &metUncorrectedPhi, "metUncorrectedPhi/F");
   displacedJetMuonTree->Branch("metType1Pt", &metType1Pt, "metType1Pt/F");
-  displacedJetMuonTree->Branch("metType1Px", &metType1Px, "metType1Px/F");
-  displacedJetMuonTree->Branch("metType1Py", &metType1Py, "metType1Py/F");
-  displacedJetMuonTree->Branch("metType1Eta", &metType1Eta, "metType1Eta/F");
   displacedJetMuonTree->Branch("metType1Phi", &metType1Phi, "metType1Phi/F");
-  displacedJetMuonTree->Branch("metType1Phi_raw", &metType1Phi_raw, "metType1Phi_raw/F");
-  displacedJetMuonTree->Branch("metType0Plus1Pt", &metType0Plus1Pt, "metType0Plus1Pt/F");
-  displacedJetMuonTree->Branch("metType0Plus1Phi", &metType0Plus1Phi, "metType0Plus1Phi/F");
-  displacedJetMuonTree->Branch("metNoHFPt", &metNoHFPt, "metNoHFPt/F");
-  displacedJetMuonTree->Branch("metNoHFPhi", &metNoHFPhi, "metNoHFPhi/F");
   displacedJetMuonTree->Branch("metPuppiPt", &metPuppiPt, "metPuppiPt/F");
   displacedJetMuonTree->Branch("metPuppiPhi", &metPuppiPhi, "metPuppiPhi/F");
   displacedJetMuonTree->Branch("metCaloPt", &metCaloPt, "metCaloPt/F");
@@ -1936,21 +1928,10 @@ void displacedJetMuon_ntupler::resetMetBranches()
   UncMETdpx = -99.0;
   UncMETdpy = -99.0;
   UncMETdSumEt = -99.0;
-  metType0Pt = -99.0;
-  metType0Phi = -99.0;
-  metType1Pt_raw = -99.0;
+  metUncorrectedPt = -99.0;
+  metUncorrectedPhi = -99.0;
   metType1Pt = -99.0;
-  metType1Px = -99.0;
-  metType1Py = -99.0;
-  metType1Eta = -99.0;
   metType1Phi = -99.0;
-  metType1Phi_raw = -99.0;
-  metType0Plus1Pt = -99.0;
-  metType0Plus1Phi = -99.0;
-  metPtRecomputed = -99.0;
-  metPhiRecomputed = -99.0;
-  metNoHFPt = -99.0;
-  metNoHFPhi = -99.0;
   metPuppiPt = -99.0;
   metPuppiPhi = -99.0;
   metCaloPt = -999;
@@ -4579,22 +4560,15 @@ const reco::Candidate* displacedJetMuon_ntupler::findOriginalMotherWithSameID(co
 
 bool displacedJetMuon_ntupler::fillMet(const edm::Event& iEvent)
 {
-  const reco::PFMET &Met = mets->front();
+  //const reco::PFMET &Met = mets->front();
+  const pat::MET &Met = mets->front();
 
   sumMET = Met.sumEt();
-  metType0Pt = 0;
-  metType0Phi = 0;
-  metType1Pt_raw = Met.pt();
-  metType1Pt = Met.pt();
-  metType1Px = Met.px();
-  metType1Py = Met.py();
-  metType1Eta = Met.eta();
-  metType1Phi_raw = Met.phi();
-  metType1Phi = Met.phi();
-  metType0Plus1Pt = 0;
-  metType0Plus1Phi = 0;
+  // metUncorrectedPt = Met.uncorPt();
+  // metUncorrectedPhi = Met.uncorPhi();
+  metType1Pt = Met.pt(); 
+  metType1Phi = Met.phi(); 
 
-  //
   iEvent.getByToken(globalSuperTightHalo2016FilterToken_, globalSuperTightHalo2016Filter);
   iEvent.getByToken(globalTightHalo2016FilterToken_, globalTightHalo2016Filter);
   iEvent.getByToken(BadChargedCandidateFilterToken_, BadChargedCandidateFilter);
