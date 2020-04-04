@@ -12,7 +12,7 @@ process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2017")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-#'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/D67E96A0-F9BE-E611-A03B-F45214939090.root',
+ #'root://cmsxrootd.fnal.gov//store/mc/RunIISummer16DR80Premix/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/D67E96A0-F9BE-E611-A03B-F45214939090.root',
         #'/store/mc/RunIISummer16DR80Premix/WplusH_HToSSTobbbb_WToLNu_MH-125_MS-15_ctauS-10000_TuneCUETP8M1_13TeV-powheg-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/364D94A3-F8D1-E611-AAAB-02163E019CBF.root'
         #'/store/mc/RunIISummer16DR80Premix/WminusH_HToSSTobbbb_WToLNu_MH-125_MS-40_ctauS-10000_TuneCUETP8M1_13TeV-powheg-pythia8/AODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/80000/7C808D45-EDCD-E611-B093-14187741278B.root'
         '/store/mc/RunIISummer16DR80Premix/ggH_HToSSTobbbb_MH-125_TuneCUETP8M1_13TeV-powheg-pythia8/GEN-SIM-RECO/PUMoriond17_rp_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/00001/04C9F41B-6652-EA11-9B02-001E675A68BF.root'
@@ -115,7 +115,8 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
     jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
 
-    mets = cms.InputTag("pfMet"),
+    #mets = cms.InputTag("slimmedMETs"),
+    mets = cms.InputTag("patMETs"),
     #metsNoHF = cms.InputTag("pfMet30"),
     metsPuppi = cms.InputTag("pfMet"),
     pfCands = cms.InputTag("particleFlow","","RECO"),
@@ -196,22 +197,22 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
 
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
 
-    electron_cutbasedID_decisions_veto = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-veto", ""),
-    electron_cutbasedID_decisions_loose = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-loose", ""),
-    electron_cutbasedID_decisions_medium = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-medium", ""),
-    electron_cutbasedID_decisions_tight = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-tight", ""),
+    electron_cutbasedID_decisions_veto = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-veto", ""),
+    electron_cutbasedID_decisions_loose = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-loose", ""),
+    electron_cutbasedID_decisions_medium = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-medium", ""),
+    electron_cutbasedID_decisions_tight = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-tight", ""),
     electron_mvaIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wp80", ""),
     electron_mvaIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wp90", ""),
     electron_mvaIsoID_decisions_wpHZZ = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wpHZZ", ""),
     electron_mvaIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wpLoose", ""),
-    electron_mvaNoIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-GeneralPurpose-V1-wp80", ""),
-    electron_mvaNoIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-GeneralPurpose-V1-wp90", ""),
-    electron_mvaNoIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-HZZ-V1-wpLoose", ""),
-    photon_cutbasedID_decisions_loose = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-loose", ""),
-    photon_cutbasedID_decisions_medium = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-medium", ""),
-    photon_cutbasedID_decisions_tight = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-tight", ""),
-    photon_mvaID_decisions_wp80 = cms.InputTag("egmPhotonIDs", "mvaPhoID-Spring16-nonTrig-V1-wp80", ""),
-    photon_mvaID_decisions_wp90 = cms.InputTag("egmPhotonIDs", "mvaPhoID-Spring16-nonTrig-V1-wp90", ""),
+    electron_mvaNoIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-noIso-V2-wp80", ""),
+    electron_mvaNoIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-noIso-V2-wp90", ""),
+    electron_mvaNoIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-noIso-V2-wpLoose", ""),
+    photon_cutbasedID_decisions_loose = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Fall17-94X-V2-loose", ""),
+    photon_cutbasedID_decisions_medium = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Fall17-94X-V2-medium", ""),
+    photon_cutbasedID_decisions_tight = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Fall17-94X-V2-tight", ""),
+    photon_mvaID_decisions_wp80 = cms.InputTag("egmPhotonIDs", "mvaPhoID-RunIIFall17-v2-wp80", ""),
+    photon_mvaID_decisions_wp90 = cms.InputTag("egmPhotonIDs", "mvaPhoID-RunIIFall17-v2-wp90", ""),
 )
 
 #Add jettiness for AK8 jets
@@ -254,74 +255,52 @@ for idmod in photon_id_config.photon_ids.value():
 #PAT Stuff
 process.load('PhysicsTools.PatAlgos.producersLayer1.tauProducer_cff')
 process.load('PhysicsTools.PatAlgos.producersLayer1.jetProducer_cff')
-#process.load('PhysicsTools.PatAlgos.producersLayer1.electronProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.electronProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.photonProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.ootPhotonProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.metProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.muonProducer_cff')
+process.makePatJetsTask.add(process.pfImpactParameterTagInfos, 
+                            process.pfSecondaryVertexTagInfos,
+                            process.pfInclusiveSecondaryVertexFinderTagInfos)
 
 process.patCandidatesTask = cms.Task(
-    #process.makePatElectronsTask,
-    #makePatMuonsTask,
+    process.makePatElectronsTask,
+    process.makePatMuonsTask,
     process.makePatTausTask,
-    #makePatPhotonsTask,
-    #makePatOOTPhotonsTask,
+    process.makePatPhotonsTask,
+    process.makePatOOTPhotonsTask,
     process.makePatJetsTask,
-    #makePatMETsTask
+    process.makePatMETsTask
     )
 process.patCandidates = cms.Sequence(process.patCandidatesTask)
 
 
 process.load('PhysicsTools.PatAlgos.selectionLayer1.tauSelector_cfi')
 process.load('PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi')
-#process.load('PhysicsTools.PatAlgos.selectionLayer1.electronSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.electronSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.muonSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.photonSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.ootPhotonSelector_cff')
 process.selectedPatCandidatesTask = cms.Task(
-    #process.selectedPatElectrons,
-     #selectedPatMuons,
+    process.selectedPatElectrons,
+    process.selectedPatMuons,
     process.selectedPatTaus,
-     #selectedPatPhotons,
-     #selectedPatOOTPhotons,
+    process.selectedPatPhotons,
+    process.selectedPatOOTPhotons,
     process.selectedPatJets
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
-process.load('PhysicsTools.PatAlgos.slimming.slimmedTaus_cfi')
-process.load('PhysicsTools.PatAlgos.slimming.packedPFCandidates_cff')
-process.slimmingTask = cms.Task(
-    process.packedPFCandidatesTask,
-     # lostTracks,
-     # isolatedTracks,
-     # offlineSlimmedPrimaryVertices,
-     # primaryVertexAssociation,
-     # genParticlesTask,
-     # selectedPatTrigger,
-     # slimmedPatTrigger,
-     # slimmedCaloJets,
-     # slimmedJets,
-     # slimmedJetsAK8,
-     # slimmedGenJets,
-     # slimmedGenJetsAK8,
-     # slimmedElectrons,
-     # slimmedMuons,
-     # slimmedPhotons,
-     # slimmedOOTPhotons,
-    process.slimmedTaus,
-     # slimmedSecondaryVertices,
-     # slimmedKshortVertices,
-     # slimmedLambdaVertices,
-     # slimmedMETs,
-     # metFilterPathsTask,
-     # reducedEgamma,
-     # bunchSpacingProducer,
-     # oniaPhotonCandidates
-    )
 process.patTask = cms.Task(
     process.patCandidatesTask,
     process.selectedPatCandidatesTask,
-    #process.slimmingTask,
-    #process.bunchSpacingProducer
 )
 
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
 process.p = cms.Path(process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
-process.schedule = cms.Schedule(process.p)
+process.schedule = cms.Schedule(process.p )
 
 
 #Define Jet Tool Box Stuff
@@ -333,7 +312,6 @@ listBtagDiscriminatorsAK4 = [
                 'pfCombinedCvsBJetTags',
                 ]
 from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
-#jetToolbox( process, 'ak8', 'ak8JetSubs', 'jetSequence', PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addPruning=True, addSoftDrop=True, addTrimming=True, addFiltering=True, addMassDrop=True, addNsub=True, addNsubSubjets=True, addPrunedSubjets=True, addPUJetID=True, addQJets=True, addQGTagger=True, miniAOD=False )   ### For example
 jetToolbox( process, 'ak8', 'ak8JetSubs', "out", PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addSoftDrop=True, addNsub=True, addNsubSubjets=True, miniAOD=False )   ### For example
 
 
@@ -347,6 +325,12 @@ associatePatAlgosToolsTask(process)
 process.patTaus.isoDeposits = cms.PSet()
 process.selectedPatTaus.cut = cms.string("pt > 18. && tauID('decayModeFindingNewDMs')> 0.5")
 process.selectedPatJets.cut = cms.string("pt > 10")
+
+## PU JetID
+process.load("RecoJets.JetProducers.PileupJetID_cfi")
+process.patTask.add(process.pileUpJetIDTask)
+process.patJets.userData.userFloats.src = [ cms.InputTag("pileupJetId:fullDiscriminant"), ]
+process.patJets.userData.userInts.src = [ cms.InputTag("pileupJetId:fullId"), ]
 
 process.patJets.discriminatorSources = cms.VInputTag(
     cms.InputTag("pfJetBProbabilityBJetTags"),
@@ -364,4 +348,3 @@ process.patJets.addTagInfos     = cms.bool(True)
 process.patJets.tagInfoSources  = cms.VInputTag( 'pfImpactParameterTagInfos'
                                                  ,'pfSecondaryVertexTagInfos'
                                                  ,'pfInclusiveSecondaryVertexFinderTagInfos')
-
