@@ -814,6 +814,8 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  int   track_bestVertexIndex[RECHITARRAYSIZE];
  int   track_nMissingInnerHits[RECHITARRAYSIZE];
  int   track_nMissingOuterHits[RECHITARRAYSIZE];
+ int   track_nPixelHits[RECHITARRAYSIZE];
+ int   track_nHits[RECHITARRAYSIZE]; 
  float track_angle[RECHITARRAYSIZE];
  float track_dxyToBS[RECHITARRAYSIZE];
  float track_dxyErr[RECHITARRAYSIZE];

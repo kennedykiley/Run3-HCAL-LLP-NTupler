@@ -808,6 +808,8 @@ void displacedJetMuon_ntupler::enableEcalRechitBranches()
   displacedJetMuonTree->Branch("track_bestVertexIndex", track_bestVertexIndex,"track_bestVertexIndex[nTracks]/I");
   displacedJetMuonTree->Branch("track_nMissingInnerHits", track_nMissingInnerHits,"track_nMissingInnerHits[nTracks]/I");
   displacedJetMuonTree->Branch("track_nMissingOuterHits", track_nMissingOuterHits,"track_nMissingOuterHits[nTracks]/I");
+  displacedJetMuonTree->Branch("track_nPixelHits", track_nPixelHits,"track_nPixelHits[nTracks]/I");
+  displacedJetMuonTree->Branch("track_nHits", track_nHits,"track_nHits[nTracks]/I");
   displacedJetMuonTree->Branch("track_dxyToBS", track_dxyToBS,"track_dxyToBS[nTracks]/F");
   displacedJetMuonTree->Branch("track_dxyErr", track_dxyErr,"track_dxyErr[nTracks]/F");
   displacedJetMuonTree->Branch("track_dzToPV", track_dzToPV,"track_dzToPV[nTracks]/F");
@@ -1909,6 +1911,8 @@ void displacedJetMuon_ntupler::resetEcalRechitBranches()
     track_bestVertexIndex[i] = -1;
     track_nMissingInnerHits[i] = -1;
     track_nMissingOuterHits[i] = -1;
+    track_nPixelHits[i] = -1;
+    track_nHits[i] = -1;
     track_angle[i] = -999.;
     track_dxyToBS[i] = -999.;
     track_dxyErr[i] = -999.;
@@ -4003,7 +4007,8 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
       track_nMissingInnerHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
       track_nMissingOuterHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
-
+      track_nPixelHits[nTracks] = tref->hitPattern().numberOfValidPixelHits();
+      track_nHits[nTracks] = tref->hitPattern().numberOfValidHits();
       track_dxyToBS[nTracks] = tref->dxy(*beamSpot);
       track_dxyErr[nTracks] = tref->dxyError();
       track_dzToPV[nTracks] = tref->dz(beamSpot->position());
