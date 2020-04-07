@@ -179,7 +179,7 @@ using namespace std;
 #define HORECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
 #define MAX_NPV 1000
-#define MAX_NTRACK 2000
+#define MAX_NPFCAND 2000
 #define MAX_NPU 1000
 #define MAX_NBX 1000
 #define LLP_ARRAY_SIZE 2
@@ -206,7 +206,7 @@ public:
   void enableMuonBranches();
   void enableElectronBranches();
   void enableTauBranches();
-  void enableIsoPFCandidateBranches();
+  void enablePFCandidateBranches();
   void enablePhotonBranches();
   void enableMuonSystemBranches();
   void enableHORechitBranches();
@@ -229,7 +229,7 @@ public:
   void resetMuonBranches();
   void resetElectronBranches();
   void resetTauBranches();
-  void resetIsoPFCandidateBranches();//need to implement yet
+  void resetPFCandidateBranches();//need to implement yet
   void resetPhotonBranches();
   void resetHORechitBranches();//need to implement yet
   void resetEcalRechitBranches();//need to implement yet
@@ -722,12 +722,22 @@ protected:
 
  //IsolatedChargedPFCandidates
  int nIsoPFCandidates;
- float isoPFCandidatePt[OBJECTARRAYSIZE];
- float isoPFCandidateEta[OBJECTARRAYSIZE];
- float isoPFCandidatePhi[OBJECTARRAYSIZE];
- float isoPFCandidateIso04[OBJECTARRAYSIZE];
- float isoPFCandidateD0[OBJECTARRAYSIZE];
- int   isoPFCandidatePdgId[OBJECTARRAYSIZE];
+ float isoPFCandidatePt[MAX_NPFCAND];
+ float isoPFCandidateEta[MAX_NPFCAND];
+ float isoPFCandidatePhi[MAX_NPFCAND];
+ float isoPFCandidateIso04[MAX_NPFCAND];
+ float isoPFCandidateD0[MAX_NPFCAND];
+ int   isoPFCandidatePdgId[MAX_NPFCAND];
+
+ //PFCandidates
+ int   nPFCandidates;
+ int   PFCandidatePdgId[MAX_NPFCAND];
+ float PFCandidatePt[MAX_NPFCAND];
+ float PFCandidateEta[MAX_NPFCAND];
+ float PFCandidatePhi[MAX_NPFCAND];
+ int   PFCandidateTrackIndex[MAX_NPFCAND];
+ int   PFCandidateGeneralTrackIndex[MAX_NPFCAND];
+ int   PFCandidatePVIndex[MAX_NPFCAND];
 
  //Photons
  int nPhotons;
@@ -1237,6 +1247,11 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float jetMinDeltaRAllTracks_wp[OBJECTARRAYSIZE];
  float jetMinDeltaRPVTracks_wp[OBJECTARRAYSIZE];
 
+ int  jetNPFCands[OBJECTARRAYSIZE];
+ int  jetPFCandIndex[OBJECTARRAYSIZE][MAX_NPFCAND];
+ int  jetAllPFCandIndex[OBJECTARRAYSIZE][MAX_NPFCAND];
+
+
 
  //AK8 Jets
  int nFatJets;
@@ -1259,6 +1274,9 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float fatJetMaxSubjetCSV[OBJECTARRAYSIZE];
  bool fatJetPassIDLoose[OBJECTARRAYSIZE];
  bool fatJetPassIDTight[OBJECTARRAYSIZE];
+ int  fatJetNPFCands[OBJECTARRAYSIZE];
+ int  fatJetPFCandIndex[OBJECTARRAYSIZE][MAX_NPFCAND];
+ int  fatJetAllPFCandIndex[OBJECTARRAYSIZE][MAX_NPFCAND];
 
  //MET
  float metPt;

@@ -219,7 +219,7 @@ void displacedJetMuon_ntupler::setBranches()
   enableMuonBranches();
   enableElectronBranches();
   enableTauBranches();
-  // enableIsoPFCandidateBranches();
+  enablePFCandidateBranches();
   enablePhotonBranches();
   enableMuonSystemBranches();
   enableHORechitBranches();
@@ -458,8 +458,17 @@ void displacedJetMuon_ntupler::enablePhotonBranches()
   displacedJetMuonTree->Branch("pho_seedRecHitSwitchToGain1", pho_seedRecHitSwitchToGain1, "pho_seedRecHitSwitchToGain1[nPhotons]/F");
   displacedJetMuonTree->Branch("pho_anyRecHitSwitchToGain6", pho_anyRecHitSwitchToGain6, "pho_anyRecHitSwitchToGain6[nPhotons]/F");
   displacedJetMuonTree->Branch("pho_anyRecHitSwitchToGain1", pho_anyRecHitSwitchToGain1, "pho_anyRecHitSwitchToGain1[nPhotons]/F");
+};
 
-
+void displacedJetMuon_ntupler::enablePFCandidateBranches()
+{
+  displacedJetMuonTree->Branch("nPFCandidates", &nPFCandidates, "nPFCandidates/i");
+  displacedJetMuonTree->Branch("PFCandidatePdgId", PFCandidatePdgId, "PFCandidatePdgId[nPFCandidates]/I");
+  displacedJetMuonTree->Branch("PFCandidatePt", PFCandidatePt, "PFCandidatePt[nPFCandidates]/F");
+  displacedJetMuonTree->Branch("PFCandidateEta", PFCandidateEta, "PFCandidateEta[nPFCandidates]/F");
+  displacedJetMuonTree->Branch("PFCandidatePhi", PFCandidatePhi, "PFCandidatePhi[nPFCandidates]/F");
+  displacedJetMuonTree->Branch("PFCandidateTrackIndex", PFCandidateTrackIndex, "PFCandidateTrackIndex[nPFCandidates]/I");
+  displacedJetMuonTree->Branch("PFCandidatePVIndex", PFCandidatePVIndex, "PFCandidatePVIndex[nPFCandidates]/I");
 };
 
 void displacedJetMuon_ntupler::enableMuonSystemBranches()
@@ -911,7 +920,8 @@ void displacedJetMuon_ntupler::enableJetBranches()
   displacedJetMuonTree->Branch("jetMedianIP_wp",jetMedianIP_wp,"jetMedianIP_wp[nJets]/F");
   displacedJetMuonTree->Branch("jetMinDeltaRAllTracks_wp",jetMinDeltaRAllTracks_wp,"jetMinDeltaRAllTracks_wp[nJets]/F");
   displacedJetMuonTree->Branch("jetMinDeltaRPVTracks_wp",jetMinDeltaRPVTracks_wp,"jetMinDeltaRPVTracks_wp[nJets]/F");
-
+  displacedJetMuonTree->Branch("jetNPFCands",jetNPFCands,"jetNPFCands[nJets]/I");
+  displacedJetMuonTree->Branch("jetPFCandIndex", &jetPFCandIndex,Form("jetPFCandIndex[nJets][%d]/I",MAX_NPFCAND));
 
 };
 
@@ -939,6 +949,8 @@ void displacedJetMuon_ntupler::enableJetAK8Branches()
   displacedJetMuonTree->Branch("fatJetMaxSubjetCSV", fatJetMaxSubjetCSV, "fatJetMaxSubjetCSV[nFatJets]/F");
   displacedJetMuonTree->Branch("fatJetPassIDLoose", fatJetPassIDLoose,"fatJetPassIDLoose[nFatJets]/O");
   displacedJetMuonTree->Branch("fatJetPassIDTight", fatJetPassIDTight,"fatJetPassIDTight[nFatJets]/O");
+  displacedJetMuonTree->Branch("fatJetNPFCands",fatJetNPFCands,"fatJetNPFCands[nFatJets]/I");
+  displacedJetMuonTree->Branch("fatJetPFCandIndex", &fatJetPFCandIndex,Form("fatJetPFCandIndex[nFatJets][%d]/I",MAX_NPFCAND));
 };
 
 void displacedJetMuon_ntupler::enableMetBranches()
@@ -1832,6 +1844,10 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jetMedianIP_wp[i] = -99.0;
     jetMinDeltaRAllTracks_wp[i] =-99.0;
     jetMinDeltaRPVTracks_wp[i] = -99.0;
+    jetNPFCands[i] = 0;
+    for (uint q=0;q<MAX_NPFCAND;q++) {
+      jetPFCandIndex[i][q] = -1;
+    }
   }
 
   nFatJets = 0;
@@ -1852,11 +1868,29 @@ void displacedJetMuon_ntupler::resetJetBranches()
     fatJetTau1[i] = 0.0;
     fatJetTau2[i] = 0.0;
     fatJetTau3[i] = 0.0;
+    fatJetNPFCands[i] = 0;
+    for (uint q=0;q<MAX_NPFCAND;q++) {
+      fatJetPFCandIndex[i][q] = -1;
+    }
   }
 
   return;
 };
 void displacedJetMuon_ntupler::resetHORechitBranches()
+{
+  nPFCandidates = 0;
+  for ( int i = 0; i < OBJECTARRAYSIZE; i++) {
+    PFCandidatePdgId[i] = -999.;
+    PFCandidatePt[i] = -999.;
+    PFCandidateEta[i] = -999.;
+    PFCandidatePhi[i] = -999.;
+    PFCandidateTrackIndex[i] = -1;
+    PFCandidateGeneralTrackIndex[i] = -1;
+    PFCandidatePVIndex[i] = -1;
+  }
+  return;
+};
+void displacedJetMuon_ntupler::resetPFCandidateBranches()
 {
   nHORechits = 0;
   for ( int i = 0; i < HORECHITARRAYSIZE; i++)
@@ -1872,6 +1906,7 @@ void displacedJetMuon_ntupler::resetHORechitBranches()
   }
   return;
 };
+
 void displacedJetMuon_ntupler::resetEcalRechitBranches()
 {
   nRechits = 0;
@@ -2341,6 +2376,10 @@ bool displacedJetMuon_ntupler::fillHOSystem(const edm::Event& iEvent, const edm:
 	hoRechit_E[nHORechits] = recHit->energy();
 	hoRechit_T[nHORechits] = recHit->time();
 	nHORechits ++;
+	if (nHORechits > HORECHITARRAYSIZE) {
+	  cout << "Error: nHORechits exceeded max array size " << HORECHITARRAYSIZE << "\n";
+	  assert(false);
+	}
     }
     return true;
 }
@@ -3483,6 +3522,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
   vector<bool> SaveThisHCALRechit; SaveThisHCALRechit.clear();
   vector<bool> SaveThisHORechit; SaveThisHORechit.clear();
   vector<bool> SaveThisTrack; SaveThisTrack.clear();
+  vector<int> TrackToSavedTrackMap; TrackToSavedTrackMap.clear();
+  vector<bool> SaveThisPFCandidate; SaveThisPFCandidate.clear();
+  vector<int> PFCandToSavedPFCandMap; PFCandToSavedPFCandMap.clear();
+
+
   //reset these save flags
   for (uint q=0; q<ebRecHits->size(); q++) {
     SaveThisEBRechit.push_back(false);
@@ -3492,12 +3536,17 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
   }
   for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
     SaveThisTrack.push_back(false);
+    TrackToSavedTrackMap.push_back(-1);
   }
   for (uint q=0; q<hcalRecHitsHBHE->size(); q++) {
     SaveThisHCALRechit.push_back(false);
   }
   for (uint q=0; q<hcalRecHitsHO->size(); q++) {
     SaveThisHORechit.push_back(false);
+  }
+  for (uint q=0; q<pfCands->size(); q++) {
+    SaveThisPFCandidate.push_back(false);
+    PFCandToSavedPFCandMap.push_back(-1);
   }
 
   for (const pat::Jet &j : *jets) {
@@ -3650,6 +3699,29 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
     }
     */
+
+    //---------------------------
+    //Find PFCandidates Inside the Jet
+    //---------------------------    
+    for (uint q=0; q< pfCands->size(); q++) {     
+      //const reco::PFCandidate *p = &(*pfCands)[q];
+
+      reco::PFCandidatePtr p_ptr(pfCands,q);
+      bool found = false;
+      for (uint l=0; l < j.getPFConstituents().size(); l++) {
+	if (p_ptr == j.getPFConstituents()[l]) {	  
+	  found = true;
+	  break;
+	}
+      }
+
+      if (found) {
+	SaveThisPFCandidate[q] = true;
+	jetAllPFCandIndex[nJets][jetNPFCands[nJets]] = q;
+	jetNPFCands[nJets]++;
+      }
+    }	          	    
+      
 
     //---------------------------
     //Find RecHits Inside the Jet
@@ -3819,6 +3891,28 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     fatJetTau3[nFatJets] =  (float) j.userFloat("NjettinessAK8CHS:tau3");
 
 
+    //---------------------------
+    //Find PFCandidates Inside the Jet
+    //---------------------------    
+    for (uint q=0; q< pfCands->size(); q++) {     
+      //const reco::PFCandidate *p = &(*pfCands)[q];
+
+      reco::PFCandidatePtr p_ptr(pfCands,q);
+      bool found = false;
+      for (uint l=0; l < j.getPFConstituents().size(); l++) {
+	if (p_ptr == j.getPFConstituents()[l]) {	  
+	  found = true;
+	  break;
+	}
+      }
+
+      if (found) {
+	SaveThisPFCandidate[q] = true;
+	fatJetAllPFCandIndex[nFatJets][fatJetNPFCands[nFatJets]] = q;
+	fatJetNPFCands[nFatJets]++;
+      }
+    }	          	    
+      
 
     for (uint q=0; q<ebRecHits->size(); q++) {
       const EcalRecHit *recHit = &(*ebRecHits)[q];
@@ -3910,6 +4004,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     nFatJets++;
   }
 
+
   //********************************************************
   // Save EB Rechits inside Jets and AK8 Jets
   //********************************************************
@@ -3958,98 +4053,6 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     //cout << "After Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
   }
 
-  //********************************************************
-  // Save Tracks inside Jets and AK8 Jets
-  //********************************************************
-  // Magnetic field
-  edm::ESHandle<MagneticField> magneticField;
-  iSetup.get<IdealMagneticFieldRecord>().get(magneticField);
-  magneticField_ = &*magneticField;
-  std::string thePropagatorName_ = "PropagatorWithMaterial";
-  iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
-  StateOnTrackerBound stateOnTracker(thePropagator_.product());
-
-  for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
-
-
-    // reco::Track generalTrack = generalTracks->at(iTrack);
-    // //const auto& generalTrack = generalTracks->at(iTrack);
-    // // TLorentzVector generalTrackVecTemp;
-    // // generalTrackVecTemp.SetPtEtaPhiM(generalTrack.pt(),generalTrack.eta(),generalTrack.phi(),0);
-
-    if (SaveThisTrack[iTrack]) {
-
-      reco::TrackBaseRef tref(generalTrackHandle,iTrack);
-      // make transient track (unfolding effects of B field ?)
-      reco::TransientTrack tt(generalTrackHandle->at(iTrack),magneticField_);
-
-      if(!tt.isValid()) {
-	std::cout << "Error: Transient Track not valid ("
-		  << tref->pt() << " " << tref->eta() << " " << tref->phi()
-		  << "). Skipping the track\n";
-	continue;
-      }
-
-      track_Pt[nTracks] = tref->pt();
-      track_Eta[nTracks] = tref->eta();
-      track_Phi[nTracks] = tref->phi();
-
-      //find the best vertex for this track
-      float maxWeight = 0;
-      int bestVertexIndex = -1;
-      for(int k = 0; k < (int)vertices->size();k++){
-	if(vertices->at(k).trackWeight(tref) > maxWeight){
-	  maxWeight = vertices->at(k).trackWeight(tref);
-	  bestVertexIndex = k;
-	}
-      }
-      track_bestVertexIndex[nTracks] = bestVertexIndex;
-
-      track_nMissingInnerHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
-      track_nMissingOuterHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
-      track_nPixelHits[nTracks] = tref->hitPattern().numberOfValidPixelHits();
-      track_nHits[nTracks] = tref->hitPattern().numberOfValidHits();
-      track_dxyToBS[nTracks] = tref->dxy(*beamSpot);
-      track_dxyErr[nTracks] = tref->dxyError();
-      track_dzToPV[nTracks] = tref->dz(beamSpot->position());
-      track_dzErr[nTracks] = tref->dzError();
-
-      //********************************************************
-      // For track angle
-      //********************************************************
-      // get track trajectory info
-      static GetTrackTrajInfo getTrackTrajInfo;
-      vector<GetTrackTrajInfo::Result> trajInfo = getTrackTrajInfo.analyze(iSetup, (*tref));
-      if ( trajInfo.size() > 0 && trajInfo[0].valid) {
-      	// get inner tracker hit from trajectory state
-      	const TrajectoryStateOnSurface& tsosInnerHit = trajInfo[0].detTSOS;
-
-      	//  here's the track angle
-      	// find beamspot x,y coordinates
-      	const reco::BeamSpot& pat_beamspot = (*beamSpot);
-      	TVector2 bmspot(pat_beamspot.x0(),pat_beamspot.y0());
-      	// find track trajectory state on surface inner hit
-      	GlobalPoint  innerPos = tsosInnerHit.globalPosition();
-      	GlobalVector innerMom = tsosInnerHit.globalMomentum();
-
-      	// calculate the difference between inner hit and beamspot
-      	TVector2 sv(innerPos.x(),innerPos.y());
-      	TVector2 diff = (sv-bmspot);
-      	//cout<<"bs x: "<<bmspot.X()<<" y: "<<bmspot.Y()<<endl;
-      	//cout<<" sv x: "<<sv.X()<<" y: "<<sv.Y()<<endl;
-      	//cout<<" diff phi: "<<diff.Phi()<<endl;
-      	TVector2 momentum(innerMom.x(),innerMom.y());
-      	//cout<<" p x: "<<momentum.X()<<" y: "<<momentum.Y()<<endl;
-      	//cout<<" p phi: "<<momentum.Phi()<<endl;
-      	//cout<<" dPhi: "<<diff.DeltaPhi(momentum)<<endl;
-      	track_angle[nTracks] = fabs( diff.DeltaPhi(momentum) ) ;
-      }
-
-
-
-      nTracks++; //increment saved tracks
-    } //end if save this Track
-  } //loop over tracks
 
   //********************************************************
   // Save HCAL Rechits inside Jets and AK8 Jets
@@ -4114,6 +4117,178 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     }
   }
 
+  //********************************************************
+  // Save PF Candidates inside Jets and AK8 Jets
+  //********************************************************
+  for (uint q=0; q< pfCands->size(); q++) {     
+    if (SaveThisPFCandidate[q]) {
+      const reco::PFCandidate *p = &(*pfCands)[q];
+
+      PFCandidatePdgId[nPFCandidates] = p->pdgId();
+      PFCandidatePt[nPFCandidates] = p->pt();
+      PFCandidateEta[nPFCandidates] = p->eta();
+      PFCandidatePhi[nPFCandidates] = p->phi();
+      PFCandidateTrackIndex[nPFCandidates] = -1;
+      PFCandidatePVIndex[nPFCandidates] = -1;
+      
+      //find track ref
+      if (p->trackRef().isNonnull()) {
+	for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
+	  reco::TrackBaseRef tref(generalTrackHandle,iTrack);
+	  reco::TrackBaseRef pTrackRef(p->trackRef());
+	  //cout << "Track " << p->trackRef().id() << " " << p->trackRef().key() << " | " << pTrackRef.id() << " " << pTrackRef.key() << " | " << iTrack << " " << tref.id() << " " << tref.key() << " \n";
+	  if (pTrackRef.id() == tref.id() && pTrackRef.key() == tref.key() ) {
+	    //cout << "found track match: " << p->trackRef()->pt() << " " << p->trackRef()->eta() << " " << p->trackRef()->phi() << " | " 
+	    //	 << tref->pt() << " " << tref->eta() << " " << tref->phi() << " "
+	    //	 << "\n";
+	    SaveThisTrack[iTrack] = true;
+	    PFCandidateGeneralTrackIndex[nPFCandidates] = iTrack;
+	    break;
+	  }	  
+	}
+      }
+      PFCandToSavedPFCandMap[q] = nPFCandidates;
+      nPFCandidates++;
+      if (nPFCandidates > MAX_NPFCAND) {
+	cout << "ERROR: nPFCandidates exceeded maximum array size: " << MAX_NPFCAND << "\n";
+	assert(false);
+      }
+    }
+  }	  
+
+
+  //********************************************************
+  // Save Tracks inside Jets and AK8 Jets
+  //********************************************************
+  // Magnetic field
+  edm::ESHandle<MagneticField> magneticField;
+  iSetup.get<IdealMagneticFieldRecord>().get(magneticField);
+  magneticField_ = &*magneticField;
+  std::string thePropagatorName_ = "PropagatorWithMaterial";
+  iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
+  StateOnTrackerBound stateOnTracker(thePropagator_.product());
+
+  for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
+
+
+    // reco::Track generalTrack = generalTracks->at(iTrack);
+    // //const auto& generalTrack = generalTracks->at(iTrack);
+    // // TLorentzVector generalTrackVecTemp;
+    // // generalTrackVecTemp.SetPtEtaPhiM(generalTrack.pt(),generalTrack.eta(),generalTrack.phi(),0);
+
+    if (SaveThisTrack[iTrack]) {
+
+      reco::TrackBaseRef tref(generalTrackHandle,iTrack);
+      // make transient track (unfolding effects of B field ?)
+      reco::TransientTrack tt(generalTrackHandle->at(iTrack),magneticField_);
+
+      if(!tt.isValid()) {
+	std::cout << "Error: Transient Track not valid ("
+		  << tref->pt() << " " << tref->eta() << " " << tref->phi()
+		  << "). Skipping the track\n";
+	continue;
+      }
+
+      track_Pt[nTracks] = tref->pt();
+      track_Eta[nTracks] = tref->eta();
+      track_Phi[nTracks] = tref->phi();
+
+      //find the best vertex for this track
+      float maxWeight = 0;
+      int bestVertexIndex = -1;
+      for(int k = 0; k < (int)vertices->size();k++){
+	if(vertices->at(k).trackWeight(tref) > maxWeight){
+	  maxWeight = vertices->at(k).trackWeight(tref);
+	  bestVertexIndex = k;
+	}
+      }
+      track_bestVertexIndex[nTracks] = bestVertexIndex;
+      track_nMissingInnerHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
+      track_nMissingOuterHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
+      track_nPixelHits[nTracks] = tref->hitPattern().numberOfValidPixelHits();
+      track_nHits[nTracks] = tref->hitPattern().numberOfValidHits();
+      track_dxyToBS[nTracks] = tref->dxy(*beamSpot);
+      track_dxyErr[nTracks] = tref->dxyError();
+      track_dzToPV[nTracks] = tref->dz(beamSpot->position());
+      track_dzErr[nTracks] = tref->dzError();
+      //charge
+      //I.chi2            = C->pseudoTrack().chi2();
+      //I.ndof            = C->pseudoTrack().ndof();
+      //I.normalizedChi2  = C->pseudoTrack().normalizedChi2();
+
+      //********************************************************
+      // For track angle
+      //********************************************************
+      // get track trajectory info
+      static GetTrackTrajInfo getTrackTrajInfo;
+      vector<GetTrackTrajInfo::Result> trajInfo = getTrackTrajInfo.analyze(iSetup, (*tref));
+      if ( trajInfo.size() > 0 && trajInfo[0].valid) {
+      	// get inner tracker hit from trajectory state
+      	const TrajectoryStateOnSurface& tsosInnerHit = trajInfo[0].detTSOS;
+
+      	//  here's the track angle
+      	// find beamspot x,y coordinates
+      	const reco::BeamSpot& pat_beamspot = (*beamSpot);
+      	TVector2 bmspot(pat_beamspot.x0(),pat_beamspot.y0());
+      	// find track trajectory state on surface inner hit
+      	GlobalPoint  innerPos = tsosInnerHit.globalPosition();
+      	GlobalVector innerMom = tsosInnerHit.globalMomentum();
+
+      	// calculate the difference between inner hit and beamspot
+      	TVector2 sv(innerPos.x(),innerPos.y());
+      	TVector2 diff = (sv-bmspot);
+      	//cout<<"bs x: "<<bmspot.X()<<" y: "<<bmspot.Y()<<endl;
+      	//cout<<" sv x: "<<sv.X()<<" y: "<<sv.Y()<<endl;
+      	//cout<<" diff phi: "<<diff.Phi()<<endl;
+      	TVector2 momentum(innerMom.x(),innerMom.y());
+      	//cout<<" p x: "<<momentum.X()<<" y: "<<momentum.Y()<<endl;
+      	//cout<<" p phi: "<<momentum.Phi()<<endl;
+      	//cout<<" dPhi: "<<diff.DeltaPhi(momentum)<<endl;
+      	track_angle[nTracks] = fabs( diff.DeltaPhi(momentum) ) ;
+      }
+
+      TrackToSavedTrackMap[iTrack] = nTracks;
+      nTracks++; //increment saved tracks
+    } //end if save this Track
+  } //loop over tracks
+
+
+  //**********************************************************************
+  // Cross-reference PFCandidate Indices in jets with Saved PF Candidates
+  //**********************************************************************
+  if (nJets >= 0) {
+    for (uint q=0; q < uint(nJets); q++) {
+      if (jetNPFCands[q] >= 0) {
+	for (uint l=0; l < uint(jetNPFCands[q]); l++) {
+	  jetPFCandIndex[q][l] = PFCandToSavedPFCandMap[jetAllPFCandIndex[q][l]];
+	}
+      }
+    }
+  }
+  if (nFatJets >= 0) {
+    for (uint q=0; q < uint(nFatJets); q++) {
+      if (jetNPFCands[q] >= 0) {
+	for (uint l=0; l < uint(fatJetNPFCands[q]); l++) {
+	  fatJetPFCandIndex[q][l] = PFCandToSavedPFCandMap[fatJetAllPFCandIndex[q][l]];
+	}
+      }
+    }
+  }
+  
+
+
+
+  //*************************************************************
+  // Cross-reference TrackIndex of PF Candidate with Saved Tracks
+  //*************************************************************
+  if (nPFCandidates >= 0 ) {
+    for (uint q=0; q < uint(nPFCandidates); q++) {
+      if (PFCandidateGeneralTrackIndex[q] >= 0) {
+	PFCandidateTrackIndex[q] = TrackToSavedTrackMap[PFCandidateGeneralTrackIndex[q]];
+      }
+    }	          	        
+  }
+      
   return true;
 };
 
