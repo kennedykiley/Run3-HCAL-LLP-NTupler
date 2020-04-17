@@ -260,7 +260,6 @@ public:
   bool fillElectrons(const edm::Event& iEvent);
   bool fillMuons(const edm::Event& iEvent);
   bool fillTaus();
-  bool fillHOSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillJets(const edm::EventSetup& iSetup);
@@ -314,7 +313,7 @@ protected:
   //edm::InputTag trackTimeResoTag_;
   edm::EDGetTokenT<edm::View<reco::Track> > tracksTag_;
   edm::EDGetTokenT<edm::ValueMap<float> > trackTimeTag_;
-  edm::EDGetTokenT<edm::ValueMap<float>> trackTimeResoTag_;
+  edm::EDGetTokenT<edm::ValueMap<float> > trackTimeResoTag_;
 
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentInputToken_;
   edm::EDGetTokenT<CSCRecHit2DCollection> cscRechitInputToken_;
@@ -405,6 +404,8 @@ protected:
   edm::EDGetTokenT<vector<reco::PhotonCore> > gedPhotonCoresToken_;
   edm::EDGetTokenT<vector<reco::Track> > generalTrackToken_;
   edm::EDGetTokenT<edm::View<reco::Track> > generalTrackHandleToken_;
+  edm::EDGetTokenT<edm::Association<vector<reco::Vertex> > > primaryVertexAssociationToken_;
+  edm::EDGetTokenT<edm::ValueMap<int> > primaryVertexAssociationValueMapToken_;
   edm::EDGetTokenT<float> genParticles_t0_Token_;
 
   edm::EDGetTokenT<edm::ValueMap<bool> > electron_cutbasedID_decisions_veto_Token_;
@@ -436,6 +437,9 @@ protected:
   edm::Handle<edm::TriggerResults> metFilterBits;
   edm::Handle<reco::VertexCollection> vertices;
   edm::Handle<edm::View<reco::Track> > tracks;
+  edm::Handle<edm::Association<vector<reco::Vertex> > > primaryVertexAssociation;
+  edm::Handle<edm::ValueMap<int> > primaryVertexAssociationValueMap;
+
   edm::Handle<edm::ValueMap<float> > times;
   edm::Handle<edm::ValueMap<float> > timeResos;
   edm::Handle<reco::PFCandidateCollection> pfCands;

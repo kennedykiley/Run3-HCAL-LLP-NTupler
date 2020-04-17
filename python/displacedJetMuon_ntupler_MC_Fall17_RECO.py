@@ -14,7 +14,8 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
        #'file://storage/user/christiw/login-1/christiw/LLP/CMSSW_9_4_7/src/cms_lpc_llp/llp_ntupler/F2E310F0-1513-A741-B89D-BC588E298466.root',
 #        '/store/mc/RunIIFall17DRPremix/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11_ext1-v2/920000/8423C2F2-1981-E811-96E1-509A4C83EFAB.root'
-        '/store/mc/RunIIFall17DRPremix/ggH_HToSSTobbbb_MH-125_TuneCP5_13TeV-powheg-pythia8/GEN-SIM-RECO/PU2017_rp_94X_mc2017_realistic_v11-v1/120000/02D1A78B-AF4E-EA11-9CDB-0242AC1C0502.root'       
+        #'/store/mc/RunIIFall17DRPremix/ggH_HToSSTobbbb_MH-125_TuneCP5_13TeV-powheg-pythia8/GEN-SIM-RECO/PU2017_rp_94X_mc2017_realistic_v11-v1/120000/02D1A78B-AF4E-EA11-9CDB-0242AC1C0502.root'
+        '/store/group/phys_exotica/privateProduction/DR/step2_RECOSIM/RunIIFall17/WplusH_HToSSTobbbb_ms55_pl10000/v6/WplusH_HToSSTobbbb_ms55_pl10000_ev150000/crab_PrivateProduction_Fall17_DR_step2_WplusH_HToSSTobbbb_ms55_pl10000_v6/191224_124158/0000/RECOSIM_1.root'
         )
 )
 
@@ -251,6 +252,13 @@ for idmod in electron_id_config.electron_ids.value():
 for idmod in photon_id_config.photon_ids.value():
     setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
+process.load("CommonTools.RecoAlgos.sortedPFPrimaryVertices_cfi")
+process.primaryVertexAssociation = process.sortedPFPrimaryVertices.clone(
+    qualityForPrimary = cms.int32(2),
+    produceSortedVertices = cms.bool(False),
+    producePileUpCollection  = cms.bool(False),  
+    produceNoPileUpCollection = cms.bool(False)
+    )
 
 #PAT Stuff
 process.load('PhysicsTools.PatAlgos.producersLayer1.tauProducer_cff')
@@ -299,7 +307,7 @@ process.patTask = cms.Task(
 
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+process.p = cms.Path(process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
 process.schedule = cms.Schedule(process.p )
 
 

@@ -120,6 +120,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   gedPhotonCoresToken_(consumes<vector<reco::PhotonCore> >(iConfig.getParameter<edm::InputTag>("gedPhotonCores"))),
   generalTrackToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks"))),
   generalTrackHandleToken_(consumes<edm::View<reco::Track>>(edm::InputTag("generalTracks"))),
+  primaryVertexAssociationToken_(consumes<edm::Association<vector<reco::Vertex> > >(edm::InputTag("primaryVertexAssociation","original"))),
+  primaryVertexAssociationValueMapToken_(consumes<edm::ValueMap<int> >(edm::InputTag("primaryVertexAssociation","original"))),
   electron_cutbasedID_decisions_veto_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_veto"))),
   electron_cutbasedID_decisions_loose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_loose"))),
   electron_cutbasedID_decisions_medium_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_medium"))),
@@ -1133,6 +1135,8 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   }
 
   iEvent.getByToken(tracksTag_,tracks);
+  iEvent.getByToken(primaryVertexAssociationToken_,primaryVertexAssociation);
+  iEvent.getByToken(primaryVertexAssociationValueMapToken_,primaryVertexAssociationValueMap);
   iEvent.getByToken(PFCandsToken_, pfCands);
   iEvent.getByToken(PFClustersToken_, pfClusters);
   iEvent.getByToken(muonsToken_, muons);
@@ -1211,6 +1215,7 @@ void displacedJetMuon_ntupler::resetBranches()
     resetTriggerBranches();
     resetEcalRechitBranches();
     resetHORechitBranches();
+    resetPFCandidateBranches();
 
 };
 
@@ -1876,10 +1881,10 @@ void displacedJetMuon_ntupler::resetJetBranches()
 
   return;
 };
-void displacedJetMuon_ntupler::resetHORechitBranches()
+void displacedJetMuon_ntupler::resetPFCandidateBranches()
 {
   nPFCandidates = 0;
-  for ( int i = 0; i < OBJECTARRAYSIZE; i++) {
+  for ( int i = 0; i < MAX_NPFCAND; i++) {
     PFCandidatePdgId[i] = -999.;
     PFCandidatePt[i] = -999.;
     PFCandidateEta[i] = -999.;
@@ -1887,10 +1892,10 @@ void displacedJetMuon_ntupler::resetHORechitBranches()
     PFCandidateTrackIndex[i] = -1;
     PFCandidateGeneralTrackIndex[i] = -1;
     PFCandidatePVIndex[i] = -1;
-  }
+  } 
   return;
 };
-void displacedJetMuon_ntupler::resetPFCandidateBranches()
+void displacedJetMuon_ntupler::resetHORechitBranches()
 {
   nHORechits = 0;
   for ( int i = 0; i < HORECHITARRAYSIZE; i++)
@@ -2360,29 +2365,7 @@ bool displacedJetMuon_ntupler::fillEventInfo(const edm::Event& iEvent)
 };
 
 
-bool displacedJetMuon_ntupler::fillHOSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-    edm::ESHandle<CaloGeometry> geoHandle;
-    iSetup.get<CaloGeometryRecord>().get(geoHandle);
-    const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter);
-    for (HORecHitCollection::const_iterator recHit=hcalRecHitsHO->begin(); recHit!=hcalRecHitsHO->end(); recHit++) {
-	if (recHit->energy() < 1.5) continue;
-	const DetId recHitId = recHit->detid();
-	const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
-	hoRechit_Phi[nHORechits] = recHitPos.phi();
-	hoRechit_Eta[nHORechits] = recHitPos.eta();
-	hoRechit_X[nHORechits] = recHitPos.x();
-	hoRechit_Y[nHORechits] = recHitPos.y();
-	hoRechit_Z[nHORechits] = recHitPos.z();
-	hoRechit_E[nHORechits] = recHit->energy();
-	hoRechit_T[nHORechits] = recHit->time();
-	nHORechits ++;
-	if (nHORechits > HORECHITARRAYSIZE) {
-	  cout << "Error: nHORechits exceeded max array size " << HORECHITARRAYSIZE << "\n";
-	  assert(false);
-	}
-    }
-    return true;
-}
+
 bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   edm::ESHandle<CSCGeometry> cscG;
@@ -4130,6 +4113,28 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       PFCandidatePhi[nPFCandidates] = p->phi();
       PFCandidateTrackIndex[nPFCandidates] = -1;
       PFCandidatePVIndex[nPFCandidates] = -1;
+
+      //find the matching PV
+      const reco::VertexRef &PVOrig = (*primaryVertexAssociation)[reco::CandidatePtr(pfCands,q)];
+      if(PVOrig.isNonnull()) {
+	
+	int matchedPVIndex = -1;
+	for (int ipv = 0; ipv < nPVAll; ++ipv) {
+	  const reco::VertexRef vtxRef(vertices,ipv);
+	  if (PVOrig.id() == vtxRef.id() && PVOrig.key() == vtxRef.key()) {
+	    matchedPVIndex = ipv;
+	    break;
+	  }	  
+	}
+	
+	// if (matchedPVIndex>=0) {
+	//   cout << "PFCandidate " << q << " : " << matchedPVIndex << " --> " << pvAllX[matchedPVIndex] << " " << pvAllY[matchedPVIndex] << " " << pvAllZ[matchedPVIndex] << " | " 
+	//        << PVOrig->x() << " " << PVOrig->y() << " " << PVOrig->z() << " "  
+	//        << " \n";
+	// }
+
+	PFCandidatePVIndex[nPFCandidates] = matchedPVIndex;
+      }
       
       //find track ref
       if (p->trackRef().isNonnull()) {

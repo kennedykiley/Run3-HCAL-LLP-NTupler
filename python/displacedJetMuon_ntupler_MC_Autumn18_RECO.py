@@ -253,6 +253,13 @@ for idmod in electron_id_config.electron_ids.value():
 for idmod in photon_id_config.photon_ids.value():
     setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
+process.load("CommonTools.RecoAlgos.sortedPFPrimaryVertices_cfi")
+process.primaryVertexAssociation = process.sortedPFPrimaryVertices.clone(
+    qualityForPrimary = cms.int32(2),
+    produceSortedVertices = cms.bool(False),
+    producePileUpCollection  = cms.bool(False),  
+    produceNoPileUpCollection = cms.bool(False)
+    )
 
 #PAT Stuff
 process.load('PhysicsTools.PatAlgos.producersLayer1.tauProducer_cff')
@@ -301,7 +308,7 @@ process.patTask = cms.Task(
 
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+process.p = cms.Path(process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
 process.schedule = cms.Schedule(process.p )
 
 

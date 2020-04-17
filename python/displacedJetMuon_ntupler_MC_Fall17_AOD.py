@@ -15,7 +15,8 @@ process.source = cms.Source("PoolSource",
        #'file://storage/user/christiw/login-1/christiw/LLP/CMSSW_9_4_7/src/cms_lpc_llp/llp_ntupler/F2E310F0-1513-A741-B89D-BC588E298466.root',
 #        '/store/mc/RunIIFall17DRPremix/WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/AODSIM/PU2017_94X_mc2017_realistic_v11_ext1-v2/920000/8423C2F2-1981-E811-96E1-509A4C83EFAB.root'
         #'/store/mc/RunIIFall17DRPremix/ggH_HToSSTobbbb_MH-125_TuneCP5_13TeV-powheg-pythia8/GEN-SIM-RECO/PU2017_rp_94X_mc2017_realistic_v11-v1/120000/02D1A78B-AF4E-EA11-9CDB-0242AC1C0502.root'
-        '/store/group/phys_exotica/jmao/aodsim/RunIISummer16/AODSIM/MSSM-1d-prod/n3n2-n1-hbb-hbb_mh300_pl1000_ev100000/crab_CMSSW_9_4_12_n3n2-n1-hbb-hbb_mchi300_pl1000_ev100000_AODSIM_CaltechT2/200212_190144/0000/SUS-RunIIFall17DRPremix-00183_99.root'
+#        '/store/group/phys_exotica/jmao/aodsim/RunIISummer16/AODSIM/MSSM-1d-prod/n3n2-n1-hbb-hbb_mh300_pl1000_ev100000/crab_CMSSW_9_4_12_n3n2-n1-hbb-hbb_mchi300_pl1000_ev100000_AODSIM_CaltechT2/200212_190144/0000/SUS-RunIIFall17DRPremix-00183_99.root'
+        'file:SUS-RunIIFall17DRPremix-00183_99.root'
         )
 )
 
@@ -59,7 +60,8 @@ process.output = cms.OutputModule("PoolOutputModule",
     eventAutoFlushCompressedSize = cms.untracked.int32(-900),
     fastCloning = cms.untracked.bool(False),
     fileName = cms.untracked.string('miniAOD-prod_PAT.root'),
-    outputCommands = cms.untracked.vstring('keep *'),
+    outputCommands = cms.untracked.vstring('keep *',
+                                           ),
 )
 
 
@@ -252,6 +254,13 @@ for idmod in electron_id_config.electron_ids.value():
 for idmod in photon_id_config.photon_ids.value():
     setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
+process.load("CommonTools.RecoAlgos.sortedPFPrimaryVertices_cfi")
+process.primaryVertexAssociation = process.sortedPFPrimaryVertices.clone(
+    qualityForPrimary = cms.int32(2),
+    produceSortedVertices = cms.bool(False),
+    producePileUpCollection  = cms.bool(False),  
+    produceNoPileUpCollection = cms.bool(False)
+    )
 
 #PAT Stuff
 process.load('PhysicsTools.PatAlgos.producersLayer1.tauProducer_cff')
@@ -300,8 +309,8 @@ process.patTask = cms.Task(
 
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
-process.schedule = cms.Schedule(process.p )
+process.p = cms.Path(process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+process.schedule = cms.Schedule( process.p )
 
 
 #Define Jet Tool Box Stuff
