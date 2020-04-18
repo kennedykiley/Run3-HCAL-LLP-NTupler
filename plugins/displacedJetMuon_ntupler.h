@@ -179,7 +179,7 @@ using namespace std;
 #define HORECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
 #define MAX_NPV 1000
-#define MAX_NPFCAND 2000
+#define MAX_NPFCAND 5000
 #define MAX_NPU 1000
 #define MAX_NBX 1000
 #define LLP_ARRAY_SIZE 2
