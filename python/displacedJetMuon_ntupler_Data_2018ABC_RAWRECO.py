@@ -6,7 +6,7 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 process = cms.Process("displacedJetMuonNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.EventContent.EventContent_cff")
-process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2017")
+process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2018")
 
 
 #load input files
@@ -39,7 +39,7 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 
 #------ Declare the correct global tag ------#
 
-process.GlobalTag.globaltag = '102X_dataRun2_v11'
+process.GlobalTag.globaltag = '102X_dataRun2_v12'
 
 #------ If we add any inputs beyond standard event content, import them here ------#
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
