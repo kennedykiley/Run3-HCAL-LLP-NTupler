@@ -179,7 +179,7 @@ using namespace std;
 #define HORECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
 #define MAX_NPV 1000
-#define MAX_NTRACK 2000
+#define MAX_NPFCAND 2000
 #define MAX_NPU 1000
 #define MAX_NBX 1000
 #define LLP_ARRAY_SIZE 2
@@ -206,7 +206,7 @@ public:
   void enableMuonBranches();
   void enableElectronBranches();
   void enableTauBranches();
-  void enableIsoPFCandidateBranches();
+  void enablePFCandidateBranches();
   void enablePhotonBranches();
   void enableMuonSystemBranches();
   void enableHORechitBranches();
@@ -229,7 +229,7 @@ public:
   void resetMuonBranches();
   void resetElectronBranches();
   void resetTauBranches();
-  void resetIsoPFCandidateBranches();//need to implement yet
+  void resetPFCandidateBranches();//need to implement yet
   void resetPhotonBranches();
   void resetHORechitBranches();//need to implement yet
   void resetEcalRechitBranches();//need to implement yet
@@ -260,7 +260,6 @@ public:
   bool fillElectrons(const edm::Event& iEvent);
   bool fillMuons(const edm::Event& iEvent);
   bool fillTaus();
-  bool fillHOSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillPhotons(const edm::Event& iEvent, const edm::EventSetup& iSetup);
   bool fillJets(const edm::EventSetup& iSetup);
@@ -314,7 +313,7 @@ protected:
   //edm::InputTag trackTimeResoTag_;
   edm::EDGetTokenT<edm::View<reco::Track> > tracksTag_;
   edm::EDGetTokenT<edm::ValueMap<float> > trackTimeTag_;
-  edm::EDGetTokenT<edm::ValueMap<float>> trackTimeResoTag_;
+  edm::EDGetTokenT<edm::ValueMap<float> > trackTimeResoTag_;
 
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentInputToken_;
   edm::EDGetTokenT<CSCRecHit2DCollection> cscRechitInputToken_;
@@ -354,7 +353,8 @@ protected:
   edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;
   edm::EDGetTokenT<reco::GenMETCollection> genMetCaloToken_;
   edm::EDGetTokenT<reco::GenMETCollection> genMetTrueToken_;
-  edm::EDGetTokenT<reco::PFMETCollection> metToken_;
+  //edm::EDGetTokenT<reco::PFMETCollection> metToken_;
+  edm::EDGetTokenT<pat::METCollection> metToken_;
   edm::EDGetTokenT<reco::PFMETCollection> metNoHFToken_;
   edm::EDGetTokenT<reco::PFMETCollection> metPuppiToken_;
   edm::EDGetTokenT<edm::TriggerResults> metFilterBitsToken_;
@@ -404,6 +404,8 @@ protected:
   edm::EDGetTokenT<vector<reco::PhotonCore> > gedPhotonCoresToken_;
   edm::EDGetTokenT<vector<reco::Track> > generalTrackToken_;
   edm::EDGetTokenT<edm::View<reco::Track> > generalTrackHandleToken_;
+  edm::EDGetTokenT<edm::Association<vector<reco::Vertex> > > primaryVertexAssociationToken_;
+  edm::EDGetTokenT<edm::ValueMap<int> > primaryVertexAssociationValueMapToken_;
   edm::EDGetTokenT<float> genParticles_t0_Token_;
 
   edm::EDGetTokenT<edm::ValueMap<bool> > electron_cutbasedID_decisions_veto_Token_;
@@ -435,6 +437,9 @@ protected:
   edm::Handle<edm::TriggerResults> metFilterBits;
   edm::Handle<reco::VertexCollection> vertices;
   edm::Handle<edm::View<reco::Track> > tracks;
+  edm::Handle<edm::Association<vector<reco::Vertex> > > primaryVertexAssociation;
+  edm::Handle<edm::ValueMap<int> > primaryVertexAssociationValueMap;
+
   edm::Handle<edm::ValueMap<float> > times;
   edm::Handle<edm::ValueMap<float> > timeResos;
   edm::Handle<reco::PFCandidateCollection> pfCands;
@@ -452,7 +457,8 @@ protected:
   edm::Handle<reco::GenMETCollection> genMetsCalo;
   edm::Handle<reco::GenMETCollection> genMetsTrue;
   //edm::Handle<reco::GenMETCollection> mets;
-  edm::Handle<reco::PFMETCollection> mets;
+  //edm::Handle<reco::PFMETCollection> mets;
+  edm::Handle<pat::METCollection> mets;
 //  edm::Handle<reco::PFMETCollection> metsNoHF;
   edm::Handle<reco::PFMETCollection> metsPuppi;
 //  edm::Handle<edm::View<reco::GenParticle> > prunedGenParticles;
@@ -720,12 +726,22 @@ protected:
 
  //IsolatedChargedPFCandidates
  int nIsoPFCandidates;
- float isoPFCandidatePt[OBJECTARRAYSIZE];
- float isoPFCandidateEta[OBJECTARRAYSIZE];
- float isoPFCandidatePhi[OBJECTARRAYSIZE];
- float isoPFCandidateIso04[OBJECTARRAYSIZE];
- float isoPFCandidateD0[OBJECTARRAYSIZE];
- int   isoPFCandidatePdgId[OBJECTARRAYSIZE];
+ float isoPFCandidatePt[MAX_NPFCAND];
+ float isoPFCandidateEta[MAX_NPFCAND];
+ float isoPFCandidatePhi[MAX_NPFCAND];
+ float isoPFCandidateIso04[MAX_NPFCAND];
+ float isoPFCandidateD0[MAX_NPFCAND];
+ int   isoPFCandidatePdgId[MAX_NPFCAND];
+
+ //PFCandidates
+ int   nPFCandidates;
+ int   PFCandidatePdgId[MAX_NPFCAND];
+ float PFCandidatePt[MAX_NPFCAND];
+ float PFCandidateEta[MAX_NPFCAND];
+ float PFCandidatePhi[MAX_NPFCAND];
+ int   PFCandidateTrackIndex[MAX_NPFCAND];
+ int   PFCandidateGeneralTrackIndex[MAX_NPFCAND];
+ int   PFCandidatePVIndex[MAX_NPFCAND];
 
  //Photons
  int nPhotons;
@@ -812,6 +828,8 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  int   track_bestVertexIndex[RECHITARRAYSIZE];
  int   track_nMissingInnerHits[RECHITARRAYSIZE];
  int   track_nMissingOuterHits[RECHITARRAYSIZE];
+ int   track_nPixelHits[RECHITARRAYSIZE];
+ int   track_nHits[RECHITARRAYSIZE]; 
  float track_angle[RECHITARRAYSIZE];
  float track_dxyToBS[RECHITARRAYSIZE];
  float track_dxyErr[RECHITARRAYSIZE];
@@ -1142,6 +1160,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float jetPhi[OBJECTARRAYSIZE];
  float jetCSV[OBJECTARRAYSIZE];
  float jetCISV[OBJECTARRAYSIZE];
+ float jetCMVA[OBJECTARRAYSIZE];
  float jetProbb[OBJECTARRAYSIZE];
  float jetProbc[OBJECTARRAYSIZE];
  float jetProbudsg[OBJECTARRAYSIZE];
@@ -1170,6 +1189,21 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  int   jetElectronMultiplicity[OBJECTARRAYSIZE];
  int   jetPhotonMultiplicity[OBJECTARRAYSIZE];
  int   jetMuonMultiplicity[OBJECTARRAYSIZE];
+ float jetQGLikelihood[OBJECTARRAYSIZE];
+ int   jetNSV[OBJECTARRAYSIZE];
+ int   jetNSVCand[OBJECTARRAYSIZE];
+ int   jetNVertexTracks[OBJECTARRAYSIZE];
+ int   jetNSelectedTracks[OBJECTARRAYSIZE];
+ float jetDRSVJet[OBJECTARRAYSIZE];
+ float jetFlightDist2D[OBJECTARRAYSIZE];
+ float jetFlightDist2DError[OBJECTARRAYSIZE];
+ float jetFlightDist3D[OBJECTARRAYSIZE];
+ float jetFlightDist3DError[OBJECTARRAYSIZE];
+ float jetSV_x[OBJECTARRAYSIZE];
+ float jetSV_y[OBJECTARRAYSIZE];
+ float jetSV_z[OBJECTARRAYSIZE];
+ int   jetSVNTracks[OBJECTARRAYSIZE];
+ float jetSVMass[OBJECTARRAYSIZE];
  float jetAllMuonPt[OBJECTARRAYSIZE];
  float jetAllMuonEta[OBJECTARRAYSIZE];
  float jetAllMuonPhi[OBJECTARRAYSIZE];
@@ -1217,6 +1251,11 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float jetMinDeltaRAllTracks_wp[OBJECTARRAYSIZE];
  float jetMinDeltaRPVTracks_wp[OBJECTARRAYSIZE];
 
+ int  jetNPFCands[OBJECTARRAYSIZE];
+ int  jetPFCandIndex[OBJECTARRAYSIZE][MAX_NPFCAND];
+ int  jetAllPFCandIndex[OBJECTARRAYSIZE][MAX_NPFCAND];
+
+
 
  //AK8 Jets
  int nFatJets;
@@ -1239,6 +1278,9 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float fatJetMaxSubjetCSV[OBJECTARRAYSIZE];
  bool fatJetPassIDLoose[OBJECTARRAYSIZE];
  bool fatJetPassIDTight[OBJECTARRAYSIZE];
+ int  fatJetNPFCands[OBJECTARRAYSIZE];
+ int  fatJetPFCandIndex[OBJECTARRAYSIZE][MAX_NPFCAND];
+ int  fatJetAllPFCandIndex[OBJECTARRAYSIZE][MAX_NPFCAND];
 
  //MET
  float metPt;
@@ -1248,29 +1290,10 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float UncMETdpy;
  float UncMETdSumEt;
 
- float metEGCleanPt;
- float metEGCleanPhi;
- float metMuEGCleanPt;
- float metMuEGCleanPhi;
- float metMuEGCleanCorrPt;
- float metMuEGCleanCorrPhi;
  float metUncorrectedPt;
  float metUncorrectedPhi;
- float metType0Pt;
- float metType0Phi;
  float metType1Pt;
- float metType1Pt_raw;
- float metType1Px;
- float metType1Py;
- float metType1Eta;
- float metType1Phi_raw;
  float metType1Phi;
- float metType0Plus1Pt;
- float metType0Plus1Phi;
- float metPtRecomputed;
- float metPhiRecomputed;
- float metNoHFPt;
- float metNoHFPhi;
  float metPuppiPt;
  float metPuppiPhi;
  float metCaloPt;

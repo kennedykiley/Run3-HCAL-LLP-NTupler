@@ -117,7 +117,8 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
     jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
 
-    mets = cms.InputTag("pfMet"),
+    #mets = cms.InputTag("slimmedMETs"),
+    mets = cms.InputTag("patMETs"),
     #metsNoHF = cms.InputTag("pfMet30"),
     metsPuppi = cms.InputTag("pfMet"),
     pfCands = cms.InputTag("particleFlow","","RECO"),
@@ -252,77 +253,62 @@ for idmod in electron_id_config.electron_ids.value():
 for idmod in photon_id_config.photon_ids.value():
     setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
+process.load("CommonTools.RecoAlgos.sortedPFPrimaryVertices_cfi")
+process.primaryVertexAssociation = process.sortedPFPrimaryVertices.clone(
+    qualityForPrimary = cms.int32(2),
+    produceSortedVertices = cms.bool(False),
+    producePileUpCollection  = cms.bool(False),  
+    produceNoPileUpCollection = cms.bool(False)
+    )
 
 #PAT Stuff
 process.load('PhysicsTools.PatAlgos.producersLayer1.tauProducer_cff')
 process.load('PhysicsTools.PatAlgos.producersLayer1.jetProducer_cff')
-#process.load('PhysicsTools.PatAlgos.producersLayer1.electronProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.electronProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.photonProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.ootPhotonProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.metProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.muonProducer_cff')
+process.makePatJetsTask.add(process.pfImpactParameterTagInfos, 
+                            process.pfSecondaryVertexTagInfos,
+                            process.pfInclusiveSecondaryVertexFinderTagInfos)
 
 process.patCandidatesTask = cms.Task(
-    #process.makePatElectronsTask,
-    #makePatMuonsTask,
+    process.makePatElectronsTask,
+    process.makePatMuonsTask,
     process.makePatTausTask,
-    #makePatPhotonsTask,
-    #makePatOOTPhotonsTask,
+    process.makePatPhotonsTask,
+    process.makePatOOTPhotonsTask,
     process.makePatJetsTask,
-    #makePatMETsTask
+    process.makePatMETsTask
     )
 process.patCandidates = cms.Sequence(process.patCandidatesTask)
 
 
 process.load('PhysicsTools.PatAlgos.selectionLayer1.tauSelector_cfi')
 process.load('PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi')
-#process.load('PhysicsTools.PatAlgos.selectionLayer1.electronSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.electronSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.muonSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.photonSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.ootPhotonSelector_cff')
 process.selectedPatCandidatesTask = cms.Task(
-    #process.selectedPatElectrons,
-     #selectedPatMuons,
+    process.selectedPatElectrons,
+    process.selectedPatMuons,
     process.selectedPatTaus,
-     #selectedPatPhotons,
-     #selectedPatOOTPhotons,
+    process.selectedPatPhotons,
+    process.selectedPatOOTPhotons,
     process.selectedPatJets
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
-process.load('PhysicsTools.PatAlgos.slimming.slimmedTaus_cfi')
-process.load('PhysicsTools.PatAlgos.slimming.packedPFCandidates_cff')
-process.slimmingTask = cms.Task(
-    process.packedPFCandidatesTask,
-     # lostTracks,
-     # isolatedTracks,
-     # offlineSlimmedPrimaryVertices,
-     # primaryVertexAssociation,
-     # genParticlesTask,
-     # selectedPatTrigger,
-     # slimmedPatTrigger,
-     # slimmedCaloJets,
-     # slimmedJets,
-     # slimmedJetsAK8,
-     # slimmedGenJets,
-     # slimmedGenJetsAK8,
-     # slimmedElectrons,
-     # slimmedMuons,
-     # slimmedPhotons,
-     # slimmedOOTPhotons,
-    process.slimmedTaus,
-     # slimmedSecondaryVertices,
-     # slimmedKshortVertices,
-     # slimmedLambdaVertices,
-     # slimmedMETs,
-     # metFilterPathsTask,
-     # reducedEgamma,
-     # bunchSpacingProducer,
-     # oniaPhotonCandidates
-    )
 process.patTask = cms.Task(
     process.patCandidatesTask,
     process.selectedPatCandidatesTask,
-    #process.slimmingTask,
-    #process.bunchSpacingProducer
 )
 
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+process.p = cms.Path(process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
 process.schedule = cms.Schedule(process.p )
 
 
@@ -335,7 +321,6 @@ listBtagDiscriminatorsAK4 = [
                 'pfCombinedCvsBJetTags',
                 ]
 from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
-#jetToolbox( process, 'ak8', 'ak8JetSubs', 'jetSequence', PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addPruning=True, addSoftDrop=True, addTrimming=True, addFiltering=True, addMassDrop=True, addNsub=True, addNsubSubjets=True, addPrunedSubjets=True, addPUJetID=True, addQJets=True, addQGTagger=True, miniAOD=False )   ### For example
 jetToolbox( process, 'ak8', 'ak8JetSubs', "out", PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addSoftDrop=True, addNsub=True, addNsubSubjets=True, miniAOD=False )   ### For example
 
 
@@ -350,6 +335,12 @@ process.patTaus.isoDeposits = cms.PSet()
 process.selectedPatTaus.cut = cms.string("pt > 18. && tauID('decayModeFindingNewDMs')> 0.5")
 process.selectedPatJets.cut = cms.string("pt > 10")
 
+## PU JetID
+process.load("RecoJets.JetProducers.PileupJetID_cfi")
+process.patTask.add(process.pileUpJetIDTask)
+process.patJets.userData.userFloats.src = [ cms.InputTag("pileupJetId:fullDiscriminant"), ]
+process.patJets.userData.userInts.src = [ cms.InputTag("pileupJetId:fullId"), ]
+
 process.patJets.discriminatorSources = cms.VInputTag(
     cms.InputTag("pfJetBProbabilityBJetTags"),
     cms.InputTag("pfJetProbabilityBJetTags"),
@@ -362,4 +353,7 @@ process.patJets.discriminatorSources = cms.VInputTag(
     cms.InputTag("softPFElectronBJetTags"),
     cms.InputTag("pfCombinedMVAV2BJetTags"),   
     )
-
+process.patJets.addTagInfos     = cms.bool(True)
+process.patJets.tagInfoSources  = cms.VInputTag( 'pfImpactParameterTagInfos'
+                                                 ,'pfSecondaryVertexTagInfos'
+                                                 ,'pfInclusiveSecondaryVertexFinderTagInfos')

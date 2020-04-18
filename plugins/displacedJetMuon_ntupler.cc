@@ -80,7 +80,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   //triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
   genMetCaloToken_(consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMetsCalo"))),
   genMetTrueToken_(consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMetsTrue"))),
-  metToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
+  //metToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
+  metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
 //  metNoHFToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metsNoHF"))),
   metPuppiToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metsPuppi"))),
   metFilterBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"))),
@@ -119,6 +120,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   gedPhotonCoresToken_(consumes<vector<reco::PhotonCore> >(iConfig.getParameter<edm::InputTag>("gedPhotonCores"))),
   generalTrackToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks"))),
   generalTrackHandleToken_(consumes<edm::View<reco::Track>>(edm::InputTag("generalTracks"))),
+  primaryVertexAssociationToken_(consumes<edm::Association<vector<reco::Vertex> > >(edm::InputTag("primaryVertexAssociation","original"))),
+  primaryVertexAssociationValueMapToken_(consumes<edm::ValueMap<int> >(edm::InputTag("primaryVertexAssociation","original"))),
   electron_cutbasedID_decisions_veto_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_veto"))),
   electron_cutbasedID_decisions_loose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_loose"))),
   electron_cutbasedID_decisions_medium_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_medium"))),
@@ -218,7 +221,7 @@ void displacedJetMuon_ntupler::setBranches()
   enableMuonBranches();
   enableElectronBranches();
   enableTauBranches();
-  // enableIsoPFCandidateBranches();
+  enablePFCandidateBranches();
   enablePhotonBranches();
   enableMuonSystemBranches();
   enableHORechitBranches();
@@ -457,8 +460,17 @@ void displacedJetMuon_ntupler::enablePhotonBranches()
   displacedJetMuonTree->Branch("pho_seedRecHitSwitchToGain1", pho_seedRecHitSwitchToGain1, "pho_seedRecHitSwitchToGain1[nPhotons]/F");
   displacedJetMuonTree->Branch("pho_anyRecHitSwitchToGain6", pho_anyRecHitSwitchToGain6, "pho_anyRecHitSwitchToGain6[nPhotons]/F");
   displacedJetMuonTree->Branch("pho_anyRecHitSwitchToGain1", pho_anyRecHitSwitchToGain1, "pho_anyRecHitSwitchToGain1[nPhotons]/F");
+};
 
-
+void displacedJetMuon_ntupler::enablePFCandidateBranches()
+{
+  displacedJetMuonTree->Branch("nPFCandidates", &nPFCandidates, "nPFCandidates/i");
+  displacedJetMuonTree->Branch("PFCandidatePdgId", PFCandidatePdgId, "PFCandidatePdgId[nPFCandidates]/I");
+  displacedJetMuonTree->Branch("PFCandidatePt", PFCandidatePt, "PFCandidatePt[nPFCandidates]/F");
+  displacedJetMuonTree->Branch("PFCandidateEta", PFCandidateEta, "PFCandidateEta[nPFCandidates]/F");
+  displacedJetMuonTree->Branch("PFCandidatePhi", PFCandidatePhi, "PFCandidatePhi[nPFCandidates]/F");
+  displacedJetMuonTree->Branch("PFCandidateTrackIndex", PFCandidateTrackIndex, "PFCandidateTrackIndex[nPFCandidates]/I");
+  displacedJetMuonTree->Branch("PFCandidatePVIndex", PFCandidatePVIndex, "PFCandidatePVIndex[nPFCandidates]/I");
 };
 
 void displacedJetMuon_ntupler::enableMuonSystemBranches()
@@ -807,6 +819,8 @@ void displacedJetMuon_ntupler::enableEcalRechitBranches()
   displacedJetMuonTree->Branch("track_bestVertexIndex", track_bestVertexIndex,"track_bestVertexIndex[nTracks]/I");
   displacedJetMuonTree->Branch("track_nMissingInnerHits", track_nMissingInnerHits,"track_nMissingInnerHits[nTracks]/I");
   displacedJetMuonTree->Branch("track_nMissingOuterHits", track_nMissingOuterHits,"track_nMissingOuterHits[nTracks]/I");
+  displacedJetMuonTree->Branch("track_nPixelHits", track_nPixelHits,"track_nPixelHits[nTracks]/I");
+  displacedJetMuonTree->Branch("track_nHits", track_nHits,"track_nHits[nTracks]/I");
   displacedJetMuonTree->Branch("track_dxyToBS", track_dxyToBS,"track_dxyToBS[nTracks]/F");
   displacedJetMuonTree->Branch("track_dxyErr", track_dxyErr,"track_dxyErr[nTracks]/F");
   displacedJetMuonTree->Branch("track_dzToPV", track_dzToPV,"track_dzToPV[nTracks]/F");
@@ -824,6 +838,7 @@ void displacedJetMuon_ntupler::enableJetBranches()
   displacedJetMuonTree->Branch("jetPhi", jetPhi,"jetPhi[nJets]/F");
   displacedJetMuonTree->Branch("jetCSV", jetCSV,"jetCSV[nJets]/F");
   displacedJetMuonTree->Branch("jetCISV", jetCISV,"jetCISV[nJets]/F");
+  displacedJetMuonTree->Branch("jetCMVA", jetCMVA,"jetCMVA[nJets]/F");
   displacedJetMuonTree->Branch("jetProbb", jetProbb,"jetProbb[nJets]/F");
   displacedJetMuonTree->Branch("jetProbc", jetProbc,"jetProbc[nJets]/F");
   displacedJetMuonTree->Branch("jetProbudsg", jetProbudsg,"jetProbudsg[nJets]/F");
@@ -852,6 +867,21 @@ void displacedJetMuon_ntupler::enableJetBranches()
   displacedJetMuonTree->Branch("jetPhotonMultiplicity", jetPhotonMultiplicity, "jetPhotonMultiplicity[nJets]/I");
   displacedJetMuonTree->Branch("jetElectronMultiplicity", jetElectronMultiplicity, "jetElectronMultiplicity[nJets]/I");
   displacedJetMuonTree->Branch("jetMuonMultiplicity", jetMuonMultiplicity, "jetMuonMultiplicity[nJets]/I");
+  //displacedJetMuonTree->Branch("jetQGLikelihood", jetQGLikelihood,"jetQGLikelihood[nJets]/F");
+  displacedJetMuonTree->Branch("jetNSV", jetNSV, "jetNSV[nJets]/I");
+  displacedJetMuonTree->Branch("jetNSVCand", jetNSVCand, "jetNSVCand[nJets]/I");
+  displacedJetMuonTree->Branch("jetNVertexTracks", jetNVertexTracks, "jetNVertexTracks[nJets]/I");
+  displacedJetMuonTree->Branch("jetNSelectedTracks", jetNSelectedTracks, "jetNSelectedTracks[nJets]/I");
+  displacedJetMuonTree->Branch("jetDRSVJet", jetDRSVJet, "jetDRSVJet[nJets]/F");
+  displacedJetMuonTree->Branch("jetFlightDist2D", jetFlightDist2D, "jetFlightDist2D[nJets]/F");
+  displacedJetMuonTree->Branch("jetFlightDist2DError", jetFlightDist2DError, "jetFlightDist2DError[nJets]/F");
+  displacedJetMuonTree->Branch("jetFlightDist3D", jetFlightDist3D, "jetFlightDist3D[nJets]/F");
+  displacedJetMuonTree->Branch("jetFlightDist3DError", jetFlightDist3DError, "jetFlightDist3DError[nJets]/F");
+  displacedJetMuonTree->Branch("jetSV_x", jetSV_x, "jetSV_x[nJets]/F");
+  displacedJetMuonTree->Branch("jetSV_y", jetSV_y, "jetSV_y[nJets]/F");
+  displacedJetMuonTree->Branch("jetSV_z", jetSV_z, "jetSV_z[nJets]/F");
+  displacedJetMuonTree->Branch("jetSVNTracks", jetSVNTracks, "jetSVNTracks[nJets]/I");
+  displacedJetMuonTree->Branch("jetSVMass", jetSVMass, "jetSVMass[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonPt", jetAllMuonPt,"jetAllMuonPt[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonEta", jetAllMuonEta,"jetAllMuonEta[nJets]/F");
   displacedJetMuonTree->Branch("jetAllMuonPhi", jetAllMuonPhi,"jetAllMuonPhi[nJets]/F");
@@ -892,7 +922,8 @@ void displacedJetMuon_ntupler::enableJetBranches()
   displacedJetMuonTree->Branch("jetMedianIP_wp",jetMedianIP_wp,"jetMedianIP_wp[nJets]/F");
   displacedJetMuonTree->Branch("jetMinDeltaRAllTracks_wp",jetMinDeltaRAllTracks_wp,"jetMinDeltaRAllTracks_wp[nJets]/F");
   displacedJetMuonTree->Branch("jetMinDeltaRPVTracks_wp",jetMinDeltaRPVTracks_wp,"jetMinDeltaRPVTracks_wp[nJets]/F");
-
+  displacedJetMuonTree->Branch("jetNPFCands",jetNPFCands,"jetNPFCands[nJets]/I");
+  displacedJetMuonTree->Branch("jetPFCandIndex", &jetPFCandIndex,Form("jetPFCandIndex[nJets][%d]/I",MAX_NPFCAND));
 
 };
 
@@ -920,6 +951,8 @@ void displacedJetMuon_ntupler::enableJetAK8Branches()
   displacedJetMuonTree->Branch("fatJetMaxSubjetCSV", fatJetMaxSubjetCSV, "fatJetMaxSubjetCSV[nFatJets]/F");
   displacedJetMuonTree->Branch("fatJetPassIDLoose", fatJetPassIDLoose,"fatJetPassIDLoose[nFatJets]/O");
   displacedJetMuonTree->Branch("fatJetPassIDTight", fatJetPassIDTight,"fatJetPassIDTight[nFatJets]/O");
+  displacedJetMuonTree->Branch("fatJetNPFCands",fatJetNPFCands,"fatJetNPFCands[nFatJets]/I");
+  displacedJetMuonTree->Branch("fatJetPFCandIndex", &fatJetPFCandIndex,Form("fatJetPFCandIndex[nFatJets][%d]/I",MAX_NPFCAND));
 };
 
 void displacedJetMuon_ntupler::enableMetBranches()
@@ -927,19 +960,10 @@ void displacedJetMuon_ntupler::enableMetBranches()
   displacedJetMuonTree->Branch("metPt", &metPt, "metPt/F");
   displacedJetMuonTree->Branch("metPhi", &metPhi, "metPhi/F");
   displacedJetMuonTree->Branch("sumMET", &sumMET, "sumMET/F");
-  displacedJetMuonTree->Branch("metType0Pt", &metType0Pt, "metType0Pt/F");
-  displacedJetMuonTree->Branch("metType0Phi", &metType0Phi, "metType0Phi/F");
-  displacedJetMuonTree->Branch("metType1Pt_raw", &metType1Pt_raw, "metType1Pt_raw/F");
+  displacedJetMuonTree->Branch("metUncorrectedPt", &metUncorrectedPt, "metUncorrectedPt/F");
+  displacedJetMuonTree->Branch("metUncorrectedPhi", &metUncorrectedPhi, "metUncorrectedPhi/F");
   displacedJetMuonTree->Branch("metType1Pt", &metType1Pt, "metType1Pt/F");
-  displacedJetMuonTree->Branch("metType1Px", &metType1Px, "metType1Px/F");
-  displacedJetMuonTree->Branch("metType1Py", &metType1Py, "metType1Py/F");
-  displacedJetMuonTree->Branch("metType1Eta", &metType1Eta, "metType1Eta/F");
   displacedJetMuonTree->Branch("metType1Phi", &metType1Phi, "metType1Phi/F");
-  displacedJetMuonTree->Branch("metType1Phi_raw", &metType1Phi_raw, "metType1Phi_raw/F");
-  displacedJetMuonTree->Branch("metType0Plus1Pt", &metType0Plus1Pt, "metType0Plus1Pt/F");
-  displacedJetMuonTree->Branch("metType0Plus1Phi", &metType0Plus1Phi, "metType0Plus1Phi/F");
-  displacedJetMuonTree->Branch("metNoHFPt", &metNoHFPt, "metNoHFPt/F");
-  displacedJetMuonTree->Branch("metNoHFPhi", &metNoHFPhi, "metNoHFPhi/F");
   displacedJetMuonTree->Branch("metPuppiPt", &metPuppiPt, "metPuppiPt/F");
   displacedJetMuonTree->Branch("metPuppiPhi", &metPuppiPhi, "metPuppiPhi/F");
   displacedJetMuonTree->Branch("metCaloPt", &metCaloPt, "metCaloPt/F");
@@ -1111,6 +1135,8 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   }
 
   iEvent.getByToken(tracksTag_,tracks);
+  iEvent.getByToken(primaryVertexAssociationToken_,primaryVertexAssociation);
+  iEvent.getByToken(primaryVertexAssociationValueMapToken_,primaryVertexAssociationValueMap);
   iEvent.getByToken(PFCandsToken_, pfCands);
   iEvent.getByToken(PFClustersToken_, pfClusters);
   iEvent.getByToken(muonsToken_, muons);
@@ -1189,6 +1215,7 @@ void displacedJetMuon_ntupler::resetBranches()
     resetTriggerBranches();
     resetEcalRechitBranches();
     resetHORechitBranches();
+    resetPFCandidateBranches();
 
 };
 
@@ -1359,19 +1386,19 @@ void displacedJetMuon_ntupler::resetTauBranches()
     tau_passMuVetoMedium[i] = false;
     tau_passMuVetoTight[i] = false;
     tau_ID[i] = 0;//tauID Bits
-    tau_combinedIsoDeltaBetaCorr3Hits[i] = -999.;;
-    tau_chargedIsoPtSum[i] = -999.;;
-    tau_neutralIsoPtSum[i] = -999.;;
-    tau_puCorrPtSum[i] = -999.;;
-    tau_eleVetoMVA[i] = -999.;;
-    tau_eleVetoCategory[i] = -999.;;
-    tau_muonVetoMVA[i] = -999.;;
-    tau_isoMVAnewDMwLT[i] = -999.;;
-    tau_isoMVAnewDMwoLT[i] = -999.;;
-    tau_leadCandPt[i] = -999.;;
-    tau_leadCandID[i] = -999.;;
-    tau_leadChargedHadrCandPt[i] = -999.;;
-    tau_leadChargedHadrCandID[i] = -999.;;
+    tau_combinedIsoDeltaBetaCorr3Hits[i] = -999.;
+    tau_chargedIsoPtSum[i] = -999.;
+    tau_neutralIsoPtSum[i] = -999.;
+    tau_puCorrPtSum[i] = -999.;
+    tau_eleVetoMVA[i] = -999.;
+    tau_eleVetoCategory[i] = -999.;
+    tau_muonVetoMVA[i] = -999.;
+    tau_isoMVAnewDMwLT[i] = -999.;
+    tau_isoMVAnewDMwoLT[i] = -999.;
+    tau_leadCandPt[i] = -999.;
+    tau_leadCandID[i] = -999.;
+    tau_leadChargedHadrCandPt[i] = -999.;
+    tau_leadChargedHadrCandID[i] = -999.;
   }
 };
 
@@ -1742,6 +1769,7 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jetPhi[i] = 0.0;
     jetCSV[i] = 0.0;
     jetCISV[i] = 0.0;
+    jetCMVA[i] = 0.0;
     jetMass[i] =  -99.0;
     jetJetArea[i] = -99.0;
     jetPileupE[i] = -99.0;
@@ -1766,6 +1794,21 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jetPhotonMultiplicity[i] = 0;
     jetElectronMultiplicity[i] = 0;
     jetMuonMultiplicity[i] = 0;
+    jetQGLikelihood[i] = -999;
+    jetNSV[i] = 0;
+    jetNSVCand[i] = 0;
+    jetNVertexTracks[i] = 0;
+    jetNSelectedTracks[i] = 0;
+    jetDRSVJet[i] = -999;
+    jetFlightDist2D[i] = -999;
+    jetFlightDist2DError[i] = -999;
+    jetFlightDist3D[i] = -999;
+    jetFlightDist3DError[i] = -999;
+    jetSV_x[i] = -999;
+    jetSV_y[i] = -999;
+    jetSV_z[i] = -999;
+    jetSVNTracks[i] = 0;
+    jetSVMass[i] = -999;
     jetAllMuonPt[i] = 0.0;
     jetAllMuonEta[i] = 0.0;
     jetAllMuonPhi[i] = 0.0;
@@ -1806,6 +1849,10 @@ void displacedJetMuon_ntupler::resetJetBranches()
     jetMedianIP_wp[i] = -99.0;
     jetMinDeltaRAllTracks_wp[i] =-99.0;
     jetMinDeltaRPVTracks_wp[i] = -99.0;
+    jetNPFCands[i] = 0;
+    for (uint q=0;q<MAX_NPFCAND;q++) {
+      jetPFCandIndex[i][q] = -1;
+    }
   }
 
   nFatJets = 0;
@@ -1826,8 +1873,26 @@ void displacedJetMuon_ntupler::resetJetBranches()
     fatJetTau1[i] = 0.0;
     fatJetTau2[i] = 0.0;
     fatJetTau3[i] = 0.0;
+    fatJetNPFCands[i] = 0;
+    for (uint q=0;q<MAX_NPFCAND;q++) {
+      fatJetPFCandIndex[i][q] = -1;
+    }
   }
 
+  return;
+};
+void displacedJetMuon_ntupler::resetPFCandidateBranches()
+{
+  nPFCandidates = 0;
+  for ( int i = 0; i < MAX_NPFCAND; i++) {
+    PFCandidatePdgId[i] = -999.;
+    PFCandidatePt[i] = -999.;
+    PFCandidateEta[i] = -999.;
+    PFCandidatePhi[i] = -999.;
+    PFCandidateTrackIndex[i] = -1;
+    PFCandidateGeneralTrackIndex[i] = -1;
+    PFCandidatePVIndex[i] = -1;
+  } 
   return;
 };
 void displacedJetMuon_ntupler::resetHORechitBranches()
@@ -1846,6 +1911,7 @@ void displacedJetMuon_ntupler::resetHORechitBranches()
   }
   return;
 };
+
 void displacedJetMuon_ntupler::resetEcalRechitBranches()
 {
   nRechits = 0;
@@ -1885,6 +1951,8 @@ void displacedJetMuon_ntupler::resetEcalRechitBranches()
     track_bestVertexIndex[i] = -1;
     track_nMissingInnerHits[i] = -1;
     track_nMissingOuterHits[i] = -1;
+    track_nPixelHits[i] = -1;
+    track_nHits[i] = -1;
     track_angle[i] = -999.;
     track_dxyToBS[i] = -999.;
     track_dxyErr[i] = -999.;
@@ -1904,21 +1972,10 @@ void displacedJetMuon_ntupler::resetMetBranches()
   UncMETdpx = -99.0;
   UncMETdpy = -99.0;
   UncMETdSumEt = -99.0;
-  metType0Pt = -99.0;
-  metType0Phi = -99.0;
-  metType1Pt_raw = -99.0;
+  metUncorrectedPt = -99.0;
+  metUncorrectedPhi = -99.0;
   metType1Pt = -99.0;
-  metType1Px = -99.0;
-  metType1Py = -99.0;
-  metType1Eta = -99.0;
   metType1Phi = -99.0;
-  metType1Phi_raw = -99.0;
-  metType0Plus1Pt = -99.0;
-  metType0Plus1Phi = -99.0;
-  metPtRecomputed = -99.0;
-  metPhiRecomputed = -99.0;
-  metNoHFPt = -99.0;
-  metNoHFPhi = -99.0;
   metPuppiPt = -99.0;
   metPuppiPhi = -99.0;
   metCaloPt = -999;
@@ -2308,25 +2365,7 @@ bool displacedJetMuon_ntupler::fillEventInfo(const edm::Event& iEvent)
 };
 
 
-bool displacedJetMuon_ntupler::fillHOSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-    edm::ESHandle<CaloGeometry> geoHandle;
-    iSetup.get<CaloGeometryRecord>().get(geoHandle);
-    const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter);
-    for (HORecHitCollection::const_iterator recHit=hcalRecHitsHO->begin(); recHit!=hcalRecHitsHO->end(); recHit++) {
-	if (recHit->energy() < 1.5) continue;
-	const DetId recHitId = recHit->detid();
-	const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
-	hoRechit_Phi[nHORechits] = recHitPos.phi();
-	hoRechit_Eta[nHORechits] = recHitPos.eta();
-	hoRechit_X[nHORechits] = recHitPos.x();
-	hoRechit_Y[nHORechits] = recHitPos.y();
-	hoRechit_Z[nHORechits] = recHitPos.z();
-	hoRechit_E[nHORechits] = recHit->energy();
-	hoRechit_T[nHORechits] = recHit->time();
-	nHORechits ++;
-    }
-    return true;
-}
+
 bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   edm::ESHandle<CSCGeometry> cscG;
@@ -3466,6 +3505,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
   vector<bool> SaveThisHCALRechit; SaveThisHCALRechit.clear();
   vector<bool> SaveThisHORechit; SaveThisHORechit.clear();
   vector<bool> SaveThisTrack; SaveThisTrack.clear();
+  vector<int> TrackToSavedTrackMap; TrackToSavedTrackMap.clear();
+  vector<bool> SaveThisPFCandidate; SaveThisPFCandidate.clear();
+  vector<int> PFCandToSavedPFCandMap; PFCandToSavedPFCandMap.clear();
+
+
   //reset these save flags
   for (uint q=0; q<ebRecHits->size(); q++) {
     SaveThisEBRechit.push_back(false);
@@ -3475,12 +3519,17 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
   }
   for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
     SaveThisTrack.push_back(false);
+    TrackToSavedTrackMap.push_back(-1);
   }
   for (uint q=0; q<hcalRecHitsHBHE->size(); q++) {
     SaveThisHCALRechit.push_back(false);
   }
   for (uint q=0; q<hcalRecHitsHO->size(); q++) {
     SaveThisHORechit.push_back(false);
+  }
+  for (uint q=0; q<pfCands->size(); q++) {
+    SaveThisPFCandidate.push_back(false);
+    PFCandToSavedPFCandMap.push_back(-1);
   }
 
   for (const pat::Jet &j : *jets) {
@@ -3501,8 +3550,8 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
     jetJetArea[nJets] = j.jetArea();
     jetPileupE[nJets] = j.pileup();
-
-    jetPileupIdFlag[nJets] = 0;
+    jetPileupId[nJets] = j.userFloat("pileupJetId:fullDiscriminant");
+    jetPileupIdFlag[nJets] = j.userInt("pileupJetId:fullId"); //A bit map for loose, medium, and tight working points
     jetPassIDLoose[nJets] = passJetID(&j, 0);
     jetPassIDTight[nJets] = passJetID(&j, 1);
     jetPassMuFrac[nJets]  = ( j.muonEnergyFraction() < 0.80 );
@@ -3529,7 +3578,34 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     //jet_HF_em_multiplicity[nJets] = j.HFEMMultiplicity();
     //jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
     //jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
-
+    //jetQGLikelihood[nJets]  = j.userFloat("QGLikelihood");
+ 
+    //---------------------------
+    //Secondary vertex stuff
+    //---------------------------
+    if (j.tagInfoLabels().size() > 0){      
+      if(j.hasTagInfo("pfSecondaryVertex")){
+	jetNSV[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertices();
+	jetNSVCand[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexCandidates();
+	jetNVertexTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks();
+	jetNSelectedTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nSelectedTracks();
+	if (j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->taggingVariables().getList(reco::btau::vertexJetDeltaR,false).size() > 0) {
+	  jetDRSVJet[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->taggingVariables().getList(reco::btau::vertexJetDeltaR,false)[0];
+	}
+	if(j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertices() > 0) {
+	  jetFlightDist2D[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, true).value();
+	  jetFlightDist2DError[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, true).error();
+	  jetFlightDist3D[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, false).value();
+	  jetFlightDist3DError[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, false).error();
+	  jetSV_x[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vx();
+	  jetSV_y[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vy();
+	  jetSV_z[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vz();
+	  jetSVNTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks(0);
+	  jetSVMass[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).mass();
+	}
+      }
+    }
+    
     //---------------------------
     //Trackless variables
     //---------------------------
@@ -3543,6 +3619,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     findTrackingVariablesWithoutPropagator(thisJet,iSetup,alphaMax_wp,medianTheta2D_wp,medianIP_wp,nTracksPV_wp,ptAllPVTracks_wp,ptAllTracks_wp, minDeltaRAllTracks_wp, minDeltaRPVTracks_wp);
 
     jetCISV[nJets] = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    jetCMVA[nJets] = j.bDiscriminator("pfCombinedMVAV2BJetTags");
     jetAlphaMax[nJets] = alphaMax;
     jetBetaMax[nJets] = alphaMax * ptAllTracks/(j.pt());
     jetGammaMax[nJets] = alphaMax * ptAllTracks/(j.energy());
@@ -3605,6 +3682,29 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
     }
     */
+
+    //---------------------------
+    //Find PFCandidates Inside the Jet
+    //---------------------------    
+    for (uint q=0; q< pfCands->size(); q++) {     
+      //const reco::PFCandidate *p = &(*pfCands)[q];
+
+      reco::PFCandidatePtr p_ptr(pfCands,q);
+      bool found = false;
+      for (uint l=0; l < j.getPFConstituents().size(); l++) {
+	if (p_ptr == j.getPFConstituents()[l]) {	  
+	  found = true;
+	  break;
+	}
+      }
+
+      if (found) {
+	SaveThisPFCandidate[q] = true;
+	jetAllPFCandIndex[nJets][jetNPFCands[nJets]] = q;
+	jetNPFCands[nJets]++;
+      }
+    }	          	    
+      
 
     //---------------------------
     //Find RecHits Inside the Jet
@@ -3774,6 +3874,28 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     fatJetTau3[nFatJets] =  (float) j.userFloat("NjettinessAK8CHS:tau3");
 
 
+    //---------------------------
+    //Find PFCandidates Inside the Jet
+    //---------------------------    
+    for (uint q=0; q< pfCands->size(); q++) {     
+      //const reco::PFCandidate *p = &(*pfCands)[q];
+
+      reco::PFCandidatePtr p_ptr(pfCands,q);
+      bool found = false;
+      for (uint l=0; l < j.getPFConstituents().size(); l++) {
+	if (p_ptr == j.getPFConstituents()[l]) {	  
+	  found = true;
+	  break;
+	}
+      }
+
+      if (found) {
+	SaveThisPFCandidate[q] = true;
+	fatJetAllPFCandIndex[nFatJets][fatJetNPFCands[nFatJets]] = q;
+	fatJetNPFCands[nFatJets]++;
+      }
+    }	          	    
+      
 
     for (uint q=0; q<ebRecHits->size(); q++) {
       const EcalRecHit *recHit = &(*ebRecHits)[q];
@@ -3865,6 +3987,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     nFatJets++;
   }
 
+
   //********************************************************
   // Save EB Rechits inside Jets and AK8 Jets
   //********************************************************
@@ -3913,97 +4036,6 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     //cout << "After Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
   }
 
-  //********************************************************
-  // Save Tracks inside Jets and AK8 Jets
-  //********************************************************
-  // Magnetic field
-  edm::ESHandle<MagneticField> magneticField;
-  iSetup.get<IdealMagneticFieldRecord>().get(magneticField);
-  magneticField_ = &*magneticField;
-  std::string thePropagatorName_ = "PropagatorWithMaterial";
-  iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
-  StateOnTrackerBound stateOnTracker(thePropagator_.product());
-
-  for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
-
-
-    // reco::Track generalTrack = generalTracks->at(iTrack);
-    // //const auto& generalTrack = generalTracks->at(iTrack);
-    // // TLorentzVector generalTrackVecTemp;
-    // // generalTrackVecTemp.SetPtEtaPhiM(generalTrack.pt(),generalTrack.eta(),generalTrack.phi(),0);
-
-    if (SaveThisTrack[iTrack]) {
-
-      reco::TrackBaseRef tref(generalTrackHandle,iTrack);
-      // make transient track (unfolding effects of B field ?)
-      reco::TransientTrack tt(generalTrackHandle->at(iTrack),magneticField_);
-
-      if(!tt.isValid()) {
-	std::cout << "Error: Transient Track not valid ("
-		  << tref->pt() << " " << tref->eta() << " " << tref->phi()
-		  << "). Skipping the track\n";
-	continue;
-      }
-
-      track_Pt[nTracks] = tref->pt();
-      track_Eta[nTracks] = tref->eta();
-      track_Phi[nTracks] = tref->phi();
-
-      //find the best vertex for this track
-      float maxWeight = 0;
-      int bestVertexIndex = -1;
-      for(int k = 0; k < (int)vertices->size();k++){
-	if(vertices->at(k).trackWeight(tref) > maxWeight){
-	  maxWeight = vertices->at(k).trackWeight(tref);
-	  bestVertexIndex = k;
-	}
-      }
-      track_bestVertexIndex[nTracks] = bestVertexIndex;
-
-      track_nMissingInnerHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
-      track_nMissingOuterHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
-
-      track_dxyToBS[nTracks] = tref->dxy(*beamSpot);
-      track_dxyErr[nTracks] = tref->dxyError();
-      track_dzToPV[nTracks] = tref->dz(beamSpot->position());
-      track_dzErr[nTracks] = tref->dzError();
-
-      //********************************************************
-      // For track angle
-      //********************************************************
-      // get track trajectory info
-      static GetTrackTrajInfo getTrackTrajInfo;
-      vector<GetTrackTrajInfo::Result> trajInfo = getTrackTrajInfo.analyze(iSetup, (*tref));
-      if ( trajInfo.size() > 0 && trajInfo[0].valid) {
-      	// get inner tracker hit from trajectory state
-      	const TrajectoryStateOnSurface& tsosInnerHit = trajInfo[0].detTSOS;
-
-      	//  here's the track angle
-      	// find beamspot x,y coordinates
-      	const reco::BeamSpot& pat_beamspot = (*beamSpot);
-      	TVector2 bmspot(pat_beamspot.x0(),pat_beamspot.y0());
-      	// find track trajectory state on surface inner hit
-      	GlobalPoint  innerPos = tsosInnerHit.globalPosition();
-      	GlobalVector innerMom = tsosInnerHit.globalMomentum();
-
-      	// calculate the difference between inner hit and beamspot
-      	TVector2 sv(innerPos.x(),innerPos.y());
-      	TVector2 diff = (sv-bmspot);
-      	//cout<<"bs x: "<<bmspot.X()<<" y: "<<bmspot.Y()<<endl;
-      	//cout<<" sv x: "<<sv.X()<<" y: "<<sv.Y()<<endl;
-      	//cout<<" diff phi: "<<diff.Phi()<<endl;
-      	TVector2 momentum(innerMom.x(),innerMom.y());
-      	//cout<<" p x: "<<momentum.X()<<" y: "<<momentum.Y()<<endl;
-      	//cout<<" p phi: "<<momentum.Phi()<<endl;
-      	//cout<<" dPhi: "<<diff.DeltaPhi(momentum)<<endl;
-      	track_angle[nTracks] = fabs( diff.DeltaPhi(momentum) ) ;
-      }
-
-
-
-      nTracks++; //increment saved tracks
-    } //end if save this Track
-  } //loop over tracks
 
   //********************************************************
   // Save HCAL Rechits inside Jets and AK8 Jets
@@ -4068,6 +4100,200 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     }
   }
 
+  //********************************************************
+  // Save PF Candidates inside Jets and AK8 Jets
+  //********************************************************
+  for (uint q=0; q< pfCands->size(); q++) {     
+    if (SaveThisPFCandidate[q]) {
+      const reco::PFCandidate *p = &(*pfCands)[q];
+
+      PFCandidatePdgId[nPFCandidates] = p->pdgId();
+      PFCandidatePt[nPFCandidates] = p->pt();
+      PFCandidateEta[nPFCandidates] = p->eta();
+      PFCandidatePhi[nPFCandidates] = p->phi();
+      PFCandidateTrackIndex[nPFCandidates] = -1;
+      PFCandidatePVIndex[nPFCandidates] = -1;
+
+      //find the matching PV
+      const reco::VertexRef &PVOrig = (*primaryVertexAssociation)[reco::CandidatePtr(pfCands,q)];
+      if(PVOrig.isNonnull()) {
+	
+	int matchedPVIndex = -1;
+	for (int ipv = 0; ipv < nPVAll; ++ipv) {
+	  const reco::VertexRef vtxRef(vertices,ipv);
+	  if (PVOrig.id() == vtxRef.id() && PVOrig.key() == vtxRef.key()) {
+	    matchedPVIndex = ipv;
+	    break;
+	  }	  
+	}
+	
+	// if (matchedPVIndex>=0) {
+	//   cout << "PFCandidate " << q << " : " << matchedPVIndex << " --> " << pvAllX[matchedPVIndex] << " " << pvAllY[matchedPVIndex] << " " << pvAllZ[matchedPVIndex] << " | " 
+	//        << PVOrig->x() << " " << PVOrig->y() << " " << PVOrig->z() << " "  
+	//        << " \n";
+	// }
+
+	PFCandidatePVIndex[nPFCandidates] = matchedPVIndex;
+      }
+      
+      //find track ref
+      if (p->trackRef().isNonnull()) {
+	for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
+	  reco::TrackBaseRef tref(generalTrackHandle,iTrack);
+	  reco::TrackBaseRef pTrackRef(p->trackRef());
+	  //cout << "Track " << p->trackRef().id() << " " << p->trackRef().key() << " | " << pTrackRef.id() << " " << pTrackRef.key() << " | " << iTrack << " " << tref.id() << " " << tref.key() << " \n";
+	  if (pTrackRef.id() == tref.id() && pTrackRef.key() == tref.key() ) {
+	    //cout << "found track match: " << p->trackRef()->pt() << " " << p->trackRef()->eta() << " " << p->trackRef()->phi() << " | " 
+	    //	 << tref->pt() << " " << tref->eta() << " " << tref->phi() << " "
+	    //	 << "\n";
+	    SaveThisTrack[iTrack] = true;
+	    PFCandidateGeneralTrackIndex[nPFCandidates] = iTrack;
+	    break;
+	  }	  
+	}
+      }
+      PFCandToSavedPFCandMap[q] = nPFCandidates;
+      nPFCandidates++;
+      if (nPFCandidates > MAX_NPFCAND) {
+	cout << "ERROR: nPFCandidates exceeded maximum array size: " << MAX_NPFCAND << "\n";
+	assert(false);
+      }
+    }
+  }	  
+
+
+  //********************************************************
+  // Save Tracks inside Jets and AK8 Jets
+  //********************************************************
+  // Magnetic field
+  edm::ESHandle<MagneticField> magneticField;
+  iSetup.get<IdealMagneticFieldRecord>().get(magneticField);
+  magneticField_ = &*magneticField;
+  std::string thePropagatorName_ = "PropagatorWithMaterial";
+  iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
+  StateOnTrackerBound stateOnTracker(thePropagator_.product());
+
+  for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
+
+
+    // reco::Track generalTrack = generalTracks->at(iTrack);
+    // //const auto& generalTrack = generalTracks->at(iTrack);
+    // // TLorentzVector generalTrackVecTemp;
+    // // generalTrackVecTemp.SetPtEtaPhiM(generalTrack.pt(),generalTrack.eta(),generalTrack.phi(),0);
+
+    if (SaveThisTrack[iTrack]) {
+
+      reco::TrackBaseRef tref(generalTrackHandle,iTrack);
+      // make transient track (unfolding effects of B field ?)
+      reco::TransientTrack tt(generalTrackHandle->at(iTrack),magneticField_);
+
+      if(!tt.isValid()) {
+	std::cout << "Error: Transient Track not valid ("
+		  << tref->pt() << " " << tref->eta() << " " << tref->phi()
+		  << "). Skipping the track\n";
+	continue;
+      }
+
+      track_Pt[nTracks] = tref->pt();
+      track_Eta[nTracks] = tref->eta();
+      track_Phi[nTracks] = tref->phi();
+
+      //find the best vertex for this track
+      float maxWeight = 0;
+      int bestVertexIndex = -1;
+      for(int k = 0; k < (int)vertices->size();k++){
+	if(vertices->at(k).trackWeight(tref) > maxWeight){
+	  maxWeight = vertices->at(k).trackWeight(tref);
+	  bestVertexIndex = k;
+	}
+      }
+      track_bestVertexIndex[nTracks] = bestVertexIndex;
+      track_nMissingInnerHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
+      track_nMissingOuterHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
+      track_nPixelHits[nTracks] = tref->hitPattern().numberOfValidPixelHits();
+      track_nHits[nTracks] = tref->hitPattern().numberOfValidHits();
+      track_dxyToBS[nTracks] = tref->dxy(*beamSpot);
+      track_dxyErr[nTracks] = tref->dxyError();
+      track_dzToPV[nTracks] = tref->dz(beamSpot->position());
+      track_dzErr[nTracks] = tref->dzError();
+      //charge
+      //I.chi2            = C->pseudoTrack().chi2();
+      //I.ndof            = C->pseudoTrack().ndof();
+      //I.normalizedChi2  = C->pseudoTrack().normalizedChi2();
+
+      //********************************************************
+      // For track angle
+      //********************************************************
+      // get track trajectory info
+      static GetTrackTrajInfo getTrackTrajInfo;
+      vector<GetTrackTrajInfo::Result> trajInfo = getTrackTrajInfo.analyze(iSetup, (*tref));
+      if ( trajInfo.size() > 0 && trajInfo[0].valid) {
+      	// get inner tracker hit from trajectory state
+      	const TrajectoryStateOnSurface& tsosInnerHit = trajInfo[0].detTSOS;
+
+      	//  here's the track angle
+      	// find beamspot x,y coordinates
+      	const reco::BeamSpot& pat_beamspot = (*beamSpot);
+      	TVector2 bmspot(pat_beamspot.x0(),pat_beamspot.y0());
+      	// find track trajectory state on surface inner hit
+      	GlobalPoint  innerPos = tsosInnerHit.globalPosition();
+      	GlobalVector innerMom = tsosInnerHit.globalMomentum();
+
+      	// calculate the difference between inner hit and beamspot
+      	TVector2 sv(innerPos.x(),innerPos.y());
+      	TVector2 diff = (sv-bmspot);
+      	//cout<<"bs x: "<<bmspot.X()<<" y: "<<bmspot.Y()<<endl;
+      	//cout<<" sv x: "<<sv.X()<<" y: "<<sv.Y()<<endl;
+      	//cout<<" diff phi: "<<diff.Phi()<<endl;
+      	TVector2 momentum(innerMom.x(),innerMom.y());
+      	//cout<<" p x: "<<momentum.X()<<" y: "<<momentum.Y()<<endl;
+      	//cout<<" p phi: "<<momentum.Phi()<<endl;
+      	//cout<<" dPhi: "<<diff.DeltaPhi(momentum)<<endl;
+      	track_angle[nTracks] = fabs( diff.DeltaPhi(momentum) ) ;
+      }
+
+      TrackToSavedTrackMap[iTrack] = nTracks;
+      nTracks++; //increment saved tracks
+    } //end if save this Track
+  } //loop over tracks
+
+
+  //**********************************************************************
+  // Cross-reference PFCandidate Indices in jets with Saved PF Candidates
+  //**********************************************************************
+  if (nJets >= 0) {
+    for (uint q=0; q < uint(nJets); q++) {
+      if (jetNPFCands[q] >= 0) {
+	for (uint l=0; l < uint(jetNPFCands[q]); l++) {
+	  jetPFCandIndex[q][l] = PFCandToSavedPFCandMap[jetAllPFCandIndex[q][l]];
+	}
+      }
+    }
+  }
+  if (nFatJets >= 0) {
+    for (uint q=0; q < uint(nFatJets); q++) {
+      if (jetNPFCands[q] >= 0) {
+	for (uint l=0; l < uint(fatJetNPFCands[q]); l++) {
+	  fatJetPFCandIndex[q][l] = PFCandToSavedPFCandMap[fatJetAllPFCandIndex[q][l]];
+	}
+      }
+    }
+  }
+  
+
+
+
+  //*************************************************************
+  // Cross-reference TrackIndex of PF Candidate with Saved Tracks
+  //*************************************************************
+  if (nPFCandidates >= 0 ) {
+    for (uint q=0; q < uint(nPFCandidates); q++) {
+      if (PFCandidateGeneralTrackIndex[q] >= 0) {
+	PFCandidateTrackIndex[q] = TrackToSavedTrackMap[PFCandidateGeneralTrackIndex[q]];
+      }
+    }	          	        
+  }
+      
   return true;
 };
 
@@ -4519,22 +4745,15 @@ const reco::Candidate* displacedJetMuon_ntupler::findOriginalMotherWithSameID(co
 
 bool displacedJetMuon_ntupler::fillMet(const edm::Event& iEvent)
 {
-  const reco::PFMET &Met = mets->front();
+  //const reco::PFMET &Met = mets->front();
+  const pat::MET &Met = mets->front();
 
   sumMET = Met.sumEt();
-  metType0Pt = 0;
-  metType0Phi = 0;
-  metType1Pt_raw = Met.pt();
-  metType1Pt = Met.pt();
-  metType1Px = Met.px();
-  metType1Py = Met.py();
-  metType1Eta = Met.eta();
-  metType1Phi_raw = Met.phi();
-  metType1Phi = Met.phi();
-  metType0Plus1Pt = 0;
-  metType0Plus1Phi = 0;
+  // metUncorrectedPt = Met.uncorPt();
+  // metUncorrectedPhi = Met.uncorPhi();
+  metType1Pt = Met.pt(); 
+  metType1Phi = Met.phi(); 
 
-  //
   iEvent.getByToken(globalSuperTightHalo2016FilterToken_, globalSuperTightHalo2016Filter);
   iEvent.getByToken(globalTightHalo2016FilterToken_, globalTightHalo2016Filter);
   iEvent.getByToken(BadChargedCandidateFilterToken_, BadChargedCandidateFilter);
