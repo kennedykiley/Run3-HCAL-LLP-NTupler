@@ -5,8 +5,10 @@ Long Lived Particle Ntupler based on AOD
 ### Setup CMSSW & clone the ntuples:
 ```bash
 # Done once to setup environment
-cmsrel CMSSW_9_4_4
-cd CMSSW_9_4_4/src
+cmsrel CMSSW_9_4_17
+cd CMSSW_9_4_17/src
+git clone git@github.com:cms-lpc-llp/JetToolbox.git  JMEAnalysis/JetToolbox
+cd JMEAnalysis/JetToolbox; git checkout jetToolbox_91X; cd -;
 git clone git@github.com:cms-lpc-llp/llp_ntupler.git cms_lpc_llp/llp_ntupler
 scram b
 cmsenv
