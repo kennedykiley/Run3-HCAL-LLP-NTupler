@@ -17,7 +17,8 @@ process.source = cms.Source("PoolSource",
 #'file:///storage/user/christiw/login-1/christiw/LLP/CMSSW_10_2_16/src/cms_lpc_llp/llp_ntupler/EGM-RunIIAutumn18DR-00031.root',
 #        '/store/mc/RunIIAutumn18DRPremix/ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/260000/EC536CE3-5405-9F4D-B571-2EF83D5C17D9.root'
         #'/store/group/phys_exotica/privateProduction/DR/step2_RECOSIM/RunIIFall18/ggH_HToSSTobbbb_ms55_pl1000/batch1/v1/ggH_HToSSTobbbb_ms55_pl1000/crab_PrivateProduction_Fall18_DR_step2_ggH_HToSSTobbbb_ms55_pl1000_batch1_v1/191224_123235/0000/RECOSIM_150.root'
-        '/store/mc/RunIIAutumn18DRPremix/ggH_HToSSTobbbb_MH-125_TuneCP5_13TeV-powheg-pythia8/GEN-SIM-RECO/rp_102X_upgrade2018_realistic_v15-v1/280001/A7084B2E-EF2D-9B4C-911C-AD7072A597D7.root'
+        #'/store/mc/RunIIAutumn18DRPremix/ggH_HToSSTobbbb_MH-125_TuneCP5_13TeV-powheg-pythia8/GEN-SIM-RECO/rp_102X_upgrade2018_realistic_v15-v1/280001/A7084B2E-EF2D-9B4C-911C-AD7072A597D7.root'
+        '/store/group/phys_exotica/privateProduction/DR/step2_RECOSIM/RunIIFall18/ggH_HToSSTobbbb_ms55_pl1000/batch1/v1/ggH_HToSSTobbbb_ms55_pl1000/crab_PrivateProduction_Fall18_DR_step2_ggH_HToSSTobbbb_ms55_pl1000_batch1_v1/191224_123235/0000/RECOSIM_125.root'
         )
 )
 
