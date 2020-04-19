@@ -2474,6 +2474,10 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       p.clusterID = UNCLASSIFIED;
       points.push_back(p);
       nCscSeg++;
+      if (nCscSeg > CSCRECHITARRAYSIZE) {
+	cout << "ERROR: nCscSeg exceeded maximum array size: " << CSCRECHITARRAYSIZE << "\n";
+	assert(false);
+      }
     }
   }
 
@@ -2597,6 +2601,10 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       }
 
       nCscSegClusters++;
+      if (nCscSegClusters > OBJECTARRAYSIZE) {
+	cout << "ERROR: nCscSegClusters exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+	assert(false);
+      }
     }
 
 
@@ -2655,6 +2663,10 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	  points.push_back(p);
 
 	  ncscRechits++;
+	  if (ncscRechits > CSCRECHITARRAYSIZE) {
+	    cout << "ERROR: ncscRechits exceeded maximum array size: " << CSCRECHITARRAYSIZE << "\n";
+	    assert(false);
+	  }
 	}
       }
       //Do DBSCAN Clustering
@@ -2726,11 +2738,10 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	// cscRechitClusterVertexN10[nCscRechitClusters] = tmp.vertex_n10;
 
 
-   for (unsigned int j = 0; j < tmp.segment_id.size(); j++)
-  {
-    cscRechitsClusterId[tmp.segment_id[j]] = nCscRechitClusters;
-  }
-
+	for (unsigned int j = 0; j < tmp.segment_id.size(); j++) {
+	  cscRechitsClusterId[tmp.segment_id[j]] = nCscRechitClusters;
+	}
+	
 	//Jet veto/ muon veto
 	cscRechitClusterJetVetoPt[nCscRechitClusters] = 0.0;
 	cscRechitClusterJetVetoE[nCscRechitClusters] = 0.0;
@@ -2801,6 +2812,10 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	}
 
 	nCscRechitClusters++;
+	if (nCscRechitClusters > OBJECTARRAYSIZE) {
+	  cout << "ERROR: nCscRechitClusters exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+	  assert(false);
+	}
       }
 
     }
@@ -2859,6 +2874,10 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
         points.push_back(p);
 
         nDtSeg++;
+	if (nDtSeg > CSCRECHITARRAYSIZE) {
+	  cout << "ERROR: nDtSeg exceeded maximum array size: " << CSCRECHITARRAYSIZE << "\n";
+	  assert(false);
+	}
       }
 
     }
@@ -2968,6 +2987,10 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       }
 
       nDtSegClusters++;
+      if (nDtSegClusters > OBJECTARRAYSIZE) {
+	cout << "ERROR: nDtSegClusters exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+	assert(false);
+      }
     }
 
 
@@ -3009,6 +3032,10 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	  points.push_back(p);
 
 	  nDtRechits++;
+	  if (nDtRechits > CSCRECHITARRAYSIZE) {
+	    cout << "ERROR: nDtRechits exceeded maximum array size: " << CSCRECHITARRAYSIZE << "\n";
+	    assert(false);
+	  }
 	}
       }
       //Do DBSCAN Clustering
@@ -3105,6 +3132,10 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	}
 
 	nDtRechitClusters++;
+	if (nDtRechitClusters > OBJECTARRAYSIZE) {
+	  cout << "ERROR: nDtRechitClusters exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+	  assert(false);
+	}
       }
     }
 
@@ -3125,6 +3156,10 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       rpcBx[nRpc] = rpcRecHit.BunchX();
       rpcTError[nRpc] = rpcRecHit.timeError();
       nRpc++;
+      if (nRpc > OBJECTARRAYSIZE) {
+	cout << "ERROR: nRpc exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+	assert(false);
+      }
     }
   }
 
@@ -3165,6 +3200,11 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
   }
   //Total number of gen particles
   nGenParticle = prunedV.size();
+  if (nGenParticle > GENPARTICLEARRAYSIZE) {
+    cout << "ERROR: nGenParticle exceeded maximum array size: " << GENPARTICLEARRAYSIZE << "\n";
+    assert(false);
+  }
+  
   bool _found_first_llp = false;
   //Look for mother particle and Fill gen variables
   for(unsigned int i = 0; i < prunedV.size(); i++) {
@@ -3846,8 +3886,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       }
     }
 
-
     nJets++;
+    if (nJets > OBJECTARRAYSIZE) {
+      cout << "ERROR: nJets exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+      assert(false);
+    }
   } //loop over jets
 
 
@@ -3982,9 +4025,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       }
     }
 
-
-
     nFatJets++;
+    if (nFatJets > OBJECTARRAYSIZE) {
+      cout << "ERROR: nFatJets exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+      assert(false);
+    }
   }
 
 
@@ -4008,6 +4053,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       ecalRechit_kWeirdflag[nRechits]= recHit->checkFlag(EcalRecHit::kWeird);
       ecalRechit_kDiWeirdflag[nRechits] = recHit->checkFlag(EcalRecHit::kDiWeird);
       nRechits++;
+
+      if (nRechits > RECHITARRAYSIZE) {
+	cout << "ERROR: nRechits exceeded maximum array size: " << RECHITARRAYSIZE << "\n";
+	assert(false);
+      }
     }
     //cout << "After Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
   }
@@ -4032,6 +4082,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       ecalRechit_kWeirdflag[nRechits]= recHit->checkFlag(EcalRecHit::kWeird);
       ecalRechit_kDiWeirdflag[nRechits] = recHit->checkFlag(EcalRecHit::kDiWeird);
       nRechits++;
+
+      if (nRechits > RECHITARRAYSIZE) {
+	cout << "ERROR: nRechits exceeded maximum array size: " << RECHITARRAYSIZE << "\n";
+	assert(false);
+      }
     }
     //cout << "After Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
   }
@@ -4078,6 +4133,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 	//}
 
       nHBHERechits++;
+
+      if (nHBHERechits > RECHITARRAYSIZE) {
+	cout << "ERROR: nHBHERechits exceeded maximum array size: " << RECHITARRAYSIZE << "\n";
+	assert(false);
+      }
     }
   }
 
@@ -4097,6 +4157,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       hoRechit_E[nHORechits] = recHit->energy();
       hoRechit_T[nHORechits] = recHit->time();
       nHORechits ++;
+
+      if (nHORechits > HORECHITARRAYSIZE) {
+	cout << "ERROR: nHORechits exceeded maximum array size: " << HORECHITARRAYSIZE << "\n";
+	assert(false);
+      }
     }
   }
 
@@ -4254,6 +4319,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
       TrackToSavedTrackMap[iTrack] = nTracks;
       nTracks++; //increment saved tracks
+
+      if (nTracks > RECHITARRAYSIZE) {
+	cout << "ERROR: nTracks exceeded maximum array size: " << RECHITARRAYSIZE << "\n";
+	assert(false);
+      }
     } //end if save this Track
   } //loop over tracks
 
@@ -4388,6 +4458,10 @@ bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
 
     muon_passSingleMuTagFilter[nMuons] = passTagMuonFilter;
     nMuons++;
+    if (nMuons > OBJECTARRAYSIZE) {
+      cout << "ERROR: nMuons exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+      assert(false);
+    }
   }
 
   return true;
@@ -5150,6 +5224,10 @@ bool displacedJetMuon_ntupler::fillElectrons(const edm::Event& iEvent)
 
     //std::cout << "debug ele 10 " << nElectrons << std::endl;
     nElectrons++;
+    if (nElectrons > OBJECTARRAYSIZE) {
+      cout << "ERROR: nElectrons exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+      assert(false);
+    }
   }
 
   return true;
@@ -5489,6 +5567,11 @@ bool displacedJetMuon_ntupler::fillPhotons(const edm::Event& iEvent, const edm::
     }
 
     nPhotons++;
+
+    if (nPhotons > OBJECTARRAYSIZE) {
+      cout << "ERROR: nPhotons exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+      assert(false);
+    }
   }
 
 
@@ -5602,6 +5685,10 @@ bool displacedJetMuon_ntupler::fillTaus(){
     }
 
     nTaus++;
+    if (nTaus > OBJECTARRAYSIZE) {
+      cout << "ERROR: nTaus exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+      assert(false);
+    }
   }
 
   return true;
