@@ -825,6 +825,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float track_Pt[RECHITARRAYSIZE];
  float track_Eta[RECHITARRAYSIZE];
  float track_Phi[RECHITARRAYSIZE];
+ int   track_charge[RECHITARRAYSIZE];
  int   track_bestVertexIndex[RECHITARRAYSIZE];
  int   track_nMissingInnerHits[RECHITARRAYSIZE];
  int   track_nMissingOuterHits[RECHITARRAYSIZE];
@@ -835,6 +836,9 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float track_dxyErr[RECHITARRAYSIZE];
  float track_dzToPV[RECHITARRAYSIZE];
  float track_dzErr[RECHITARRAYSIZE];
+ float track_chi2[RECHITARRAYSIZE];
+ int   track_ndof[RECHITARRAYSIZE];
+
 
  //Ecal RecHits
  const float Rechit_cut = 0.5;

@@ -816,6 +816,7 @@ void displacedJetMuon_ntupler::enableEcalRechitBranches()
   displacedJetMuonTree->Branch("track_Pt", track_Pt,"track_Pt[nTracks]/F");
   displacedJetMuonTree->Branch("track_Eta", track_Eta,"track_Eta[nTracks]/F");
   displacedJetMuonTree->Branch("track_Phi", track_Phi,"track_Phi[nTracks]/F");
+  displacedJetMuonTree->Branch("track_charge", track_charge,"track_charge[nTracks]/I");
   displacedJetMuonTree->Branch("track_bestVertexIndex", track_bestVertexIndex,"track_bestVertexIndex[nTracks]/I");
   displacedJetMuonTree->Branch("track_nMissingInnerHits", track_nMissingInnerHits,"track_nMissingInnerHits[nTracks]/I");
   displacedJetMuonTree->Branch("track_nMissingOuterHits", track_nMissingOuterHits,"track_nMissingOuterHits[nTracks]/I");
@@ -825,6 +826,8 @@ void displacedJetMuon_ntupler::enableEcalRechitBranches()
   displacedJetMuonTree->Branch("track_dxyErr", track_dxyErr,"track_dxyErr[nTracks]/F");
   displacedJetMuonTree->Branch("track_dzToPV", track_dzToPV,"track_dzToPV[nTracks]/F");
   displacedJetMuonTree->Branch("track_dzErr", track_dzErr,"track_dzErr[nTracks]/F");
+  displacedJetMuonTree->Branch("track_chi2", track_chi2,"track_chi2[nTracks]/F");
+  displacedJetMuonTree->Branch("track_ndof", track_ndof,"track_ndof[nTracks]/I");
 
 };
 
@@ -1948,6 +1951,7 @@ void displacedJetMuon_ntupler::resetEcalRechitBranches()
     track_Pt[i] = -999.;
     track_Eta[i] = -999.;
     track_Phi[i] = -999.;
+    track_charge[i] = 0;
     track_bestVertexIndex[i] = -1;
     track_nMissingInnerHits[i] = -1;
     track_nMissingOuterHits[i] = -1;
@@ -1958,6 +1962,8 @@ void displacedJetMuon_ntupler::resetEcalRechitBranches()
     track_dxyErr[i] = -999.;
     track_dzToPV[i] = -999.;
     track_dzErr[i] = -999.;
+    track_chi2[i] = -999.;
+    track_ndof[i] = -999.;
   }
 
   return;
@@ -4281,10 +4287,9 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       track_dxyErr[nTracks] = tref->dxyError();
       track_dzToPV[nTracks] = tref->dz(beamSpot->position());
       track_dzErr[nTracks] = tref->dzError();
-      //charge
-      //I.chi2            = C->pseudoTrack().chi2();
-      //I.ndof            = C->pseudoTrack().ndof();
-      //I.normalizedChi2  = C->pseudoTrack().normalizedChi2();
+      track_charge[nTracks] = tref->charge();
+      track_chi2[nTracks] = tref->chi2();
+      track_ndof[nTracks] = tref->ndof();         
 
       //********************************************************
       // For track angle
