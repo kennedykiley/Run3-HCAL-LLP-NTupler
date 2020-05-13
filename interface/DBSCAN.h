@@ -25,7 +25,7 @@ struct cscCluster
 
   float Me11Ratio, Me12Ratio;
   float MajorAxis, MinorAxis, EtaSpread, PhiSpread, EtaPhiSpread;
-  float XSpread, YSpread, XYSpread, ZSpread, TSpread;
+  float XSpread, YSpread, XYSpread, ZSpread, TSpread, RSpread;
   float vertex_r, vertex_z, vertex_dis, vertex_chi2;
   int vertex_n, vertex_n1, vertex_n5, vertex_n10, vertex_n15, vertex_n20;
   vector<int>segment_id;
@@ -69,6 +69,7 @@ public:
     vector<float>clusterXSpread;
     vector<float>clusterYSpread;
     vector<float>clusterXYSpread;
+    vector<float>clusterRSpread;
     vector<float>clusterZSpread;
     vector<float>clusterTimeSpread;
     vector<float>clusterEtaPhiSpread;
