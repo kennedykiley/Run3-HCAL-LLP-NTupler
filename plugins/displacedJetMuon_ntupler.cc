@@ -361,12 +361,12 @@ void displacedJetMuon_ntupler::enableElectronBranches()
   displacedJetMuonTree->Branch("ele_passCutBasedIDMedium", ele_passCutBasedIDMedium, "ele_passCutBasedIDMedium[nElectrons]/O");
   displacedJetMuonTree->Branch("ele_passCutBasedIDTight", ele_passCutBasedIDTight, "ele_passCutBasedIDTight[nElectrons]/O");
   displacedJetMuonTree->Branch("ele_passMVAIsoIDWP80", ele_passMVAIsoIDWP80, "ele_passMVAIsoIDWP80[nElectrons]/O");
-  displacedJetMuonTree->Branch("ele_passMVAIsoIDWP90", ele_passMVAIsoIDWP90, "ele_passMVAIsoIDWP90[nElectrons]/O"); 
+  displacedJetMuonTree->Branch("ele_passMVAIsoIDWP90", ele_passMVAIsoIDWP90, "ele_passMVAIsoIDWP90[nElectrons]/O");
   displacedJetMuonTree->Branch("ele_passMVAIsoIDWP9HZZ", ele_passMVAIsoIDWPHZZ, "ele_passMVAIsoIDWPHZZ[nElectrons]/O");
   displacedJetMuonTree->Branch("ele_passMVAIsoIDWPLoose", ele_passMVAIsoIDWPLoose, "ele_passMVAIsoIDWPLoose[nElectrons]/O");
   displacedJetMuonTree->Branch("ele_passMVANoIsoIDWP80", ele_passMVANoIsoIDWP80, "ele_passMVANoIsoIDWP80[nElectrons]/O");
-  displacedJetMuonTree->Branch("ele_passMVANoIsoIDWP90", ele_passMVANoIsoIDWP90, "ele_passMVANoIsoIDWP90[nElectrons]/O");  
-  displacedJetMuonTree->Branch("ele_passMVANoIsoIDWPLoose", ele_passMVANoIsoIDWPLoose, "ele_passMVANoIsoIDWPLoose[nElectrons]/O");  
+  displacedJetMuonTree->Branch("ele_passMVANoIsoIDWP90", ele_passMVANoIsoIDWP90, "ele_passMVANoIsoIDWP90[nElectrons]/O");
+  displacedJetMuonTree->Branch("ele_passMVANoIsoIDWPLoose", ele_passMVANoIsoIDWPLoose, "ele_passMVANoIsoIDWPLoose[nElectrons]/O");
 };
 
 void displacedJetMuon_ntupler::enableTauBranches()
@@ -537,6 +537,7 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("cscRechitClusterEtaSpread",             cscRechitClusterEtaSpread,             "cscRechitClusterEtaSpread[nCscRechitClusters]/F");
     displacedJetMuonTree->Branch("cscRechitClusterXSpread",             cscRechitClusterXSpread,             "cscRechitClusterXSpread[nCscRechitClusters]/F");
     displacedJetMuonTree->Branch("cscRechitClusterXYSpread",             cscRechitClusterXYSpread,             "cscRechitClusterXYSpread[nCscRechitClusters]/F");
+    displacedJetMuonTree->Branch("cscRechitClusterRSpread",             cscRechitClusterRSpread,             "cscRechitClusterRSpread[nCscRechitClusters]/F");
     displacedJetMuonTree->Branch("cscRechitClusterYSpread",             cscRechitClusterYSpread,             "cscRechitClusterYSpread[nCscRechitClusters]/F");
     displacedJetMuonTree->Branch("cscRechitClusterZSpread",             cscRechitClusterZSpread,             "cscRechitClusterZSpread[nCscRechitClusters]/F");
     displacedJetMuonTree->Branch("cscRechitClusterPhi",             cscRechitClusterPhi,             "cscRechitClusterPhi[nCscRechitClusters]/F");
@@ -708,6 +709,11 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("rpcT",rpcT,"rpcT[nRpc]/F");
     displacedJetMuonTree->Branch("rpcBx",rpcBx,"rpcBx[nRpc]/I");
     displacedJetMuonTree->Branch("rpcTError",rpcTError,"rpcTError[nRpc]/F");
+    displacedJetMuonTree->Branch("rpcRegion",rpcRegion,"rpcRegion[nRpc]/I");
+    displacedJetMuonTree->Branch("rpcRing",rpcRing,"rpcRing[nRpc]/I");
+    displacedJetMuonTree->Branch("rpcSector",rpcSector,"rpcSector[nRpc]/I");
+    displacedJetMuonTree->Branch("rpcStation",rpcStation,"rpcStation[nRpc]/I");
+    displacedJetMuonTree->Branch("rpcLayer",rpcLayer,"rpcLayer[nRpc]/I");
 
 
     displacedJetMuonTree->Branch("nDtSeg",&nDtSeg,"nDtSeg/I");
@@ -1360,7 +1366,7 @@ void displacedJetMuon_ntupler::resetElectronBranches()
     ele_passMVAIsoIDWPLoose[i] = false;
     ele_passMVANoIsoIDWP80[i] = false;
     ele_passMVANoIsoIDWP90[i] = false;
-    ele_passMVANoIsoIDWPLoose[i] = false;    
+    ele_passMVANoIsoIDWPLoose[i] = false;
     ele_passSingleEleTagFilter[i] = false;
     ele_passTPOneTagFilter[i] = false;
     ele_passTPTwoTagFilter[i] = false;
@@ -1603,6 +1609,7 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
     cscRechitClusterMinorAxis[i] = 0.0;
     cscRechitClusterXSpread[i] = 0.0;
     cscRechitClusterXYSpread[i] = 0.0;
+    cscRechitClusterRSpread[i] = 0.0;
     cscRechitClusterYSpread[i] = 0.0;
     cscRechitClusterZSpread[i] = 0.0;
     cscRechitClusterEtaPhiSpread[i] = 0.0;
@@ -1659,6 +1666,12 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
     rpcT[i] = 0.0;
     rpcBx[i] = 0;
     rpcTError[i] = 0.0;
+    rpcRing[i] = 999;
+    rpcRegion[i] = 999;
+    rpcStation[i] = 999;
+    rpcSector[i] = 999;
+    rpcLayer[i] = 999;
+
   }
 
   nDtSeg = 0;
@@ -1896,7 +1909,7 @@ void displacedJetMuon_ntupler::resetPFCandidateBranches()
     PFCandidateTrackIndex[i] = -1;
     PFCandidateGeneralTrackIndex[i] = -1;
     PFCandidatePVIndex[i] = -1;
-  } 
+  }
   return;
 };
 void displacedJetMuon_ntupler::resetHORechitBranches()
@@ -2697,6 +2710,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	cscRechitClusterMinorAxis[nCscRechitClusters] =tmp.MinorAxis;
 	cscRechitClusterXSpread[nCscRechitClusters] =tmp.XSpread;
   cscRechitClusterXYSpread[nCscRechitClusters] =tmp.XYSpread;
+  cscRechitClusterRSpread[nCscRechitClusters] =tmp.RSpread;
 	cscRechitClusterYSpread[nCscRechitClusters] =tmp.YSpread;
 	cscRechitClusterZSpread[nCscRechitClusters] =tmp.ZSpread;
 	cscRechitClusterEtaPhiSpread[nCscRechitClusters] =tmp.EtaPhiSpread;
@@ -2747,7 +2761,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	for (unsigned int j = 0; j < tmp.segment_id.size(); j++) {
 	  cscRechitsClusterId[tmp.segment_id[j]] = nCscRechitClusters;
 	}
-	
+
 	//Jet veto/ muon veto
 	cscRechitClusterJetVetoPt[nCscRechitClusters] = 0.0;
 	cscRechitClusterJetVetoE[nCscRechitClusters] = 0.0;
@@ -3161,10 +3175,15 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       rpcT[nRpc] = rpcRecHit.time();
       rpcBx[nRpc] = rpcRecHit.BunchX();
       rpcTError[nRpc] = rpcRecHit.timeError();
+      rpcRegion[nRpc] = rpcdetid.region();
+      rpcRing[nRpc] = rpcdetid.ring();
+      rpcLayer[nRpc] = rpcdetid.layer();
+      rpcStation[nRpc] = rpcdetid.station();
+      rpcSector[nRpc] = rpcdetid.sector();
       nRpc++;
       if (nRpc > OBJECTARRAYSIZE) {
-	cout << "ERROR: nRpc exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
-	assert(false);
+      	cout << "ERROR: nRpc exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
+      	assert(false);
       }
     }
   }
@@ -3210,7 +3229,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
     cout << "ERROR: nGenParticle exceeded maximum array size: " << GENPARTICLEARRAYSIZE << "\n";
     assert(false);
   }
-  
+
   bool _found_first_llp = false;
   //Look for mother particle and Fill gen variables
   for(unsigned int i = 0; i < prunedV.size(); i++) {
@@ -3625,11 +3644,11 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     //jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
     //jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
     //jetQGLikelihood[nJets]  = j.userFloat("QGLikelihood");
- 
+
     //---------------------------
     //Secondary vertex stuff
     //---------------------------
-    if (j.tagInfoLabels().size() > 0){      
+    if (j.tagInfoLabels().size() > 0){
       if(j.hasTagInfo("pfSecondaryVertex")){
 	jetNSV[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertices();
 	jetNSVCand[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexCandidates();
@@ -3651,7 +3670,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 	}
       }
     }
-    
+
     //---------------------------
     //Trackless variables
     //---------------------------
@@ -3731,14 +3750,14 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
     //---------------------------
     //Find PFCandidates Inside the Jet
-    //---------------------------    
-    for (uint q=0; q< pfCands->size(); q++) {     
+    //---------------------------
+    for (uint q=0; q< pfCands->size(); q++) {
       //const reco::PFCandidate *p = &(*pfCands)[q];
 
       reco::PFCandidatePtr p_ptr(pfCands,q);
       bool found = false;
       for (uint l=0; l < j.getPFConstituents().size(); l++) {
-	if (p_ptr == j.getPFConstituents()[l]) {	  
+	if (p_ptr == j.getPFConstituents()[l]) {
 	  found = true;
 	  break;
 	}
@@ -3749,8 +3768,8 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 	jetAllPFCandIndex[nJets][jetNPFCands[nJets]] = q;
 	jetNPFCands[nJets]++;
       }
-    }	          	    
-      
+    }
+
 
     //---------------------------
     //Find RecHits Inside the Jet
@@ -3925,14 +3944,14 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
     //---------------------------
     //Find PFCandidates Inside the Jet
-    //---------------------------    
-    for (uint q=0; q< pfCands->size(); q++) {     
+    //---------------------------
+    for (uint q=0; q< pfCands->size(); q++) {
       //const reco::PFCandidate *p = &(*pfCands)[q];
 
       reco::PFCandidatePtr p_ptr(pfCands,q);
       bool found = false;
       for (uint l=0; l < j.getPFConstituents().size(); l++) {
-	if (p_ptr == j.getPFConstituents()[l]) {	  
+	if (p_ptr == j.getPFConstituents()[l]) {
 	  found = true;
 	  break;
 	}
@@ -3943,8 +3962,8 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 	fatJetAllPFCandIndex[nFatJets][fatJetNPFCands[nFatJets]] = q;
 	fatJetNPFCands[nFatJets]++;
       }
-    }	          	    
-      
+    }
+
 
     for (uint q=0; q<ebRecHits->size(); q++) {
       const EcalRecHit *recHit = &(*ebRecHits)[q];
@@ -4174,7 +4193,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
   //********************************************************
   // Save PF Candidates inside Jets and AK8 Jets
   //********************************************************
-  for (uint q=0; q< pfCands->size(); q++) {     
+  for (uint q=0; q< pfCands->size(); q++) {
     if (SaveThisPFCandidate[q]) {
       const reco::PFCandidate *p = &(*pfCands)[q];
 
@@ -4188,25 +4207,25 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       //find the matching PV
       const reco::VertexRef &PVOrig = (*primaryVertexAssociation)[reco::CandidatePtr(pfCands,q)];
       if(PVOrig.isNonnull()) {
-	
+
 	int matchedPVIndex = -1;
 	for (int ipv = 0; ipv < nPVAll; ++ipv) {
 	  const reco::VertexRef vtxRef(vertices,ipv);
 	  if (PVOrig.id() == vtxRef.id() && PVOrig.key() == vtxRef.key()) {
 	    matchedPVIndex = ipv;
 	    break;
-	  }	  
+	  }
 	}
-	
+
 	// if (matchedPVIndex>=0) {
-	//   cout << "PFCandidate " << q << " : " << matchedPVIndex << " --> " << pvAllX[matchedPVIndex] << " " << pvAllY[matchedPVIndex] << " " << pvAllZ[matchedPVIndex] << " | " 
-	//        << PVOrig->x() << " " << PVOrig->y() << " " << PVOrig->z() << " "  
+	//   cout << "PFCandidate " << q << " : " << matchedPVIndex << " --> " << pvAllX[matchedPVIndex] << " " << pvAllY[matchedPVIndex] << " " << pvAllZ[matchedPVIndex] << " | "
+	//        << PVOrig->x() << " " << PVOrig->y() << " " << PVOrig->z() << " "
 	//        << " \n";
 	// }
 
 	PFCandidatePVIndex[nPFCandidates] = matchedPVIndex;
       }
-      
+
       //find track ref
       if (p->trackRef().isNonnull()) {
 	for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
@@ -4214,13 +4233,13 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 	  reco::TrackBaseRef pTrackRef(p->trackRef());
 	  //cout << "Track " << p->trackRef().id() << " " << p->trackRef().key() << " | " << pTrackRef.id() << " " << pTrackRef.key() << " | " << iTrack << " " << tref.id() << " " << tref.key() << " \n";
 	  if (pTrackRef.id() == tref.id() && pTrackRef.key() == tref.key() ) {
-	    //cout << "found track match: " << p->trackRef()->pt() << " " << p->trackRef()->eta() << " " << p->trackRef()->phi() << " | " 
+	    //cout << "found track match: " << p->trackRef()->pt() << " " << p->trackRef()->eta() << " " << p->trackRef()->phi() << " | "
 	    //	 << tref->pt() << " " << tref->eta() << " " << tref->phi() << " "
 	    //	 << "\n";
 	    SaveThisTrack[iTrack] = true;
 	    PFCandidateGeneralTrackIndex[nPFCandidates] = iTrack;
 	    break;
-	  }	  
+	  }
 	}
       }
       PFCandToSavedPFCandMap[q] = nPFCandidates;
@@ -4230,7 +4249,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 	assert(false);
       }
     }
-  }	  
+  }
 
 
   //********************************************************
@@ -4289,7 +4308,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       track_dzErr[nTracks] = tref->dzError();
       track_charge[nTracks] = tref->charge();
       track_chi2[nTracks] = tref->chi2();
-      track_ndof[nTracks] = tref->ndof();         
+      track_ndof[nTracks] = tref->ndof();
 
       //********************************************************
       // For track angle
@@ -4354,7 +4373,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       }
     }
   }
-  
+
 
 
 
@@ -4366,9 +4385,9 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       if (PFCandidateGeneralTrackIndex[q] >= 0) {
 	PFCandidateTrackIndex[q] = TrackToSavedTrackMap[PFCandidateGeneralTrackIndex[q]];
       }
-    }	          	        
+    }
   }
-      
+
   return true;
 };
 
@@ -4830,8 +4849,8 @@ bool displacedJetMuon_ntupler::fillMet(const edm::Event& iEvent)
   sumMET = Met.sumEt();
   // metUncorrectedPt = Met.uncorPt();
   // metUncorrectedPhi = Met.uncorPhi();
-  metType1Pt = Met.pt(); 
-  metType1Phi = Met.phi(); 
+  metType1Pt = Met.pt();
+  metType1Phi = Met.phi();
 
   iEvent.getByToken(globalSuperTightHalo2016FilterToken_, globalSuperTightHalo2016Filter);
   iEvent.getByToken(globalTightHalo2016FilterToken_, globalTightHalo2016Filter);
@@ -5143,7 +5162,7 @@ bool displacedJetMuon_ntupler::fillElectrons(const edm::Event& iEvent)
     ele_passMVANoIsoIDWP80[nElectrons] = (*electron_mvaNoIsoID_decisions_wp80)[eleRef];
     ele_passMVANoIsoIDWP90[nElectrons] = (*electron_mvaNoIsoID_decisions_wp90)[eleRef];
     ele_passMVANoIsoIDWPLoose[nElectrons] = (*electron_mvaNoIsoID_decisions_wpLoose)[eleRef];
- 
+
     //---------------
     //Conversion Veto
     //---------------
@@ -5258,7 +5277,7 @@ bool displacedJetMuon_ntupler::fillPhotons(const edm::Event& iEvent, const edm::
   for (uint i=0; i < photons->size() ; i++) {
     const reco::Photon pho = (*photons)[i];
     reco::PhotonRef phoRef(photons, i);
-   
+
     if (pho.pt() < 20) continue;
     std::vector<float> vCov = lazyToolnoZS->localCovariances( *(pho.superCluster()->seed()) );
     //-------------------------------------------------

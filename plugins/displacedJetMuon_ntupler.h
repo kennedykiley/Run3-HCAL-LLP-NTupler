@@ -353,7 +353,7 @@ protected:
   edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;
   edm::EDGetTokenT<reco::GenMETCollection> genMetCaloToken_;
   edm::EDGetTokenT<reco::GenMETCollection> genMetTrueToken_;
-  //edm::EDGetTokenT<reco::PFMETCollection> metToken_;
+  edm::EDGetTokenT<reco::PFMETCollection> metToken_;
   edm::EDGetTokenT<pat::METCollection> metToken_;
   edm::EDGetTokenT<reco::PFMETCollection> metNoHFToken_;
   edm::EDGetTokenT<reco::PFMETCollection> metPuppiToken_;
@@ -830,7 +830,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  int   track_nMissingInnerHits[RECHITARRAYSIZE];
  int   track_nMissingOuterHits[RECHITARRAYSIZE];
  int   track_nPixelHits[RECHITARRAYSIZE];
- int   track_nHits[RECHITARRAYSIZE]; 
+ int   track_nHits[RECHITARRAYSIZE];
  float track_angle[RECHITARRAYSIZE];
  float track_dxyToBS[RECHITARRAYSIZE];
  float track_dxyErr[RECHITARRAYSIZE];
@@ -995,6 +995,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float         cscRechitClusterMinorAxis[OBJECTARRAYSIZE];
   float         cscRechitClusterXSpread[OBJECTARRAYSIZE];
   float         cscRechitClusterXYSpread[OBJECTARRAYSIZE];
+  float         cscRechitClusterRSpread[OBJECTARRAYSIZE];
   float         cscRechitClusterYSpread[OBJECTARRAYSIZE];
   float         cscRechitClusterZSpread[OBJECTARRAYSIZE];
   float         cscRechitClusterEtaPhiSpread[OBJECTARRAYSIZE];
@@ -1054,6 +1055,11 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float rpcT[OBJECTARRAYSIZE];
   int rpcBx[OBJECTARRAYSIZE];
   float rpcTError[OBJECTARRAYSIZE];
+  int rpcRing[OBJECTARRAYSIZE];
+  int rpcRegion[OBJECTARRAYSIZE];
+  int rpcStation[OBJECTARRAYSIZE];
+  int rpcSector[OBJECTARRAYSIZE];
+  int rpcLayer[OBJECTARRAYSIZE];
 
 
   int nDtRechits;

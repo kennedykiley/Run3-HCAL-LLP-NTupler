@@ -113,7 +113,7 @@ int DBSCAN::clusterMoments()
   for(int i = 0; i < nClusters; i++)
   {
     float m11(0.0), m12(0.0), m22(0.0);
-    float XSpread(0.0), YSpread(0.0), ZSpread(0.0), TSpread(0.0), XYSpread(0.0);
+    float XSpread(0.0), YSpread(0.0), ZSpread(0.0), TSpread(0.0), XYSpread(0.0), RSpread(0.0);
     vector<Point>::iterator iter;
     for(iter = m_points.begin(); iter != m_points.end(); ++iter)
     {
@@ -132,6 +132,10 @@ int DBSCAN::clusterMoments()
           m12 += (iter->eta-clusterEta[i])* deltaPhi(iter->phi,clusterPhi[i]);
           m22 += deltaPhi(iter->phi,clusterPhi[i])*deltaPhi(iter->phi,clusterPhi[i]);
           XYSpread += (iter->x - clusterX[i])*(iter->y - clusterY[i]);
+          double radius = sqrt(iter->x*iter->x + iter->y * iter->y);
+          double centroid_r = sqrt(clusterX[i]*clusterX[i]+ clusterY[i]*clusterY[i]);
+          RSpread += (radius - centroid_r) * (radius - centroid_r);
+
           XSpread += (iter->x - clusterX[i]) * (iter->x - clusterX[i]);
           YSpread += (iter->y - clusterY[i]) * (iter->y - clusterY[i]);
           ZSpread += (iter->z - clusterZ[i]) * (iter->z - clusterZ[i]);
@@ -145,6 +149,7 @@ int DBSCAN::clusterMoments()
     clusterYSpread.push_back(sqrt(YSpread/(float)clusterSize[i]));
     clusterZSpread.push_back(sqrt(ZSpread/(float)clusterSize[i]));
     clusterXYSpread.push_back(sqrt(abs(XYSpread)/(float)clusterSize[i]));
+    clusterRSpread.push_back(sqrt(abs(RSpread)/(float)clusterSize[i]));
     clusterTimeSpread.push_back(sqrt(TSpread/(float)clusterSize[i]));
     clusterEtaSpread.push_back(sqrt(m11/clusterSize[i]));
     clusterEtaPhiSpread.push_back(sqrt(abs(m12)/clusterSize[i]));
@@ -236,6 +241,7 @@ void DBSCAN::sort_clusters()
     tmpCluster.MinorAxis = clusterMinorAxis[i];
     tmpCluster.XSpread = clusterXSpread[i];
     tmpCluster.XYSpread = clusterXYSpread[i];
+    tmpCluster.RSpread = clusterRSpread[i];
     tmpCluster.YSpread = clusterYSpread[i];
     tmpCluster.ZSpread = clusterZSpread[i];
     tmpCluster.TSpread = clusterTimeSpread[i];
@@ -506,8 +512,8 @@ vector<int> DBSCAN::calculateCluster(Point point)
 inline double DBSCAN::calculateDistance( Point pointCore, Point pointTarget )
 {
     // return sqrt(pow(pointCore.x - pointTarget.x,2)+pow(pointCore.y - pointTarget.y,2)+pow(pointCore.z - pointTarget.z,2));
-    // return sqrt(pow(pointCore.eta - pointTarget.eta,2)+pow(deltaPhi(pointCore.phi, pointTarget.phi),2));
-    return sqrt(pow(pointCore.eta - pointTarget.eta,2)+pow(deltaPhi(pointCore.phi, pointTarget.phi),2)+pow((pointCore.t - pointTarget.t)/100.0,2));
+    return sqrt(pow(pointCore.eta - pointTarget.eta,2)+pow(deltaPhi(pointCore.phi, pointTarget.phi),2));
+    // return sqrt(pow(pointCore.eta - pointTarget.eta,2)+pow(deltaPhi(pointCore.phi, pointTarget.phi),2)+pow((pointCore.t - pointTarget.t)/100.0,2));
 
 }
 double DBSCAN::deltaPhi(double phi1, double phi2)
