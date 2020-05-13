@@ -353,7 +353,6 @@ protected:
   edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;
   edm::EDGetTokenT<reco::GenMETCollection> genMetCaloToken_;
   edm::EDGetTokenT<reco::GenMETCollection> genMetTrueToken_;
-  edm::EDGetTokenT<reco::PFMETCollection> metToken_;
   edm::EDGetTokenT<pat::METCollection> metToken_;
   edm::EDGetTokenT<reco::PFMETCollection> metNoHFToken_;
   edm::EDGetTokenT<reco::PFMETCollection> metPuppiToken_;
