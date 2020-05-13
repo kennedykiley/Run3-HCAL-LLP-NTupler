@@ -1131,10 +1131,11 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
       iEvent.getByToken(MuonCSCStripDigiSimLinksToken_, MuonCSCStripDigiSimLinks);
       iEvent.getByToken(MuonCSCWireDigiSimLinksToken_, MuonCSCWireDigiSimLinks);
     }
-  }
-  if (readMuonDigis_) {
-    iEvent.getByToken(MuonCSCStripDigiToken_, MuonCSCStripDigi);
-    iEvent.getByToken(MuonCSCWireDigiToken_, MuonCSCWireDigi);
+  } else {
+    if (readMuonDigis_) {
+      iEvent.getByToken(MuonCSCStripDigiToken_, MuonCSCStripDigi);
+      iEvent.getByToken(MuonCSCWireDigiToken_, MuonCSCWireDigi);
+    }
   }
 
   iEvent.getByToken(tracksTag_,tracks);
@@ -2296,7 +2297,6 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
   NEvents->Fill(0); //increment event count
 
   //resetting output tree branches
-
   resetBranches();
   fillEventInfo(iEvent);
   fillPVAll();
@@ -2312,9 +2312,9 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
     fillMC();
     fillGenParticles();
   }
-  //fillHOSystem(iEvent,iSetup);
   fillMuonSystem(iEvent, iSetup);
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
+
   displacedJetMuonTree->Fill();
 
 };
