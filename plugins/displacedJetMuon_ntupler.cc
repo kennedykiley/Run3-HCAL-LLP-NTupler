@@ -3598,319 +3598,323 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
   }
 
   for (const pat::Jet &j : *jets) {
-    if (j.pt() < 20) continue;
+    if (j.pt() < 10) continue;
     //if (fabs(j.eta()) > 2.4) continue;
 
-     //-------------------
-    //Fill Jet-Level Info
     //-------------------
+    //Fill Jet-Level Info
+    //-------------------          
     jetE[nJets] = j.energy();
     jetPt[nJets] = j.pt();
     jetEta[nJets] = j.eta();
     jetPhi[nJets] = j.phi();
-    jetMass[nJets] = j.mass();
+    
+    //only fill more detailed information for jets with pT >= 20
+    if (j.pt() >= 20) {
+      jetMass[nJets] = j.mass();
 
-    TLorentzVector thisJet;
-    thisJet.SetPtEtaPhiE(jetPt[nJets], jetEta[nJets], jetPhi[nJets], jetE[nJets]);
+      TLorentzVector thisJet;
+      thisJet.SetPtEtaPhiE(jetPt[nJets], jetEta[nJets], jetPhi[nJets], jetE[nJets]);
 
-    jetJetArea[nJets] = j.jetArea();
-    jetPileupE[nJets] = j.pileup();
-    jetPileupId[nJets] = j.userFloat("pileupJetId:fullDiscriminant");
-    jetPileupIdFlag[nJets] = j.userInt("pileupJetId:fullId"); //A bit map for loose, medium, and tight working points
-    jetPassIDLoose[nJets] = passJetID(&j, 0);
-    jetPassIDTight[nJets] = passJetID(&j, 1);
-    jetPassMuFrac[nJets]  = ( j.muonEnergyFraction() < 0.80 );
-    jetPassEleFrac[nJets]  = ( j.electronEnergyFraction() < 0.90 );
+      jetJetArea[nJets] = j.jetArea();
+      jetPileupE[nJets] = j.pileup();
+      jetPileupId[nJets] = j.userFloat("pileupJetId:fullDiscriminant");
+      jetPileupIdFlag[nJets] = j.userInt("pileupJetId:fullId"); //A bit map for loose, medium, and tight working points
+      jetPassIDLoose[nJets] = passJetID(&j, 0);
+      jetPassIDTight[nJets] = passJetID(&j, 1);
+      jetPassMuFrac[nJets]  = ( j.muonEnergyFraction() < 0.80 );
+      jetPassEleFrac[nJets]  = ( j.electronEnergyFraction() < 0.90 );
 
 
-    if (!isData_) {
-      jetPartonFlavor[nJets] = j.partonFlavour();
-      jetHadronFlavor[nJets] = j.hadronFlavour();
-    }
-
-    jetElectronEnergyFraction[nJets] = j.electronEnergyFraction();
-    jetPhotonEnergyFraction[nJets] = j.neutralEmEnergyFraction();
-    jetChargedHadronEnergyFraction[nJets] = j.chargedHadronEnergyFraction();
-    jetNeutralHadronEnergyFraction[nJets] = j.neutralHadronEnergyFraction();
-    jetMuonEnergyFraction[nJets] = j.muonEnergyFraction();
-
-    jetChargedHadronMultiplicity[nJets] = j.chargedHadronMultiplicity();
-    jetNeutralHadronMultiplicity[nJets] = j.neutralHadronMultiplicity();
-    jetPhotonMultiplicity[nJets] = j.photonMultiplicity();
-    jetElectronMultiplicity[nJets] = j.electronMultiplicity();
-    jetMuonMultiplicity[nJets] = j.muonMultiplicity();
-    //jet_HF_hadron_multiplicity[nJets] = j.HFHadronMultiplicity();
-    //jet_HF_em_multiplicity[nJets] = j.HFEMMultiplicity();
-    //jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
-    //jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
-    //jetQGLikelihood[nJets]  = j.userFloat("QGLikelihood");
-
-    //---------------------------
-    //Secondary vertex stuff
-    //---------------------------
-    if (j.tagInfoLabels().size() > 0){
-      if(j.hasTagInfo("pfSecondaryVertex")){
-	jetNSV[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertices();
-	jetNSVCand[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexCandidates();
-	jetNVertexTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks();
-	jetNSelectedTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nSelectedTracks();
-	if (j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->taggingVariables().getList(reco::btau::vertexJetDeltaR,false).size() > 0) {
-	  jetDRSVJet[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->taggingVariables().getList(reco::btau::vertexJetDeltaR,false)[0];
-	}
-	if(j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertices() > 0) {
-	  jetFlightDist2D[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, true).value();
-	  jetFlightDist2DError[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, true).error();
-	  jetFlightDist3D[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, false).value();
-	  jetFlightDist3DError[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, false).error();
-	  jetSV_x[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vx();
-	  jetSV_y[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vy();
-	  jetSV_z[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vz();
-	  jetSVNTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks(0);
-	  jetSVMass[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).mass();
-	}
+      if (!isData_) {
+	jetPartonFlavor[nJets] = j.partonFlavour();
+	jetHadronFlavor[nJets] = j.hadronFlavour();
       }
-    }
 
-    //---------------------------
-    //Trackless variables
-    //---------------------------
-    float alphaMax(0.0),medianTheta2D(0.0),medianIP(0.0),minDeltaRAllTracks(0.0),minDeltaRPVTracks(0.0),ptAllTracks(0.0), ptAllPVTracks(0.0);
-    int nTracksPV(0);
+      jetElectronEnergyFraction[nJets] = j.electronEnergyFraction();
+      jetPhotonEnergyFraction[nJets] = j.neutralEmEnergyFraction();
+      jetChargedHadronEnergyFraction[nJets] = j.chargedHadronEnergyFraction();
+      jetNeutralHadronEnergyFraction[nJets] = j.neutralHadronEnergyFraction();
+      jetMuonEnergyFraction[nJets] = j.muonEnergyFraction();
 
-    findTrackingVariables(thisJet,iSetup,alphaMax,medianTheta2D,medianIP,nTracksPV,ptAllPVTracks,ptAllTracks, minDeltaRAllTracks, minDeltaRPVTracks);
+      jetChargedHadronMultiplicity[nJets] = j.chargedHadronMultiplicity();
+      jetNeutralHadronMultiplicity[nJets] = j.neutralHadronMultiplicity();
+      jetPhotonMultiplicity[nJets] = j.photonMultiplicity();
+      jetElectronMultiplicity[nJets] = j.electronMultiplicity();
+      jetMuonMultiplicity[nJets] = j.muonMultiplicity();
+      //jet_HF_hadron_multiplicity[nJets] = j.HFHadronMultiplicity();
+      //jet_HF_em_multiplicity[nJets] = j.HFEMMultiplicity();
+      //jet_charged_multiplicity[nJets] = j.chargedMultiplicity();
+      //jet_neutral_multiplicity[nJets] = j.neutralMultiplicity();
+      //jetQGLikelihood[nJets]  = j.userFloat("QGLikelihood");
 
-    float alphaMax_wp(0.0),medianTheta2D_wp(0.0),medianIP_wp(0.0),minDeltaRAllTracks_wp(0.0),minDeltaRPVTracks_wp(0.0),ptAllTracks_wp(0.0), ptAllPVTracks_wp(0.0);
-    int nTracksPV_wp(0);
-    findTrackingVariablesWithoutPropagator(thisJet,iSetup,alphaMax_wp,medianTheta2D_wp,medianIP_wp,nTracksPV_wp,ptAllPVTracks_wp,ptAllTracks_wp, minDeltaRAllTracks_wp, minDeltaRPVTracks_wp);
-
-    jetCISV[nJets] = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-    jetCMVA[nJets] = j.bDiscriminator("pfCombinedMVAV2BJetTags");
-    jetAlphaMax[nJets] = alphaMax;
-    jetBetaMax[nJets] = alphaMax * ptAllTracks/(j.pt());
-    jetGammaMax[nJets] = alphaMax * ptAllTracks/(j.energy());
-    jetGammaMax_EM[nJets] = alphaMax * ptAllTracks/(j.energy()*(j.chargedEmEnergyFraction()+j.neutralEmEnergyFraction()));
-    jetGammaMax_Hadronic[nJets] = alphaMax * ptAllTracks/(j.energy()*(j.chargedHadronEnergyFraction()+j.neutralHadronEnergyFraction()));
-    jetGammaMax_ET[nJets] = alphaMax * ptAllTracks/j.et();
-    jetMedianTheta2D[nJets] = medianTheta2D;
-    jetMedianIP[nJets] = medianIP;
-    jetPtAllPVTracks[nJets] = ptAllPVTracks;
-    jetPtAllTracks[nJets] = ptAllTracks;
-    jetMinDeltaRAllTracks[nJets] = minDeltaRAllTracks;
-    jetMinDeltaRPVTracks[nJets] = minDeltaRPVTracks;
-
-    jetAlphaMax_wp[nJets] = alphaMax_wp;
-    jetBetaMax_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.pt());
-    jetGammaMax_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.energy());
-    jetGammaMax_EM_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.energy()*(j.chargedEmEnergyFraction()+j.neutralEmEnergyFraction()));
-    jetGammaMax_Hadronic_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.energy()*(j.chargedHadronEnergyFraction()+j.neutralHadronEnergyFraction()));
-    jetGammaMax_ET_wp[nJets] = alphaMax_wp * ptAllTracks_wp/j.et();
-    jetMedianTheta2D_wp[nJets] = medianTheta2D_wp;
-    jetMedianIP_wp[nJets] = medianIP_wp;
-    jetPtAllPVTracks_wp[nJets] = ptAllPVTracks_wp;
-    jetPtAllTracks_wp[nJets] = ptAllTracks_wp;
-    jetMinDeltaRAllTracks_wp[nJets] = minDeltaRAllTracks_wp;
-    jetMinDeltaRPVTracks_wp[nJets] = minDeltaRPVTracks_wp;
-
-     //---------------------------
-    //find photons inside the jet
-    //---------------------------
-    /*
-    for (const reco::Photon &pho : *photons) {
-      //cout << "Nphoton: " << fJetNPhotons << "\n";
-
-      if (!(deltaR(pho.eta(), pho.phi() , j.eta(), j.phi()) < 0.5)) continue;
-
-
-      fJetPhotonPt[fJetNPhotons]  = pho.pt();
-      fJetPhotonEta[fJetNPhotons] = pho.eta(); //correct this for the vertex
-      fJetPhotonPhi[fJetNPhotons] = pho.phi(); //correct this for the vertex
-
-      fJetPhotonSeedRecHitE[fJetNPhotons]      = pho.superCluster()->seed()->x();
-      fJetPhotonSeedRecHitEta[fJetNPhotons]      = pho.superCluster()->seed()->y();
-      fJetPhotonSeedRecHitPhi[fJetNPhotons]      = pho.superCluster()->seed()->z();
-      fJetPhotonSeedRecHitTime[fJetNPhotons]      = pho.superCluster()->seed()->energy();
-
-      // //get time coordinate for the seed
-      // for (const reco::PFCluster &pfcluster : *pfClusters) {
-      // 	if(pfcluster.seed() == pho.superCluster()->seed()->seed())
-      // 	  {
-      // 	    pho_superClusterSeedT[fJetNPhotons] = pfcluster.time();
-      // 	    pho_pfClusterSeedE[fJetNPhotons]      = pfcluster.energy();
-      // 	  }
-      // }
-
-      //-------------------------------
-      //fill all rechits inside photons
-      //-------------------------------
-
-      fJetNPhotons++;
-
-    }
-    */
-
-    //---------------------------
-    //Find PFCandidates Inside the Jet
-    //---------------------------
-    for (uint q=0; q< pfCands->size(); q++) {
-      //const reco::PFCandidate *p = &(*pfCands)[q];
-
-      reco::PFCandidatePtr p_ptr(pfCands,q);
-      bool found = false;
-      for (uint l=0; l < j.getPFConstituents().size(); l++) {
-	if (p_ptr == j.getPFConstituents()[l]) {
-	  found = true;
-	  break;
+      //---------------------------
+      //Secondary vertex stuff
+      //---------------------------
+      if (j.tagInfoLabels().size() > 0){
+	if(j.hasTagInfo("pfSecondaryVertex")){
+	  jetNSV[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertices();
+	  jetNSVCand[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexCandidates();
+	  jetNVertexTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks();
+	  jetNSelectedTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nSelectedTracks();
+	  if (j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->taggingVariables().getList(reco::btau::vertexJetDeltaR,false).size() > 0) {
+	    jetDRSVJet[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->taggingVariables().getList(reco::btau::vertexJetDeltaR,false)[0];
+	  }
+	  if(j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertices() > 0) {
+	    jetFlightDist2D[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, true).value();
+	    jetFlightDist2DError[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, true).error();
+	    jetFlightDist3D[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, false).value();
+	    jetFlightDist3DError[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->flightDistance(0, false).error();
+	    jetSV_x[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vx();
+	    jetSV_y[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vy();
+	    jetSV_z[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).vz();
+	    jetSVNTracks[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks(0);
+	    jetSVMass[nJets] = j.tagInfoCandSecondaryVertex("pfSecondaryVertex")->secondaryVertex(0).mass();
+	  }
 	}
       }
 
-      if (found) {
-	SaveThisPFCandidate[q] = true;
-	jetAllPFCandIndex[nJets][jetNPFCands[nJets]] = q;
-	jetNPFCands[nJets]++;
+      //---------------------------
+      //Trackless variables
+      //---------------------------
+      float alphaMax(0.0),medianTheta2D(0.0),medianIP(0.0),minDeltaRAllTracks(0.0),minDeltaRPVTracks(0.0),ptAllTracks(0.0), ptAllPVTracks(0.0);
+      int nTracksPV(0);
+
+      findTrackingVariables(thisJet,iSetup,alphaMax,medianTheta2D,medianIP,nTracksPV,ptAllPVTracks,ptAllTracks, minDeltaRAllTracks, minDeltaRPVTracks);
+
+      float alphaMax_wp(0.0),medianTheta2D_wp(0.0),medianIP_wp(0.0),minDeltaRAllTracks_wp(0.0),minDeltaRPVTracks_wp(0.0),ptAllTracks_wp(0.0), ptAllPVTracks_wp(0.0);
+      int nTracksPV_wp(0);
+      findTrackingVariablesWithoutPropagator(thisJet,iSetup,alphaMax_wp,medianTheta2D_wp,medianIP_wp,nTracksPV_wp,ptAllPVTracks_wp,ptAllTracks_wp, minDeltaRAllTracks_wp, minDeltaRPVTracks_wp);
+
+      jetCISV[nJets] = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+      jetCMVA[nJets] = j.bDiscriminator("pfCombinedMVAV2BJetTags");
+      jetAlphaMax[nJets] = alphaMax;
+      jetBetaMax[nJets] = alphaMax * ptAllTracks/(j.pt());
+      jetGammaMax[nJets] = alphaMax * ptAllTracks/(j.energy());
+      jetGammaMax_EM[nJets] = alphaMax * ptAllTracks/(j.energy()*(j.chargedEmEnergyFraction()+j.neutralEmEnergyFraction()));
+      jetGammaMax_Hadronic[nJets] = alphaMax * ptAllTracks/(j.energy()*(j.chargedHadronEnergyFraction()+j.neutralHadronEnergyFraction()));
+      jetGammaMax_ET[nJets] = alphaMax * ptAllTracks/j.et();
+      jetMedianTheta2D[nJets] = medianTheta2D;
+      jetMedianIP[nJets] = medianIP;
+      jetPtAllPVTracks[nJets] = ptAllPVTracks;
+      jetPtAllTracks[nJets] = ptAllTracks;
+      jetMinDeltaRAllTracks[nJets] = minDeltaRAllTracks;
+      jetMinDeltaRPVTracks[nJets] = minDeltaRPVTracks;
+
+      jetAlphaMax_wp[nJets] = alphaMax_wp;
+      jetBetaMax_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.pt());
+      jetGammaMax_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.energy());
+      jetGammaMax_EM_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.energy()*(j.chargedEmEnergyFraction()+j.neutralEmEnergyFraction()));
+      jetGammaMax_Hadronic_wp[nJets] = alphaMax_wp * ptAllTracks_wp/(j.energy()*(j.chargedHadronEnergyFraction()+j.neutralHadronEnergyFraction()));
+      jetGammaMax_ET_wp[nJets] = alphaMax_wp * ptAllTracks_wp/j.et();
+      jetMedianTheta2D_wp[nJets] = medianTheta2D_wp;
+      jetMedianIP_wp[nJets] = medianIP_wp;
+      jetPtAllPVTracks_wp[nJets] = ptAllPVTracks_wp;
+      jetPtAllTracks_wp[nJets] = ptAllTracks_wp;
+      jetMinDeltaRAllTracks_wp[nJets] = minDeltaRAllTracks_wp;
+      jetMinDeltaRPVTracks_wp[nJets] = minDeltaRPVTracks_wp;
+
+      //---------------------------
+      //find photons inside the jet
+      //---------------------------
+      /*
+	for (const reco::Photon &pho : *photons) {
+	//cout << "Nphoton: " << fJetNPhotons << "\n";
+
+	if (!(deltaR(pho.eta(), pho.phi() , j.eta(), j.phi()) < 0.5)) continue;
+
+
+	fJetPhotonPt[fJetNPhotons]  = pho.pt();
+	fJetPhotonEta[fJetNPhotons] = pho.eta(); //correct this for the vertex
+	fJetPhotonPhi[fJetNPhotons] = pho.phi(); //correct this for the vertex
+
+	fJetPhotonSeedRecHitE[fJetNPhotons]      = pho.superCluster()->seed()->x();
+	fJetPhotonSeedRecHitEta[fJetNPhotons]      = pho.superCluster()->seed()->y();
+	fJetPhotonSeedRecHitPhi[fJetNPhotons]      = pho.superCluster()->seed()->z();
+	fJetPhotonSeedRecHitTime[fJetNPhotons]      = pho.superCluster()->seed()->energy();
+
+	// //get time coordinate for the seed
+	// for (const reco::PFCluster &pfcluster : *pfClusters) {
+	// 	if(pfcluster.seed() == pho.superCluster()->seed()->seed())
+	// 	  {
+	// 	    pho_superClusterSeedT[fJetNPhotons] = pfcluster.time();
+	// 	    pho_pfClusterSeedE[fJetNPhotons]      = pfcluster.energy();
+	// 	  }
+	// }
+
+	//-------------------------------
+	//fill all rechits inside photons
+	//-------------------------------
+
+	fJetNPhotons++;
+
+	}
+      */
+
+      //---------------------------
+      //Find PFCandidates Inside the Jet
+      //---------------------------
+      for (uint q=0; q< pfCands->size(); q++) {
+	//const reco::PFCandidate *p = &(*pfCands)[q];
+
+	reco::PFCandidatePtr p_ptr(pfCands,q);
+	bool found = false;
+	for (uint l=0; l < j.getPFConstituents().size(); l++) {
+	  if (p_ptr == j.getPFConstituents()[l]) {
+	    found = true;
+	    break;
+	  }
+	}
+
+	if (found) {
+	  SaveThisPFCandidate[q] = true;
+	  jetAllPFCandIndex[nJets][jetNPFCands[nJets]] = q;
+	  jetNPFCands[nJets]++;
+	}
       }
-    }
 
 
-    //---------------------------
-    //Find RecHits Inside the Jet
-    //---------------------------
-    // geometry (from ECAL ELF)
+      //---------------------------
+      //Find RecHits Inside the Jet
+      //---------------------------
+      // geometry (from ECAL ELF)
 
-    //double ecal_radius = 129.0;
-    int n_matched_rechits = 0;
-    std::vector<double> rechitphi;
-    std::vector<double> rechiteta;
-    std::vector<double> rechitet;
-    std::vector<double> rechitt;
+      //double ecal_radius = 129.0;
+      int n_matched_rechits = 0;
+      std::vector<double> rechitphi;
+      std::vector<double> rechiteta;
+      std::vector<double> rechitet;
+      std::vector<double> rechitt;
 
-    for (uint q=0; q<ebRecHits->size(); q++) {
-    // for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit) {
-      const EcalRecHit *recHit = &(*ebRecHits)[q];
-      const DetId recHitId = recHit->detid();
-      const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
+      for (uint q=0; q<ebRecHits->size(); q++) {
+	// for (EcalRecHitCollection::const_iterator recHit = ebRecHits->begin(); recHit != ebRecHits->end(); ++recHit) {
+	const EcalRecHit *recHit = &(*ebRecHits)[q];
+	const DetId recHitId = recHit->detid();
+	const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
 
-      //save the rechits that are within DR 0.5 of the jet axis
-      if ( jetPt[nJets] > 30 &&
-	   deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.5
-	   && recHit->energy() > 0.2
-	  ) {
-	SaveThisEBRechit[q] = true;
-	//cout << "Save this Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
+	//save the rechits that are within DR 0.5 of the jet axis
+	if ( jetPt[nJets] > 30 &&
+	     deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.5
+	     && recHit->energy() > 0.2
+	     ) {
+	  SaveThisEBRechit[q] = true;
+	  //cout << "Save this Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
+	}
+
+	if (recHit->checkFlag(EcalRecHit::kSaturated) || recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit->checkFlag(EcalRecHit::kPoorReco) || recHit->checkFlag(EcalRecHit::kWeird) || recHit->checkFlag(EcalRecHit::kDiWeird)) continue;
+	if (recHit->timeError() < 0 || recHit->timeError() > 100) continue;
+	if (abs(recHit->time()) > 12.5) continue;
+
+	//Calculate jet timestamps
+	if ( jetPt[nJets] > 30 && deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.4) {
+	  //double rechit_x = ecal_radius * cos(recHitPos.phi());
+	  //double rechit_y = ecal_radius * sin(recHitPos.phi());
+	  //double rechit_z = ecal_radius * sinh(recHitPos.eta());
+	  //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
+	  if ( deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.15) {
+	    if (recHit->energy() > Rechit_cut) jet_energy_frac[nJets] += recHit->energy();
+	  }
+
+	  if (recHit->energy() > Rechit_cut) {
+	    // jetRechitT_Error[nJets] += 0.0;
+	    jetRechitE_Error[nJets] += recHit->energyError() * recHit->energyError();
+	    jetRechitE[nJets] += recHit->energy();
+	    jetRechitT[nJets] += recHit->time()*recHit->energy();
+	    jetRechitT_rms[nJets] += recHit->time()*recHit->time();
+	    rechitphi.push_back(recHitPos.phi());
+	    rechiteta.push_back(recHitPos.eta());
+	    rechitet.push_back(recHit->energy()/cosh(recHitPos.eta()));
+	    rechitt.push_back(recHit->time());
+	    n_matched_rechits++;
+	  }
+	}
+      }//loop over EB rechits
+
+      for (uint q=0; q<eeRecHits->size(); q++) {
+	const EcalRecHit *recHit = &(*eeRecHits)[q];
+	const DetId recHitId = recHit->detid();
+	const auto recHitPos = endcapGeometry->getGeometry(recHitId)->getPosition();
+
+	//save the rechits that are within DR 0.5 of the jet axis
+	if ( jetPt[nJets] > 30 &&
+	     deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.5
+	     && recHit->energy() > 0.2
+	     ) {
+	  SaveThisEERechit[q] = true;
+	  //cout << "Save this Rechit: " << q << " | " << SaveThisEERechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
+	}
+      }//loop over EE rechits
+
+      jetRechitT[nJets] = jetRechitT[nJets]/jetRechitE[nJets];
+      jetNRechits[nJets] = n_matched_rechits;
+      jetRechitE_Error[nJets] = sqrt(jetRechitE_Error[nJets]);
+      jetRechitT_rms[nJets] = sqrt(jetRechitT_rms[nJets]);
+      double sig1(0.0),sig2(0.0);
+      jet_second_moments(rechitet,rechiteta,rechitphi,sig1,sig2);
+      jet_sig_et1[nJets] = sig1;
+      jet_sig_et2[nJets] = sig2;
+      jet_energy_frac[nJets] = jet_energy_frac[nJets]/jetRechitE[nJets];
+
+      //loop over hcal hits
+      for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
+	const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
+
+	double hiteta = -999;
+	double hitphi = -999;
+	if (recHit->energy() < 0.1) continue;
+	const HcalDetId recHitId = recHit->detid();
+	if (recHit->detid().subdetId() == HcalBarrel) {
+	  const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+	  hiteta = recHitPos.eta();
+	  hitphi = recHitPos.phi();
+	} else if (recHit->detid().subdetId() == HcalEndcap) {
+	  const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
+	  hiteta = recHitPos.eta();
+	  hitphi = recHitPos.phi();
+	} else {
+	  cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
+	}
+
+	if ( jetPt[nJets] > 30 &&
+	     deltaR(jetEta[nJets], jetPhi[nJets], hiteta, hitphi)  < 0.5
+	     ) {
+	  SaveThisHCALRechit[iHit] = true;
+	  //cout << "SaveThisRechit : " << recHit->energy() << " " << hiteta << " " << hitphi << "\n";
+	}
       }
 
-      if (recHit->checkFlag(EcalRecHit::kSaturated) || recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit->checkFlag(EcalRecHit::kPoorReco) || recHit->checkFlag(EcalRecHit::kWeird) || recHit->checkFlag(EcalRecHit::kDiWeird)) continue;
-      if (recHit->timeError() < 0 || recHit->timeError() > 100) continue;
-      if (abs(recHit->time()) > 12.5) continue;
-
-      //Calculate jet timestamps
-      if ( jetPt[nJets] > 30 && deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.4) {
-        //double rechit_x = ecal_radius * cos(recHitPos.phi());
-        //double rechit_y = ecal_radius * sin(recHitPos.phi());
-        //double rechit_z = ecal_radius * sinh(recHitPos.eta());
-        //double photon_pv_travel_time = (1./30) * sqrt(pow(pvX-rechit_x,2)+pow(pvY-rechit_y,2)+pow(pvZ-rechit_z,2));
-        if ( deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.15) {
-          if (recHit->energy() > Rechit_cut) jet_energy_frac[nJets] += recHit->energy();
-        }
-
-        if (recHit->energy() > Rechit_cut) {
-	  // jetRechitT_Error[nJets] += 0.0;
-          jetRechitE_Error[nJets] += recHit->energyError() * recHit->energyError();
-          jetRechitE[nJets] += recHit->energy();
-          jetRechitT[nJets] += recHit->time()*recHit->energy();
-          jetRechitT_rms[nJets] += recHit->time()*recHit->time();
-          rechitphi.push_back(recHitPos.phi());
-          rechiteta.push_back(recHitPos.eta());
-          rechitet.push_back(recHit->energy()/cosh(recHitPos.eta()));
-          rechitt.push_back(recHit->time());
-          n_matched_rechits++;
-        }
-      }
-    }//loop over EB rechits
-
-    for (uint q=0; q<eeRecHits->size(); q++) {
-      const EcalRecHit *recHit = &(*eeRecHits)[q];
-      const DetId recHitId = recHit->detid();
-      const auto recHitPos = endcapGeometry->getGeometry(recHitId)->getPosition();
-
-      //save the rechits that are within DR 0.5 of the jet axis
-      if ( jetPt[nJets] > 30 &&
-	   deltaR(jetEta[nJets], jetPhi[nJets], recHitPos.eta(), recHitPos.phi())  < 0.5
-	   && recHit->energy() > 0.2
-	  ) {
-	SaveThisEERechit[q] = true;
-	//cout << "Save this Rechit: " << q << " | " << SaveThisEERechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
-      }
-    }//loop over EE rechits
-
-    jetRechitT[nJets] = jetRechitT[nJets]/jetRechitE[nJets];
-    jetNRechits[nJets] = n_matched_rechits;
-    jetRechitE_Error[nJets] = sqrt(jetRechitE_Error[nJets]);
-    jetRechitT_rms[nJets] = sqrt(jetRechitT_rms[nJets]);
-    double sig1(0.0),sig2(0.0);
-    jet_second_moments(rechitet,rechiteta,rechitphi,sig1,sig2);
-    jet_sig_et1[nJets] = sig1;
-    jet_sig_et2[nJets] = sig2;
-    jet_energy_frac[nJets] = jet_energy_frac[nJets]/jetRechitE[nJets];
-
-    //loop over hcal hits
-    for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
-      const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
-
-      double hiteta = -999;
-      double hitphi = -999;
-      if (recHit->energy() < 0.1) continue;
-      const HcalDetId recHitId = recHit->detid();
-      if (recHit->detid().subdetId() == HcalBarrel) {
-	const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+      //loop over HO hits
+      for (unsigned int iHit = 0; iHit < hcalRecHitsHO->size(); iHit ++){
+	const HORecHit *recHit = &(*hcalRecHitsHO)[iHit];
+	const DetId recHitId = recHit->detid();
+	double hiteta = -999;
+	double hitphi = -999;
+	if (recHit->energy() < 0.1) continue;
+	const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
 	hiteta = recHitPos.eta();
 	hitphi = recHitPos.phi();
-      } else if (recHit->detid().subdetId() == HcalEndcap) {
-	const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
-	hiteta = recHitPos.eta();
-	hitphi = recHitPos.phi();
-      } else {
-	cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
+
+	//save all HO rechits which have more than 1.5 GeV of energy
+	if (recHit->energy() > 1.5) SaveThisHORechit[iHit] = true;
+	if ( jetPt[nJets] > 30 &&
+	     deltaR(jetEta[nJets], jetPhi[nJets], hiteta, hitphi)  < 0.5
+	     ) {
+	  SaveThisHORechit[iHit] = true;
+	}
       }
 
-      if ( jetPt[nJets] > 30 &&
-	   deltaR(jetEta[nJets], jetPhi[nJets], hiteta, hitphi)  < 0.5
-	   ) {
-	SaveThisHCALRechit[iHit] = true;
-	//cout << "SaveThisRechit : " << recHit->energy() << " " << hiteta << " " << hitphi << "\n";
+      //loop over tracks
+      for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
+	reco::Track generalTrack = generalTracks->at(iTrack);
+	if ( jetPt[nJets] > 30 &&
+	     deltaR(jetEta[nJets], jetPhi[nJets], generalTrack.eta(), generalTrack.phi())  < 0.5
+	     && generalTrack.pt() > 1
+	     ) {
+	  SaveThisTrack[iTrack] = true;
+	}
       }
-    }
-
-    //loop over HO hits
-    for (unsigned int iHit = 0; iHit < hcalRecHitsHO->size(); iHit ++){
-      const HORecHit *recHit = &(*hcalRecHitsHO)[iHit];
-      const DetId recHitId = recHit->detid();
-      double hiteta = -999;
-      double hitphi = -999;
-      if (recHit->energy() < 0.1) continue;
-      const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
-      hiteta = recHitPos.eta();
-      hitphi = recHitPos.phi();
-
-      //save all HO rechits which have more than 1.5 GeV of energy
-      if (recHit->energy() > 1.5) SaveThisHORechit[iHit] = true;
-      if ( jetPt[nJets] > 30 &&
-	   deltaR(jetEta[nJets], jetPhi[nJets], hiteta, hitphi)  < 0.5
-	   ) {
-	SaveThisHORechit[iHit] = true;
-      }
-    }
-
-    //loop over tracks
-    for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
-      reco::Track generalTrack = generalTracks->at(iTrack);
-      if ( jetPt[nJets] > 30 &&
-	   deltaR(jetEta[nJets], jetPhi[nJets], generalTrack.eta(), generalTrack.phi())  < 0.5
-	   && generalTrack.pt() > 1
-	  ) {
-	SaveThisTrack[iTrack] = true;
-      }
-    }
-
+ 
+    } //end if jet pt >= 20
     nJets++;
     if (nJets > OBJECTARRAYSIZE) {
       cout << "ERROR: nJets exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
