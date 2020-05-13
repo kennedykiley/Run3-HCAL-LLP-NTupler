@@ -1059,6 +1059,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   int rpcRegion[OBJECTARRAYSIZE];
   int rpcStation[OBJECTARRAYSIZE];
   int rpcSector[OBJECTARRAYSIZE];
+  int rpcLayer[OBJECTARRAYSIZE];
 
 
   int nDtRechits;

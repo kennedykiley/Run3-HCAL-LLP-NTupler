@@ -713,6 +713,7 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("rpcRing",rpcRing,"rpcRing[nRpc]/I");
     displacedJetMuonTree->Branch("rpcSector",rpcSector,"rpcSector[nRpc]/I");
     displacedJetMuonTree->Branch("rpcStation",rpcStation,"rpcStation[nRpc]/I");
+    displacedJetMuonTree->Branch("rpcLayer",rpcLayer,"rpcLayer[nRpc]/I");
 
 
     displacedJetMuonTree->Branch("nDtSeg",&nDtSeg,"nDtSeg/I");
@@ -1668,6 +1669,7 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
     rpcRegion[i] = 999;
     rpcStation[i] = 999;
     rpcSector[i] = 999;
+    rpcLayer[i] = 999;
 
   }
 
@@ -3175,6 +3177,7 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
       rpcTError[nRpc] = rpcRecHit.timeError();
       rpcRegion[nRpc] = rpcdetid.region();
       rpcRing[nRpc] = rpcdetid.ring();
+      rpcLayer[nRpc] = rpcdetid.layer();
       rpcStation[nRpc] = rpcdetid.station();
       rpcSector[nRpc] = rpcdetid.sector();
       nRpc++;
