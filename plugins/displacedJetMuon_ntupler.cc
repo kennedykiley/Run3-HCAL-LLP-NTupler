@@ -1095,6 +1095,11 @@ void displacedJetMuon_ntupler::enableGenParticleBranches()
    displacedJetMuonTree->Branch("gLLP_daughter_e", gLLP_daughter_e, "gLLP_daughter_e[4]/F");
    displacedJetMuonTree->Branch("gLLP_daughter_mass", gLLP_daughter_mass, "gLLP_daughter_mass[4]/F");
 
+   displacedJetMuonTree->Branch("gen_time", gen_time, "gen_time[4]/F");
+   displacedJetMuonTree->Branch("gen_time_pv", gen_time_pv, "gen_time_pv[4]/F");
+   displacedJetMuonTree->Branch("photon_travel_time", photon_travel_time, "photon_travel_time[4]/F");
+   displacedJetMuonTree->Branch("photon_travel_time_pv", photon_travel_time_pv, "photon_travel_time_pv[4]/F");
+   displacedJetMuonTree->Branch("gLLP_daughter_travel_time", gLLP_daughter_travel_time, "gLLP_daughter_travel_time[4]/F");
 
    displacedJetMuonTree->Branch("gLLP_grandaughter_id", gLLP_grandaughter_id, "gLLP_grandaughter_id[4]/I");
    displacedJetMuonTree->Branch("gLLP_grandaughter_pt", gLLP_grandaughter_pt, "gLLP_grandaughter_pt[4]/F");
@@ -1105,6 +1110,11 @@ void displacedJetMuon_ntupler::enableGenParticleBranches()
    displacedJetMuonTree->Branch("gLLP_grandaughter_e", gLLP_grandaughter_e, "gLLP_grandaughter_e[4]/F");
    displacedJetMuonTree->Branch("gLLP_grandaughter_mass", gLLP_grandaughter_mass, "gLLP_grandaughter_mass[4]/F");
 
+   displacedJetMuonTree->Branch("gen_time_dau", gen_time_dau, "gen_time_dau[4]/F");
+   displacedJetMuonTree->Branch("gen_time_dau_pv", gen_time_dau_pv, "gen_time_dau_pv[4]/F");
+   displacedJetMuonTree->Branch("photon_travel_time_dau", photon_travel_time_dau, "photon_travel_time_dau[4]/F");
+   displacedJetMuonTree->Branch("photon_travel_time_dau_pv", photon_travel_time_dau_pv, "photon_travel_time_dau_pv[4]/F");
+   displacedJetMuonTree->Branch("gLLP_grandaughter_travel_time", gLLP_grandaughter_travel_time, "gLLP_grandaughter_travel_time[4]/F");
 
 
 
@@ -2143,7 +2153,6 @@ void displacedJetMuon_ntupler::resetGenParticleBranches()
     // gLLP_grandaughter_photon_travel_time_EB[i] = -666.;
     // gLLP_grandaughter_photon_travel_time_ETL[i] = -666.;
 
-    // gLLP_grandaughter_travel_time_EB[i] = -666.;
     // gLLP_grandaughter_travel_time_ETL[i] = -666.;
 
     // gen_time_grandaughter_EB[i] = -666.;
@@ -2157,6 +2166,12 @@ void displacedJetMuon_ntupler::resetGenParticleBranches()
     gLLP_grandaughter_phi_ecalcorr[i] = -666.;
     gLLP_grandaughter_e[i] = -666.;
     gLLP_grandaughter_mass[i] = -666.;
+
+    gLLP_grandaughter_travel_time[i] = -666.;
+    gen_time_dau[i] = -666.;
+    gen_time_dau_pv[i] = -666.;
+    photon_travel_time_dau[i] = -666.;
+    photon_travel_time_dau_pv[i] = -666.;
   }
 
   return;
@@ -3417,6 +3432,27 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 		  gLLP_grandaughter_mass[index]  = tmpdau.M();
 
 
+		  gLLP_grandaughter_travel_time[index] = (1./30.)*(ecal_radius-radius)/(tmpdau.Pt()/tmpdau.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
+		  //Calculate dt from generation point to ECAL face
+		  double x_ecal = gLLP_decay_vertex_x[0] + 30. * (tmpdau.Px()/tmpdau.E())*gLLP_grandaughter_travel_time[index];
+		  double y_ecal = gLLP_decay_vertex_y[0] + 30. * (tmpdau.Py()/tmpdau.E())*gLLP_grandaughter_travel_time[index];
+		  double z_ecal = gLLP_decay_vertex_z[0] + 30. * (tmpdau.Pz()/tmpdau.E())*gLLP_grandaughter_travel_time[index];
+
+
+		  if( fabs(z_ecal) < EB_z && radius <= ecal_radius &&  fabs(gLLP_decay_vertex_z[0]) < EE_z) {
+                    photon_travel_time_dau[index] = (1./30) * sqrt(pow(ecal_radius,2)+pow(z_ecal,2));
+                    photon_travel_time_dau_pv[index] = (1./30) * sqrt(pow(x_ecal-genVertexX,2) + pow(y_ecal-genVertexY,2) + pow(z_ecal-genVertexZ,2));
+		    gen_time_dau_pv[index] =  gLLP_travel_time[0] + gLLP_grandaughter_travel_time[index] - photon_travel_time_dau_pv[index] + genVertexT;
+		    gen_time_dau[index] = gLLP_travel_time[0] + gLLP_grandaughter_travel_time[index] - photon_travel_time_dau[index] + genVertexT;
+
+		  } else {
+		    gLLP_grandaughter_travel_time[index] = -666;
+		    gen_time_dau_pv[index] = -666.;
+		    gen_time_dau[index] = -666.;
+                    photon_travel_time_dau[index] = -666.;
+                    photon_travel_time_dau_pv[index] = -666.;
+		  }
+
 		  // Correction of eta and phi based on ecal points
 		  double phi = atan((y_ecal-genVertexY)/(x_ecal-genVertexX));
 		  if  (x_ecal < 0.0) {
@@ -3528,6 +3564,27 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 		  gLLP_grandaughter_e[index+2]  = tmpdau.E();
 		  gLLP_grandaughter_mass[index+2]  = tmpdau.M();
 
+
+		  gLLP_grandaughter_travel_time[index+2] = (1./30.)*(ecal_radius-radius)/(tmpdau.Pt()/tmpdau.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
+		  //Calculate dt from generation point to ECAL face
+		  double x_ecal = gLLP_decay_vertex_x[1] + 30. * (tmpdau.Px()/tmpdau.E())*gLLP_grandaughter_travel_time[index+2];
+		  double y_ecal = gLLP_decay_vertex_y[1] + 30. * (tmpdau.Py()/tmpdau.E())*gLLP_grandaughter_travel_time[index+2];
+		  double z_ecal = gLLP_decay_vertex_z[1] + 30. * (tmpdau.Pz()/tmpdau.E())*gLLP_grandaughter_travel_time[index+2];
+
+
+		  if( fabs(z_ecal) < EB_z && radius <= ecal_radius &&  fabs(gLLP_decay_vertex_z[1]) < EE_z) {
+                    photon_travel_time_dau[index+2] = (1./30) * sqrt(pow(ecal_radius,2)+pow(z_ecal,2));
+                    photon_travel_time_dau_pv[index+2] = (1./30) * sqrt(pow(x_ecal-genVertexX,2) + pow(y_ecal-genVertexY,2) + pow(z_ecal-genVertexZ,2));
+		    gen_time_dau_pv[index+2] =  gLLP_travel_time[1] + gLLP_grandaughter_travel_time[index] - photon_travel_time_dau_pv[index] + genVertexT;
+		    gen_time_dau[index+2] = gLLP_travel_time[1] + gLLP_grandaughter_travel_time[index] - photon_travel_time_dau[index] + genVertexT;
+
+		  } else {
+		    gLLP_grandaughter_travel_time[index+2] = -666;
+		    gen_time_dau_pv[index+2] = -666.;
+		    gen_time_dau[index+2] = -666.;
+                    photon_travel_time_dau[index+2] = -666.;
+                    photon_travel_time_dau_pv[index+2] = -666.;
+		  }
 
 
 

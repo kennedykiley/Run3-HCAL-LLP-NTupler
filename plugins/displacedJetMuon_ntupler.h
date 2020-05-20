@@ -1468,17 +1468,23 @@ bool Flag2_eeBadScFilter;
  float gLLP_daughter_mass[LLP_DAUGHTER_ARRAY_SIZE];
 
  //grandaughters
- bool gLLP_grandaughter_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- bool gLLP_grandaughter_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gen_time_dau[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float gen_time_dau_pv[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ float photon_travel_time_dau[LLP_DAUGHTER_ARRAY_SIZE];
+ float photon_travel_time_dau_pv[LLP_DAUGHTER_ARRAY_SIZE];
+ float gLLP_grandaughter_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
 
- float gLLP_grandaughter_photon_travel_time_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gLLP_grandaughter_photon_travel_time_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ //bool gLLP_grandaughter_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ //bool gLLP_grandaughter_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
 
- float gLLP_grandaughter_travel_time_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gLLP_grandaughter_travel_time_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ //float gLLP_grandaughter_photon_travel_time_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ //float gLLP_grandaughter_photon_travel_time_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
 
- float gen_time_grandaughter_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gen_time_grandaughter_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ //float gLLP_grandaughter_travel_time_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ //float gLLP_grandaughter_travel_time_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+
+ //float gen_time_grandaughter_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
+ //float gen_time_grandaughter_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
 
  int   gLLP_grandaughter_id[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
  float gLLP_grandaughter_pt[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
