@@ -3378,7 +3378,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 
               // double gLLP_daughter_travel_time_hcal= (1./30.)*(hcal_radius-radius)/(tmp.Pt()/tmp.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
 
-              gLLP_daughter_travel_time[id] = (1./30.)*(ecal_radius-radius)/(tmp.Pt()/tmp.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
+              gLLP_daughter_travel_time[id] = (1./30.)*fabs(ecal_radius-radius)/(tmp.Pt()/tmp.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
             //Calculate dt from generation point to ECAL face
               double x_ecal = gLLP_decay_vertex_x[0] + 30. * (tmp.Px()/tmp.E())*gLLP_daughter_travel_time[id];
               double y_ecal = gLLP_decay_vertex_y[0] + 30. * (tmp.Py()/tmp.E())*gLLP_daughter_travel_time[id];
@@ -3432,7 +3432,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 		  gLLP_grandaughter_mass[index]  = tmpdau.M();
 
 
-		  gLLP_grandaughter_travel_time[index] = (1./30.)*(ecal_radius-radius)/(tmpdau.Pt()/tmpdau.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
+		  gLLP_grandaughter_travel_time[index] = (1./30.)*fabs(ecal_radius-radius)/(tmpdau.Pt()/tmpdau.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
 		  //Calculate dt from generation point to ECAL face
 		  double x_ecal = gLLP_decay_vertex_x[0] + 30. * (tmpdau.Px()/tmpdau.E())*gLLP_grandaughter_travel_time[index];
 		  double y_ecal = gLLP_decay_vertex_y[0] + 30. * (tmpdau.Py()/tmpdau.E())*gLLP_grandaughter_travel_time[index];
@@ -3510,7 +3510,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 	      gLLP_daughter_mass[id+2]  = tmp.M();
 	      //gLLP_daughter_travel_time[id+2] = (1./30.)*(ecal_radius-radius)/(tmp.Pt()/tmp.E()) - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
               // double gLLP_daughter_travel_time_hcal = (1./30.)*(hcal_radius-radius)/(tmp.Pt()/tmp.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
-              gLLP_daughter_travel_time[id+2] = (1./30.)*(ecal_radius-radius)/(tmp.Pt()/tmp.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
+              gLLP_daughter_travel_time[id+2] = (1./30.)*fabs(ecal_radius-radius)/(tmp.Pt()/tmp.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
 
               //Calculate dt from generation point to ECAL face
               double x_ecal = gLLP_decay_vertex_x[1] + 30. * (tmp.Px()/tmp.E())*gLLP_daughter_travel_time[id+2];
@@ -3565,7 +3565,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 		  gLLP_grandaughter_mass[index+2]  = tmpdau.M();
 
 
-		  gLLP_grandaughter_travel_time[index+2] = (1./30.)*(ecal_radius-radius)/(tmpdau.Pt()/tmpdau.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
+		  gLLP_grandaughter_travel_time[index+2] = (1./30.)*fabs(ecal_radius-radius)/(tmpdau.Pt()/tmpdau.E());// - (1./30.) * ecal_radius * cosh(tmp.Eta());//1/30 is to convert cm to ns
 		  //Calculate dt from generation point to ECAL face
 		  double x_ecal = gLLP_decay_vertex_x[1] + 30. * (tmpdau.Px()/tmpdau.E())*gLLP_grandaughter_travel_time[index+2];
 		  double y_ecal = gLLP_decay_vertex_y[1] + 30. * (tmpdau.Py()/tmpdau.E())*gLLP_grandaughter_travel_time[index+2];
