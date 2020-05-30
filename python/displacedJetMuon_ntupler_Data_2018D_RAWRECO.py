@@ -12,7 +12,8 @@ process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2018")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(       
-        '/store/data/Run2018D/MET/RAW-RECO/HighMET-PromptReco-v2/000/320/757/00000/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
+        #'/store/data/Run2018D/MET/RAW-RECO/HighMET-PromptReco-v2/000/320/757/00000/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
+        'file:/afs/cern.ch/work/s/sixie/public/Production/displacedJetMuon/V1p17/2018/data_2018D/CMSSW_10_2_18/src/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
         )
 )
 
@@ -138,7 +139,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #triggerBits = cms.InputTag("TriggerResults","","RECO"),
     hepMC = cms.InputTag("generatorSmeared", "", "SIM"),
 
-    #triggerPrescales = cms.InputTag("patTrigger"),
+    triggerPrescales = cms.InputTag("patTrigger"),
     #triggerObjects = cms.InputTag("selectedPatTrigger"),
 
     metFilterBits = cms.InputTag("TriggerResults", "", "RECO"),
@@ -296,9 +297,17 @@ process.selectedPatCandidatesTask = cms.Task(
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
+
+process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
+process.patTrigger.onlyStandAlone = cms.bool(True)
+process.patTrigger.packTriggerLabels = cms.bool(True)
+process.patTrigger.packTriggerPathNames = cms.bool(True)
+process.patTrigger.packTriggerPrescales = cms.bool(True)
+
 process.patTask = cms.Task(
     process.patCandidatesTask,
     process.selectedPatCandidatesTask,
+    process.patTrigger
 )
 
 process.load('EventFilter.CSCRawToDigi.cscUnpacker_cfi')

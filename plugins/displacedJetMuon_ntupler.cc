@@ -76,8 +76,8 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   genJetsToken_(consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJets"))),
   triggerBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerBits"))),
   hepMCToken_(consumes<edm::HepMCProduct>(iConfig.getParameter<edm::InputTag>("hepMC"))),
-  //triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
-  //triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
+  triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
+  triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
   genMetCaloToken_(consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMetsCalo"))),
   genMetTrueToken_(consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMetsTrue"))),
   //metToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("mets"))),
@@ -1118,6 +1118,9 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(hcalRecHitsHOToken_,hcalRecHitsHO);
   iEvent.getByToken(hcalRecHitsHBHEToken_,hcalRecHitsHBHE);
   iEvent.getByToken(triggerBitsToken_, triggerBits);
+  iEvent.getByToken(triggerPrescalesToken_, triggerPrescales);
+  //iEvent.getByToken(triggerObjectsToken_, triggerObjects);
+
   iEvent.getByToken(hepMCToken_, hepMC);
   iEvent.getByToken(metFilterBitsToken_, metFilterBits);
 
@@ -4944,75 +4947,53 @@ bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
 
   //fill trigger information
   const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
-  // std::cout << "\n === TRIGGER PATHS === " << std::endl;
+
   //------------------------------------------------------------------
-  //Option to save all HLT path names in the ntuple per event
-  //Expensive option in terms of ntuple size
+  // Debug printouts
   //------------------------------------------------------------------
-  nameHLT->clear();
-  //cout<<triggerBits->size()<<endl;
-  for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i)
-  {
-    string hltPathNameReq = "HLT_";
-    //if (triggerBits->accept(i))
-    if ((names.triggerName(i)).find(hltPathNameReq) != string::npos) nameHLT->push_back(names.triggerName(i));
-    /*
-    std::cout << "Trigger " << names.triggerName(i) <<
-    ", prescale " << triggerPrescales->getPrescaleForIndex(i) <<
-    ": " << (triggerBits->accept(i) ? "PASS" : "fail (or not run)")
-    << std::endl;
-    if ((names.triggerName(i)).find(hltPathNameReq) != string::npos && triggerBits->accept(i)) std::cout << "Trigger " << names.triggerName(i) <<
-    ": " << (triggerBits->accept(i) ? "PASS" : "fail (or not run)")
-    << std::endl;
-    */
-  }
-  //std::cout << "n triggers: " <<  nameHLT->size() << std::endl;
-  //std::cout << "====================" << std::endl;
-  //for ( unsigned int i = 0; i < nameHLT->size(); i++ )
-  //{
-  //  std::cout << i << " -> " << nameHLT->at(i) << std::endl;
-  //}
+  // for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i) {
+  //   std::cout << "Trigger " << names.triggerName(i) 
+  //   	      << ", prescale " << triggerPrescales->getPrescaleForIndex(i)  << " " 
+  //   	      << (triggerBits->accept(i) ? "PASS" : "fail (or not run)") << "\n"; 
+  // }
+
   //------------------------------------------------------------------
   // Save trigger decisions in array of booleans
   //------------------------------------------------------------------
 
-  for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i)
-  {
+  for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i) {
     string hltPathNameReq = "HLT_";
     if ((names.triggerName(i)).find(hltPathNameReq) == string::npos) continue;
     if ((names.triggerName(i)).find_last_of("_") == string::npos) continue;
     int lastUnderscorePos = (names.triggerName(i)).find_last_of("_");
     string hltPathNameWithoutVersionNumber = (names.triggerName(i)).substr(0,lastUnderscorePos);
 
-    for (unsigned int j = 0; j < NTriggersMAX; ++j)
-    {
+    for (unsigned int j = 0; j < NTriggersMAX; ++j) {
       if (triggerPathNames[j] == "") continue;
-      if (hltPathNameWithoutVersionNumber == triggerPathNames[j])
-      {
-        triggerDecision[j] = triggerBits->accept(i);
-        //triggerHLTPrescale[j] = triggerPrescales->getPrescaleForIndex(i);
+      if (hltPathNameWithoutVersionNumber == triggerPathNames[j]) {
+	triggerDecision[j] = triggerBits->accept(i);
+	triggerHLTPrescale[j] = triggerPrescales->getPrescaleForIndex(i);
       }
     }
   }
+
   //------------------------------------------------------------------
   // Print Trigger Objects
-  //------------------------------------------------------------------
-/*
-  for (pat::TriggerObjectStandAlone trigObject : *triggerObjects)
-  {
-    //cout << "triggerObj: " << trigObject.pt() << " " << trigObject.eta() << " " << trigObject.phi() << "\n";
-    //bool foundRazor = false;
-    //Need to unpack the filter labels before checking
-    trigObject.unpackFilterLabels(iEvent, *triggerBits);
-    for(int j=0; j<int(trigObject.filterLabels().size());j++)
-    {
-      //if ((trigObject.filterLabels())[j] == "hltRsqMR200Rsq0p0196MR100Calo") foundRazor = true;
-      // trigObject.unpackPathNames(names);
-      // cout << "filter: " << (trigObject.pathNames())[j] << " " << (trigObject.filterLabels())[j] << "\n";
-      //cout << "filter: " << (trigObject.filterLabels())[j] << "\n";
-    }
-  }
-*/
+  //------------------------------------------------------------------  
+  // for (pat::TriggerObjectStandAlone trigObject : *triggerObjects) {
+  //   //cout << "triggerObj: " << trigObject.pt() << " " << trigObject.eta() << " " << trigObject.phi() << "\n";
+  //   //bool foundRazor = false;
+  //   //Need to unpack the filter labels before checking
+  //   trigObject.unpackFilterLabels(iEvent, *triggerBits);
+  //   for(int j=0; j<int(trigObject.filterLabels().size());j++)
+  //   {
+  //     //if ((trigObject.filterLabels())[j] == "hltRsqMR200Rsq0p0196MR100Calo") foundRazor = true;
+  //     // trigObject.unpackPathNames(names);
+  //     // cout << "filter: " << (trigObject.pathNames())[j] << " " << (trigObject.filterLabels())[j] << "\n";
+  //     //cout << "filter: " << (trigObject.filterLabels())[j] << "\n";
+  //   }
+  // }
+
 //define this as a plug-in
   return true;
 };
