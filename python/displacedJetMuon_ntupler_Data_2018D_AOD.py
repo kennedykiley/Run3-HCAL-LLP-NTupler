@@ -12,8 +12,7 @@ process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2018")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(       
-        #'/store/data/Run2018D/MET/RAW-RECO/HighMET-PromptReco-v2/000/320/757/00000/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
-        'file:/afs/cern.ch/work/s/sixie/public/Production/displacedJetMuon/V1p17/2018/data_2018D/CMSSW_10_2_18/src/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
+        '/store/data/Run2018D/EGamma/AOD/PromptReco-v2/000/321/012/00000/DECEB7F0-FA9C-E811-8824-FA163EEB9FC0.root'
         )
 )
 
