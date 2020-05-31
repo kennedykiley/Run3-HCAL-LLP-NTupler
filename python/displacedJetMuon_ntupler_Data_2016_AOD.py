@@ -12,7 +12,7 @@ process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2017")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-        '/store/data/Run2016H/SingleMuon/RAW-RECO/ZMu-07Aug17-v1/110000/5C66AE3B-BC80-E711-AC60-48D539F38894.root'
+        '/store/data/Run2016F/SingleMuon/AOD/07Aug17-v1/90000/FC6FE563-3D97-E711-806F-008CFAE450E4.root'
         )
 )
 
@@ -84,9 +84,9 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     isData = cms.bool(True),
     useGen = cms.bool(False),
-    isRECO = cms.bool(True),                                
+    isRECO = cms.bool(False),                                
     isFastsim = cms.bool(False),
-    readMuonDigis = cms.bool(True),
+    readMuonDigis = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
@@ -313,7 +313,7 @@ process.muonCSCDigis.InputObjects = 'rawDataCollector'
 
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.muonCSCDigis * process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+process.p = cms.Path(process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
 process.schedule = cms.Schedule(process.p )
 
 
