@@ -3220,6 +3220,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
   llpIDs.push_back(1023);
   llpIDs.push_back(1000023);
   llpIDs.push_back(1000025);
+  llpIDs.push_back(6000113);
 
   for(size_t i=0; i<genParticles->size();i++)
   {
@@ -3234,6 +3235,7 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
        || (abs((*genParticles)[i].pdgId()) == 1023)
        || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
        || (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007)
+       || (abs((*genParticles)[i].pdgId()) == 6000113 )
 	)
        {
          if ((*genParticles)[i].pt()>pt_cut){
