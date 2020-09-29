@@ -827,6 +827,7 @@ void displacedJetMuon_ntupler::enableEcalRechitBranches()
   displacedJetMuonTree->Branch("track_nMissingInnerHits", track_nMissingInnerHits,"track_nMissingInnerHits[nTracks]/I");
   displacedJetMuonTree->Branch("track_nMissingOuterHits", track_nMissingOuterHits,"track_nMissingOuterHits[nTracks]/I");
   displacedJetMuonTree->Branch("track_nPixelHits", track_nPixelHits,"track_nPixelHits[nTracks]/I");
+  displacedJetMuonTree->Branch("track_angle", track_angle,"track_angle[nTracks]/I");
   displacedJetMuonTree->Branch("track_nHits", track_nHits,"track_nHits[nTracks]/I");
   displacedJetMuonTree->Branch("track_dxyToBS", track_dxyToBS,"track_dxyToBS[nTracks]/F");
   displacedJetMuonTree->Branch("track_dxyErr", track_dxyErr,"track_dxyErr[nTracks]/F");
