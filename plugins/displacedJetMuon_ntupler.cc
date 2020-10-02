@@ -961,6 +961,37 @@ void displacedJetMuon_ntupler::enableJetAK8Branches()
   displacedJetMuonTree->Branch("fatJetMaxSubjetCSV", fatJetMaxSubjetCSV, "fatJetMaxSubjetCSV[nFatJets]/F");
   displacedJetMuonTree->Branch("fatJetPassIDLoose", fatJetPassIDLoose,"fatJetPassIDLoose[nFatJets]/O");
   displacedJetMuonTree->Branch("fatJetPassIDTight", fatJetPassIDTight,"fatJetPassIDTight[nFatJets]/O");
+  displacedJetMuonTree->Branch("fatJetElectronEnergyFraction", fatJetElectronEnergyFraction, "fatJetElectronEnergyFraction[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetPhotonEnergyFraction", fatJetPhotonEnergyFraction, "fatJetPhotonEnergyFraction[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetChargedHadronEnergyFraction", fatJetChargedHadronEnergyFraction, "fatJetChargedHadronEnergyFraction[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetNeutralHadronEnergyFraction", fatJetNeutralHadronEnergyFraction, "fatJetNeutralHadronEnergyFraction[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetMuonEnergyFraction", fatJetMuonEnergyFraction, "fatJetMuonEnergyFraction[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetHOEnergyFraction", fatJetHOEnergyFraction, "fatJetHOEnergyFraction[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetHFHadronEnergyFraction", fatJetHFHadronEnergyFraction, "fatJetHFHadronEnergyFraction[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetHFEMEnergyFraction",fatJetHFEMEnergyFraction, "fatJetHFEMEnergyFraction[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetChargedHadronMultiplicity", fatJetChargedHadronMultiplicity, "fatJetChargedHadronMultiplicity[nFatJets]/I");
+  displacedJetMuonTree->Branch("fatJetNeutralHadronMultiplicity", fatJetNeutralHadronMultiplicity, "fatJetNeutralHadronMultiplicity[nFatJets]/I");
+  displacedJetMuonTree->Branch("fatJetPhotonMultiplicity", fatJetPhotonMultiplicity, "fatJetPhotonMultiplicity[nFatJets]/I");
+  displacedJetMuonTree->Branch("fatJetElectronMultiplicity", fatJetElectronMultiplicity, "fatJetElectronMultiplicity[nFatJets]/I");
+  displacedJetMuonTree->Branch("fatJetMuonMultiplicity", fatJetMuonMultiplicity, "fatJetMuonMultiplicity[nFatJets]/I");
+  displacedJetMuonTree->Branch("fatJetNRechits", fatJetNRechits,"fatJetNRechits[nFatJets]/I");
+  displacedJetMuonTree->Branch("fatJetRechitE", fatJetRechitE,"fatJetRechitE[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetRechitT", fatJetRechitT,"fatJetRechitT[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetRechitT_rms", fatJetRechitT_rms,"fatJetRechitT_rms[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetRechitE_Error", fatJetRechitE_Error,"fatJetRechitE_Error[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetRechitT_Error", fatJetRechitT_Error,"fatJetRechitT_Error[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetAlphaMax",fatJetAlphaMax,"fatJetAlphaMax[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetBetaMax",fatJetBetaMax,"fatJetBetaMax[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetGammaMax_ET",fatJetGammaMax_ET,"fatJetGammaMax_ET[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetGammaMax_EM",fatJetGammaMax_EM,"fatJetGammaMax_EM[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetGammaMax_Hadronic",fatJetGammaMax_Hadronic,"fatJetGammaMax_Hadronic[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetGammaMax",fatJetGammaMax,"fatJetGammaMax[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetPtAllTracks",fatJetPtAllTracks,"fatJetPtAllTracks[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetPtAllPVTracks",fatJetPtAllPVTracks,"fatJetPtAllPVTracks[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetMedianTheta2D",fatJetMedianTheta2D,"fatJetMedianTheta2D[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetMedianIP",fatJetMedianIP,"fatJetMedianIP[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetMinDeltaRAllTracks",fatJetMinDeltaRAllTracks,"fatJetMinDeltaRAllTracks[nFatJets]/F");
+  displacedJetMuonTree->Branch("fatJetMinDeltaRPVTracks",fatJetMinDeltaRPVTracks,"fatJetMinDeltaRPVTracks[nFatJets]/F");
   displacedJetMuonTree->Branch("fatJetNPFCands",fatJetNPFCands,"fatJetNPFCands[nFatJets]/I");
   displacedJetMuonTree->Branch("fatJetPFCandIndex", &fatJetPFCandIndex,Form("fatJetPFCandIndex[nFatJets][%d]/I",MAX_NPFCAND));
 };
@@ -1129,7 +1160,7 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(hcalRecHitsHOToken_,hcalRecHitsHO);
   iEvent.getByToken(hcalRecHitsHBHEToken_,hcalRecHitsHBHE);
   iEvent.getByToken(triggerBitsToken_, triggerBits);
-  iEvent.getByToken(triggerPrescalesToken_, triggerPrescales);
+  if (isData_) iEvent.getByToken(triggerPrescalesToken_, triggerPrescales);
   //iEvent.getByToken(triggerObjectsToken_, triggerObjects);
 
   iEvent.getByToken(hepMCToken_, hepMC);
@@ -3998,15 +4029,64 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     //-------------------
     //Fill Jet-Level Info
     //-------------------
+    
+    fatJetE[nFatJets] = j.energy();
+    fatJetPt[nFatJets] = j.pt();
+    fatJetEta[nFatJets] = j.eta();
+    fatJetPhi[nFatJets] = j.phi();
+    fatJetRawPt[nFatJets] = j.correctedP4(0).Pt();
 
-    fatJetE[nFatJets] = j.correctedP4(0).E();
-    fatJetPt[nFatJets] = j.correctedP4(0).Pt();
-    fatJetEta[nFatJets] = j.correctedP4(0).Eta();
-    fatJetPhi[nFatJets] = j.correctedP4(0).Phi();
+    // fatJetICSV[nFatJets] = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+    // fatJetBoostedDoubleSVAK8 = j.bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags");
+
     fatJetSoftDropM[nFatJets] = (float) j.userFloat("ak8PFJetsCHSSoftDropMass");
     fatJetTau1[nFatJets] =  (float) j.userFloat("NjettinessAK8CHS:tau1");
     fatJetTau2[nFatJets] =  (float) j.userFloat("NjettinessAK8CHS:tau2");
     fatJetTau3[nFatJets] =  (float) j.userFloat("NjettinessAK8CHS:tau3");
+
+    //Q: Is this correct?
+    //fatJetPassIDLoose[nFatJets] = passJetID(&j, 0);
+    //fatJetPassIDTight[nFatJets] = passJetID(&j, 1);
+
+    fatJetElectronEnergyFraction[nFatJets] = j.electronEnergyFraction();
+    fatJetPhotonEnergyFraction[nFatJets] = j.neutralEmEnergyFraction();
+    fatJetChargedHadronEnergyFraction[nFatJets] = j.chargedHadronEnergyFraction();
+    fatJetNeutralHadronEnergyFraction[nFatJets] = j.neutralHadronEnergyFraction();
+    fatJetMuonEnergyFraction[nFatJets] = j.muonEnergyFraction();
+    fatJetChargedHadronMultiplicity[nFatJets] = j.chargedHadronMultiplicity();
+    fatJetNeutralHadronMultiplicity[nFatJets] = j.neutralHadronMultiplicity();
+    fatJetPhotonMultiplicity[nFatJets] = j.photonMultiplicity();
+    fatJetElectronMultiplicity[nFatJets] = j.electronMultiplicity();
+    fatJetMuonMultiplicity[nFatJets] = j.muonMultiplicity();
+       
+    //---------------------------
+    //Trackless variables
+    //---------------------------
+    TLorentzVector thisJet;
+    thisJet.SetPtEtaPhiE(fatJetPt[nFatJets], fatJetEta[nFatJets], fatJetPhi[nFatJets], fatJetE[nFatJets]);
+    
+    float alphaMax(0.0),medianTheta2D(0.0),medianIP(0.0),minDeltaRAllTracks(0.0),minDeltaRPVTracks(0.0),ptAllTracks(0.0), ptAllPVTracks(0.0);
+    int nTracksPV(0);
+    findTrackingVariables(thisJet,iSetup,alphaMax,medianTheta2D,medianIP,nTracksPV,ptAllPVTracks,ptAllTracks, minDeltaRAllTracks, minDeltaRPVTracks);
+  
+    fatJetAlphaMax[nFatJets] = alphaMax;
+    fatJetBetaMax[nFatJets] = alphaMax * ptAllTracks/(j.pt());
+    fatJetGammaMax[nFatJets] = alphaMax * ptAllTracks/(j.energy());
+    fatJetGammaMax_EM[nFatJets] = alphaMax * ptAllTracks/(j.energy()*(j.chargedEmEnergyFraction()+j.neutralEmEnergyFraction()));
+    fatJetGammaMax_Hadronic[nFatJets] = alphaMax * ptAllTracks/(j.energy()*(j.chargedHadronEnergyFraction()+j.neutralHadronEnergyFraction()));
+    fatJetGammaMax_ET[nFatJets] = alphaMax * ptAllTracks/j.et();
+    fatJetMedianTheta2D[nFatJets] = medianTheta2D;
+    fatJetMedianIP[nFatJets] = medianIP;
+    fatJetPtAllPVTracks[nFatJets] = ptAllPVTracks;
+    fatJetPtAllTracks[nFatJets] = ptAllTracks;
+    fatJetMinDeltaRAllTracks[nFatJets] = minDeltaRAllTracks;
+    fatJetMinDeltaRPVTracks[nFatJets] = minDeltaRPVTracks;
+
+    // cout << "FatJet: " 
+    // 	 << j.userFloat("pileupJetId:fullDiscriminant") << " "
+    // 	 << j.userInt("pileupJetId:fullId") << " "
+    // 	 << "\n";
+
 
 
     //---------------------------
@@ -4031,7 +4111,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       }
     }
 
-
+    int fatJet_NMatchedRechits = 0;
     for (uint q=0; q<ebRecHits->size(); q++) {
       const EcalRecHit *recHit = &(*ebRecHits)[q];
       const DetId recHitId = recHit->detid();
@@ -4039,14 +4119,32 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 
       //save the rechits that are within DR 0.5 of the jet axis
       if ( deltaR(fatJetEta[nFatJets], fatJetPhi[nFatJets], recHitPos.eta(), recHitPos.phi())  < 1.0
-    	   && recHit->energy() > 0.2
-    	   && recHit->timeError() > 0.0
-    	   && recHit->timeError() < 100.0
+    	   && recHit->energy() > 0.2    	  
     	   ) {
     	SaveThisEBRechit[q] = true;
       }
+
+      if (recHit->checkFlag(EcalRecHit::kSaturated) || recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit->checkFlag(EcalRecHit::kPoorReco) || recHit->checkFlag(EcalRecHit::kWeird) || recHit->checkFlag(EcalRecHit::kDiWeird)) continue;
+      if (recHit->timeError() < 0 || recHit->timeError() > 100) continue;
+      if (abs(recHit->time()) > 12.5) continue;
+      
+      //Calculate jet timestamps
+      if ( deltaR(fatJetEta[nFatJets], fatJetPhi[nFatJets], recHitPos.eta(), recHitPos.phi())  < 0.8) {
+	if (recHit->energy() > Rechit_cut) {
+	  fatJetRechitE_Error[nFatJets] += recHit->energyError() * recHit->energyError();
+	  fatJetRechitE[nFatJets] += recHit->energy();
+	  fatJetRechitT[nFatJets] += recHit->time()*recHit->energy();
+	  fatJetRechitT_rms[nFatJets] += recHit->time()*recHit->time();
+	  fatJet_NMatchedRechits++;
+	}
+      }
     }
 
+    fatJetRechitT[nFatJets] = fatJetRechitT[nFatJets]/fatJetRechitE[nFatJets];
+    fatJetNRechits[nFatJets] = fatJet_NMatchedRechits;
+    fatJetRechitE_Error[nFatJets] = sqrt(fatJetRechitE_Error[nFatJets]);
+    fatJetRechitT_rms[nFatJets] = sqrt(fatJetRechitT_rms[nFatJets]);    
+    
     for (uint q=0; q<eeRecHits->size(); q++) {
       const EcalRecHit *recHit = &(*eeRecHits)[q];
       const DetId recHitId = recHit->detid();
@@ -5032,7 +5130,7 @@ bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
       if (triggerPathNames[j] == "") continue;
       if (hltPathNameWithoutVersionNumber == triggerPathNames[j]) {
 	triggerDecision[j] = triggerBits->accept(i);
-	triggerHLTPrescale[j] = triggerPrescales->getPrescaleForIndex(i);
+	if (isData_) triggerHLTPrescale[j] = triggerPrescales->getPrescaleForIndex(i);
       }
     }
   }

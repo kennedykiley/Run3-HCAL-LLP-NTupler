@@ -144,7 +144,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #triggerBits = cms.InputTag("TriggerResults","","RECO"),
     hepMC = cms.InputTag("generatorSmeared", "", "SIM"),
 
-    #triggerPrescales = cms.InputTag("patTrigger"),
+    triggerPrescales = cms.InputTag("patTrigger"),
     #triggerObjects = cms.InputTag("selectedPatTrigger"),
 
     metFilterBits = cms.InputTag("TriggerResults", "", "RECO"),
