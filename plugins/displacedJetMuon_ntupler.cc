@@ -3253,9 +3253,13 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
   llpIDs.push_back(1000023);
   llpIDs.push_back(1000025);
   llpIDs.push_back(6000113);
+  llpIDs.push_back(9900012);
+  llpIDs.push_back(9900014);
+  llpIDs.push_back(9900016);
 
   for(size_t i=0; i<genParticles->size();i++)
   {
+    bool alreadySaved = false;
     if(
        (abs((*genParticles)[i].pdgId()) >= 1 && abs((*genParticles)[i].pdgId()) <= 6 && ( (*genParticles)[i].status() < 30 ))
        || (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
@@ -3268,13 +3272,34 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
        || (abs((*genParticles)[i].pdgId()) >= 1000001 && abs((*genParticles)[i].pdgId()) <= 1000039)
        || (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007)
        || (abs((*genParticles)[i].pdgId()) == 6000113 )
-	)
-       {
-         if ((*genParticles)[i].pt()>pt_cut){
-           prunedV.push_back(&(*genParticles)[i]);
-         }
-       }
-  }
+       || (abs((*genParticles)[i].pdgId()) == 9900012 || abs((*genParticles)[i].pdgId()) == 9900014 || abs((*genParticles)[i].pdgId()) == 9900016)
+       )
+      {
+	if ((*genParticles)[i].pt()>pt_cut){
+	  prunedV.push_back(&(*genParticles)[i]);
+	  alreadySaved = true;
+	}
+      }
+
+    //if particle is a daughter of a tau, then save it
+    if (!alreadySaved) {
+      if((*genParticles)[i].numberOfMothers() > 0) {
+	const reco::Candidate* firstMotherWithDifferentID = findFirstMotherWithDifferentID(&(*genParticles)[i]);
+	if (firstMotherWithDifferentID && abs(firstMotherWithDifferentID->pdgId()) == 15 ) {
+	  // cout << "GenParticles " << i << " : " << (*genParticles)[i].pdgId() << " " 
+	  //      << (*genParticles)[i].status() << " " 
+	  //      << (*genParticles)[i].pt() << " " << (*genParticles)[i].eta() << " "
+	  //      << " ---> " << firstMotherWithDifferentID->pdgId() << " " << firstMotherWithDifferentID->status() << " " 
+	  //      << firstMotherWithDifferentID->pt() << " " << firstMotherWithDifferentID->eta() << " "
+	  //      << firstMotherWithDifferentID->phi() << " "
+	  //      << "\n";
+	  prunedV.push_back(&(*genParticles)[i]);
+	  alreadySaved = true;
+	}
+      }
+    }    
+  } //loop over all gen particles
+
   //Total number of gen particles
   nGenParticle = prunedV.size();
   if (nGenParticle > GENPARTICLEARRAYSIZE) {
@@ -3402,7 +3427,12 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
             for (unsigned int id = 0; id < tmpParticle->numberOfDaughters(); id++ ) {
 	      //std::cout << "====================" << std::endl;
 	      //std::cout << " -> "<< tmpParticle->daughter(id)->pdgId() << std::endl;
-              if( id > 1 ) break; //only allow 2 daughters
+	      if (!( abs(matchedLLPID) == 9900012 || 
+		     abs(matchedLLPID) == 9900014 || 
+		     abs(matchedLLPID) == 9900016)
+		  ) {
+		if( id > 1 ) break; //only allow 2 daughters unless they are heavy neutrinos
+	      }
               TLorentzVector tmp;
               tmp.SetPxPyPzE(tmpParticle->daughter(id)->px(), tmpParticle->daughter(id)->py(), tmpParticle->daughter(id)->pz(), tmpParticle->daughter(id)->energy());
               if(tmp.Pt()<pt_cut) continue;
