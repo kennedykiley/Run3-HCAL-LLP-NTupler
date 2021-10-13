@@ -138,7 +138,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #triggerBits = cms.InputTag("TriggerResults","","RECO"),
     hepMC = cms.InputTag("generatorSmeared", "", "SIM"),
 
-    #triggerPrescales = cms.InputTag("patTrigger"),
+    triggerPrescales = cms.InputTag("patTrigger"),
     #triggerObjects = cms.InputTag("selectedPatTrigger"),
 
     metFilterBits = cms.InputTag("TriggerResults", "", "RECO"),
@@ -296,9 +296,16 @@ process.selectedPatCandidatesTask = cms.Task(
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
+process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
+process.patTrigger.onlyStandAlone = cms.bool(True)
+process.patTrigger.packTriggerLabels = cms.bool(True)
+process.patTrigger.packTriggerPathNames = cms.bool(True)
+process.patTrigger.packTriggerPrescales = cms.bool(True)
+
 process.patTask = cms.Task(
     process.patCandidatesTask,
     process.selectedPatCandidatesTask,
+    process.patTrigger
 )
 
 process.load('EventFilter.CSCRawToDigi.cscUnpacker_cfi')

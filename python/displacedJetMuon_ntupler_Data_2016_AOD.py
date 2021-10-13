@@ -6,13 +6,13 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 process = cms.Process("displacedJetMuonNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.EventContent.EventContent_cff")
-process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2018")
+process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2017")
 
 
 #load input files
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(       
-        '/store/data/Run2018D/MET/RAW-RECO/HighMET-PromptReco-v2/000/320/757/00000/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
+    fileNames = cms.untracked.vstring(
+        '/store/data/Run2016F/SingleMuon/AOD/07Aug17-v1/90000/FC6FE563-3D97-E711-806F-008CFAE450E4.root'
         )
 )
 
@@ -38,7 +38,7 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 
 #------ Declare the correct global tag ------#
 
-process.GlobalTag.globaltag = '102X_dataRun2_Prompt_v15'
+process.GlobalTag.globaltag = '80X_dataRun2_2016LegacyRepro_v4'
 
 #------ If we add any inputs beyond standard event content, import them here ------#
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
@@ -84,9 +84,9 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     isData = cms.bool(True),
     useGen = cms.bool(False),
-    isRECO = cms.bool(True),                                
+    isRECO = cms.bool(False),                                
     isFastsim = cms.bool(False),
-    readMuonDigis = cms.bool(True),
+    readMuonDigis = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
@@ -194,22 +194,22 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
 
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
 
-    electron_cutbasedID_decisions_veto = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-veto", ""),
-    electron_cutbasedID_decisions_loose = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-loose", ""),
-    electron_cutbasedID_decisions_medium = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-medium", ""),
-    electron_cutbasedID_decisions_tight = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-tight", ""),
+    electron_cutbasedID_decisions_veto = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-veto", ""),
+    electron_cutbasedID_decisions_loose = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-loose", ""),
+    electron_cutbasedID_decisions_medium = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-medium", ""),
+    electron_cutbasedID_decisions_tight = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-tight", ""),
     electron_mvaIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wp80", ""),
     electron_mvaIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wp90", ""),
     electron_mvaIsoID_decisions_wpHZZ = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wpHZZ", ""),
     electron_mvaIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wpLoose", ""),
-    electron_mvaNoIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-noIso-V2-wp80", ""),
-    electron_mvaNoIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-noIso-V2-wp90", ""),
-    electron_mvaNoIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-noIso-V2-wpLoose", ""),
-    photon_cutbasedID_decisions_loose = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Fall17-94X-V2-loose", ""),
-    photon_cutbasedID_decisions_medium = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Fall17-94X-V2-medium", ""),
-    photon_cutbasedID_decisions_tight = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Fall17-94X-V2-tight", ""),
-    photon_mvaID_decisions_wp80 = cms.InputTag("egmPhotonIDs", "mvaPhoID-RunIIFall17-v2-wp80", ""),
-    photon_mvaID_decisions_wp90 = cms.InputTag("egmPhotonIDs", "mvaPhoID-RunIIFall17-v2-wp90", ""),
+    electron_mvaNoIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-GeneralPurpose-V1-wp80", ""),
+    electron_mvaNoIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-GeneralPurpose-V1-wp90", ""),
+    electron_mvaNoIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-HZZ-V1-wpLoose", ""),
+    photon_cutbasedID_decisions_loose = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-loose", ""),
+    photon_cutbasedID_decisions_medium = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-medium", ""),
+    photon_cutbasedID_decisions_tight = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-tight", ""),
+    photon_mvaID_decisions_wp80 = cms.InputTag("egmPhotonIDs", "mvaPhoID-Spring16-nonTrig-V1-wp80", ""),
+    photon_mvaID_decisions_wp90 = cms.InputTag("egmPhotonIDs", "mvaPhoID-Spring16-nonTrig-V1-wp90", ""),
 )
 
 #Add jettiness for AK8 jets
@@ -296,7 +296,6 @@ process.selectedPatCandidatesTask = cms.Task(
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
-
 process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
 process.patTrigger.onlyStandAlone = cms.bool(True)
 process.patTrigger.packTriggerLabels = cms.bool(True)
@@ -314,7 +313,7 @@ process.muonCSCDigis.InputObjects = 'rawDataCollector'
 
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.muonCSCDigis * process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+process.p = cms.Path(process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
 process.schedule = cms.Schedule(process.p )
 
 

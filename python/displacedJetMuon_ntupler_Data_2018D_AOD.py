@@ -12,7 +12,7 @@ process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2018")
 #load input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(       
-        '/store/data/Run2018D/MET/RAW-RECO/HighMET-PromptReco-v2/000/320/757/00000/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
+        '/store/data/Run2018D/EGamma/AOD/PromptReco-v2/000/321/012/00000/DECEB7F0-FA9C-E811-8824-FA163EEB9FC0.root'
         )
 )
 
@@ -84,9 +84,9 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     isData = cms.bool(True),
     useGen = cms.bool(False),
-    isRECO = cms.bool(True),                                
+    isRECO = cms.bool(False),                                
     isFastsim = cms.bool(False),
-    readMuonDigis = cms.bool(True),
+    readMuonDigis = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
@@ -314,7 +314,7 @@ process.muonCSCDigis.InputObjects = 'rawDataCollector'
 
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.muonCSCDigis * process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+process.p = cms.Path(process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
 process.schedule = cms.Schedule(process.p )
 
 
