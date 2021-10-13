@@ -121,7 +121,10 @@ using namespace std;
 #include "DataFormats/CSCDigi/interface/CSCWireDigiCollection.h"
 #include "SimDataFormats/DigiSimLinks/interface/DTDigiSimLink.h"
 #include "SimDataFormats/TrackerDigiSimLink/interface/StripDigiSimLink.h"
+#include "DataFormats/DTDigi/interface/DTDigiCollection.h"
 
+#include "CalibMuon/CSCCalibration/interface/CSCIndexerBase.h"
+#include "CalibMuon/CSCCalibration/interface/CSCIndexerRecord.h"
 
 //ROOT includes
 #include "TTree.h"
@@ -136,7 +139,6 @@ using namespace std;
 
 //------ Array Size Constants ------//
 #define OBJECTARRAYSIZE 10000
-#define CSCRECHITARRAYSIZE 6
 #define RECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
 #define MAX_NPV 1000
@@ -270,14 +272,17 @@ protected:
   edm::EDGetTokenT<CSCSegmentCollection> cscSegmentInputToken_;
   edm::EDGetTokenT<CSCRecHit2DCollection> cscRechitInputToken_;
   edm::EDGetTokenT<DTRecSegment4DCollection> dtSegmentInputToken_;
+  edm::EDGetTokenT<DTRecHitCollection> dtRechitInputToken_;
   edm::EDGetTokenT<DTRecSegment4DCollection> dtCosmicSegmentInputToken_;
   edm::EDGetTokenT<RPCRecHitCollection> rpcRecHitInputToken_;
+  edm::EDGetTokenT<vector<PSimHit> > MuonDTSimHitsToken_;
   edm::EDGetTokenT<vector<PSimHit> > MuonCSCSimHitsToken_;
   edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCComparatorDigi> > MuonCSCComparatorDigiToken_;
   edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCStripDigi> > MuonCSCStripDigiToken_;
   edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCWireDigi> > MuonCSCWireDigiToken_;
   edm::EDGetTokenT<edm::DetSetVector<StripDigiSimLink> > MuonCSCStripDigiSimLinksToken_;
   edm::EDGetTokenT<edm::DetSetVector<StripDigiSimLink>> MuonCSCWireDigiSimLinksToken_;
+  edm::EDGetTokenT<MuonDigiCollection<DTLayerId,DTDigi>> MuonDTDigiToken_;
 
 
 
@@ -407,16 +412,20 @@ protected:
   edm::Handle<float> genParticles_t0;
   edm::Handle<CSCSegmentCollection> cscSegments;
   edm::Handle<DTRecSegment4DCollection> dtSegments;
+  edm::Handle<DTRecHitCollection> dtRechits;
+
   edm::Handle<DTRecSegment4DCollection> dtCosmicSegments;
   edm::Handle<RPCRecHitCollection> rpcRecHits;
   edm::Handle<CSCRecHit2DCollection> cscRechits;
+
+  edm::Handle<vector<PSimHit> > MuonDTSimHits;
   edm::Handle<vector<PSimHit> > MuonCSCSimHits;
   edm::Handle<MuonDigiCollection<CSCDetId,CSCComparatorDigi> > MuonCSCComparatorDigi;
   edm::Handle<MuonDigiCollection<CSCDetId,CSCStripDigi> > MuonCSCStripDigi;
   edm::Handle<MuonDigiCollection<CSCDetId,CSCWireDigi>> MuonCSCWireDigi;
   edm::Handle<edm::DetSetVector<StripDigiSimLink> > MuonCSCStripDigiSimLinks;
   edm::Handle<edm::DetSetVector<StripDigiSimLink>> MuonCSCWireDigiSimLinks;
-
+  edm::Handle<MuonDigiCollection<DTLayerId, DTDigi>> MuonDTDigi;
 
   //MVAs for triggering and non-triggering electron ID
   EGammaMvaEleEstimatorCSA14* myMVATrig;
@@ -704,34 +713,31 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float cscSegChi2[OBJECTARRAYSIZE];
   int cscSegNRecHits[OBJECTARRAYSIZE];
 
-  //
-  // float cscNRecHits_flag[OBJECTARRAYSIZE];
-  // float cscRechitX[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  // float cscRechitY[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  // float cscRechitZ[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  // float cscRechitT[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  // float cscRechitE[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  // bool  cscRechitBadStrip[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  // bool  cscRechitBadWireGroup[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  // bool  cscRechitErrorWithinStrip[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  // int   cscRechitQuality[OBJECTARRAYSIZE][CSCRECHITARRAYSIZE];
-  int cscRecHitsChannels[OBJECTARRAYSIZE];
-  unsigned int cscRecHitsNStrips[OBJECTARRAYSIZE];
-  int cscRecHitsHitWire[OBJECTARRAYSIZE];
-  int cscRecHitsWGroupsBX[OBJECTARRAYSIZE];
-  unsigned int cscRecHitsNWireGroups[OBJECTARRAYSIZE];
-  int cscRecHitsDetId[OBJECTARRAYSIZE];
 
-  int nCscRecHits;
-  float cscRecHitsPhi[OBJECTARRAYSIZE];
-  float cscRecHitsEta[OBJECTARRAYSIZE];
-  float cscRecHitsX[OBJECTARRAYSIZE];
-  float cscRecHitsY[OBJECTARRAYSIZE];
-  float cscRecHitsZ[OBJECTARRAYSIZE];
-  float cscRecHitsE[OBJECTARRAYSIZE];
-  float cscRecHitsTpeak[OBJECTARRAYSIZE];
-  float cscRecHitsTwire[OBJECTARRAYSIZE];
-  float cscRecHitsQuality[OBJECTARRAYSIZE];
+  int nCscRechits;
+  float cscRechitsPhi[OBJECTARRAYSIZE];
+  float cscRechitsEta[OBJECTARRAYSIZE];
+  float cscRechitsX[OBJECTARRAYSIZE];
+  float cscRechitsY[OBJECTARRAYSIZE];
+  float cscRechitsZ[OBJECTARRAYSIZE];
+  float cscRechitsE[OBJECTARRAYSIZE];
+  float cscRechitsTpeak[OBJECTARRAYSIZE];
+  float cscRechitsTwire[OBJECTARRAYSIZE];
+  float cscRechitsQuality[OBJECTARRAYSIZE];
+  int   cscRechitsNStrips[OBJECTARRAYSIZE];
+  int   cscRechitsHitWire[OBJECTARRAYSIZE];
+  int   cscRechitsWGroupsBX[OBJECTARRAYSIZE];
+  int   cscRechitsNWireGroups[OBJECTARRAYSIZE];
+  int   cscRechitsNTimeBins[OBJECTARRAYSIZE];
+  int   cscRechitsBadStrip[OBJECTARRAYSIZE];
+  int   cscRechitsBadWireGroup[OBJECTARRAYSIZE];
+  int   cscRechitsDetId[OBJECTARRAYSIZE];
+  int   cscRechitsChamber[OBJECTARRAYSIZE];
+  int   cscRechitsStation[OBJECTARRAYSIZE];
+  int   cscRechitsEndcap[OBJECTARRAYSIZE];
+  int   cscRechitsRing[OBJECTARRAYSIZE];
+  int   cscRechitsLayer[OBJECTARRAYSIZE];
+
 
   int nCscSimHits;
   int nMatchedSimHits[OBJECTARRAYSIZE];
@@ -750,45 +756,65 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   int cscSimHits_match_gParticle_index[OBJECTARRAYSIZE];
   float cscSimHits_match_gParticle_minDeltaR[OBJECTARRAYSIZE];
   int cscSimHitsDetId[OBJECTARRAYSIZE];
+  int   cscSimHitsChamber[OBJECTARRAYSIZE];
+  int   cscSimHitsStation[OBJECTARRAYSIZE];
+  int   cscSimHitsEndcap[OBJECTARRAYSIZE];
+  int   cscSimHitsRing[OBJECTARRAYSIZE];
+  int   cscSimHitsLayer[OBJECTARRAYSIZE];
 
   int nCscStripDigis;
   int cscStripDigiStripN[OBJECTARRAYSIZE];
   vector<vector<int> > cscStripDigiADCCounts;
   int cscStripDigiDetId[OBJECTARRAYSIZE];
+  int cscStripDigiEndcap[OBJECTARRAYSIZE];
+  int cscStripDigiStation[OBJECTARRAYSIZE];
+  int cscStripDigiRing[OBJECTARRAYSIZE];
+  int cscStripDigiChamber[OBJECTARRAYSIZE];
+  int cscStripDigiLayer[OBJECTARRAYSIZE];
+
 
   int nCscWireDigis;
+  vector<vector<int> > cscWireDigiWireTimeBinsOn;
+
   int cscWireDigiDetId[OBJECTARRAYSIZE];
+  int cscWireDigiEndcap[OBJECTARRAYSIZE];
+  int cscWireDigiStation[OBJECTARRAYSIZE];
+  int cscWireDigiRing[OBJECTARRAYSIZE];
+  int cscWireDigiChamber[OBJECTARRAYSIZE];
+  int cscWireDigiLayer[OBJECTARRAYSIZE];
   int cscWireDigiWireGroupN[OBJECTARRAYSIZE];
+  int cscWireDigiWireGroupBx[OBJECTARRAYSIZE];
+  int cscWireDigiWireTimeBin[OBJECTARRAYSIZE];
 
-  int nCscWireDigiSimLink;
-  int cscWireDigiSimLinkNWires;//number of unique wires
-  int cscWireDigiSimLinkDetId[OBJECTARRAYSIZE];
-  int cscWireDigiSimLinkChannel[OBJECTARRAYSIZE];
-  int cscWireDigiSimLinkSimTrackId[OBJECTARRAYSIZE];
-  int cscWireDigiSimLinkCFposition[OBJECTARRAYSIZE];
-  float cscWireDigiSimLinkFraction[OBJECTARRAYSIZE];
-  float cscWireDigiSimLinkOccupancy[OBJECTARRAYSIZE];
+  // int nCscWireDigiSimLink;
+  // int cscWireDigiSimLinkNWires;//number of unique wires
+  // int cscWireDigiSimLinkDetId[OBJECTARRAYSIZE];
+  // int cscWireDigiSimLinkChannel[OBJECTARRAYSIZE];
+  // int cscWireDigiSimLinkSimTrackId[OBJECTARRAYSIZE];
+  // int cscWireDigiSimLinkCFposition[OBJECTARRAYSIZE];
+  // float cscWireDigiSimLinkFraction[OBJECTARRAYSIZE];
+  // float cscWireDigiSimLinkOccupancy[OBJECTARRAYSIZE];
+  //
+  // int nCscStripDigiSimLink;
+  // int cscStripDigiSimLinkNStrips;
+  // int cscStripDigiSimLinkDetId[OBJECTARRAYSIZE];
+  // int cscStripDigiSimLinkChannel[OBJECTARRAYSIZE];
+  // int cscStripDigiSimLinkSimTrackId[OBJECTARRAYSIZE];
+  // int cscStripDigiSimLinkCFposition[OBJECTARRAYSIZE];
+  // float cscStripDigiSimLinkFraction[OBJECTARRAYSIZE];
+  // float cscStripDigiSimLinkOccupancy[OBJECTARRAYSIZE];
 
-  int nCscStripDigiSimLink;
-  int cscStripDigiSimLinkNStrips;
-  int cscStripDigiSimLinkDetId[OBJECTARRAYSIZE];
-  int cscStripDigiSimLinkChannel[OBJECTARRAYSIZE];
-  int cscStripDigiSimLinkSimTrackId[OBJECTARRAYSIZE];
-  int cscStripDigiSimLinkCFposition[OBJECTARRAYSIZE];
-  float cscStripDigiSimLinkFraction[OBJECTARRAYSIZE];
-  float cscStripDigiSimLinkOccupancy[OBJECTARRAYSIZE];
 
-
-  unsigned int nCscDetLayer;
-  int cscDetLayer_nCscRecHits[OBJECTARRAYSIZE];
-  int cscDetLayer_nCscSimHits[OBJECTARRAYSIZE];
-  int cscDetLayer_nWireDigis[OBJECTARRAYSIZE];
-  int cscDetLayer_nStripDigis[OBJECTARRAYSIZE];
-  bool cscDetLayer_inME1112[OBJECTARRAYSIZE];
-  int cscDetLayer_wireDigiOccupancy[OBJECTARRAYSIZE];
-  int cscDetLayer_stripDigiOccupancy[OBJECTARRAYSIZE];
-  int cscDetLayer_match_gParticle_index[OBJECTARRAYSIZE];
-  int cscDetLayer[OBJECTARRAYSIZE];
+  // unsigned int nCscDetLayer;
+  // int cscDetLayer_nCscRecHits[OBJECTARRAYSIZE];
+  // int cscDetLayer_nCscSimHits[OBJECTARRAYSIZE];
+  // int cscDetLayer_nWireDigis[OBJECTARRAYSIZE];
+  // int cscDetLayer_nStripDigis[OBJECTARRAYSIZE];
+  // bool cscDetLayer_inME1112[OBJECTARRAYSIZE];
+  // int cscDetLayer_wireDigiOccupancy[OBJECTARRAYSIZE];
+  // int cscDetLayer_stripDigiOccupancy[OBJECTARRAYSIZE];
+  // int cscDetLayer_match_gParticle_index[OBJECTARRAYSIZE];
+  // int cscDetLayer[OBJECTARRAYSIZE];
 
   int nRpc;
   float rpcPhi[OBJECTARRAYSIZE];
@@ -799,29 +825,51 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float rpcT[OBJECTARRAYSIZE];
   float rpcTError[OBJECTARRAYSIZE];
 
-  int nDt;
-  float dtPhi[OBJECTARRAYSIZE];
-  float dtEta[OBJECTARRAYSIZE];
-  float dtX[OBJECTARRAYSIZE];
-  float dtY[OBJECTARRAYSIZE];
-  float dtZ[OBJECTARRAYSIZE];
-  float dtDirX[OBJECTARRAYSIZE];
-  float dtDirY[OBJECTARRAYSIZE];
-  float dtDirZ[OBJECTARRAYSIZE];
-  float dtT[OBJECTARRAYSIZE];
-  float dtTError[OBJECTARRAYSIZE];
+  int nDtRechits;
+  float dtRechitX[OBJECTARRAYSIZE];
+  float dtRechitY[OBJECTARRAYSIZE];
+  float dtRechitZ[OBJECTARRAYSIZE];
+  float dtRechitEta[OBJECTARRAYSIZE];
+  float dtRechitPhi[OBJECTARRAYSIZE];
+  float dtRechitTime[OBJECTARRAYSIZE];
+  int dtRechitWireId[OBJECTARRAYSIZE];
+  int dtRechitStation[OBJECTARRAYSIZE];
+  int dtRechitWheel[OBJECTARRAYSIZE];
+  int dtRechitSector[OBJECTARRAYSIZE];
+  int dtRechitSuperLayer[OBJECTARRAYSIZE];
+  int dtRechitLayer[OBJECTARRAYSIZE];
 
-  int nDtCosmic;
-  float dtCosmicPhi[OBJECTARRAYSIZE];
-  float dtCosmicEta[OBJECTARRAYSIZE];
-  float dtCosmicX[OBJECTARRAYSIZE];
-  float dtCosmicY[OBJECTARRAYSIZE];
-  float dtCosmicZ[OBJECTARRAYSIZE];
-  float dtCosmicDirX[OBJECTARRAYSIZE];
-  float dtCosmicDirY[OBJECTARRAYSIZE];
-  float dtCosmicDirZ[OBJECTARRAYSIZE];
-  float dtCosmicT[OBJECTARRAYSIZE];
-  float dtCosmicTError[OBJECTARRAYSIZE];
+  int nDtSimHits;
+  float dtSimHitsTOF[OBJECTARRAYSIZE];
+  float dtSimHitsEnergyLoss[OBJECTARRAYSIZE];
+  int dtSimHitsParticleType[OBJECTARRAYSIZE];
+  float dtSimHitsPabs[OBJECTARRAYSIZE];
+  int dtSimHitsProcessType[OBJECTARRAYSIZE];
+  float dtSimHitsX[OBJECTARRAYSIZE];
+  float dtSimHitsY[OBJECTARRAYSIZE];
+  float dtSimHitsZ[OBJECTARRAYSIZE];
+  float dtSimHitsPhi[OBJECTARRAYSIZE];
+  float dtSimHitsEta[OBJECTARRAYSIZE];
+  int dtSimHitsDetId[OBJECTARRAYSIZE];
+  int dtSimHitsStation[OBJECTARRAYSIZE];
+  int dtSimHitsWheel[OBJECTARRAYSIZE];
+  int dtSimHitsSector[OBJECTARRAYSIZE];
+  int dtSimHitsSuperLayer[OBJECTARRAYSIZE];
+  int dtSimHitsLayer[OBJECTARRAYSIZE];
+
+  int nDtDigis;
+
+
+
+  float dtDigiTime[OBJECTARRAYSIZE];
+  int   dtDigiWireId[OBJECTARRAYSIZE];
+  int   dtDigiNumber[OBJECTARRAYSIZE];
+  int   dtDigiCountsTDC[OBJECTARRAYSIZE];
+  int   dtDigiStation[OBJECTARRAYSIZE];
+  int   dtDigiSector[OBJECTARRAYSIZE];
+  int   dtDigiWheel[OBJECTARRAYSIZE];
+  int   dtDigiLayer[OBJECTARRAYSIZE];
+  int   dtDigiSuperLayer[OBJECTARRAYSIZE];
 
  //AK4 Jets
  int nJets;
@@ -1107,6 +1155,10 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float gLLP_eta[LLP_ARRAY_SIZE];
  float gLLP_phi[LLP_ARRAY_SIZE];
  bool gLLP_csc[LLP_ARRAY_SIZE];
+ float gLLP_gamma[LLP_ARRAY_SIZE];
+ float gLLP_ctau[LLP_ARRAY_SIZE];
+ float gLLP_Eem[LLP_ARRAY_SIZE];
+ float gLLP_Ehad[LLP_ARRAY_SIZE];
 
  float photon_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
  float photon_travel_time_pv[LLP_DAUGHTER_ARRAY_SIZE];
