@@ -34,7 +34,9 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   isData_(iConfig.getParameter<bool> ("isData")),
   useGen_(iConfig.getParameter<bool> ("useGen")),
   isRECO_(iConfig.getParameter<bool> ("isRECO")),
+  isRAW_(iConfig.getParameter<bool> ("isRAW")),
   isFastsim_(iConfig.getParameter<bool> ("isFastsim")),
+  isBParkAOD_(iConfig.getParameter<bool> ("isBParkAOD")),
   enableTriggerInfo_(iConfig.getParameter<bool> ("enableTriggerInfo")),
   enableGenLLPInfo_(iConfig.getParameter<bool> ("enableGenLLPInfo")),
   enableEcalRechits_(iConfig.getParameter<bool> ("enableEcalRechits")),
@@ -241,7 +243,7 @@ void displacedJetMuon_ntupler::enableEventInfoBranches()
   displacedJetMuonTree->Branch("runNum", &runNum, "runNum/i");
   displacedJetMuonTree->Branch("nSlimmedSecondV", &nSlimmedSecondV, "nSlimmedSecondV/i");
   displacedJetMuonTree->Branch("lumiNum", &lumiNum, "lumiNum/i");
-  displacedJetMuonTree->Branch("eventNum", &eventNum, "eventNum/i");
+  displacedJetMuonTree->Branch("eventNum", &eventNum, "eventNum/l");
   displacedJetMuonTree->Branch("eventTime", &eventTime, "eventTime/i");
   displacedJetMuonTree->Branch("pvX", &pvX, "pvX/F");
   displacedJetMuonTree->Branch("pvY", &pvY, "pvY/F");
@@ -2259,9 +2261,9 @@ void displacedJetMuon_ntupler::resetMCBranches()
   genAlphaQCD = -999.;
   genAlphaQED = -999.;
 
-  scaleWeights->clear();
-  pdfWeights->clear();
-  alphasWeights->clear();
+  if (scaleWeights) scaleWeights->clear();
+  if (pdfWeights) pdfWeights->clear();
+  if (alphasWeights) alphasWeights->clear();
 
   return;
 };
@@ -4101,7 +4103,7 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
     fatJetPt[nFatJets] = j.pt();
     fatJetEta[nFatJets] = j.eta();
     fatJetPhi[nFatJets] = j.phi();
-    fatJetRawPt[nFatJets] = j.correctedP4(0).Pt();
+    fatJetUncorrectedPt[nFatJets] = j.correctedP4(0).Pt();
 
     // fatJetICSV[nFatJets] = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
     // fatJetBoostedDoubleSVAK8 = j.bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags");

@@ -174,7 +174,7 @@ using namespace std;
 
 //------ Array Size Constants ------//
 #define OBJECTARRAYSIZE 5000
-#define CSCRECHITARRAYSIZE 100000
+#define CSCRECHITARRAYSIZE 1000000
 #define RECHITARRAYSIZE 20000
 #define HORECHITARRAYSIZE 2000
 #define GENPARTICLEARRAYSIZE 2000
@@ -283,7 +283,9 @@ protected:
   bool    isData_;
   bool    useGen_;
   bool    isRECO_;
+  bool    isRAW_;
   bool    isFastsim_;
+  bool    isBParkAOD_;
   bool enableTriggerInfo_;
   bool enableGenLLPInfo_;
   bool enableEcalRechits_;
@@ -563,7 +565,7 @@ protected:
   int nSlimmedSecondV;
   uint runNum;
   uint lumiNum;
-  uint eventNum;
+  ULong64_t eventNum;
   uint eventTime;//in second, since 1970
 
   float pvX;
@@ -1276,6 +1278,7 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   //AK8 Jets
   int nFatJets;
   float fatJetE[OBJECTARRAYSIZE];
+  float fatJetUncorrectedPt[OBJECTARRAYSIZE];
   float fatJetPt[OBJECTARRAYSIZE];
   float fatJetEta[OBJECTARRAYSIZE];
   float fatJetPhi[OBJECTARRAYSIZE];
