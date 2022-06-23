@@ -658,9 +658,18 @@ void displacedJetMuon_ntupler::enableMuonSystemBranches()
     displacedJetMuonTree->Branch("dtRechitZ",             dtRechitZ,             "dtRechitZ[nDtRechits]/F");
     displacedJetMuonTree->Branch("dtRechitEta",             dtRechitEta,             "dtRechitEta[nDtRechits]/F");
     displacedJetMuonTree->Branch("dtRechitPhi",             dtRechitPhi,             "dtRechitPhi[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitCorrectX",             dtRechitCorrectX,             "dtRechitCorrectX[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitCorrectY",             dtRechitCorrectY,             "dtRechitCorrectY[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitCorrectZ",             dtRechitCorrectZ,             "dtRechitCorrectZ[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitCorrectEta",             dtRechitCorrectEta,             "dtRechitCorrectEta[nDtRechits]/F");
+    displacedJetMuonTree->Branch("dtRechitCorrectPhi",             dtRechitCorrectPhi,             "dtRechitCorrectPhi[nDtRechits]/F");
+    
     displacedJetMuonTree->Branch("dtRechitTime",             dtRechitTime,             "dtRechitTime[nDtRechits]/F");
     displacedJetMuonTree->Branch("dtRechitStation",             dtRechitStation,             "dtRechitStation[nDtRechits]/I");
     displacedJetMuonTree->Branch("dtRechitWheel",             dtRechitWheel,             "dtRechitWheel[nDtRechits]/I");
+    displacedJetMuonTree->Branch("dtRechitSector",             dtRechitSector,             "dtRechitSector[nDtRechits]/I");
+    displacedJetMuonTree->Branch("dtRechitLayer",             dtRechitLayer,             "dtRechitLayer[nDtRechits]/I");
+    displacedJetMuonTree->Branch("dtRechitSuperLayer",             dtRechitSuperLayer,             "dtRechitSuperLayer[nDtRechits]/I");
 
     displacedJetMuonTree->Branch("nDtRechitClusters",             &nDtRechitClusters, "nDtRechitClusters/I");
     displacedJetMuonTree->Branch("dtRechitCluster_match_gParticle_minDeltaR",             dtRechitCluster_match_gParticle_minDeltaR,             "dtRechitCluster_match_gParticle_minDeltaR[nDtRechitClusters]/F");
@@ -1697,9 +1706,17 @@ void displacedJetMuon_ntupler::resetMuonSystemBranches()
     dtRechitZ[i] = 0.0;
     dtRechitEta[i] = 0.0;
     dtRechitPhi[i] = 0.0;
+    dtRechitCorrectX[i] = 0.0;
+    dtRechitCorrectY[i] = 0.0;
+    dtRechitCorrectZ[i] = 0.0;
+    dtRechitCorrectEta[i] = 0.0;
+    dtRechitCorrectPhi[i] = 0.0;    
     dtRechitTime[i] = 0.0;
     dtRechitStation[i] = 0;
     dtRechitWheel[i] = 0;
+    dtRechitSector[i] = 0;
+    dtRechitSuperLayer[i] = 0;
+    dtRechitLayer[i] = 0;
 
     dtSegPhi[i] = 0.0;
     dtSegEta[i] = 0.0;
@@ -3047,16 +3064,36 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	DetId geoid = dtRechit.geographicalId();
 	DTChamberId dtdetid = DTChamberId(geoid);
 	const DTChamber * dtchamber = dtG->chamber(dtdetid);
+
+	DTLayerId dtlayerdetid = DTLayerId(geoid);
+	const DTLayer* layer = dtG->layer(dtlayerdetid);
+
+
 	if (dtchamber) {
 	  GlobalPoint globalPosition = dtchamber->toGlobal(localPosition);
+
 	  dtRechitPhi[nDtRechits] = globalPosition.phi();
 	  dtRechitEta[nDtRechits] = globalPosition.eta();
 	  dtRechitX[nDtRechits] = globalPosition.x();
 	  dtRechitY[nDtRechits] = globalPosition.y();
 	  dtRechitZ[nDtRechits] = globalPosition.z();
+
+	  if (layer) {
+	    GlobalPoint globalPositionFromLayer = layer->toGlobal(localPosition);
+	    dtRechitCorrectPhi[nDtRechits] = globalPositionFromLayer.phi();
+	    dtRechitCorrectEta[nDtRechits] = globalPositionFromLayer.eta();
+	    dtRechitCorrectX[nDtRechits] = globalPositionFromLayer.x();
+	    dtRechitCorrectY[nDtRechits] = globalPositionFromLayer.y();
+	    dtRechitCorrectZ[nDtRechits] = globalPositionFromLayer.z();
+	    dtRechitSector[nDtRechits] = dtlayerdetid.sector();
+	    dtRechitSuperLayer[nDtRechits] = dtlayerdetid.superlayer();
+	    dtRechitLayer[nDtRechits] = dtlayerdetid.layer();	  
+	  }
+
 	  dtRechitTime[nDtRechits] = dtRechit.digiTime();
 	  dtRechitStation[nDtRechits] = dtdetid.station();
 	  dtRechitWheel[nDtRechits] = dtdetid.wheel();
+	  
 	  Point p;
 	  p.phi = dtRechitPhi[nDtRechits];
 	  p.eta = dtRechitEta[nDtRechits];
