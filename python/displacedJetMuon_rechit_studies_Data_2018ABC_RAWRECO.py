@@ -11,8 +11,9 @@ process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2018")
 
 #load input files
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(       
-        '/store/data/Run2018D/MET/RAW-RECO/HighMET-PromptReco-v2/000/320/757/00000/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
+    fileNames = cms.untracked.vstring(
+        #'/store/data/Run2018D/SingleMuon/RAW-RECO/ZMu-PromptReco-v2/000/321/121/00000/661EDBC5-929E-E811-AF23-FA163EBD19B5.root'
+        '/store/data/Run2018A/MET/RAW-RECO/HighMET-17Sep2018-v1/60000/FFAF1AE5-6AD4-D942-AFE5-AECA675812FD.root'
         )
 )
 
@@ -20,7 +21,7 @@ process.options = cms.untracked.PSet(
 
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200))
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 #TFileService for output
@@ -38,7 +39,7 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 
 #------ Declare the correct global tag ------#
 
-process.GlobalTag.globaltag = '102X_dataRun2_Prompt_v15'
+process.GlobalTag.globaltag = '102X_dataRun2_v12'
 
 #------ If we add any inputs beyond standard event content, import them here ------#
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
@@ -81,13 +82,13 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 
 
 #list input collections
-process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
+process.ntuples = cms.EDAnalyzer('displacedJetMuon_rechit_studies',
     isData = cms.bool(True),
     useGen = cms.bool(False),
     isRECO = cms.bool(True),                                
     isFastsim = cms.bool(False),
     readMuonDigis = cms.bool(True),
-    enableTriggerInfo = cms.bool(True),
+    enableTriggerInfo = cms.bool(False),
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
     enableGenLLPInfo = cms.bool(True),
@@ -122,11 +123,16 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
 
     genParticles = cms.InputTag("genParticles"),
     MuonCSCSimHits = cms.InputTag("g4SimHits", "MuonCSCHits","SIM"),
+    MuonDTSimHits = cms.InputTag("g4SimHits", "MuonDTHits","SIM"),
     MuonCSCComparatorDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCComparatorDigi", "HLT"),
     MuonCSCStripDigi = cms.InputTag("muonCSCDigis", "MuonCSCStripDigi"),
     MuonCSCWireDigi = cms.InputTag("muonCSCDigis", "MuonCSCWireDigi"),
     MuonCSCWireDigiSimLinks = cms.InputTag( "simMuonCSCDigis", "MuonCSCWireDigiSimLinks", "HLT"),
     MuonCSCStripDigiSimLinks = cms.InputTag("simMuonCSCDigis","MuonCSCStripDigiSimLinks", "HLT"),
+    #MuonCSCStripDigi = cms.InputTag("mixData", "MuonCSCStripDigisDM", "HLT"),
+    #MuonCSCWireDigi = cms.InputTag("mixData", "MuonCSCWireDigisDM", "HLT"),
+    MuonDTDigi = cms.InputTag("muonDTDigis"),
+
 
     #packedGenParticles = cms.InputTag("packedGenParticles"),
     #prunedGenParticles = cms.InputTag("prunedGenParticles"),
@@ -138,7 +144,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #triggerBits = cms.InputTag("TriggerResults","","RECO"),
     hepMC = cms.InputTag("generatorSmeared", "", "SIM"),
 
-    triggerPrescales = cms.InputTag("patTrigger"),
+    #triggerPrescales = cms.InputTag("patTrigger"),
     #triggerObjects = cms.InputTag("selectedPatTrigger"),
 
     metFilterBits = cms.InputTag("TriggerResults", "", "RECO"),
@@ -296,25 +302,24 @@ process.selectedPatCandidatesTask = cms.Task(
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
-
-process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
-process.patTrigger.onlyStandAlone = cms.bool(True)
-process.patTrigger.packTriggerLabels = cms.bool(True)
-process.patTrigger.packTriggerPathNames = cms.bool(True)
-process.patTrigger.packTriggerPrescales = cms.bool(True)
-
 process.patTask = cms.Task(
     process.patCandidatesTask,
     process.selectedPatCandidatesTask,
-    process.patTrigger
 )
 
 process.load('EventFilter.CSCRawToDigi.cscUnpacker_cfi')
 process.muonCSCDigis.InputObjects = 'rawDataCollector'
 
+process.load('EventFilter.DTRawToDigi.dtunpacker_cfi')
+process.muonDTDigis.inputLabel = 'rawDataCollector'
+
+process.load("RecoLocalMuon.Configuration.RecoLocalMuon_cff")
+
+
 #Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.muonCSCDigis * process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+#process.p = cms.Path(process.muonCSCDigis * process.muonDTDigis * process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
+process.p = cms.Path(process.muonDTDigis * process.muonCSCDigis * process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
 process.schedule = cms.Schedule(process.p )
 
 
