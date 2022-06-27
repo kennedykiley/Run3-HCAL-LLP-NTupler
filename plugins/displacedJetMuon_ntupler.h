@@ -285,11 +285,13 @@ protected:
   bool    isRECO_;
   bool    isRAW_;
   bool    isFastsim_;
+
   bool    isBParkAOD_;
   bool enableTriggerInfo_;
   bool enableGenLLPInfo_;
   bool enableEcalRechits_;
   bool readGenVertexTime_;
+
   bool enableAK8Jets_;
   bool readMuonDigis_;
   int  llpId_;
@@ -990,7 +992,10 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
   float         cscRechitClusterZ[OBJECTARRAYSIZE];
   float         cscRechitClusterTime[OBJECTARRAYSIZE];
   float         cscRechitClusterTimeTotal[OBJECTARRAYSIZE];
+  float         cscRechitClusterTimeWeighted[OBJECTARRAYSIZE];
   float         cscRechitClusterTimeSpread[OBJECTARRAYSIZE];
+  float         cscRechitClusterTimeSpreadWeighted[OBJECTARRAYSIZE];
+  float         cscRechitClusterTimeSpreadWeightedAll[OBJECTARRAYSIZE];
   float         cscRechitClusterGenMuonDeltaR[OBJECTARRAYSIZE];
   float         cscRechitClusterMajorAxis[OBJECTARRAYSIZE];
   float         cscRechitClusterMinorAxis[OBJECTARRAYSIZE];
