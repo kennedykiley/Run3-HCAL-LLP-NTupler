@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cmath>
+using namespace std;
 
 #define UNCLASSIFIED -1
 // #define CORE_POINT 1
@@ -10,24 +11,31 @@
 #define NOISE -2
 #define SUCCESS 0
 #define FAILURE -3
+// #define MERGE_DR
+const double MERGE_CLUSTER_DR = 0.6;
 
-using namespace std;
 struct cscCluster
 {
-  float x, y, z, t, tTotal, eta, phi;
+  float x, y, z, t, tTotal, tWeighted, eta, phi;//t is t_strip, tWire, tTotal is sum
   int nCscSegments;
   float jetVeto, calojetVeto, muonVeto;
   int maxChamber, maxChamberSegment, nChamber;
-  int maxStation, maxStationSegment, nStation;
+  // vector<int> cscChambers;
+  int maxStation, maxStationSegment, nStation, nStation5, nStation10, nStation10perc;
+  float avgStation, avgStation5, avgStation10, avgStation10perc;
   int nCscSegmentChamberPlus11, nCscSegmentChamberPlus12, nCscSegmentChamberPlus13, nCscSegmentChamberPlus21, nCscSegmentChamberPlus22, nCscSegmentChamberPlus31, nCscSegmentChamberPlus32, nCscSegmentChamberPlus41, nCscSegmentChamberPlus42;
   int nCscSegmentChamberMinus11, nCscSegmentChamberMinus12, nCscSegmentChamberMinus13, nCscSegmentChamberMinus21, nCscSegmentChamberMinus22, nCscSegmentChamberMinus31, nCscSegmentChamberMinus32, nCscSegmentChamberMinus41, nCscSegmentChamberMinus42;
+
+  int nLayersChamberPlus11, nLayersChamberPlus12, nLayersChamberPlus13, nLayersChamberPlus21, nLayersChamberPlus22, nLayersChamberPlus31, nLayersChamberPlus32, nLayersChamberPlus41, nLayersChamberPlus42;
+  int nLayersChamberMinus11, nLayersChamberMinus12, nLayersChamberMinus13, nLayersChamberMinus21, nLayersChamberMinus22, nLayersChamberMinus31, nLayersChamberMinus32, nLayersChamberMinus41, nLayersChamberMinus42;
   int nDtSegmentStation1,nDtSegmentStation2,nDtSegmentStation3,nDtSegmentStation4;
 
+
   float Me11Ratio, Me12Ratio;
-  float MajorAxis, MinorAxis, EtaSpread, PhiSpread, EtaPhiSpread;
-  float XSpread, YSpread, XYSpread, ZSpread, TSpread, RSpread;
-  float vertex_r, vertex_z, vertex_dis, vertex_chi2;
-  int vertex_n, vertex_n1, vertex_n5, vertex_n10, vertex_n15, vertex_n20;
+  float MajorAxis, MinorAxis, EtaSpread, PhiSpread, EtaPhiSpread, XYSpread, DeltaRSpread;
+  float XSpread, YSpread, ZSpread, TSpread, RSpread, TSpreadWeighted, TSpreadWeightedAll;
+
+
   vector<int>segment_id;
 };
 
@@ -41,7 +49,7 @@ typedef struct Point_
     float x, y, z, t, twire;  // X, Y, Z position
     float eta,phi;
     float dirX, dirY, dirZ;
-    int station, chamber;
+    int station, chamber, layer, superlayer; //superlayer exists only for DT
     int clusterID;  // clustered ID
 }Point;
 
@@ -63,6 +71,7 @@ public:
     vector<float>clusterY;
     vector<float>clusterZ;
     vector<float>clusterTime;
+    vector<float>clusterTimeWeighted;
     vector<float>clusterTimeTotal;
     vector<float>clusterMajorAxis;
     vector<float>clusterMinorAxis;
@@ -70,33 +79,30 @@ public:
     vector<float>clusterYSpread;
     vector<float>clusterXYSpread;
     vector<float>clusterRSpread;
+
     vector<float>clusterZSpread;
     vector<float>clusterTimeSpread;
+    vector<float>clusterTimeSpreadWeighted;
+    vector<float>clusterTimeSpreadWeightedAll;
     vector<float>clusterEtaPhiSpread;
     vector<float>clusterEtaSpread;
     vector<float>clusterPhiSpread;
+    vector<float>clusterDeltaRSpread;
 
-    vector<float>clusterVertexR;
-    vector<float>clusterVertexZ;
-    vector<float>clusterVertexDis;
-    vector<float>clusterVertexChi2;
-    vector<int>clusterVertexN;
 
-    vector<int>clusterVertexN1cm;
-    vector<int>clusterVertexN5cm;
-    vector<int>clusterVertexN10cm;
-    vector<int>clusterVertexN15cm;
-    vector<int>clusterVertexN20cm;
 
 
     vector<cscCluster> CscCluster;
 
     int run();
     double deltaPhi(double phi1, double phi2);
+    double deltaR(double eta1, double phi1, double eta2, double phi2);
+
     int result();
     int clusterMoments();
+    void clear_clusters();
     void sort_clusters();
-    int vertexing();
+    void merge_clusters();//change cluster id of the points if the clusters are close, and clear all the vectors at the end.
     vector<int> calculateCluster(Point point);
     int expandCluster(Point point, int clusterID);
     inline double calculateDistance(Point pointCore, Point pointTarget);
@@ -104,7 +110,6 @@ public:
     int getTotalPointSize() {return m_pointSize;}
     int getMinimumClusterSize() {return m_minPoints;}
     int getEpsilonSize() {return m_epsilon;}
-
 private:
     vector<Point> m_points;
     unsigned int m_pointSize;
