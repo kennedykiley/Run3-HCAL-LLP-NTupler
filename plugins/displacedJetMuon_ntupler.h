@@ -267,6 +267,7 @@ public:
   bool fillMet(const edm::Event& iEvent);
   bool fillTrigger(const edm::Event& iEvent);
   bool fillMC();
+  bool fillHitsTracksAndPFCands(const edm::EventSetup& iSetup);
 
 
 protected:
@@ -558,6 +559,16 @@ protected:
   TH1D *sumScaleWeights;
   TH1D *sumPdfWeights;
   TH1D *sumAlphasWeights;
+
+  //------ Keep Track of Which Hits to Save ------//
+  vector<bool> SaveThisEBRechit; 
+  vector<bool> SaveThisEERechit; 
+  vector<bool> SaveThisHCALRechit; 
+  vector<bool> SaveThisHORechit; 
+  vector<bool> SaveThisTrack; 
+  vector<bool> SaveThisPFCandidate; 
+  vector<int> TrackToSavedTrackMap; 
+  vector<int> PFCandToSavedPFCandMap; 
 
   //------ Variables for tree ------//
 
