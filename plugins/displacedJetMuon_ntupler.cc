@@ -78,7 +78,7 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   genJetsToken_(consumes<reco::GenJetCollection>(iConfig.getParameter<edm::InputTag>("genJets"))),
   triggerBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerBits"))),
   hepMCToken_(consumes<edm::HepMCProduct>(iConfig.getParameter<edm::InputTag>("hepMC"))),
-  //triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
+  triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
   triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
   genMetCaloToken_(consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMetsCalo"))),
   genMetTrueToken_(consumes<reco::GenMETCollection>(iConfig.getParameter<edm::InputTag>("genMetsTrue"))),
@@ -191,17 +191,47 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
     std::cout << "ERROR!!! Could not open trigger path name file : " << edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str() << "\n";
   }
 
-  // if(enableTriggerInfo_)
-  // {
-  //   std::cout << "\n";
-  //   std::cout << "****************** Trigger Paths Defined For Razor Ntuple ******************\n";
-  //   for (int i = 0; i<NTriggersMAX; ++i)
-  //   {
-  //     if (triggerPathNames[i] != "") std::cout << "Trigger " << i << " " << triggerPathNames[i] << "\n";
-  //   }
-  //   std::cout << "****************************************************************************\n";
-  //   std::cout << "\n";
-  // }
+  //*****************************************************************************************
+  //Read in Muon HLT Filters List from config file
+  //*****************************************************************************************
+  for (int i = 0; i<MAX_MuonHLTFilters; ++i) muonHLTFilterNames[i] = "";
+  ifstream myMuonHLTFilterFile (edm::FileInPath(muonHLTFilterNamesFile_.c_str()).fullPath().c_str()) ;
+  if (myMuonHLTFilterFile.is_open()) {
+    char tmp[1024];
+    string line;
+    int index;
+    string hltfiltername;
+
+    while(myMuonHLTFilterFile>>line) {
+      
+      if ( line.empty() || line.substr(0,1) == "#") {
+	myMuonHLTFilterFile.getline(tmp,1024);
+	continue;
+      }
+
+      index = atoi(line.c_str());
+      myMuonHLTFilterFile >> hltfiltername;
+      
+      if (index < MAX_MuonHLTFilters) {
+	muonHLTFilterNames[index] = hltfiltername;
+      }    
+    }    
+    myMuonHLTFilterFile.close();
+  } else {
+    cout << "ERROR!!! Could not open trigger path name file : " << edm::FileInPath(muonHLTFilterNamesFile_.c_str()).fullPath().c_str() << "\n";
+  }
+  
+  cout << "\n";
+  cout << "****************** Muon HLT Filters ******************\n";    
+  for (int i = 0; i<MAX_MuonHLTFilters; ++i) {
+    if (muonHLTFilterNames[i] != "") cout << "Muon HLT Filters " << i << " " << muonHLTFilterNames[i] << "\n";
+  }
+  cout << "****************************************************************************\n";    
+  cout << "\n";
+  
+  
+
+
 
   if(readGenVertexTime_) genParticles_t0_Token_ = consumes<float>(iConfig.getParameter<edm::InputTag>("genParticles_t0"));
 
@@ -1172,7 +1202,7 @@ void displacedJetMuon_ntupler::loadEvent(const edm::Event& iEvent)//load all min
   iEvent.getByToken(hcalRecHitsHBHEToken_,hcalRecHitsHBHE);
   iEvent.getByToken(triggerBitsToken_, triggerBits);
   if (isData_) iEvent.getByToken(triggerPrescalesToken_, triggerPrescales);
-  //iEvent.getByToken(triggerObjectsToken_, triggerObjects);
+  iEvent.getByToken(triggerObjectsToken_, triggerObjects);
 
   iEvent.getByToken(hepMCToken_, hepMC);
   iEvent.getByToken(metFilterBitsToken_, metFilterBits);
@@ -4686,15 +4716,15 @@ bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
     muon_segmentCompatability[nMuons] = muon::segmentCompatibility(mu);
     bool isGoodGlobal = mu.isGlobalMuon() && mu.globalTrack()->normalizedChi2() < 3 && mu.combinedQuality().chi2LocalPosition < 12 && mu.combinedQuality().trkKink < 20;
     muonIsICHEPMedium[nMuons] = muon::isLooseMuon(mu) && muon_validFractionTrackerHits[nMuons] > 0.49 && muon::segmentCompatibility(mu) > (isGoodGlobal ? 0.303 : 0.451);
+
     //-----------------------
     //Trigger Object Matching
     //-----------------------
     bool passTagMuonFilter = false;
-    /*for (pat::TriggerObjectStandAlone trigObject : *triggerObjects) {
-      std::cout << "muon debug 18 " << nMuons << std::endl;
+    for (pat::TriggerObjectStandAlone trigObject : *triggerObjects) {
       if (deltaR(trigObject.eta(), trigObject.phi(),mu.eta(),mu.phi()) > 0.3) continue;
       trigObject.unpackFilterLabels(iEvent, *triggerBits);
-      std::cout << "muon debug 19 " << nMuons << std::endl;
+      //std::cout << "matched trigger object" << nMuons << std::endl;
       //check single muon filters
       if ( trigObject.hasFilterLabel("hltL3fL1sMu25L1f0Tkf27QL3trkIsoFiltered0p09") ||
     	   trigObject.hasFilterLabel("hltL3fL1sMu20Eta2p1L1f0Tkf24QL3trkIsoFiltered0p09") ||
@@ -4704,15 +4734,15 @@ bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
     	   trigObject.hasFilterLabel("hltL3crIsoL1sMu20Eta2p1L1f0L2f10QL3f24QL3trkIsoFiltered0p09") ||
     	   trigObject.hasFilterLabel("hltL3crIsoL1sMu16Eta2p1L1f0L2f10QL3f20QL3trkIsoFiltered0p09") ||
     	   trigObject.hasFilterLabel("hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09")
-    	   ) passTagMuonFilter = true;
-         std::cout << "muon debug 20 " << nMuons << std::endl;
+    	   ) passTagMuonFilter = true;      
+
       //check all filters
       for ( int q=0; q<MAX_MuonHLTFilters;q++) {
     	if (trigObject.hasFilterLabel(muonHLTFilterNames[q].c_str())) muon_passHLTFilter[nMuons][q] = true;
-      std::cout << "muon debug 21 " << nMuons << std::endl;
+	//std::cout << "matched label " << muonHLTFilterNames[q] << " : " << muon_passHLTFilter[nMuons][q] << "\n";
       }
 
-    }*/
+    }
 
     muon_passSingleMuTagFilter[nMuons] = passTagMuonFilter;
     nMuons++;
@@ -5180,8 +5210,9 @@ bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
   //------------------------------------------------------------------
   // for (unsigned int i = 0, n = triggerBits->size(); i < n; ++i) {
   //   std::cout << "Trigger " << names.triggerName(i) 
-  //   	      << ", prescale " << triggerPrescales->getPrescaleForIndex(i)  << " " 
-  //   	      << (triggerBits->accept(i) ? "PASS" : "fail (or not run)") << "\n"; 
+  //     << ", prescale " << triggerPrescales->getPrescaleForIndex(i)  << " " 
+  //     << (triggerBits->accept(i) ? "PASS" : "fail (or not run)") 
+  //   << "\n"; 
   // }
 
   //------------------------------------------------------------------
@@ -5203,23 +5234,24 @@ bool displacedJetMuon_ntupler::fillTrigger(const edm::Event& iEvent)
       }
     }
   }
-
+ 
   //------------------------------------------------------------------
   // Print Trigger Objects
   //------------------------------------------------------------------  
   // for (pat::TriggerObjectStandAlone trigObject : *triggerObjects) {
-  //   //cout << "triggerObj: " << trigObject.pt() << " " << trigObject.eta() << " " << trigObject.phi() << "\n";
+  //   cout << "triggerObj: " << trigObject.pt() << " " << trigObject.eta() << " " << trigObject.phi() << "\n";
   //   //bool foundRazor = false;
   //   //Need to unpack the filter labels before checking
-  //   trigObject.unpackFilterLabels(iEvent, *triggerBits);
-  //   for(int j=0; j<int(trigObject.filterLabels().size());j++)
-  //   {
-  //     //if ((trigObject.filterLabels())[j] == "hltRsqMR200Rsq0p0196MR100Calo") foundRazor = true;
-  //     // trigObject.unpackPathNames(names);
-  //     // cout << "filter: " << (trigObject.pathNames())[j] << " " << (trigObject.filterLabels())[j] << "\n";
-  //     //cout << "filter: " << (trigObject.filterLabels())[j] << "\n";
+  //   //trigObject.unpackFilterLabels(iEvent, *triggerBits);
+  //   //trigObject.unpackPathNames(names);
+  //   cout << trigObject.filterLabels().size() << " " << trigObject.pathNames().size() << "\n";
+  //   for(int j=0; j<int(trigObject.filterLabels().size());j++) {
+  //   //   //if ((trigObject.filterLabels())[j] == "hltRsqMR200Rsq0p0196MR100Calo") foundRazor = true;      
+  //     //cout << "filter: " << (trigObject.pathNames())[j] << " " << (trigObject.filterLabels())[j] << "\n";
+  //     cout << "filter: " << (trigObject.filterLabels())[j] << "\n";
   //   }
   // }
+  // cout << "done3\n";
 
 //define this as a plug-in
   return true;
