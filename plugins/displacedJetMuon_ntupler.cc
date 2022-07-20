@@ -4548,34 +4548,45 @@ bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
     muon_dZ[nMuons] = mu.muonBestTrack()->dz(myPV->position());
     muon_ip3d[nMuons] = mu.dB(pat::Muon::PV3D);
     muon_ip3dSignificance[nMuons] = mu.dB(pat::Muon::PV3D)/mu.edB(pat::Muon::PV3D);
-    muonType[nMuons] = mu.isMuon() + mu.isGlobalMuon() + mu.isTrackerMuon() + mu.isStandAloneMuon()
-      + mu.isCaloMuon() + mu.isPFMuon() + mu.isRPCMuon();
+    muonType[nMuons] = mu.isMuon() + 2*mu.isGlobalMuon() + 4*mu.isTrackerMuon() + 8*mu.isStandAloneMuon()
+      + 16*mu.isCaloMuon() + 32*mu.isPFMuon() + 64*mu.isRPCMuon();
     muonQuality[nMuons] =
       muon::isGoodMuon(mu,muon::All)
-    + muon::isGoodMuon(mu,muon::AllGlobalMuons)
-    + muon::isGoodMuon(mu,muon::AllStandAloneMuons)
-    + muon::isGoodMuon(mu,muon::AllTrackerMuons)
-    + muon::isGoodMuon(mu,muon::TrackerMuonArbitrated)
-    + muon::isGoodMuon(mu,muon::AllArbitrated)
-    + muon::isGoodMuon(mu,muon::GlobalMuonPromptTight)
-    + muon::isGoodMuon(mu,muon::TMLastStationLoose)
-    + muon::isGoodMuon(mu,muon::TMLastStationTight)
-    + muon::isGoodMuon(mu,muon::TM2DCompatibilityLoose)
-    + muon::isGoodMuon(mu,muon::TM2DCompatibilityTight)
-    + muon::isGoodMuon(mu,muon::TMOneStationLoose)
-    + muon::isGoodMuon(mu,muon::TMOneStationTight)
-    + muon::isGoodMuon(mu,muon::TMLastStationOptimizedLowPtLoose)
-    + muon::isGoodMuon(mu,muon::TMLastStationOptimizedLowPtTight)
-    + muon::isGoodMuon(mu,muon::GMTkChiCompatibility)
-    + muon::isGoodMuon(mu,muon::GMStaChiCompatibility)
-    + muon::isGoodMuon(mu,muon::GMTkKinkTight)
-    + muon::isGoodMuon(mu,muon::TMLastStationAngLoose)
-    + muon::isGoodMuon(mu,muon::TMLastStationAngTight)
-    + muon::isGoodMuon(mu,muon::TMOneStationAngLoose)
-    + muon::isGoodMuon(mu,muon::TMOneStationAngTight)
-    + muon::isGoodMuon(mu,muon::TMLastStationOptimizedBarrelLowPtLoose)
-    + muon::isGoodMuon(mu,muon::TMLastStationOptimizedBarrelLowPtTight)
-    + muon::isGoodMuon(mu,muon::RPCMuLoose);
+      + pow(2,1)*muon::isGoodMuon(mu,muon::AllGlobalMuons)
+    + pow(2,2)*muon::isGoodMuon(mu,muon::AllStandAloneMuons)
+    + pow(2,3)*muon::isGoodMuon(mu,muon::AllTrackerMuons)
+    + pow(2,4)*muon::isGoodMuon(mu,muon::TrackerMuonArbitrated)
+    + pow(2,5)*muon::isGoodMuon(mu,muon::AllArbitrated)
+    + pow(2,6)*muon::isGoodMuon(mu,muon::GlobalMuonPromptTight)
+    + pow(2,7)*muon::isGoodMuon(mu,muon::TMLastStationLoose)
+    + pow(2,8)*muon::isGoodMuon(mu,muon::TMLastStationTight)
+    + pow(2,9)*muon::isGoodMuon(mu,muon::TM2DCompatibilityLoose)
+    + pow(2,10)*muon::isGoodMuon(mu,muon::TM2DCompatibilityTight)
+    + pow(2,11)*muon::isGoodMuon(mu,muon::TMOneStationLoose)
+    + pow(2,12)*muon::isGoodMuon(mu,muon::TMOneStationTight)
+    + pow(2,13)*muon::isGoodMuon(mu,muon::TMLastStationOptimizedLowPtLoose)
+    + pow(2,14)*muon::isGoodMuon(mu,muon::TMLastStationOptimizedLowPtTight)
+    + pow(2,15)*muon::isGoodMuon(mu,muon::GMTkChiCompatibility)
+    + pow(2,16)*muon::isGoodMuon(mu,muon::GMStaChiCompatibility)
+    + pow(2,17)*muon::isGoodMuon(mu,muon::GMTkKinkTight)
+    + pow(2,18)*muon::isGoodMuon(mu,muon::TMLastStationAngLoose)
+    + pow(2,19)*muon::isGoodMuon(mu,muon::TMLastStationAngTight)
+    + pow(2,20)*muon::isGoodMuon(mu,muon::TMOneStationAngLoose)
+    + pow(2,21)*muon::isGoodMuon(mu,muon::TMOneStationAngTight)
+    + pow(2,22)*muon::isGoodMuon(mu,muon::TMLastStationOptimizedBarrelLowPtLoose)
+    + pow(2,23)*muon::isGoodMuon(mu,muon::TMLastStationOptimizedBarrelLowPtTight)
+    + pow(2,24)*muon::isGoodMuon(mu,muon::RPCMuLoose)
+      //This is the soft muon ID
+    + pow(2,25)*( muon::isGoodMuon(mu,muon::TMOneStationTight) 
+		  && mu.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5 
+		  && mu.innerTrack()->hitPattern().pixelLayersWithMeasurement() > 0
+		  && mu.innerTrack()->quality(reco::TrackBase::highPurity)
+		  && fabs(mu.innerTrack()->dxy(myPV->position())) < 0.3
+		  && fabs(mu.innerTrack()->dz(myPV->position())) < 20.
+		  )
+      ;
+
+
     muon_pileupIso[nMuons] = mu.pfIsolationR04().sumPUPt;
     muon_chargedIso[nMuons] = mu.pfIsolationR04().sumChargedHadronPt;
     muon_photonIso[nMuons] = mu.pfIsolationR04().sumPhotonEt;
