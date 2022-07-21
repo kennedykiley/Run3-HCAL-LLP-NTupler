@@ -4660,7 +4660,7 @@ bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
 
     //-----------------------
     //Trigger Object Matching
-    //-----------------------
+    //-----------------------   
     bool passTagMuonFilter = false;
     for (pat::TriggerObjectStandAlone trigObject : *triggerObjects) {
       if (deltaR(trigObject.eta(), trigObject.phi(),mu.eta(),mu.phi()) > 0.3) continue;
@@ -4680,12 +4680,12 @@ bool displacedJetMuon_ntupler::fillMuons(const edm::Event& iEvent)
       //check all filters
       for ( int q=0; q<MAX_MuonHLTFilters;q++) {
     	if (trigObject.hasFilterLabel(muonHLTFilterNames[q].c_str())) muon_passHLTFilter[nMuons][q] = true;
-	//std::cout << "matched label " << muonHLTFilterNames[q] << " : " << muon_passHLTFilter[nMuons][q] << "\n";
-      }
-
-    }
-
+    	//std::cout << "matched label " << muonHLTFilterNames[q] << " : " << muon_passHLTFilter[nMuons][q] << "\n";
+      }  
+    } 
     muon_passSingleMuTagFilter[nMuons] = passTagMuonFilter;
+
+
     nMuons++;
     if (nMuons > OBJECTARRAYSIZE) {
       cout << "ERROR: nMuons exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";

@@ -137,8 +137,26 @@
 59 hltL3MuVVVLIsoFIlter
 
 #BParking stuff
+#HLT_Mu12_IP6_part*
 60 hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered12Q
-61 hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered9IP5Q
-62 hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered9Q
-63 hltL2fL1sMu22orParkL1f0L2Filtered10Q
-64 hltL1fL1sMu22orParkingL1Filtered0
+
+#HLT_Mu9_IP6_part*
+61 hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered9Q
+
+#HLT_Mu9_IP5_part*
+62 hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered9IP5Q
+
+#HLT_Mu9_IP4_part*
+63 hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered9IP4Q
+
+#HLT_Mu8_IP6_part*
+64 hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered8IP6Q
+
+#HLT_Mu8_IP5_part*
+65 hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered8IP5Q
+
+#HLT_Mu8_IP3_part*
+66 hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered8Q
+
+#HLT_Mu7_IP4_part*
+67 hltL3fL1sMu22OrParkL1f0L2f10QL3Filtered7IP4Q
