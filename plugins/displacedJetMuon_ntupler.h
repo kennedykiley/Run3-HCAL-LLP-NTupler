@@ -211,6 +211,9 @@ public:
   void enableMuonSystemBranches();
   void enableHORechitBranches();
   void enableEcalRechitBranches();
+  void enableHBHERechitBranches();
+  void enableTrackBranches();
+  void enableSecondaryVerticesBranches();
   void enableJetBranches();
   void enableCaloJetBranches();
   void enableJetAK8Branches();
@@ -229,14 +232,17 @@ public:
   void resetMuonBranches();
   void resetElectronBranches();
   void resetTauBranches();
-  void resetPFCandidateBranches();//need to implement yet
+  void resetPFCandidateBranches();
   void resetPhotonBranches();
-  void resetHORechitBranches();//need to implement yet
-  void resetEcalRechitBranches();//need to implement yet
+  void resetHORechitBranches();
+  void resetEcalRechitBranches();
+  void resetHBHERechitBranches();
   void resetJetBranches();
   void resetMuonSystemBranches();
-  void resetJetAK8Branches();//need to implement yet
-  void resetMetBranches();//need to implement yet
+  void resetJetAK8Branches();
+  void resetMetBranches();
+  void resetTrackBranches();
+  void resetSecondaryVerticesBranches();
   void resetMCBranches();
   void resetGenParticleBranches();
   void resetTriggerBranches();
@@ -267,6 +273,7 @@ public:
   bool fillMet(const edm::Event& iEvent);
   bool fillTrigger(const edm::Event& iEvent);
   bool fillMC();
+  bool fillSecondaryVertices();
   bool fillHitsTracksAndPFCands(const edm::EventSetup& iSetup);
 
 
@@ -567,6 +574,7 @@ protected:
   vector<bool> SaveThisHORechit; 
   vector<bool> SaveThisTrack; 
   vector<bool> SaveThisPFCandidate; 
+  vector<bool> SaveThisSecondaryVertex; 
   vector<int> TrackToSavedTrackMap; 
   vector<int> PFCandToSavedPFCandMap; 
 
@@ -575,7 +583,6 @@ protected:
   //event info
   bool isData;
   int nPV;
-  int nSlimmedSecondV;
   uint runNum;
   uint lumiNum;
   ULong64_t eventNum;
@@ -853,6 +860,18 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float track_chi2[RECHITARRAYSIZE];
  int   track_ndof[RECHITARRAYSIZE];
 
+ //Secondary Vertices
+ int nSecondaryVertices;
+ float secVtx_Pt[OBJECTARRAYSIZE];
+ float secVtx_Eta[OBJECTARRAYSIZE];
+ float secVtx_Phi[OBJECTARRAYSIZE];
+ int   secVtx_charge[OBJECTARRAYSIZE];
+ int   secVtx_nConstituents[OBJECTARRAYSIZE];
+ float secVtx_X[OBJECTARRAYSIZE];
+ float secVtx_Y[OBJECTARRAYSIZE];
+ float secVtx_Z[OBJECTARRAYSIZE];
+ float secVtx_Distance[OBJECTARRAYSIZE];
+ float secVtx_DistanceError[OBJECTARRAYSIZE];
 
  //Ecal RecHits
  const float Rechit_cut = 0.5;

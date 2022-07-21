@@ -14,6 +14,8 @@
 #include "fastjet/Selector.hh"
 #include "fastjet/PseudoJet.hh"
 #include "cms_lpc_llp/llp_ntupler/interface/DBSCAN.h"
+#include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
+#include "RecoVertex/VertexPrimitives/interface/VertexState.h"
 
 struct muonCscLayers{
   int id;
@@ -266,6 +268,9 @@ void displacedJetMuon_ntupler::setBranches()
   enableMuonSystemBranches();
   enableHORechitBranches();
   enableEcalRechitBranches();
+  enableHBHERechitBranches();
+  enableTrackBranches();
+  enableSecondaryVerticesBranches();
   enableJetBranches();
   enableJetAK8Branches();
   enableMetBranches();
@@ -280,7 +285,6 @@ void displacedJetMuon_ntupler::enableEventInfoBranches()
   displacedJetMuonTree->Branch("isData", &isData, "isData/O");
   displacedJetMuonTree->Branch("nPV", &nPV, "nPV/I");
   displacedJetMuonTree->Branch("runNum", &runNum, "runNum/i");
-  displacedJetMuonTree->Branch("nSlimmedSecondV", &nSlimmedSecondV, "nSlimmedSecondV/i");
   displacedJetMuonTree->Branch("lumiNum", &lumiNum, "lumiNum/i");
   displacedJetMuonTree->Branch("eventNum", &eventNum, "eventNum/l");
   displacedJetMuonTree->Branch("eventTime", &eventTime, "eventTime/i");
@@ -858,7 +862,10 @@ void displacedJetMuon_ntupler::enableEcalRechitBranches()
   displacedJetMuonTree->Branch("ecalRechit_kPoorRecoflag", ecalRechit_kPoorRecoflag, "ecalRechit_kPoorRecoflag[nRechits]/O");
   displacedJetMuonTree->Branch("ecalRechit_kWeirdflag", ecalRechit_kWeirdflag, "ecalRechit_kWeirdflag[nRechits]/O");
   displacedJetMuonTree->Branch("ecalRechit_kDiWeirdflag", ecalRechit_kDiWeirdflag, "ecalRechit_kDiWeirdflag[nRechits]/O");
+};
 
+void displacedJetMuon_ntupler::enableHBHERechitBranches()
+{
   displacedJetMuonTree->Branch("nHBHERechits", &nHBHERechits,"nHBHERechits/I");
   displacedJetMuonTree->Branch("hbheRechit_Eta", hbheRechit_Eta,"hbheRechit_Eta[nHBHERechits]/F");
   displacedJetMuonTree->Branch("hbheRechit_Phi",hbheRechit_Phi, "hbheRechit_Phi[nHBHERechits]/F");
@@ -870,7 +877,10 @@ void displacedJetMuon_ntupler::enableEcalRechitBranches()
   displacedJetMuonTree->Branch("hbheRechit_iEta", hbheRechit_iEta,"hbheRechit_iEta[nHBHERechits]/I");
   displacedJetMuonTree->Branch("hbheRechit_iPhi", hbheRechit_iPhi,"hbheRechit_iPhi[nHBHERechits]/I");
   displacedJetMuonTree->Branch("hbheRechit_depth", hbheRechit_depth,"hbheRechit_depth[nHBHERechits]/I");
+};
 
+void displacedJetMuon_ntupler::enableTrackBranches()
+{
   displacedJetMuonTree->Branch("nTracks", &nTracks,"nTracks/I");
   displacedJetMuonTree->Branch("track_Pt", track_Pt,"track_Pt[nTracks]/F");
   displacedJetMuonTree->Branch("track_Eta", track_Eta,"track_Eta[nTracks]/F");
@@ -888,6 +898,21 @@ void displacedJetMuon_ntupler::enableEcalRechitBranches()
   displacedJetMuonTree->Branch("track_dzErr", track_dzErr,"track_dzErr[nTracks]/F");
   displacedJetMuonTree->Branch("track_chi2", track_chi2,"track_chi2[nTracks]/F");
   displacedJetMuonTree->Branch("track_ndof", track_ndof,"track_ndof[nTracks]/I");
+};
+
+void displacedJetMuon_ntupler::enableSecondaryVerticesBranches()
+{
+  displacedJetMuonTree->Branch("nSecondaryVertices", &nSecondaryVertices,"nSecondaryVertices/I");
+  displacedJetMuonTree->Branch("secVtx_Pt", secVtx_Pt,"secVtx_Pt[nSecondaryVertices]/F");
+  displacedJetMuonTree->Branch("secVtx_Eta", secVtx_Eta,"secVtx_Eta[nSecondaryVertices]/F");
+  displacedJetMuonTree->Branch("secVtx_Phi", secVtx_Phi,"secVtx_Phi[nSecondaryVertices]/F");
+  displacedJetMuonTree->Branch("secVtx_charge", secVtx_charge,"secVtx_charge[nSecondaryVertices]/I");
+  displacedJetMuonTree->Branch("secVtx_nConstituents", secVtx_nConstituents,"secVtx_nConstituents[nSecondaryVertices]/I");
+  displacedJetMuonTree->Branch("secVtx_X", secVtx_X,"secVtx_X[nSecondaryVertices]/F");
+  displacedJetMuonTree->Branch("secVtx_Y", secVtx_Y,"secVtx_Y[nSecondaryVertices]/F");
+  displacedJetMuonTree->Branch("secVtx_Z", secVtx_Z,"secVtx_Z[nSecondaryVertices]/F");
+  displacedJetMuonTree->Branch("secVtx_Distance", secVtx_Distance,"secVtx_Distance[nSecondaryVertices]/F");
+  displacedJetMuonTree->Branch("secVtx_DistanceError", secVtx_Distance,"secVtx_DistanceError[nSecondaryVertices]/F");
 
 };
 
@@ -1324,6 +1349,8 @@ void displacedJetMuon_ntupler::resetBranches()
     resetEcalRechitBranches();
     resetHORechitBranches();
     resetPFCandidateBranches();
+    resetTrackBranches();
+    resetSecondaryVerticesBranches();
 
     //reset arrays that determine which hits to save
     SaveThisEBRechit.clear();
@@ -1332,8 +1359,10 @@ void displacedJetMuon_ntupler::resetBranches()
     SaveThisHORechit.clear();
     SaveThisTrack.clear();
     SaveThisPFCandidate.clear();
+    SaveThisSecondaryVertex.clear();
     TrackToSavedTrackMap.clear();
     PFCandToSavedPFCandMap.clear();    
+    
 
   //reset these save flags
     for (uint q=0; q<ebRecHits->size(); q++) {
@@ -1356,7 +1385,10 @@ void displacedJetMuon_ntupler::resetBranches()
       SaveThisPFCandidate.push_back(false);
       PFCandToSavedPFCandMap.push_back(-1);
     }
-
+    for(unsigned int i = 0; i < secondaryVertices->size(); i++) {
+      SaveThisSecondaryVertex.push_back(false);
+    }
+ 
 
 };
 
@@ -1368,7 +1400,6 @@ void displacedJetMuon_ntupler::resetEventInfoBranches()
   eventTime = 0;
   lumiNum = 0;
   runNum = 0;
-  nSlimmedSecondV = 0;
   pvX = -999.0;
   pvY = -999.0;
   pvZ = -999.0;
@@ -2090,7 +2121,11 @@ void displacedJetMuon_ntupler::resetEcalRechitBranches()
     ecalRechit_kWeirdflag[i] = false;
     ecalRechit_kDiWeirdflag[i] = false;
   }
+  return;
+};
 
+void displacedJetMuon_ntupler::resetHBHERechitBranches()
+{
   nHBHERechits = 0;
   for ( int i = 0; i < RECHITARRAYSIZE; i++) {
     hbheRechit_Phi[i] = -999.;
@@ -2104,7 +2139,11 @@ void displacedJetMuon_ntupler::resetEcalRechitBranches()
     hbheRechit_iPhi[i] = -999;
     hbheRechit_depth[i] = -999;
   }
+  return;
+}
 
+void displacedJetMuon_ntupler::resetTrackBranches()
+{
   nTracks = 0;
   for ( int i = 0; i < RECHITARRAYSIZE; i++) {
     track_Pt[i] = -999.;
@@ -2124,10 +2163,26 @@ void displacedJetMuon_ntupler::resetEcalRechitBranches()
     track_chi2[i] = -999.;
     track_ndof[i] = -999.;
   }
-
   return;
-};
+}
 
+void displacedJetMuon_ntupler::resetSecondaryVerticesBranches()
+{
+  nSecondaryVertices = 0;
+  for ( int i = 0; i < OBJECTARRAYSIZE; i++) {
+    secVtx_Pt[i] = -999.;
+    secVtx_Eta[i] = -999.;
+    secVtx_Phi[i] = -999.;
+    secVtx_charge[i] = 0;
+    secVtx_nConstituents[i] = 0;
+    secVtx_X[i] = -999.;
+    secVtx_Y[i] = -999.;
+    secVtx_Z[i] = -999.;
+    secVtx_Distance[i] = -999.;
+    secVtx_DistanceError[i] = -999.;
+  }
+  return;
+}
 
 void displacedJetMuon_ntupler::resetMetBranches()
 {
@@ -2480,7 +2535,7 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
 
   fillHitsTracksAndPFCands(iSetup);
-
+  fillSecondaryVertices();
   displacedJetMuonTree->Fill();
 
 };
@@ -2505,9 +2560,6 @@ bool displacedJetMuon_ntupler::fillEventInfo(const edm::Event& iEvent)
   lumiNum = iEvent.luminosityBlock();
   eventNum = iEvent.id().event();
   eventTime = iEvent.eventAuxiliary().time().unixTime();
-
-  //number of slimmedSecondaryVertices
-  nSlimmedSecondV = secondaryVertices->size();
 
   //select the primary vertex, if any
   nPV = 0;
@@ -6192,6 +6244,48 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::EventSetup& i
 
   return true;
 } //end function fillHitsTracksAndPFCands
+
+
+//*************************************************************
+// Save Secondary Vertices Information
+//*************************************************************
+bool displacedJetMuon_ntupler::fillSecondaryVertices()
+{
+  VertexDistance3D vdist;
+  for(unsigned int i = 0; i < secondaryVertices->size(); i++) {
+ 
+    // if (SaveThisSecondaryVertex[i]) {
+      const reco::VertexCompositePtrCandidate *sv = &(secondaryVertices->at(i));
+      GlobalVector flightDir(sv->vertex().x() - myPV->x(), sv->vertex().y() - myPV->y(),sv->vertex().z() - myPV->z());
+      Measurement1D dl= vdist.distance(*myPV,VertexState(RecoVertex::convertPos(sv->position()),RecoVertex::convertError(sv->error())));
+      
+      // cout << "secVertex " << i << " : " << sv->vertex().x() << " " << sv->vertex().y()  << " " << sv->vertex().z()  << " | " 
+      // 	   << sv->pt() << " " << sv->eta() << " " << sv->phi() << " " << sv->p4().M() << " " 
+      // 	   << sv->charge() << " "
+      // 	   << dl.significance() << " " 
+      // 	   << dl.value() << " "
+      // 	   << dl.error() << " " 
+      // 	   << sv->numberOfSourceCandidatePtrs() << " "
+      // 	   << "\n";  
+      
+
+      secVtx_Pt[nSecondaryVertices] = sv->pt();
+      secVtx_Eta[nSecondaryVertices] = sv->eta();
+      secVtx_Phi[nSecondaryVertices] = sv->phi();
+      secVtx_charge[nSecondaryVertices] = sv->charge();
+      secVtx_nConstituents[nSecondaryVertices] = sv->numberOfSourceCandidatePtrs();
+      secVtx_X[nSecondaryVertices] = sv->vertex().x();
+      secVtx_Y[nSecondaryVertices] = sv->vertex().y();
+      secVtx_Z[nSecondaryVertices] = sv->vertex().z();
+      secVtx_Distance[nSecondaryVertices] = dl.value();
+      secVtx_DistanceError[nSecondaryVertices] = dl.error();
+
+      nSecondaryVertices++;
+    // }
+  }
+  return true;
+}
+
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(displacedJetMuon_ntupler);
