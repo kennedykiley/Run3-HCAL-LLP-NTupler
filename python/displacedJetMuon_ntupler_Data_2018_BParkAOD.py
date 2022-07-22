@@ -167,7 +167,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #hcalNoiseInfo = cms.InputTag("hcalnoise", "", "RECO"),
 
     #secondaryVertices = cms.InputTag("inclusiveSecondaryVertices", "", "RECO"),
-    secondaryVertices = cms.InputTag("inclusiveCandidateSecondaryVertices","", "RECO"),
+    secondaryVertices = cms.InputTag("inclusiveCandidateSecondaryVertices",""),
 
     rhoAll = cms.InputTag("fixedGridRhoAll", "", "RECO"),
 

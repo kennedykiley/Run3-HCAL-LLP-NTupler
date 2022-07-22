@@ -18,7 +18,8 @@ process.source = cms.Source("PoolSource",
 #        '/store/mc/RunIIAutumn18DRPremix/ttHJetTobb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8/AODSIM/102X_upgrade2018_realistic_v15-v1/260000/EC536CE3-5405-9F4D-B571-2EF83D5C17D9.root'
         #'/store/group/phys_exotica/privateProduction/DR/step2_RECOSIM/RunIIFall18/ggH_HToSSTobbbb_ms55_pl1000/batch1/v1/ggH_HToSSTobbbb_ms55_pl1000/crab_PrivateProduction_Fall18_DR_step2_ggH_HToSSTobbbb_ms55_pl1000_batch1_v1/191224_123235/0000/RECOSIM_150.root'
         #'/store/mc/RunIIAutumn18DRPremix/ggH_HToSSTobbbb_MH-125_TuneCP5_13TeV-powheg-pythia8/GEN-SIM-RECO/rp_102X_upgrade2018_realistic_v15-v1/280001/A7084B2E-EF2D-9B4C-911C-AD7072A597D7.root'
-        '/store/group/phys_exotica/privateProduction/DR/step2_RECOSIM/RunIIFall18/ggH_HToSSTobbbb_ms55_pl1000/batch1/v1/ggH_HToSSTobbbb_ms55_pl1000/crab_PrivateProduction_Fall18_DR_step2_ggH_HToSSTobbbb_ms55_pl1000_batch1_v1/191224_123235/0000/RECOSIM_125.root'
+        #'/store/group/phys_exotica/privateProduction/DR/step2_RECOSIM/RunIIFall18/ggH_HToSSTobbbb_ms55_pl1000/batch1/v1/ggH_HToSSTobbbb_ms55_pl1000/crab_PrivateProduction_Fall18_DR_step2_ggH_HToSSTobbbb_ms55_pl1000_batch1_v1/191224_123235/0000/RECOSIM_125.root'
+        '/store/group/lpclonglived/apresyan/privateProduction/DR/step2_RECOSIM/RunIIFall18/DarkShowerHiggs_darkphoton_M2_pl100_XIOMEGA1_XILAMBDA1/batch1/v1/DarkShowerHiggs_darkphoton_M2_pl100_XIOMEGA1_XILAMBDA1/crab_PrivateProduction_Fall18_DR_step2_DarkShowerHiggs_darkphoton_M2_pl100_XIOMEGA1_XILAMBDA1_batch1_v1/220716_012952/0000/RECOSIM_1.root'
         )
 )
 
@@ -91,7 +92,10 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     isData = cms.bool(False),
     useGen = cms.bool(True),
     isRECO = cms.bool(True),                                
+    isRAW = cms.bool(False),                                 
+    isBParkAOD = cms.bool(False),  
     isFastsim = cms.bool(False),
+
     readMuonDigis = cms.bool(False),
     enableTriggerInfo = cms.bool(True),
     enableEcalRechits = cms.bool(False),
@@ -101,7 +105,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v3.dat"),
     eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
-    muonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorMuonHLTFilterNames.dat"),
+    muonHLTFilterNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/MuonHLTFilterNames.dat"),
     photonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorPhotonHLTFilterNames.dat"),
 
     #vertices = cms.InputTag("offlinePrimaryVerticesWithBS"),  # for non-timing case
@@ -145,7 +149,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     hepMC = cms.InputTag("generatorSmeared", "", "SIM"),
 
     triggerPrescales = cms.InputTag("patTrigger"),
-    #triggerObjects = cms.InputTag("selectedPatTrigger"),
+    triggerObjects = cms.InputTag("selectedPatTrigger"),
 
     metFilterBits = cms.InputTag("TriggerResults", "", "RECO"),
 
@@ -168,7 +172,7 @@ process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
     #hcalNoiseInfo = cms.InputTag("hcalnoise", "", "RECO"),
 
     #secondaryVertices = cms.InputTag("inclusiveSecondaryVertices", "", "RECO"),
-    secondaryVertices = cms.InputTag("inclusiveCandidateSecondaryVertices","", "RECO"),
+    secondaryVertices = cms.InputTag("inclusiveCandidateSecondaryVertices",""),
 
     rhoAll = cms.InputTag("fixedGridRhoAll", "", "RECO"),
 
@@ -302,9 +306,22 @@ process.selectedPatCandidatesTask = cms.Task(
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
+process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
+process.patTrigger.onlyStandAlone = cms.bool(False)
+process.patTrigger.packTriggerLabels = cms.bool(False)
+process.patTrigger.packTriggerPathNames = cms.bool(False)
+process.patTrigger.packTriggerPrescales = cms.bool(True)
+
+process.load('PhysicsTools.PatAlgos.slimming.selectedPatTrigger_cfi')
+process.load('PhysicsTools.PatAlgos.slimming.slimmedPatTrigger_cfi')
+
+
 process.patTask = cms.Task(
     process.patCandidatesTask,
     process.selectedPatCandidatesTask,
+    process.patTrigger,
+    process.selectedPatTrigger,
+    process.slimmedPatTrigger
 )
 
 #Define Execution Paths
