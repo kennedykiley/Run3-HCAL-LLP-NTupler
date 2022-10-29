@@ -70,6 +70,7 @@ using namespace std;
 
 
 //CMSSW package includes
+#include "CommonTools/Egamma/interface/ConversionTools.h"
 #include "FWCore/Framework/interface/LuminosityBlock.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -96,7 +97,6 @@ using namespace std;
 #include "SimDataFormats/GeneratorProducts/interface/GenLumiInfoProduct.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenLumiInfoHeader.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
-#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
@@ -167,9 +167,6 @@ using namespace std;
 #include "TLorentzVector.h"
 
 //LOCAL includes
-#include "cms_lpc_llp/llp_ntupler/interface/EGammaMvaEleEstimatorCSA14.h"
-#include "cms_lpc_llp/llp_ntupler/interface/ElectronMVAEstimatorRun2NonTrig.h"
-#include "cms_lpc_llp/llp_ntupler/interface/EGammaMvaPhotonEstimator.h"
 #include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
 
 //------ Array Size Constants ------//
@@ -439,6 +436,9 @@ protected:
   edm::EDGetTokenT<edm::ValueMap<int> > mvaGeneralPurposeCategoriesMapToken_;
   edm::EDGetTokenT<edm::ValueMap<float> > mvaHZZValuesMapToken_;
   edm::EDGetTokenT<edm::ValueMap<int> > mvaHZZCategoriesMapToken_;
+  const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeometryToken_;
+  const edm::ESGetToken<DTGeometry, MuonGeometryRecord> dtGeometryToken_;
+  const edm::ESGetToken<RPCGeometry, MuonGeometryRecord> rpcGeometryToken_;
 
   //EDM handles for each miniAOD input object
   edm::Handle<edm::TriggerResults> triggerBits;
