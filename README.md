@@ -5,16 +5,37 @@ Long Lived Particle Ntupler based on AOD
 ### Setup CMSSW & clone the ntuples:
 ```bash
 # Done once to setup environment
-cmsrel CMSSW_9_4_17
-cd CMSSW_9_4_17/src
-git clone git@github.com:cms-lpc-llp/JetToolbox.git  JMEAnalysis/JetToolbox
-cd JMEAnalysis/JetToolbox; git checkout jetToolbox_91X; cd -;
-git clone git@github.com:cms-lpc-llp/llp_ntupler.git cms_lpc_llp/llp_ntupler
+cmsrel CMSSW_12_4_6
+cd CMSSW_12_4_6/src
+git clone -b run3 git@github.com:cms-lpc-llp/llp_ntupler.git cms_lpc_llp/llp_ntupler
+rm cms_lpc_llp/llp_ntupler/plugins/displacedJetMuon_dump.*
+rm cms_lpc_llp/llp_ntupler/plugins/displacedJetMuon_rechit_studies.*
+rm cms_lpc_llp/llp_ntupler/plugins/displacedJetTiming_ntupler.*
+rm cms_lpc_llp/llp_ntupler/plugins/displacedJetTiming_aux.cc 
+rm cms_lpc_llp/llp_ntupler/plugins/llp_ntupler*  
+
+# Fix python print statements in cms_lpc_llp/llp_ntupler/python/crab_scripts/multi_crab_ntuples.py and cms_lpc_llp/llp_ntupler/python/crab_scripts/multi_crab_resubmit.py to make compatible with python 3
+
+# crab scripts are giving errors, move them so they are still avaliable for reference: 
+mv cms_lpc_llp/llp_ntupler/python/crab_scripts/multi_crab_resubmit.py cms_lpc_llp/llp_ntupler/python/crab_scripts/multi_crab_resubmit.py.old 
+mv cms_lpc_llp/llp_ntupler/python/crab_scripts/multi_crab_ntuples.py cms_lpc_llp/llp_ntupler/python/crab_scripts/multi_crab_ntuples.py.old
+
 scram b
 cmsenv
+
 # Run the ntuples
-cmsRun python/jetNtupler_MC_AOD.py
+cd cms_lpc_llp/llp_ntupler
+
+voms-proxy-init --rfc --voms cms --valid 48:00
+cp /tmp/x509up_u101898 /afs/cern.ch/user/g/gkopp
+chmod 777 /afs/cern.ch/user/g/gkopp/x509up_u101898
+source /cvmfs/cms.cern.ch/common/crab-setup.sh
+
+cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim.py
+#cmsRun python/jetNtupler_MC_AOD.py
 ```
+
+The files from the HMT dataset in 2022 are on Caltech T2: `/DisplacedJet/Run2022E-EXOCSCCluster-PromptReco-v1/USER`. This file is used for testing, it has 5k events: `/store/data/Run2022E/DisplacedJet/USER/EXOCSCCluster-PromptReco-v1/000/360/017/00000/eae65e97-9f58-4119-9806-a3226ecba729.root`. 
 
 ### Variables to check before running nTupler:
 * isQCD: False if running signals, True if running QCD
