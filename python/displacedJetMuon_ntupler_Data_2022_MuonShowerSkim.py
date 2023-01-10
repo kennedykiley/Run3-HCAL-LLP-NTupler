@@ -13,7 +13,8 @@ process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2022")
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(       
         #'/store/data/Run2018D/MET/RAW-RECO/HighMET-PromptReco-v2/000/320/757/00000/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
-        'file:/tmp/sixie/1d2d0fec-5501-4510-ab56-91bc83fb9a4c.root'
+        #'file:/tmp/sixie/1d2d0fec-5501-4510-ab56-91bc83fb9a4c.root'
+        '/store/data/Run2022E/DisplacedJet/USER/EXOCSCCluster-PromptReco-v1/000/360/017/00000/eae65e97-9f58-4119-9806-a3226ecba729.root'
         )
 )
 
