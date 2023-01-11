@@ -271,7 +271,7 @@ public:
   bool fillTrigger(const edm::Event& iEvent);
   bool fillMC();
   bool fillSecondaryVertices();
-  bool fillHitsTracksAndPFCands(const edm::EventSetup& iSetup);
+  bool fillHitsTracksAndPFCands(const edm::Event& iEvent, const edm::EventSetup& iSetup); // GK edited to add iEvent 
 
 
 protected:

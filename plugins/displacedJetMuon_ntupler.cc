@@ -2538,7 +2538,7 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
   fillMuonSystem(iEvent, iSetup);
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
 
-  //fillHitsTracksAndPFCands(iSetup);
+  fillHitsTracksAndPFCands(iEvent, iSetup); // GK: uncommented to fill HCAL rechits. Added iEvent. Not working with this uncommented! 
   fillSecondaryVertices();
   displacedJetMuonTree->Fill();
 
@@ -2607,12 +2607,12 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
   auto const& dtG = iSetup.getData(dtGeometryToken_);
   auto const& rpcG = iSetup.getData(rpcGeometryToken_);
 
-  // edm::ESHandle<CaloGeometry> geoHandle;
-  // iSetup.get<CaloGeometryRecord>().get(geoHandle);
-  // const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-  // const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
-  // const CaloSubdetectorGeometry *hbGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
-  // const CaloSubdetectorGeometry *heGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
+  //  edm::ESHandle<CaloGeometry> geoHandle;
+  //  iSetup.get<CaloGeometryRecord>().get(geoHandle);
+  //  const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
+  //  const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+  //  const CaloSubdetectorGeometry *hbGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
+  //  const CaloSubdetectorGeometry *heGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
 
   //*****************
   //** DIGIS
@@ -3100,33 +3100,33 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	//   }
 	// }//loop over EE rechits
 	
-	// SX: Disabled this because we were seeing way too many HCAL hits, excess of 20K hits per event
-	// //loop over hcal hits
-	// for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
-	//   const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
+	/*	// SX: Disabled this because we were seeing way too many HCAL hits, excess of 20K hits per event
+	//loop over hcal hits
+	for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
+	  const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
 	  
-	//   double hiteta = -999;
-	//   double hitphi = -999;
-	//   if (recHit->energy() < 0.1) continue;
-	//   const HcalDetId recHitId = recHit->detid();
-	//   if (recHit->detid().subdetId() == HcalBarrel) {
-	//     const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
-	//     hiteta = recHitPos.eta();
-	//     hitphi = recHitPos.phi();
-	//   } else if (recHit->detid().subdetId() == HcalEndcap) {
-	//     const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
-	//     hiteta = recHitPos.eta();
-	//     hitphi = recHitPos.phi();
-	//   } else {
-	//     cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
-	//   }
+	  double hiteta = -999;
+	  double hitphi = -999;
+	  if (recHit->energy() < 0.1) continue;
+	  const HcalDetId recHitId = recHit->detid();
+	  if (recHit->detid().subdetId() == HcalBarrel) {
+	    const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+	    hiteta = recHitPos.eta();
+	    hitphi = recHitPos.phi();
+	  } else if (recHit->detid().subdetId() == HcalEndcap) {
+	    const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
+	    hiteta = recHitPos.eta();
+	    hitphi = recHitPos.phi();
+	  } else {
+	    cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
+	  }
 	  
-	//   if ( deltaR(tmp.eta, tmp.phi, hiteta, hitphi)  < 0.5
-	//        ) {
-	//     SaveThisHCALRechit[iHit] = true;
-	//     //cout << "SaveThisRechit : " << recHit->energy() << " " << hiteta << " " << hitphi << "\n";
-	//   }
-	// }
+	  if ( deltaR(tmp.eta, tmp.phi, hiteta, hitphi)  < 0.5
+	       ) {
+	    SaveThisHCALRechit[iHit] = true;
+	    cout << "SaveThisRechit : " << recHit->energy() << " " << hiteta << " " << hitphi << "\n";
+	  }
+	  }*/
 	
 	//loop over tracks
 	for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
@@ -3531,33 +3531,33 @@ bool displacedJetMuon_ntupler::fillMuonSystem(const edm::Event& iEvent, const ed
 	//   }
 	// }//loop over EE rechits
 	
-	// SX: Disabled this because we were seeing way too many HCAL hits, excess of 20K hits per event
-	// //loop over hcal hits
-	// for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
-	//   const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
+	/*	// SX: Disabled this because we were seeing way too many HCAL hits, excess of 20K hits per event
+	//loop over hcal hits
+	for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
+	  const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
 	  
-	//   double hiteta = -999;
-	//   double hitphi = -999;
-	//   if (recHit->energy() < 0.1) continue;
-	//   const HcalDetId recHitId = recHit->detid();
-	//   if (recHit->detid().subdetId() == HcalBarrel) {
-	//     const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
-	//     hiteta = recHitPos.eta();
-	//     hitphi = recHitPos.phi();
-	//   } else if (recHit->detid().subdetId() == HcalEndcap) {
-	//     const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
-	//     hiteta = recHitPos.eta();
-	//     hitphi = recHitPos.phi();
-	//   } else {
-	//     cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
-	//   }
+	  double hiteta = -999;
+	  double hitphi = -999;
+	  if (recHit->energy() < 0.1) continue;
+	  const HcalDetId recHitId = recHit->detid();
+	  if (recHit->detid().subdetId() == HcalBarrel) {
+	    const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+	    hiteta = recHitPos.eta();
+	    hitphi = recHitPos.phi();
+	  } else if (recHit->detid().subdetId() == HcalEndcap) {
+	    const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
+	    hiteta = recHitPos.eta();
+	    hitphi = recHitPos.phi();
+	  } else {
+	    cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
+	  }
 	  
-	//   if ( deltaR(tmp.eta, tmp.phi, hiteta, hitphi)  < 0.5
-	//        ) {
-	//     SaveThisHCALRechit[iHit] = true;
-	//     //cout << "SaveThisRechit : " << recHit->energy() << " " << hiteta << " " << hitphi << "\n";
-	//   }
-	// }
+	  if ( deltaR(tmp.eta, tmp.phi, hiteta, hitphi)  < 0.5
+	       ) {
+	    SaveThisHCALRechit[iHit] = true;
+	    cout << "SaveThisRechit : " << recHit->energy() << " " << hiteta << " " << hitphi << "\n";
+	  }
+	  } */
 	
 	//loop over tracks
 	for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
@@ -4053,13 +4053,13 @@ bool displacedJetMuon_ntupler::fillGenParticles(){
 bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
 {
 
-  // edm::ESHandle<CaloGeometry> geoHandle;
-  // iSetup.get<CaloGeometryRecord>().get(geoHandle);
+  //  edm::ESHandle<CaloGeometry> geoHandle;
+  //  iSetup.get<CaloGeometryRecord>().get(geoHandle);
   // const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
   // const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
-  // const CaloSubdetectorGeometry *hbGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
-  // const CaloSubdetectorGeometry *heGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
-  // const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter);
+  //  const CaloSubdetectorGeometry *hbGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
+  //  const CaloSubdetectorGeometry *heGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
+  // const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter); 
 
   for (const pat::Jet &j : *jets) {
     if (j.pt() < 10) continue;
@@ -4319,33 +4319,33 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
       // jet_sig_et2[nJets] = sig2;
       // jet_energy_frac[nJets] = jet_energy_frac[nJets]/jetRechitE[nJets];
 
-      // //loop over hcal hits
-      // for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
-      // 	const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
+      /*      // //loop over hcal hits
+      for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
+       	const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
 
-      // 	double hiteta = -999;
-      // 	double hitphi = -999;
-      // 	if (recHit->energy() < 0.1) continue;
-      // 	const HcalDetId recHitId = recHit->detid();
-      // 	if (recHit->detid().subdetId() == HcalBarrel) {
-      // 	  const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
-      // 	  hiteta = recHitPos.eta();
-      // 	  hitphi = recHitPos.phi();
-      // 	} else if (recHit->detid().subdetId() == HcalEndcap) {
-      // 	  const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
-      // 	  hiteta = recHitPos.eta();
-      // 	  hitphi = recHitPos.phi();
-      // 	} else {
-      // 	  cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
-      // 	}
+       	double hiteta = -999;
+       	double hitphi = -999;
+       	if (recHit->energy() < 0.1) continue;
+       	const HcalDetId recHitId = recHit->detid();
+       	if (recHit->detid().subdetId() == HcalBarrel) {
+       	  const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+	  hiteta = recHitPos.eta();
+      	  hitphi = recHitPos.phi();
+      	} else if (recHit->detid().subdetId() == HcalEndcap) {
+      	  const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
+      	  hiteta = recHitPos.eta();
+      	  hitphi = recHitPos.phi();
+      	} else {
+       	  cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
+      	}
 
-      // 	if ( jetPt[nJets] > 30 &&
-      // 	     deltaR(jetEta[nJets], jetPhi[nJets], hiteta, hitphi)  < 0.5
-      // 	     ) {
-      // 	  SaveThisHCALRechit[iHit] = true;
-      // 	  //cout << "SaveThisRechit : " << recHit->energy() << " " << hiteta << " " << hitphi << "\n";
-      // 	}
-      // }
+       	if ( jetPt[nJets] > 30 &&
+       	     deltaR(jetEta[nJets], jetPhi[nJets], hiteta, hitphi)  < 0.5
+      	     ) {
+      	  SaveThisHCALRechit[iHit] = true;
+      	  cout << "SaveThisRechit : " << recHit->energy() << " " << hiteta << " " << hitphi << "\n";
+      	}
+	} */
 
       // //loop over HO hits
       // for (unsigned int iHit = 0; iHit < hcalRecHitsHO->size(); iHit ++){
@@ -4528,32 +4528,32 @@ bool displacedJetMuon_ntupler::fillJets(const edm::EventSetup& iSetup)
   //     }
   //   }
 
-  //   //loop over hcal hits
-  //   for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
-  //     const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
-
-  //     double hiteta = -999;
-  //     double hitphi = -999;
-  //     if (recHit->energy() < 0.1) continue;
-  //     const HcalDetId recHitId = recHit->detid();
-  //     if (recHit->detid().subdetId() == HcalBarrel) {
-  // 	const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
-  // 	hiteta = recHitPos.eta();
-  // 	hitphi = recHitPos.phi();
-  //     } else if (recHit->detid().subdetId() == HcalEndcap) {
-  // 	const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
-  // 	hiteta = recHitPos.eta();
-  // 	hitphi = recHitPos.phi();
-  //     } else {
-  // 	cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
-  //     }
-
-  //     if ( deltaR(fatJetEta[nFatJets], fatJetPhi[nFatJets], hiteta, hitphi)  < 1.0 ) {
-  // 	SaveThisHCALRechit[iHit] = true;
-  //     }
-  //   }
-
-
+  /*  //loop over hcal hits
+  for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
+    const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
+    
+    double hiteta = -999;
+    double hitphi = -999;
+    if (recHit->energy() < 0.1) continue;
+    const HcalDetId recHitId = recHit->detid();
+    if (recHit->detid().subdetId() == HcalBarrel) {
+      const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+      hiteta = recHitPos.eta();
+      hitphi = recHitPos.phi();
+    } else if (recHit->detid().subdetId() == HcalEndcap) {
+      const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
+      hiteta = recHitPos.eta();
+      hitphi = recHitPos.phi();
+    } else {
+      cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
+    }
+    
+    if ( deltaR(fatJetEta[nFatJets], fatJetPhi[nFatJets], hiteta, hitphi)  < 1.0 ) {
+      SaveThisHCALRechit[iHit] = true;
+    }
+    } */
+  
+  
   //   //loop over HO hits
   //   for (unsigned int iHit = 0; iHit < hcalRecHitsHO->size(); iHit ++){
   //     const HORecHit *recHit = &(*hcalRecHitsHO)[iHit];
@@ -5913,7 +5913,7 @@ bool displacedJetMuon_ntupler::fillTaus(){
 
 
 //Needs to be called AFTER jet filler and after muon detector cluster filler
-bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::EventSetup& iSetup)
+bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent, const edm::EventSetup& iSetup) // GK added "const edm::Event& iEvent," to fix error about "Called EventSetupRecord::get without using a ESGetToken." This portion not working yet!
 {
   edm::ESHandle<CaloGeometry> geoHandle;
   iSetup.get<CaloGeometryRecord>().get(geoHandle);
@@ -5926,7 +5926,7 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::EventSetup& i
   //********************************************************
   // Save EB Rechits inside Jets and AK8 Jets
   //********************************************************
-  for (uint q=0; q<ebRecHits->size(); q++) {
+  /*  for (uint q=0; q<ebRecHits->size(); q++) {
     const EcalRecHit *recHit = &(*ebRecHits)[q];
     const DetId recHitId = recHit->detid();
     const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
@@ -5950,12 +5950,12 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::EventSetup& i
       }
     }
     //cout << "After Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
-  }
+    } */
 
   //********************************************************
   // Save EE Rechits inside Jets and AK8 Jets
   //********************************************************
-  for (uint q=0; q<eeRecHits->size(); q++) {
+  /*  for (uint q=0; q<eeRecHits->size(); q++) {
     const EcalRecHit *recHit = &(*eeRecHits)[q];
     const DetId recHitId = recHit->detid();
     const auto recHitPos = endcapGeometry->getGeometry(recHitId)->getPosition();
@@ -5979,59 +5979,59 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::EventSetup& i
       }
     }
     //cout << "After Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
-  }
+    } */
 
 
-  //SX: Disabled this because it was too many hits and causing the output to be excessively large
+  // SX: Disabled this because it was too many hits and causing the output to be excessively large
   // //********************************************************
   // // Save HCAL Rechits inside Jets and AK8 Jets
   // //********************************************************
-  // for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
-  //   const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
-  //   const HcalDetId recHitId = recHit->detid();
+  for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
+    const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
+    const HcalDetId recHitId = recHit->detid();
 
-  //   //cout << "HCALREchit " << iHit << " : " << recHit->detid().subdetId() << " : " << recHitId.depth() << " " << recHitId.ieta() << " " << recHitId.iphi() << " "
-  // 	 // << " | " << recHit->energy() << " "
-  // 	 // << "\n";
+    cout << "HCALREchit " << iHit << " : " << recHit->detid().subdetId() << " : " << recHitId.depth() << " " << recHitId.ieta() << " " << recHitId.iphi() << " "
+	 << " | " << recHit->energy() << " "
+	 << "\n";
 
-  //   if (SaveThisHCALRechit[iHit]) {
-  //     hbheRechit_iEta[nHBHERechits]  = recHitId.ieta();
-  //     hbheRechit_iPhi[nHBHERechits]  = recHitId.iphi();
-  //     hbheRechit_depth[nHBHERechits]  = recHitId.depth();
-  //     if (recHit->detid().subdetId() == HcalBarrel) {
-  // 	const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
-  // 	hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
-  // 	hbheRechit_Eta[nHBHERechits] = recHitPos.eta();
-  // 	hbheRechit_X[nHBHERechits] = recHitPos.x();
-  // 	hbheRechit_Y[nHBHERechits] = recHitPos.y();
-  // 	hbheRechit_Z[nHBHERechits] = recHitPos.z();
-  //     } else if (recHit->detid().subdetId() == HcalEndcap) {
-  // 	const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
-  // 	hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
-  // 	hbheRechit_Eta[nHBHERechits] = recHitPos.eta();
-  // 	hbheRechit_X[nHBHERechits] = recHitPos.x();
-  // 	hbheRechit_Y[nHBHERechits] = recHitPos.y();
-  // 	hbheRechit_Z[nHBHERechits] = recHitPos.z();
-  //     } else {
-  // 	cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
-  //     }
+    if (SaveThisHCALRechit[iHit]) {
+      hbheRechit_iEta[nHBHERechits]  = recHitId.ieta();
+      hbheRechit_iPhi[nHBHERechits]  = recHitId.iphi();
+      hbheRechit_depth[nHBHERechits]  = recHitId.depth();
+      if (recHit->detid().subdetId() == HcalBarrel) {
+	const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+   	hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
+   	hbheRechit_Eta[nHBHERechits] = recHitPos.eta();
+   	hbheRechit_X[nHBHERechits] = recHitPos.x();
+   	hbheRechit_Y[nHBHERechits] = recHitPos.y();
+   	hbheRechit_Z[nHBHERechits] = recHitPos.z(); 
+       } else if (recHit->detid().subdetId() == HcalEndcap) {
+   	const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
+   	hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
+   	hbheRechit_Eta[nHBHERechits] = recHitPos.eta();
+   	hbheRechit_X[nHBHERechits] = recHitPos.x();
+   	hbheRechit_Y[nHBHERechits] = recHitPos.y();
+   	hbheRechit_Z[nHBHERechits] = recHitPos.z(); 
+	} else {
+   	cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
+      }
 
-  //     hbheRechit_E[nHBHERechits] = recHit->energy();
-  //     hbheRechit_T[nHBHERechits] = recHit->time();
+      hbheRechit_E[nHBHERechits] = recHit->energy();
+      hbheRechit_T[nHBHERechits] = recHit->time();
 
-  //     //if (hbheRechit_E[nHORechits] < -1) {
-  //     //cout << "HCAL Hit: " << << hbheRechit_Eta[nHORechits] << " " << hbheRechit_Phi[nHBHERechits] << " : " << hbheRechit_E[nHORechits] << " | " << nHORechits << "\n";
-  // 	//}
+      if (hbheRechit_E[nHORechits] < -1) {
+	cout << "HCAL Hit: " << hbheRechit_Eta[nHORechits] << " " << hbheRechit_Phi[nHBHERechits] << " : " << hbheRechit_E[nHORechits] << " | " << nHORechits << "\n";
+      }
 
-  //     nHBHERechits++;
+      nHBHERechits++;
 
-  //     if (nHBHERechits > RECHITARRAYSIZE) {
-  // 	cout << "ERROR: nHBHERechits exceeded maximum array size: " << RECHITARRAYSIZE << "\n";
-  // 	//assert(false);
-  // 	break;
-  //     }
-  //   }
-  // }
+      if (nHBHERechits > RECHITARRAYSIZE) {
+   	cout << "ERROR: nHBHERechits exceeded maximum array size: " << RECHITARRAYSIZE << "\n";
+   	//assert(false);
+  	break;
+      }
+    }
+  }
 
   //********************************************************
   // Save HO Rechits inside Jets and AK8 Jets
@@ -6055,7 +6055,7 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::EventSetup& i
 	assert(false);
       }
     }
-  }
+  } 
 
   //********************************************************
   // Save PF Candidates inside Jets and AK8 Jets
