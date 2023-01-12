@@ -145,6 +145,11 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   cscGeometryToken_(esConsumes<CSCGeometry, MuonGeometryRecord>()),
   dtGeometryToken_(esConsumes<DTGeometry, MuonGeometryRecord>()),
   rpcGeometryToken_(esConsumes<RPCGeometry, MuonGeometryRecord>())
+//  caloGeometryToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()), // GK
+//  castorGeometryToken_(esConsumes<PCaloGeometry, PCastorRcd>()) // GK
+// with two above lines in, have exception about "No "PCastorRcd" record found in the EventSetup."
+//  magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>()) // GK
+
 
 {
 
@@ -877,7 +882,10 @@ void displacedJetMuon_ntupler::enableHBHERechitBranches()
   displacedJetMuonTree->Branch("hbheRechit_X", hbheRechit_X, "hbheRechit_X[nHBHERechits]/F");
   displacedJetMuonTree->Branch("hbheRechit_Y", hbheRechit_Y, "hbheRechit_Y[nHBHERechits]/F");
   displacedJetMuonTree->Branch("hbheRechit_Z", hbheRechit_Z, "hbheRechit_Z[nHBHERechits]/F");
-  displacedJetMuonTree->Branch("hbheRechit_T", hbheRechit_T, "hbheRechit_T[nHBHERechits]/F");
+  displacedJetMuonTree->Branch("hbheRechit_time", hbheRechit_time, "hbheRechit_time[nHBHERechits]/F");
+  displacedJetMuonTree->Branch("hbheRechit_auxTDC", hbheRechit_auxTDC, "hbheRechit_auxTDC[nHBHERechits]/F");
+  displacedJetMuonTree->Branch("hbheRechit_timeFalling", hbheRechit_timeFalling, "hbheRechit_timeFalling[nHBHERechits]/F");
+  //  displacedJetMuonTree->Branch("hbheRechit_cctime", hbheRechit_cctime, "hbheRechit_cctime[nHBHERechits]/F");
   displacedJetMuonTree->Branch("hbheRechit_iEta", hbheRechit_iEta,"hbheRechit_iEta[nHBHERechits]/I");
   displacedJetMuonTree->Branch("hbheRechit_iPhi", hbheRechit_iPhi,"hbheRechit_iPhi[nHBHERechits]/I");
   displacedJetMuonTree->Branch("hbheRechit_depth", hbheRechit_depth,"hbheRechit_depth[nHBHERechits]/I");
@@ -1380,7 +1388,7 @@ void displacedJetMuon_ntupler::resetBranches()
       TrackToSavedTrackMap.push_back(-1);
     }
     for (uint q=0; q<hcalRecHitsHBHE->size(); q++) {
-      SaveThisHCALRechit.push_back(false);
+      SaveThisHCALRechit.push_back(true); // GK
     }
     for (uint q=0; q<hcalRecHitsHO->size(); q++) {
       SaveThisHORechit.push_back(false);
@@ -2138,7 +2146,10 @@ void displacedJetMuon_ntupler::resetHBHERechitBranches()
     hbheRechit_Y[i] = -999.;
     hbheRechit_Z[i] = -999.;
     hbheRechit_E[i] = -999.;
-    hbheRechit_T[i] = -999.;
+    hbheRechit_time[i] = -999.;
+    hbheRechit_auxTDC[i] = -999.;
+    hbheRechit_timeFalling[i] = -999.;
+    //    hbheRechit_cctime[i] = -999.;
     hbheRechit_iEta[i] = -999;
     hbheRechit_iPhi[i] = -999;
     hbheRechit_depth[i] = -999;
@@ -2538,7 +2549,7 @@ void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::Even
   fillMuonSystem(iEvent, iSetup);
   if ( enableTriggerInfo_ ) fillTrigger( iEvent );
 
-  fillHitsTracksAndPFCands(iEvent, iSetup); // GK: uncommented to fill HCAL rechits. Added iEvent. Not working with this uncommented! 
+  fillHitsTracksAndPFCands(iEvent, iSetup); // GK: uncommented to fill HCAL rechits. Added iEvent.
   fillSecondaryVertices();
   displacedJetMuonTree->Fill();
 
@@ -5911,17 +5922,26 @@ bool displacedJetMuon_ntupler::fillTaus(){
   return true;
 };
 
-
 //Needs to be called AFTER jet filler and after muon detector cluster filler
-bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent, const edm::EventSetup& iSetup) // GK added "const edm::Event& iEvent," to fix error about "Called EventSetupRecord::get without using a ESGetToken." This portion not working yet!
+bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent, const edm::EventSetup& iSetup) // GK 
+// added "const edm::Event& iEvent," to fix error about "Called EventSetupRecord::get without using a ESGetToken." This portion not working yet!
 {
-  edm::ESHandle<CaloGeometry> geoHandle;
-  iSetup.get<CaloGeometryRecord>().get(geoHandle);
+  // not working with CaloGeometry uncommented! 
+  std::cout << "just before getting calo geometry" << std::endl;
+  //  const CaloGeometry* geoHandle = &iSetup.getData(caloGeometryToken_); // compiles with this line, referenced from https://cmssdt.cern.ch/lxr/source/Calibration/HcalAlCaRecoProducers/plugins/AlCaHcalIsotrkProducer.cc
+  //  auto const& geoHandle = iSetup.getData(caloGeometryToken_); // compiles with this line, similar to how muon system is done
+  // both lines above give an error in running though, about : CastorGeometryRecord  Exception Message: No "PCastorRcd" record found in the EventSetup. 
+  // added includes of PCaloTowerRcd.h, ESGetToken of PCastorRcd, and ESConsumes. Still have error
+  std::cout << "just after getting calo geometry" << std::endl;
+
+  /*  edm::ESHandle<CaloGeometry> geoHandle;
+  geoHandle = iSetup.get<CaloGeometryRecord>(geoHandleToken);
+  //  iSetup.get<CaloGeometryRecord>().get(geoHandle);
   const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
   const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
   const CaloSubdetectorGeometry *hbGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
   const CaloSubdetectorGeometry *heGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
-  const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter);
+  const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter); */
 
   //********************************************************
   // Save EB Rechits inside Jets and AK8 Jets
@@ -5990,6 +6010,7 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent
     const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
     const HcalDetId recHitId = recHit->detid();
 
+    if (iHit == 0) cout << "HCALREchit iHit : subdet (HB=1, HE=2) : depth ieta iphi | energy" << "\n";
     cout << "HCALREchit " << iHit << " : " << recHit->detid().subdetId() << " : " << recHitId.depth() << " " << recHitId.ieta() << " " << recHitId.iphi() << " "
 	 << " | " << recHit->energy() << " "
 	 << "\n";
@@ -5999,25 +6020,29 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent
       hbheRechit_iPhi[nHBHERechits]  = recHitId.iphi();
       hbheRechit_depth[nHBHERechits]  = recHitId.depth();
       if (recHit->detid().subdetId() == HcalBarrel) {
-	const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
+	/*	const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
    	hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
    	hbheRechit_Eta[nHBHERechits] = recHitPos.eta();
    	hbheRechit_X[nHBHERechits] = recHitPos.x();
    	hbheRechit_Y[nHBHERechits] = recHitPos.y();
-   	hbheRechit_Z[nHBHERechits] = recHitPos.z(); 
+   	hbheRechit_Z[nHBHERechits] = recHitPos.z(); */
        } else if (recHit->detid().subdetId() == HcalEndcap) {
-   	const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
+	/*   	const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
    	hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
    	hbheRechit_Eta[nHBHERechits] = recHitPos.eta();
    	hbheRechit_X[nHBHERechits] = recHitPos.x();
    	hbheRechit_Y[nHBHERechits] = recHitPos.y();
-   	hbheRechit_Z[nHBHERechits] = recHitPos.z(); 
+   	hbheRechit_Z[nHBHERechits] = recHitPos.z();  */
 	} else {
    	cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
       }
 
       hbheRechit_E[nHBHERechits] = recHit->energy();
-      hbheRechit_T[nHBHERechits] = recHit->time();
+      // GK various HCAL rechit time variables 
+      hbheRechit_time[nHBHERechits] = recHit->time(); // time() is MAHI fit time in ns
+      hbheRechit_auxTDC[nHBHERechits] = recHit->auxTDC(); // contains TDC values in 6 bits in HE (2 bits in HB) for each of 5 TS (timeslice 3 = SOI). Copy of HCAL Digis. Extra bit set to distinguish case of data packed from no data
+      hbheRechit_timeFalling[nHBHERechits] = recHit->timeFalling(); // HBHE rise time
+      //      hbheRechit_cctime[nHBHERechits] = recHit->ccTime(); // cross correlation time, https://indico.cern.ch/event/1142347/contributions/4793749/attachments/2412936/4129323/HCAL%20timing%20update.pdf
 
       if (hbheRechit_E[nHORechits] < -1) {
 	cout << "HCAL Hit: " << hbheRechit_Eta[nHORechits] << " " << hbheRechit_Phi[nHBHERechits] << " : " << hbheRechit_E[nHORechits] << " | " << nHORechits << "\n";
@@ -6039,7 +6064,7 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent
   for (unsigned int iHit = 0; iHit < hcalRecHitsHO->size(); iHit ++){
     const HORecHit *recHit = &(*hcalRecHitsHO)[iHit];
     if (SaveThisHORechit[iHit]) {
-      const DetId recHitId = recHit->detid();
+      /*      const DetId recHitId = recHit->detid();
       const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
       hoRechit_Phi[nHORechits] = recHitPos.phi();
       hoRechit_Eta[nHORechits] = recHitPos.eta();
@@ -6047,7 +6072,7 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent
       hoRechit_Y[nHORechits] = recHitPos.y();
       hoRechit_Z[nHORechits] = recHitPos.z();
       hoRechit_E[nHORechits] = recHit->energy();
-      hoRechit_T[nHORechits] = recHit->time();
+      hoRechit_T[nHORechits] = recHit->time(); */
       nHORechits ++;
 
       if (nHORechits > HORECHITARRAYSIZE) {
@@ -6118,14 +6143,15 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent
     }
   }
 
-
+  /* GK
   //********************************************************
   // Save Tracks inside Jets and AK8 Jets
   //********************************************************
   // Magnetic field
+  //  auto const& magneticField = iSetup.getData(magneticFieldToken_); // GK
   edm::ESHandle<MagneticField> magneticField;
   iSetup.get<IdealMagneticFieldRecord>().get(magneticField);
-  magneticField_ = &*magneticField;
+  magneticField_ = &*magneticField; 
   std::string thePropagatorName_ = "PropagatorWithMaterial";
   iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
   StateOnTrackerBound stateOnTracker(thePropagator_.product());
@@ -6142,6 +6168,7 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent
 
       reco::TrackBaseRef tref(generalTrackHandle,iTrack);
       // make transient track (unfolding effects of B field ?)
+
       reco::TransientTrack tt(generalTrackHandle->at(iTrack),magneticField_);
 
       if(!tt.isValid()) {
@@ -6149,7 +6176,7 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent
 		  << tref->pt() << " " << tref->eta() << " " << tref->phi()
 		  << "). Skipping the track\n";
 	continue;
-      }
+	} 
 
       track_Pt[nTracks] = tref->pt();
       track_Eta[nTracks] = tref->eta();
@@ -6217,7 +6244,7 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent
       }
     } //end if save this Track
   } //loop over tracks
-
+  */
 
   //**********************************************************************
   // Cross-reference PFCandidate Indices in jets with Saved PF Candidates

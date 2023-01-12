@@ -137,6 +137,8 @@ using namespace std;
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloCellGeometry.h"
+#include "Geometry/Records/interface/PCastorRcd.h" // GK
+#include "CondFormats/GeometryObjects/interface/PCaloGeometry.h" // GK
 
 #include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
@@ -439,6 +441,9 @@ protected:
   const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeometryToken_;
   const edm::ESGetToken<DTGeometry, MuonGeometryRecord> dtGeometryToken_;
   const edm::ESGetToken<RPCGeometry, MuonGeometryRecord> rpcGeometryToken_;
+  const edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_; // GK
+  const edm::ESGetToken<PCaloGeometry, PCastorRcd> castorGeometryToken_; // GK
+  const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_; // GK
 
   //EDM handles for each miniAOD input object
   edm::Handle<edm::TriggerResults> triggerBits;
@@ -892,7 +897,10 @@ float pho_pfClusterSeedE[OBJECTARRAYSIZE];
  float hbheRechit_Eta[RECHITARRAYSIZE];
  float hbheRechit_Phi[RECHITARRAYSIZE];
  float hbheRechit_E[RECHITARRAYSIZE];
- float hbheRechit_T[RECHITARRAYSIZE];
+ float hbheRechit_time[RECHITARRAYSIZE];
+ float hbheRechit_auxTDC[RECHITARRAYSIZE];
+ float hbheRechit_timeFalling[RECHITARRAYSIZE];
+  // float hbheRechit_cctime[RECHITARRAYSIZE];
  float hbheRechit_X[RECHITARRAYSIZE];
  float hbheRechit_Y[RECHITARRAYSIZE];
  float hbheRechit_Z[RECHITARRAYSIZE];
