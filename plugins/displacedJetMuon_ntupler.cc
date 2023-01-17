@@ -144,9 +144,9 @@ displacedJetMuon_ntupler::displacedJetMuon_ntupler(const edm::ParameterSet& iCon
   photon_mvaID_decisions_wp90_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_mvaID_decisions_wp90"))),
   cscGeometryToken_(esConsumes<CSCGeometry, MuonGeometryRecord>()),
   dtGeometryToken_(esConsumes<DTGeometry, MuonGeometryRecord>()),
-  rpcGeometryToken_(esConsumes<RPCGeometry, MuonGeometryRecord>())
-//  caloGeometryToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()), // GK
-//  castorGeometryToken_(esConsumes<PCaloGeometry, PCastorRcd>()) // GK
+  rpcGeometryToken_(esConsumes<RPCGeometry, MuonGeometryRecord>()),
+  caloGeometryToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()), // GK
+  castorGeometryToken_(esConsumes<PCaloGeometry, PCastorRcd>()) // GK
 // with two above lines in, have exception about "No "PCastorRcd" record found in the EventSetup."
 //  magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>()) // GK
 
@@ -5929,7 +5929,7 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent
   // not working with CaloGeometry uncommented! 
   std::cout << "just before getting calo geometry" << std::endl;
   //  const CaloGeometry* geoHandle = &iSetup.getData(caloGeometryToken_); // compiles with this line, referenced from https://cmssdt.cern.ch/lxr/source/Calibration/HcalAlCaRecoProducers/plugins/AlCaHcalIsotrkProducer.cc
-  //  auto const& geoHandle = iSetup.getData(caloGeometryToken_); // compiles with this line, similar to how muon system is done
+  auto const& geoHandle = iSetup.getData(caloGeometryToken_); // compiles with this line, similar to how muon system is done, and recommended from twiki
   // both lines above give an error in running though, about : CastorGeometryRecord  Exception Message: No "PCastorRcd" record found in the EventSetup. 
   // added includes of PCaloTowerRcd.h, ESGetToken of PCastorRcd, and ESConsumes. Still have error
   std::cout << "just after getting calo geometry" << std::endl;
@@ -6015,7 +6015,7 @@ bool displacedJetMuon_ntupler::fillHitsTracksAndPFCands(const edm::Event& iEvent
 	 << " | " << recHit->energy() << " "
 	 << "\n";
 
-    if (SaveThisHCALRechit[iHit]) {
+    if (SaveThisHCALRechit[iHit]) { // if we want to do jet matching, would likely only save HCAL rechits inside a jet. This relies on geometry, as in L4356 where the HCAL rechits inside a jet are marked to save
       hbheRechit_iEta[nHBHERechits]  = recHitId.ieta();
       hbheRechit_iPhi[nHBHERechits]  = recHitId.iphi();
       hbheRechit_depth[nHBHERechits]  = recHitId.depth();
