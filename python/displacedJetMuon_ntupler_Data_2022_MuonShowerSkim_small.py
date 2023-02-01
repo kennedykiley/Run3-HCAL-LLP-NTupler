@@ -24,12 +24,12 @@ process.options = cms.untracked.PSet(
 
 )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) ) # 3400) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) ) # 3400) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 #TFileService for output
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string('displacedJetMuon_ntupler_1Feb.root'),
+	fileName = cms.string('displacedJetMuon_ntupler_small.root'),
     closeFileFast = cms.untracked.bool(True)
 )
 
@@ -85,7 +85,7 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 
 
 #list input collections
-process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
+process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler_small',
     isData = cms.bool(True),
     useGen = cms.bool(False),
     isRECO = cms.bool(True),                                
