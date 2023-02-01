@@ -31,7 +31,14 @@ cp /tmp/x509up_u101898 /afs/cern.ch/user/g/gkopp
 chmod 777 /afs/cern.ch/user/g/gkopp/x509up_u101898
 source /cvmfs/cms.cern.ch/common/crab-setup.sh
 
+# OR
+proxy
+crab_setup
+
+scram b -j 8
+
 cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim.py
+cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim_small.py
 #cmsRun python/jetNtupler_MC_AOD.py
 ```
 
