@@ -14,7 +14,8 @@ process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(       
         #'/store/data/Run2018D/MET/RAW-RECO/HighMET-PromptReco-v2/000/320/757/00000/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
         #'file:/tmp/sixie/1d2d0fec-5501-4510-ab56-91bc83fb9a4c.root'
-        '/store/data/Run2022E/DisplacedJet/USER/EXOCSCCluster-PromptReco-v1/000/360/017/00000/eae65e97-9f58-4119-9806-a3226ecba729.root'
+        #'/store/data/Run2022E/DisplacedJet/USER/EXOCSCCluster-PromptReco-v1/000/360/017/00000/eae65e97-9f58-4119-9806-a3226ecba729.root' # 5k events, first 3k are empty (?)
+        '/store/data/Run2022E/DisplacedJet/USER/EXOCSCCluster-PromptReco-v1/000/359/763/00000/de78b9f9-403b-42cb-b7e2-40fe4c6e8779.root'
         )
 )
 
@@ -27,7 +28,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 #TFileService for output
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string('displacedJetMuon_ntupler.root'),
+	fileName = cms.string('displacedJetMuon_ntupler_1Feb.root'),
     closeFileFast = cms.untracked.bool(True)
 )
 
