@@ -444,6 +444,7 @@ protected:
   const edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_; // GK
   const edm::ESGetToken<PCaloGeometry, PCastorRcd> castorGeometryToken_; // GK
   const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_; // GK
+  //const edm::ESGetToken<Propagator, TrackingComponentsRecord> propagatorToken_; // GK
 
   //EDM handles for each miniAOD input object
   edm::Handle<edm::TriggerResults> triggerBits;
