@@ -147,8 +147,9 @@ displacedJetMuon_ntupler_small::displacedJetMuon_ntupler_small(const edm::Parame
 	rpcGeometryToken_(esConsumes<RPCGeometry, MuonGeometryRecord>()),
 	caloGeometryToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()), // GK
 	castorGeometryToken_(esConsumes<PCaloGeometry, PCastorRcd>()), // GK
-	magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>()) // GK
-  //propagatorToken_(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", "PropagatorWithMaterial"))), // GK
+	magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>()), // GK
+	propagatorToken_(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", "PropagatorWithMaterial"))) // GK // thePropagatorToken(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", thePropagatorName))),
+
 
 {
 
@@ -6115,7 +6116,7 @@ bool displacedJetMuon_ntupler_small::fillHitsTracksAndPFCands(const edm::Event& 
 		}
 	}
 
-/* GK - below section not working, about tracker propagator error. Magnetic field seems ok
+ 	/* // GK - below section not working, about tracker propagator error. Magnetic field token seems ok. Issue in L6151 likely 
 	//********************************************************
 	// Save Tracks inside Jets and AK8 Jets
 	//********************************************************
@@ -6125,11 +6126,14 @@ bool displacedJetMuon_ntupler_small::fillHitsTracksAndPFCands(const edm::Event& 
 	//edm::ESHandle<MagneticField> magneticField;
 	//iSetup.get<IdealMagneticFieldRecord>().get(magneticField);
 	//magneticField_ = &*magneticField; 
+	std::cout << "got magnetic field for track matching" << std::endl;
 
 	// auto const& propagator = iSetup.getData(propagatorToken_); // GK - still getting compilation errors. May not be used downstream - try commenting out. Still not working when running, "Called EventSetupRecord::get without using a ESGetToken. While requesting data type:GeometricSearchTracker label:''"
 	// std::string thePropagatorName_ = "PropagatorWithMaterial";
 	// iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
 	// StateOnTrackerBound stateOnTracker(thePropagator_.product());
+	std::cout << "got tracker propagator for track matching" << std::endl;
+
 
 	for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
 
@@ -6143,7 +6147,9 @@ bool displacedJetMuon_ntupler_small::fillHitsTracksAndPFCands(const edm::Event& 
 			reco::TrackBaseRef tref(generalTrackHandle,iTrack);
 			// make transient track (unfolding effects of B field ?)
 
+			std::cout << "about to use magneticField_" << std::endl;
 			reco::TransientTrack tt(generalTrackHandle->at(iTrack),magneticField_);
+			std::cout << "just used magneticField_" << std::endl;
 
 			if(!tt.isValid()) {
 				std::cout << "Error: Transient Track not valid ("
@@ -6218,7 +6224,7 @@ bool displacedJetMuon_ntupler_small::fillHitsTracksAndPFCands(const edm::Event& 
 			}
 		} //end if save this Track
 	} //loop over tracks
- */
+  */ // GK
 
 	//**********************************************************************
 	// Cross-reference PFCandidate Indices in jets with Saved PF Candidates
