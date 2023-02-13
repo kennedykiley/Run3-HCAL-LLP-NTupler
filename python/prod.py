@@ -3,12 +3,20 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 #------ Setup ------#
 
 #initialize the process
-from Configuration.Eras.Era_Run3_cff import Run3
-process = cms.Process("displacedJetMuonNtupler", Run3)
+from Configuration.Eras.Era_Run3_cff import Run3 # GK
+process = cms.Process("displacedJetMuonNtupler", Run3) # GK
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.EventContent.EventContent_cff")
 process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2018")
 
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+from Configuration.AlCa.GlobalTag import GlobalTag
+
+#from Configuration.AlCa.autoCond import autoCond # GK 
+#process.GlobalTag.globaltag=cms.string(autoCond['run3_mc'])
+
+#import CalibTracker.Configuration.Common.PoolDBESSource_cfi
+#print(CalibTracker.Configuration.Common.PoolDBESSource_cfi.autoCond.keys())
 
 #load input files
 process.source = cms.Source("PoolSource",
@@ -42,7 +50,8 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 
 #------ Declare the correct global tag ------#
 
-process.GlobalTag.globaltag = '124X_dataRun3_Prompt_v4'
+#process.GlobalTag.globaltag = '124X_dataRun3_Prompt_v4'
+process.GlobalTag = GlobalTag(process.GlobalTag,'auto:run3_mc_FULL','')
 
 #------ If we add any inputs beyond standard event content, import them here ------#
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
