@@ -145,6 +145,7 @@ displacedJetMuon_ntupler_small::displacedJetMuon_ntupler_small(const edm::Parame
 	cscGeometryToken_(esConsumes<CSCGeometry, MuonGeometryRecord>()),
 	dtGeometryToken_(esConsumes<DTGeometry, MuonGeometryRecord>()),
 	rpcGeometryToken_(esConsumes<RPCGeometry, MuonGeometryRecord>()),
+//	gemGeometryToken_(esConsumes<GEMGeometry, MuonGeometryRecord>()), // GK
 	caloGeometryToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()), // GK
 	castorGeometryToken_(esConsumes<PCaloGeometry, PCastorRcd>()), // GK
 	magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>()), // GK

@@ -137,13 +137,20 @@ using namespace std;
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloCellGeometry.h"
+#include "Geometry/Records/interface/MuonGeometryRecord.h" // GK
 #include "Geometry/Records/interface/PCastorRcd.h" // GK
 #include "CondFormats/GeometryObjects/interface/PCaloGeometry.h" // GK
 
 #include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
+#include "DataFormats/GEMRecHit/interface/GEMSegmentCollection.h" // GK
+#include "DataFormats/GEMRecHit/interface/GEMSegment.h" // GK
+#include "DataFormats/GEMRecHit/interface/GEMCSCSegmentCollection.h" // GK
+#include "DataFormats/GEMRecHit/interface/GEMRecHit.h" // GK
+#include "DataFormats/GEMRecHit/interface/GEMRecHitCollection.h" // GK
 #include "Geometry/CSCGeometry/interface/CSCGeometry.h"
 #include "Geometry/DTGeometry/interface/DTGeometry.h"
 #include "Geometry/RPCGeometry/interface/RPCGeometry.h"
+#include "Geometry/GEMGeometry/interface/GEMGeometry.h" // GK
 #include "DataFormats/MuonDetId/interface/CSCDetId.h"
 
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
@@ -441,6 +448,7 @@ protected:
   const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeometryToken_;
   const edm::ESGetToken<DTGeometry, MuonGeometryRecord> dtGeometryToken_;
   const edm::ESGetToken<RPCGeometry, MuonGeometryRecord> rpcGeometryToken_;
+  const edm::ESGetToken<GEMGeometry, MuonGeometryRecord> gemGeometryToken_; // GK
   const edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_; // GK
   const edm::ESGetToken<PCaloGeometry, PCastorRcd> castorGeometryToken_; // GK
   const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_; // GK
