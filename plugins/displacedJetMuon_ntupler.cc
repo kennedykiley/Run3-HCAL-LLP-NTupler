@@ -2524,6 +2524,7 @@ void displacedJetMuon_ntupler::beginLuminosityBlock(edm::LuminosityBlock const& 
 
 void displacedJetMuon_ntupler::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
   using namespace edm;
+  std::cout << "analyze() called!" << std::endl;
 
   //initialize
 

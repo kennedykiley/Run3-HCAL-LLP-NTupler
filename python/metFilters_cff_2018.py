@@ -51,4 +51,3 @@ BadChargedCandidateFilter *
 eeBadScFilter *
 ecalBadCalibReducedMINIAODFilter
 )
-

@@ -30,7 +30,6 @@ voms-proxy-init --rfc --voms cms --valid 48:00
 cp /tmp/x509up_u101898 /afs/cern.ch/user/g/gkopp
 chmod 777 /afs/cern.ch/user/g/gkopp/x509up_u101898
 source /cvmfs/cms.cern.ch/common/crab-setup.sh
-
 # OR
 proxy
 crab_setup
