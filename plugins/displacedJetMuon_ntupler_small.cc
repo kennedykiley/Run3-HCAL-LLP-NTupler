@@ -3611,7 +3611,7 @@ bool displacedJetMuon_ntupler_small::fillGenParticles(){
 	// int llp_id = 6000113;
 
 	vector<int> llpIDs;
-	llpIDs.push_back(9000006);
+	llpIDs.push_back(9000006); // GK, this is LLP ID in Si's sample
 	llpIDs.push_back(9000007);
 	llpIDs.push_back(1023);
 	llpIDs.push_back(1000023);
@@ -3642,6 +3642,7 @@ bool displacedJetMuon_ntupler_small::fillGenParticles(){
 				if ((*genParticles)[i].pt()>pt_cut){
 					prunedV.push_back(&(*genParticles)[i]);
 					alreadySaved = true;
+					std::cout << "saved gen particle, with PDG ID = " << abs((*genParticles)[i].pdgId()) << std::endl;
 				}
 			}
 

@@ -29,7 +29,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 #TFileService for output
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string('displacedJetMuon_ntupler_small.root'),
+	fileName = cms.string('displacedJetMuon_ntupler_2022Data_PromptReco_DisplacedJet.root'),
     closeFileFast = cms.untracked.bool(True)
 )
 
