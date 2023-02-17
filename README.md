@@ -8,8 +8,7 @@ Long Lived Particle Ntupler based on AOD
 cmsrel CMSSW_12_4_6
 cd CMSSW_12_4_6/src
 git clone -b run3 git@github.com:cms-lpc-llp/llp_ntupler.git cms_lpc_llp/llp_ntupler
-rm cms_lpc_llp/llp_ntupler/plugins/displacedJetMuon_dump.*
-rm cms_lpc_llp/llp_ntupler/plugins/displacedJetMuon_rechit_studies.*
+rm cms_lpc_llp/llp_ntupler/plugins/displacedJetMuon.*
 rm cms_lpc_llp/llp_ntupler/plugins/displacedJetTiming_ntupler.*
 rm cms_lpc_llp/llp_ntupler/plugins/displacedJetTiming_aux.cc 
 rm cms_lpc_llp/llp_ntupler/plugins/llp_ntupler*  
@@ -31,8 +30,7 @@ cp /tmp/x509up_u101898 /afs/cern.ch/user/g/gkopp
 chmod 777 /afs/cern.ch/user/g/gkopp/x509up_u101898
 source /cvmfs/cms.cern.ch/common/crab-setup.sh
 
-cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim.py
-#cmsRun python/jetNtupler_MC_AOD.py
+cmsRun python/DisplacedHcalJetNTuplizer.py <input_arguments>
 ```
 
 The files from the HMT dataset in 2022 are on Caltech T2: `/DisplacedJet/Run2022E-EXOCSCCluster-PromptReco-v1/USER`. This file is used for testing, it has 5k events: `/store/data/Run2022E/DisplacedJet/USER/EXOCSCCluster-PromptReco-v1/000/360/017/00000/eae65e97-9f58-4119-9806-a3226ecba729.root`. 
