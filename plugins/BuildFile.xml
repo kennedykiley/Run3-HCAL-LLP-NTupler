@@ -17,7 +17,6 @@
 <use name="RecoTracker/Record" />
 <use name="RecoTracker/TkDetLayers" />
 <use name="RecoTracker/MeasurementDet" />
-<use name="RecoTracker/DebugTools"/>
 <use name="PhysicsTools/UtilAlgos"/>
 <use name="RecoEgamma/EgammaTools"/>
 <use name="EgammaAnalysis/ElectronTools"/>
