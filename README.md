@@ -36,8 +36,15 @@ crab_setup
 
 scram b -j 8
 
+# below are files directly adapted from muon ntupler
 cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim.py
-cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim_small.py
+cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim_small.py # this is for Run 3 data
+cmsRun python/prod.py # this is for Run 3 MC
+
+# moving to HCAL jets more specific files
+cmsRun python/DisplacedHcalJetNTuplizer.py isData=1 inputFiles=2022Data.txt processEvents=500
+cmsRun python/DisplacedHcalJetNTuplizer.py inputFiles=2022MC.txt processEvents=500
+
 #cmsRun python/jetNtupler_MC_AOD.py
 ```
 
