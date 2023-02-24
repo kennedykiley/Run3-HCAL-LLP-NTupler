@@ -685,7 +685,7 @@ void DisplacedHcalJetNTuplizer::EnableGenParticleBranches(){
 	output_tree->Branch( "gParticle_Py", &gParticle_Py );
 	output_tree->Branch( "gParticle_Pz", &gParticle_Pz );
 	output_tree->Branch( "gParticle_Eta", &gParticle_Eta );
-	output_tree->Branch( "gParticle_Phi;", &gParticle_Phi );
+	output_tree->Branch( "gParticle_Phi", &gParticle_Phi );
 	output_tree->Branch( "gParticle_E", &gParticle_E );
 	output_tree->Branch( "gParticle_ProdVtx_X", &gParticle_ProdVtx_X );
 	output_tree->Branch( "gParticle_ProdVtx_Y", &gParticle_ProdVtx_Y );
