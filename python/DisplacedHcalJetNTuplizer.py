@@ -61,6 +61,13 @@ options.register('outputFile',
     "Output file"
 )
 
+options.register('debug',
+    False, # default value
+    VarParsing.VarParsing.multiplicity.singleton,
+    VarParsing.VarParsing.varType.bool,
+    "debug mode"
+)
+
 options.parseArguments()
 
 print(" ")
@@ -71,6 +78,7 @@ print(f" skipEvents    ={options.skipEvents}")
 print(f" processEvents ={options.processEvents}")
 print(f" inputFiles    ={options.inputFiles}")
 print(f" outputFile    ={options.outputFile}")
+print(f" debug         ={options.debug}")
 print(" ")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.processEvents) )
@@ -165,7 +173,7 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 # Main Analyzer
 
 process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
-    debug =  cms.bool(False),
+    debug =  cms.bool( options.debug ),
     isData = cms.bool( options.isData ),
     isSignal = cms.bool( options.isSignal ),
     useGen = cms.bool(False),
@@ -180,10 +188,10 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     enableGenLLPInfo = cms.bool(True),
     readGenVertexTime = cms.bool(False),#need to be false for displaced samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
-    triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_Run2022_v1.dat"),
-    eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
-    muonHLTFilterNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/MuonHLTFilterNames.dat"),
-    photonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorPhotonHLTFilterNames.dat"),
+    triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/HLTPathsLLPJetsHCAL.dat"),
+    #eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
+    #muonHLTFilterNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/MuonHLTFilterNames.dat"),
+    #photonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorPhotonHLTFilterNames.dat"),
 
     #vertices = cms.InputTag("offlinePrimaryVerticesWithBS"),  # for non-timing case
     vertices = cms.InputTag("offlinePrimaryVertices", "", "RECO"),
@@ -361,7 +369,7 @@ process.makePatJetsTask.add(process.pfImpactParameterTagInfos,
 process.patCandidatesTask = cms.Task(
     process.makePatElectronsTask,
     process.makePatMuonsTask,
-    process.makePatTausTask,
+    #process.makePatTausTask,
     process.makePatPhotonsTask,
     process.makePatOOTPhotonsTask,
     process.makePatJetsTask,
@@ -379,7 +387,7 @@ process.load('PhysicsTools.PatAlgos.selectionLayer1.ootPhotonSelector_cff')
 process.selectedPatCandidatesTask = cms.Task(
     process.selectedPatElectrons,
     process.selectedPatMuons,
-    process.selectedPatTaus,
+    #process.selectedPatTaus,
     process.selectedPatPhotons,
     process.selectedPatOOTPhotons,
     process.selectedPatJets,
@@ -391,7 +399,7 @@ process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
 process.patTrigger.onlyStandAlone = cms.bool(False)
 process.patTrigger.packTriggerLabels = cms.bool(False)
 process.patTrigger.packTriggerPathNames = cms.bool(False)
-process.patTrigger.packTriggerPrescales = cms.bool(True)
+process.patTrigger.packTriggerPrescales = cms.bool(False) #True)
 
 process.load('PhysicsTools.PatAlgos.slimming.selectedPatTrigger_cfi')
 process.load('PhysicsTools.PatAlgos.slimming.slimmedPatTrigger_cfi')

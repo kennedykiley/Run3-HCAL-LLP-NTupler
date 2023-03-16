@@ -103,6 +103,8 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 
 	// ----- Set up output tree ----- // 
 
+	if( debug ) cout<<"Setting up output tree..."<<endl;
+
 	output_tree = fs->make<TTree>("Events", "");
 	NEvents = fs->make<TH1F>( "NEvents", " ; ; NEvents;" , 1, -0.5, 0.5 );
 	if (!isData_) {
@@ -123,7 +125,9 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 		//sumAlphasWeights = 0;
 	}
 
-	// ----- Set up output tree ----- // 
+	// ----- Get Triggers ----- // 
+
+	if( debug ) cout<<"Getting triggers..."<<endl;
 
 	ifstream myfile (edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str()) ;
 
@@ -139,6 +143,18 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	} else {
 		std::cout << "ERROR!!! Could not open trigger path name file : " << edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str() << "\n";
 	}	
+
+	if( debug ) cout<<"Defining trigger hists..."<<endl;
+
+	const int NTriggers = triggerPathNames.size();
+	NEvents_HLT = fs->make<TH1F>( "NEvents_HLT", " ; ; NEvents_HLT;" , NTriggers, 0, NTriggers );
+
+	if( debug ) cout<<"Defining trigger hists..."<<endl;
+
+	for( int i=0; i<NTriggers; i++ ){
+		NEvents_HLT->GetXaxis()->SetBinLabel(i+1,  Form("%s", triggerPathNames.at(i).c_str() ) );
+		triggerPathNamesIndices[triggerPathNames.at(i)] = i;
+	}
 
 	cout<<"DisplacedHcalJetNTuplizer DONE"<<endl;
 
@@ -270,7 +286,6 @@ void DisplacedHcalJetNTuplizer::EnablePVBranches(){
 	output_tree->Branch( "PVCand_SumPx", &PVCand_SumPx );
 	output_tree->Branch( "PVCand_SumPy", &PVCand_SumPy );
 
-	output_tree->Branch( "n_PVCand", &n_PVTrack );
 	output_tree->Branch( "PVTrack_Pt", &PVTrack_Pt );
 	output_tree->Branch( "PVTrack_Eta", &PVTrack_Eta );
 	output_tree->Branch( "PVTrack_Phi", &PVTrack_Phi );
@@ -285,7 +300,7 @@ void DisplacedHcalJetNTuplizer::EnableTriggerBranches(){
 	//output_tree->Branch("HLTDecision", &triggerDecision, ("HLTDecision[" + std::to_string(NTriggersMAX) +  "]/O").c_str());
 	//output_tree->Branch("HLTPrescale", &triggerHLTPrescale, ("HLTPrescale[" + std::to_string(NTriggersMAX) +  "]/I").c_str());
 
-	output_tree->Branch("HLT_Names", &HLT_Names);
+	//output_tree->Branch("HLT_Names", &HLT_Names);
 	output_tree->Branch("HLT_Decision", &HLT_Decision);
 	output_tree->Branch("HLT_Prescale", &HLT_Prescale);
 
@@ -685,7 +700,7 @@ void DisplacedHcalJetNTuplizer::EnableGenParticleBranches(){
 	output_tree->Branch( "gParticle_Py", &gParticle_Py );
 	output_tree->Branch( "gParticle_Pz", &gParticle_Pz );
 	output_tree->Branch( "gParticle_Eta", &gParticle_Eta );
-	output_tree->Branch( "gParticle_Phi;", &gParticle_Phi );
+	output_tree->Branch( "gParticle_Phi", &gParticle_Phi );
 	output_tree->Branch( "gParticle_E", &gParticle_E );
 	output_tree->Branch( "gParticle_ProdVtx_X", &gParticle_ProdVtx_X );
 	output_tree->Branch( "gParticle_ProdVtx_Y", &gParticle_ProdVtx_Y );
@@ -694,6 +709,7 @@ void DisplacedHcalJetNTuplizer::EnableGenParticleBranches(){
 	//output_tree->Branch( "gParticle_DecayVtx_Y", &gParticle_DecayVtx_Y );
 	//output_tree->Branch( "gParticle_DecayVtx_Z", &gParticle_DecayVtx_Z );
 
+	output_tree->Branch( "n_gLLP", &n_gLLP ); 
 	output_tree->Branch( "gLLP_Pt", &gLLP_Pt ); 
 	output_tree->Branch( "gLLP_Eta", &gLLP_Eta ); 
 	output_tree->Branch( "gLLP_Phi", &gLLP_Phi ); 
@@ -785,7 +801,7 @@ void DisplacedHcalJetNTuplizer::ResetPVBranches(){
 // ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::ResetTriggerBranches(){
 
-	HLT_Names.clear();
+	//HLT_Names.clear();
 	HLT_Decision.clear();
 	HLT_Prescale.clear();
 
@@ -1188,6 +1204,7 @@ void DisplacedHcalJetNTuplizer::ResetGenParticleBranches(){
 	gParticle_DecayVtx_Y.clear();
 	gParticle_DecayVtx_Z.clear();
 
+	n_gLLP = 0;
 	gLLP_Pt.clear();
 	gLLP_Eta.clear();
 	gLLP_Phi.clear();
@@ -1304,7 +1321,7 @@ void DisplacedHcalJetNTuplizer::analyze(const edm::Event& iEvent, const edm::Eve
 	// Event Level Info
 	FillEventInfoBranches( iEvent );
 	FillPVBranches( iEvent );
-	//FillTriggerBranches( iEvent, iSetup );
+	FillTriggerBranches( iEvent );
 	FillMetBranches( iEvent );
 
 	// Standard Objects
@@ -1357,7 +1374,7 @@ bool DisplacedHcalJetNTuplizer::FillEventInfoBranches(const edm::Event& iEvent){
 
 	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillEventInfoBranches"<<endl; 
 
-	isData 			= isData_;
+	isData 		= isData_;
 	runNumber 	= iEvent.id().run();
 	lumiNumber 	= iEvent.luminosityBlock();
 	eventNumber = iEvent.id().event();
@@ -1376,7 +1393,7 @@ bool DisplacedHcalJetNTuplizer::FillPVBranches( const edm::Event& iEvent ){
 
 	// Select the primary vertex (if any) //
 
-	n_PV 				 = 0;
+	n_PV 		 = 0;
 	PV_global 	 = &(vertices->front());
 	bool foundPV = false;
 
@@ -1426,7 +1443,11 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
 	//fill trigger information
 	const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
 
+	if( debug ) cout<<"N TRIGGER BITS = "<<triggerBits->size()<<endl;
+
 	for( uint i = 0; i < triggerBits->size(); ++i) { // TODO: CHECK OUT INDEXING
+
+		if( debug && triggerBits->accept(i) ) cout<<"PASS TRIGGER "<<names.triggerName(i)<<endl;
 
 		string hltPathNameReq = "HLT_";
 		
@@ -1440,10 +1461,14 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
 		for( auto triggerPathName: triggerPathNames ){
 			if( triggerPathName == "" ) continue;
 			if( hltPathNameWithoutVersionNumber == triggerPathName ){
-				HLT_Names.push_back( triggerPathName );
+				//HLT_Names.push_back( triggerPathName );
 				HLT_Decision.push_back( triggerBits->accept(i) );
-				if (isData_) HLT_Prescale.push_back( triggerPrescales->getPrescaleForIndex(i) );
-				else HLT_Prescale.push_back( 1 );
+				HLT_Prescale.push_back( -1 );
+
+				if( triggerBits->accept(i) )
+					NEvents_HLT->Fill(triggerPathNamesIndices[triggerPathName]); // FIX WEIGHTS
+				//if (isData_) HLT_Prescale.push_back( triggerPrescales->getPrescaleForIndex(i) );
+				//else HLT_Prescale.push_back( 1 ); // TODO Need to figure out yields
 			}
 		}
 	}
@@ -1977,12 +2002,14 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 		// ----- Find Hcal Rechits Inside Jet ----- //
 
-		if( debug ) cout<<" ------ 7"<<endl;  
+		if( debug ) cout<<" ------ 7 ( size of hcalRecHitsHBHE: "<<hcalRecHitsHBHE->size()<<" )"<<endl;  
 
 		vector<uint> jet_HcalRechitIDs_temp;
 		vector<uint> jet_HcalRechitIndices_temp;
 
 		for( uint ih = 0; ih < hcalRecHitsHBHE->size(); ih++ ){
+
+			if( debug ) cout<<" -------- hcalRecHitsHBHE loop: "<<ih<<endl;  
 
 			const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[ih];
 			const DetId recHitId = recHit->detid();
@@ -2005,6 +2032,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		jet_HcalRechitIDs.push_back( jet_HcalRechitIDs_temp );
 		jet_HcalRechitIndices.push_back( jet_HcalRechitIndices_temp );
 
+		if( debug ) cout<<" ------ 8"<<endl;  
 
 	} //loop over jets
 
@@ -2249,6 +2277,8 @@ bool DisplacedHcalJetNTuplizer::FillTrackBranches( const edm::Event& iEvent ){
 
 		if( !save_track ) continue;
 
+		n_track++;
+
 		//reco::TrackBaseRef tref(generalTracks, it);
 		reco::Track track = generalTracks->at(it);
 
@@ -2351,6 +2381,8 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 		if( !save_hit ) continue;
 
 		const auto recHitPos = caloGeometry_HB->getGeometry(recHitId)->getPosition();
+
+		n_hbheRechit++;
 
 		hbheRechit_Eta.push_back( recHitPos.eta() );
 		hbheRechit_Phi.push_back( recHitPos.phi() );
@@ -2922,7 +2954,11 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 	//Allows easier comparison for mother finding
 	std::vector<const reco::Candidate*> prunedV;
 
+	if( debug ) cout<<"Looping over genParticles"<<endl;
+
 	for( size_t i=0; i < genParticles->size(); i++ ){
+
+		if( debug ) cout<<" -- genParticle idx "<<i<<endl;
 
 		bool already_saved = false;
 
@@ -2972,8 +3008,14 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 	// Total number of gen particles
 	n_gParticle = prunedV.size();
 
+	if( debug ) cout<<"Looping over prunedV"<<endl;	
+
 	//Look for mother particle and Fill gen variables
 	for( unsigned int i = 0; i < prunedV.size(); i++ ) {
+
+		if( debug ) cout<<" -- prunedV idx "<<i<<endl;
+
+		n_gParticle++;
 
 		gParticle_Id.push_back( prunedV[i]->pdgId() );
 		gParticle_Status.push_back( prunedV[i]->status() );
@@ -2994,6 +3036,8 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		// ----- Gen LLP Info ----- //
 
+		if( debug ) cout<<" ------ 1"<<endl;
+
 		// Match with one of the entries in the llpIDs List
 		bool matchedLLP = false;
 		int matchedLLPID = 0;
@@ -3007,11 +3051,11 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 			}
 		}
 
+		if( debug ) cout<<" ------ 2"<<endl;
+
 		if( !matchedLLP ) continue;
 
-		gLLP_ProdVtx_X.push_back( prunedV[i]->vx() );
-		gLLP_ProdVtx_Y.push_back( prunedV[i]->vy() );
-		gLLP_ProdVtx_Z.push_back( prunedV[i]->vz() );
+		n_gLLP++;
 
 		gLLP_Pt.push_back( gParticle_Pt.at(i) ); 
 		gLLP_Eta.push_back( gParticle_Eta.at(i) );
@@ -3022,6 +3066,8 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 		gLLP_Beta.push_back( beta_temp );
 
 		// Get Decay Vertex Info 
+
+		if( debug ) cout<<" ------ 3"<<endl;
 
 		const reco::Candidate *llp_child = 0;
 		bool found_llp_child = false;
@@ -3038,6 +3084,12 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 			}
 		}
 
+		if( debug ) cout<<" ------ 4"<<endl;
+
+		gLLP_ProdVtx_X.push_back( prunedV[i]->vx() );
+		gLLP_ProdVtx_Y.push_back( prunedV[i]->vy() );
+		gLLP_ProdVtx_Z.push_back( prunedV[i]->vz() );		
+
 		if( found_llp_child ){
 			gLLP_DecayVtx_X.push_back( llp_child->vx() );
 			gLLP_DecayVtx_Y.push_back( llp_child->vy() );
@@ -3048,15 +3100,23 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 			gLLP_DecayVtx_Z.push_back( -9999.9 );			
 		}
 
+		if( debug ) cout<<" ------ 5"<<endl;
+
+		//cout<<i<<" "<<gLLP_DecayVtx_X.size()<<"  "<<gLLP_Beta.size()<<endl;
+
 		float travel_time_temp = sqrt(
-				  pow( gLLP_DecayVtx_X.at(i) - gLLP_ProdVtx_X.at(i),2)
-				+ pow( gLLP_DecayVtx_Y.at(i) - gLLP_ProdVtx_Y.at(i),2)
-				+ pow( gLLP_DecayVtx_Z.at(i) - gLLP_ProdVtx_Z.at(i),2) )
-				/(30. * gLLP_Beta.at(i)); //1/30 is to convert cm to ns
+				  pow( gLLP_DecayVtx_X.back() - gLLP_ProdVtx_X.back(),2)
+				+ pow( gLLP_DecayVtx_Y.back() - gLLP_ProdVtx_Y.back(),2)
+				+ pow( gLLP_DecayVtx_Z.back() - gLLP_ProdVtx_Z.back(),2) )
+				/(30. * gLLP_Beta.back() ); //1/30 is to convert cm to ns
 		
+		if( debug ) cout<<" ------ 6"<<endl;		
+
 		if( !found_llp_child ) travel_time_temp = -9999.9;
 
 		gLLP_TravelTime.push_back( travel_time_temp );		
+
+		if( debug ) cout<<" ------ 7"<<endl;
 
 	} // end loop over prunced v
 

@@ -340,6 +340,7 @@ protected:
 
 	// Mapping of the HLT Triggers and Filters
 	vector<string> triggerPathNames;
+	map<string, int> triggerPathNamesIndices;
 	//vector<string> eleHLTFilterNames;
 	//vector<string> muonHLTFilterNames;
 	//vector<string> phoHLTFilterNames;
@@ -408,6 +409,7 @@ protected:
 	TTree *output_tree;
 	TH1F *NEvents;
 	TH1D *sumWeights;
+	TH1F *NEvents_HLT;
 	//TH1D *sumScaleWeights;
 	//TH1D *sumPdfWeights;
 	//TH1D *sumAlphasWeights;
@@ -469,7 +471,7 @@ protected:
 
 	// ----- Trigger Info ----- // 
 
-	vector<string> HLT_Names;
+	//vector<string> HLT_Names;
 	vector<bool> HLT_Decision; //[NTriggersMAX];
 	vector<int> HLT_Prescale; //[NTriggersMAX];
 
@@ -901,7 +903,6 @@ protected:
 	vector<int>   gParticle_Status;
 	vector<int>   gParticle_ParentId;
 	vector<int>   gParticle_ParentIndex;
-
 	vector<float> gParticle_Pt;
 	vector<float> gParticle_Px;
 	vector<float> gParticle_Py;
@@ -916,6 +917,7 @@ protected:
 	vector<float> gParticle_DecayVtx_Y;
 	vector<float> gParticle_DecayVtx_Z;
 
+ 	int n_gLLP;
 	vector<float> gLLP_Pt;
 	vector<float> gLLP_Eta;
 	vector<float> gLLP_Phi;
