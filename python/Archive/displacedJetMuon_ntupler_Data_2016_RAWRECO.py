@@ -1,140 +1,48 @@
 import FWCore.ParameterSet.Config as cms
-import FWCore.ParameterSet.VarParsing as VarParsing
-
-# ------ Setup ------ #
+from FWCore.ParameterSet.VarParsing import VarParsing
+#------ Setup ------#
 
 #initialize the process
-from Configuration.Eras.Era_Run3_cff import Run3
-
-process = cms.Process("DisplacedHcalJetNTuplizer", Run3) # line added to fix PCastorRcd error
+process = cms.Process("displacedJetMuonNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.EventContent.EventContent_cff")
-process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2022")
+process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2017")
 
-# Fix GEM Error
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-from Configuration.AlCa.GlobalTag import GlobalTag
 
-# ----- Parse Arguments ----- #
-
-options = VarParsing.VarParsing()
-
-options.register('isData',
-    False, # default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.bool,
-    "is Data"
+#load input files
+process.source = cms.Source("PoolSource",
+    fileNames = cms.untracked.vstring(
+        '/store/data/Run2016H/SingleMuon/RAW-RECO/ZMu-07Aug17-v1/110000/5C66AE3B-BC80-E711-AC60-48D539F38894.root'
+        )
 )
-
-options.register('isSignal',
-    False, # default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.bool,
-    "is Signal"
-)
-
-options.register('skipEvents',
-    0, # default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.int,
-    "Number of events to skip"
-)
-
-options.register('processEvents',
-    -1, # 100, # -1 default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.int,
-    "Number of events to process"
-)
-
-options.register('inputFiles',
-    "",
-    VarParsing.VarParsing.multiplicity.list,
-    VarParsing.VarParsing.varType.string,
-    "Input files"
-)
-
-options.register('outputFile',
-    "ntuple_output_test.root",
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.string,
-    "Output file"
-)
-
-options.register('debug',
-    False, # default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.bool,
-    "debug mode"
-)
-
-options.parseArguments()
-
-print(" ")
-print("Using options:")
-print(f" isData        ={options.isData}")
-print(f" isSignal      ={options.isSignal}")
-print(f" skipEvents    ={options.skipEvents}")
-print(f" processEvents ={options.processEvents}")
-print(f" inputFiles    ={options.inputFiles}")
-print(f" outputFile    ={options.outputFile}")
-print(f" debug         ={options.debug}")
-print(" ")
-
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.processEvents) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.options = cms.untracked.PSet(
+
 )
 
-# Load input files
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-inputFiles = options.inputFiles
-if len(options.inputFiles) == 1 and options.inputFiles[0][-4:] == ".txt": 
-    print( "Reading input files from", options.inputFiles, ":" )
-
-    file = open(options.inputFiles[0], 'r')
-    lines = file.readlines()
-
-    unpackedFilelist = []
-    for line in lines:
-        line_temp = line.replace(" ","")
-        if line_temp[0] == "#": continue
-        unpackedFilelist.append( line.strip() )
-        print( "   ->", line.strip() )
-
-    inputFiles = unpackedFilelist
-
-process.source = cms.Source( "PoolSource",
-    fileNames  = cms.untracked.vstring( inputFiles ),
-    skipEvents = cms.untracked.uint32(options.skipEvents)
-)
-
-# TFileService for output
-process.TFileService = cms.Service( "TFileService",
-    fileName = cms.string(options.outputFile),
+#TFileService for output
+process.TFileService = cms.Service("TFileService",
+	fileName = cms.string('displacedJetMuon_ntupler.root'),
     closeFileFast = cms.untracked.bool(True)
 )
 
-# ----- Load Run Conditions ----- #
-
+#load run conditions
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.load('Configuration.Geometry.GeometryIdeal_cff')
 #process.load('Configuration.StandardSequences.MagneticField_38T_cff')
-process.load('Configuration.StandardSequences.GeometryDB_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('Configuration.StandardSequences.GeometrySimDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 
+#------ Declare the correct global tag ------#
 
-# ------ Declare the correct global tag ------ #
+process.GlobalTag.globaltag = '80X_dataRun2_2016LegacyRepro_v4'
 
-if options.isData: process.GlobalTag.globaltag = '124X_dataRun3_Prompt_v4'
-else:              process.GlobalTag = GlobalTag(process.GlobalTag,'auto:run3_mc_FULL','')
-
-# ------ If we add any inputs beyond standard event content, import them here ------ #
-
+#------ If we add any inputs beyond standard event content, import them here ------#
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
+
 
 process.output = cms.OutputModule("PoolOutputModule",
     compressionAlgorithm = cms.untracked.string('LZMA'),
@@ -149,11 +57,13 @@ process.output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('miniAOD-prod_PAT.root'),
     outputCommands = cms.untracked.vstring('keep *'),
 )
+
+
+
   
-# ------ Analyzer ------ #
+#------ Analyzer ------#
 
 # For AOD Track variables
-
 process.load("RecoTracker.TkNavigation.NavigationSchoolESProducer_cfi")
 process.MaterialPropagator = cms.ESProducer('PropagatorWithMaterialESProducer',
     ComponentName = cms.string('PropagatorWithMaterial'),
@@ -170,16 +80,11 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 )
 
 
-# Main Analyzer
-
-process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
-    debug =  cms.bool( options.debug ),
-    isData = cms.bool( options.isData ),
-    isSignal = cms.bool( options.isSignal ),
+#list input collections
+process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
+    isData = cms.bool(True),
     useGen = cms.bool(False),
     isRECO = cms.bool(True),                                
-    isRAW = cms.bool(False),                                
-    isBParkAOD = cms.bool(False),
     isFastsim = cms.bool(False),
     readMuonDigis = cms.bool(True),
     enableTriggerInfo = cms.bool(True),
@@ -188,34 +93,27 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     enableGenLLPInfo = cms.bool(True),
     readGenVertexTime = cms.bool(False),#need to be false for displaced samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
-    triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/HLTPathsLLPJetsHCAL.dat"),
-    #eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
-    #muonHLTFilterNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/MuonHLTFilterNames.dat"),
-    #photonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorPhotonHLTFilterNames.dat"),
+    triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_v3.dat"),
+    eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
+    muonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorMuonHLTFilterNames.dat"),
+    photonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorPhotonHLTFilterNames.dat"),
 
     #vertices = cms.InputTag("offlinePrimaryVerticesWithBS"),  # for non-timing case
     vertices = cms.InputTag("offlinePrimaryVertices", "", "RECO"),
-
-    electrons = cms.InputTag("gedGsfElectrons"),
     muons = cms.InputTag("muons"),
+    electrons = cms.InputTag("gedGsfElectrons"),
     taus = cms.InputTag("selectedPatTaus"),
     photons = cms.InputTag("gedPhotons"),
-    pfjetsAK4 = cms.InputTag("selectedPatJets"),
-    calojetsAK4 = cms.InputTag("ak4CaloJets","","RECO"),
-    pfjetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
-    calojetsAK8 = cms.InputTag("ak8CaloJets","","RECO"),
-    #jetsPF = cms.InputTag("ak4PFJets"),
+    jetsCalo = cms.InputTag("ak4CaloJets","","RECO"),
+    jetsPF = cms.InputTag("ak4PFJets"),
     #jets = cms.InputTag("ak4PFJetsCHS"),
-    #jets = cms.InputTag("selectedPatJets"),
-    #jets = cms.InputTag("ak4PFJetsPuppi"),
-    #jetsPuppi = cms.InputTag("ak4PFJets"),
+    jets = cms.InputTag("selectedPatJets"),
+    jetsPuppi = cms.InputTag("ak4PFJets"),
     #jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
-    #jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
-
-    #jetsAK8 = cms.InputTag("ak8PFJetsPuppi"),
+    jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
 
     #mets = cms.InputTag("slimmedMETs"),
-    met = cms.InputTag("patMETs"),
+    mets = cms.InputTag("patMETs"),
     #metsNoHF = cms.InputTag("pfMet30"),
     metsPuppi = cms.InputTag("pfMet"),
     pfCands = cms.InputTag("particleFlow","","RECO"),
@@ -223,6 +121,12 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     #packedPfCands = cms.InputTag("packedPFCandidates"),
 
     genParticles = cms.InputTag("genParticles"),
+    MuonCSCSimHits = cms.InputTag("g4SimHits", "MuonCSCHits","SIM"),
+    MuonCSCComparatorDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCComparatorDigi", "HLT"),
+    MuonCSCStripDigi = cms.InputTag("muonCSCDigis", "MuonCSCStripDigi"),
+    MuonCSCWireDigi = cms.InputTag("muonCSCDigis", "MuonCSCWireDigi"),
+    MuonCSCWireDigiSimLinks = cms.InputTag( "simMuonCSCDigis", "MuonCSCWireDigiSimLinks", "HLT"),
+    MuonCSCStripDigiSimLinks = cms.InputTag("simMuonCSCDigis","MuonCSCStripDigiSimLinks", "HLT"),
 
     #packedGenParticles = cms.InputTag("packedGenParticles"),
     #prunedGenParticles = cms.InputTag("prunedGenParticles"),
@@ -235,7 +139,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     hepMC = cms.InputTag("generatorSmeared", "", "SIM"),
 
     triggerPrescales = cms.InputTag("patTrigger"),
-    triggerObjects = cms.InputTag("selectedPatTrigger"),
+    #triggerObjects = cms.InputTag("selectedPatTrigger"),
 
     metFilterBits = cms.InputTag("TriggerResults", "", "RECO"),
 
@@ -290,32 +194,28 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
 
     #lostTracks = cms.InputTag("lostTracks", "", "RECO")
 
-    electron_cutbasedID_decisions_veto = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-veto", ""),
-    electron_cutbasedID_decisions_loose = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-loose", ""),
-    electron_cutbasedID_decisions_medium = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-medium", ""),
-    electron_cutbasedID_decisions_tight = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-tight", ""),
+    electron_cutbasedID_decisions_veto = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-veto", ""),
+    electron_cutbasedID_decisions_loose = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-loose", ""),
+    electron_cutbasedID_decisions_medium = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-medium", ""),
+    electron_cutbasedID_decisions_tight = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Summer16-80X-V1-tight", ""),
     electron_mvaIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wp80", ""),
     electron_mvaIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wp90", ""),
     electron_mvaIsoID_decisions_wpHZZ = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wpHZZ", ""),
     electron_mvaIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-iso-V2-wpLoose", ""),
-    electron_mvaNoIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-noIso-V2-wp80", ""),
-    electron_mvaNoIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-noIso-V2-wp90", ""),
-    electron_mvaNoIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Fall17-noIso-V2-wpLoose", ""),
-    photon_cutbasedID_decisions_loose = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Fall17-94X-V2-loose", ""),
-    photon_cutbasedID_decisions_medium = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Fall17-94X-V2-medium", ""),
-    photon_cutbasedID_decisions_tight = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Fall17-94X-V2-tight", ""),
-    photon_mvaID_decisions_wp80 = cms.InputTag("egmPhotonIDs", "mvaPhoID-RunIIFall17-v2-wp80", ""),
-    photon_mvaID_decisions_wp90 = cms.InputTag("egmPhotonIDs", "mvaPhoID-RunIIFall17-v2-wp90", ""),
+    electron_mvaNoIsoID_decisions_wp80 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-GeneralPurpose-V1-wp80", ""),
+    electron_mvaNoIsoID_decisions_wp90 = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-GeneralPurpose-V1-wp90", ""),
+    electron_mvaNoIsoID_decisions_wpLoose = cms.InputTag("egmGsfElectronIDs", "mvaEleID-Spring16-HZZ-V1-wpLoose", ""),
+    photon_cutbasedID_decisions_loose = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-loose", ""),
+    photon_cutbasedID_decisions_medium = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-medium", ""),
+    photon_cutbasedID_decisions_tight = cms.InputTag("egmPhotonIDs", "cutBasedPhotonID-Spring16-V2p2-tight", ""),
+    photon_mvaID_decisions_wp80 = cms.InputTag("egmPhotonIDs", "mvaPhoID-Spring16-nonTrig-V1-wp80", ""),
+    photon_mvaID_decisions_wp90 = cms.InputTag("egmPhotonIDs", "mvaPhoID-Spring16-nonTrig-V1-wp90", ""),
 )
 
-# ----- Add Additional Info ----- #
-
-# Add jettiness for AK8 jets
-
+#Add jettiness for AK8 jets
 process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
 process.NjettinessAK8CHS = process.Njettiness.clone()
 
-# Add object ids
 
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 electron_id_config = cms.PSet(electron_ids = cms.vstring([                   
@@ -337,10 +237,12 @@ photon_id_config = cms.PSet(photon_ids = cms.vstring([
                  
 switchOnVIDElectronIdProducer(process,DataFormat.AOD)
 switchOnVIDPhotonIdProducer(process,DataFormat.AOD) 
-process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag("gedGsfElectrons")
-process.electronMVAValueMapProducer.src = cms.InputTag("gedGsfElectrons")
-process.photonMVAValueMapProducer.src = cms.InputTag("gedPhotons")
-#process.electronRegressionValueMapProducer.src = cms.InputTag('reducedEgamma','gedGsfElectrons')
+    #process.egmGsfElectronIDs.physicsObjectSrc = \
+    #    cms.InputTag("reducedEgamma","reducedGedGsfElectrons")
+    #process.electronMVAValueMapProducer.src = \
+    #    cms.InputTag('reducedEgamma','reducedGedGsfElectrons')
+    #process.electronRegressionValueMapProducer.src = \
+    #    cms.InputTag('reducedEgamma','reducedGedGsfElectrons')
 for idmod in electron_id_config.electron_ids.value():
     setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
 for idmod in photon_id_config.photon_ids.value():
@@ -369,7 +271,7 @@ process.makePatJetsTask.add(process.pfImpactParameterTagInfos,
 process.patCandidatesTask = cms.Task(
     process.makePatElectronsTask,
     process.makePatMuonsTask,
-    #process.makePatTausTask,
+    process.makePatTausTask,
     process.makePatPhotonsTask,
     process.makePatOOTPhotonsTask,
     process.makePatJetsTask,
@@ -387,48 +289,44 @@ process.load('PhysicsTools.PatAlgos.selectionLayer1.ootPhotonSelector_cff')
 process.selectedPatCandidatesTask = cms.Task(
     process.selectedPatElectrons,
     process.selectedPatMuons,
-    #process.selectedPatTaus,
+    process.selectedPatTaus,
     process.selectedPatPhotons,
     process.selectedPatOOTPhotons,
-    process.selectedPatJets,
+    process.selectedPatJets
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
-
 process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
-process.patTrigger.onlyStandAlone = cms.bool(False)
-process.patTrigger.packTriggerLabels = cms.bool(False)
-process.patTrigger.packTriggerPathNames = cms.bool(False)
-process.patTrigger.packTriggerPrescales = cms.bool(False) #True)
-
-process.load('PhysicsTools.PatAlgos.slimming.selectedPatTrigger_cfi')
-process.load('PhysicsTools.PatAlgos.slimming.slimmedPatTrigger_cfi')
+process.patTrigger.onlyStandAlone = cms.bool(True)
+process.patTrigger.packTriggerLabels = cms.bool(True)
+process.patTrigger.packTriggerPathNames = cms.bool(True)
+process.patTrigger.packTriggerPrescales = cms.bool(True)
 
 process.patTask = cms.Task(
     process.patCandidatesTask,
     process.selectedPatCandidatesTask,
-    #process.patTrigger,
-    #process.selectedPatTrigger,
-    #process.slimmedPatTrigger
+    process.patTrigger
 )
 
-# ----- Define Execution Paths ----- #
+process.load('EventFilter.CSCRawToDigi.cscUnpacker_cfi')
+process.muonCSCDigis.InputObjects = 'rawDataCollector'
 
+#Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.DisplacedHcalJets )
-#process.p = cms.Path( process.ntuples )
+process.p = cms.Path(process.muonCSCDigis * process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
 process.schedule = cms.Schedule(process.p )
 
+
 #Define Jet Tool Box Stuff
-#listBtagDiscriminatorsAK4 = [ 
-#                'pfJetProbabilityBJetTags',
-#                'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-#                'pfCombinedMVAV2BJetTags',
-#                'pfCombinedCvsLJetTags',
-#                'pfCombinedCvsBJetTags',
-#                ]
-#from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
-#jetToolbox( process, 'ak8', 'ak8JetSubs', "out", PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addSoftDrop=True, addNsub=True, addNsubSubjets=True, miniAOD=False )   ### For example
+listBtagDiscriminatorsAK4 = [ 
+                'pfJetProbabilityBJetTags',
+                'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+                'pfCombinedMVAV2BJetTags',
+                'pfCombinedCvsLJetTags',
+                'pfCombinedCvsBJetTags',
+                ]
+from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
+jetToolbox( process, 'ak8', 'ak8JetSubs', "out", PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addSoftDrop=True, addNsub=True, addNsubSubjets=True, miniAOD=False )   ### For example
 
 
 #Add PAT tasks for jet Toolbox to execution schedule
@@ -438,15 +336,15 @@ associatePatAlgosToolsTask(process)
 
 
 #miniAOD_customize stuff
-# process.patTaus.isoDeposits = cms.PSet()
-# process.patTaus.addGenMatch = cms.bool(False)
-# process.patTaus.embedGenMatch = cms.bool(False)
-# process.patTaus.addGenJetMatch   = cms.bool(False)
-# process.patTaus.embedGenJetMatch = cms.bool(False)
-# process.patTaus.genParticleMatch = ''
-# process.patTaus.genJetMatch      = ''
-# process.selectedPatTaus.cut = cms.string("pt > 18. && tauID('decayModeFindingNewDMs')> 0.5")
-# process.selectedPatJets.cut = cms.string("pt > 10")
+process.patTaus.isoDeposits = cms.PSet()
+process.patTaus.addGenMatch = cms.bool(False)
+process.patTaus.embedGenMatch = cms.bool(False)
+process.patTaus.addGenJetMatch   = cms.bool(False)
+process.patTaus.embedGenJetMatch = cms.bool(False)
+process.patTaus.genParticleMatch = ''
+process.patTaus.genJetMatch      = ''
+process.selectedPatTaus.cut = cms.string("pt > 18. && tauID('decayModeFindingNewDMs')> 0.5")
+process.selectedPatJets.cut = cms.string("pt > 10")
 
 ## PU JetID
 process.load("RecoJets.JetProducers.PileupJetID_cfi")
@@ -481,16 +379,15 @@ process.patJets.addJetFlavourInfo  = cms.bool(False)
 process.patJets.JetPartonMapSource = ''
 process.patJets.JetFlavourInfoSource = ''
 
-# process.patJetsAK8PFCHS.addGenPartonMatch   = cms.bool(False)
-# process.patJetsAK8PFCHS.embedGenPartonMatch = cms.bool(False)
-# process.patJetsAK8PFCHS.genPartonMatch      = ''
-# process.patJetsAK8PFCHS.addGenJetMatch      = cms.bool(False)
-# process.patJetsAK8PFCHS.embedGenJetMatch    = cms.bool(False)
-# process.patJetsAK8PFCHS.genJetMatch         = ''
-# process.patJetsAK8PFCHS.getJetMCFlavour    = cms.bool(False)
-# process.patJetsAK8PFCHS.addJetFlavourInfo  = cms.bool(False)
-# process.patJetsAK8PFCHS.JetPartonMapSource = ''
-# process.patJetsAK8PFCHS.JetFlavourInfoSource = ''
+process.patJetsAK8PFCHS.addGenPartonMatch   = cms.bool(False)
+process.patJetsAK8PFCHS.embedGenPartonMatch = cms.bool(False)
+process.patJetsAK8PFCHS.genPartonMatch      = ''
+process.patJetsAK8PFCHS.addGenJetMatch      = cms.bool(False)
+process.patJetsAK8PFCHS.embedGenJetMatch    = cms.bool(False)
+process.patJetsAK8PFCHS.genJetMatch         = ''
+process.patJetsAK8PFCHS.getJetMCFlavour    = cms.bool(False)
+process.patJetsAK8PFCHS.addJetFlavourInfo  = cms.bool(False)
+process.patJetsAK8PFCHS.JetPartonMapSource = ''
+process.patJetsAK8PFCHS.JetFlavourInfoSource = ''
 process.patMETs.addGenMET           = False
 process.patMETs.genMETSource        = ''
-

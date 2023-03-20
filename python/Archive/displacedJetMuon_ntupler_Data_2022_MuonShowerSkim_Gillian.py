@@ -1,140 +1,51 @@
 import FWCore.ParameterSet.Config as cms
-import FWCore.ParameterSet.VarParsing as VarParsing
-
-# ------ Setup ------ #
+from FWCore.ParameterSet.VarParsing import VarParsing
+#------ Setup ------#
 
 #initialize the process
-from Configuration.Eras.Era_Run3_cff import Run3
-
-process = cms.Process("DisplacedHcalJetNTuplizer", Run3) # line added to fix PCastorRcd error
+process = cms.Process("displacedJetMuonNtupler")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.EventContent.EventContent_cff")
 process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2022")
 
-# Fix GEM Error
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-from Configuration.AlCa.GlobalTag import GlobalTag
 
-# ----- Parse Arguments ----- #
-
-options = VarParsing.VarParsing()
-
-options.register('isData',
-    False, # default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.bool,
-    "is Data"
+#load input files
+process.source = cms.Source("PoolSource",
+    fileNames = cms.untracked.vstring(       
+        #'/store/data/Run2018D/MET/RAW-RECO/HighMET-PromptReco-v2/000/320/757/00000/3ED1AF9B-4098-E811-B1F3-FA163E17FBFF.root'
+        #'file:/tmp/sixie/1d2d0fec-5501-4510-ab56-91bc83fb9a4c.root'
+        #'/store/data/Run2022E/DisplacedJet/USER/EXOCSCCluster-PromptReco-v1/000/360/017/00000/eae65e97-9f58-4119-9806-a3226ecba729.root' # 5k events, first 3k are empty (?)
+        '/store/data/Run2022E/DisplacedJet/USER/EXOCSCCluster-PromptReco-v1/000/359/763/00000/de78b9f9-403b-42cb-b7e2-40fe4c6e8779.root'
+        )
 )
-
-options.register('isSignal',
-    False, # default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.bool,
-    "is Signal"
-)
-
-options.register('skipEvents',
-    0, # default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.int,
-    "Number of events to skip"
-)
-
-options.register('processEvents',
-    -1, # 100, # -1 default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.int,
-    "Number of events to process"
-)
-
-options.register('inputFiles',
-    "",
-    VarParsing.VarParsing.multiplicity.list,
-    VarParsing.VarParsing.varType.string,
-    "Input files"
-)
-
-options.register('outputFile',
-    "ntuple_output_test.root",
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.string,
-    "Output file"
-)
-
-options.register('debug',
-    False, # default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.bool,
-    "debug mode"
-)
-
-options.parseArguments()
-
-print(" ")
-print("Using options:")
-print(f" isData        ={options.isData}")
-print(f" isSignal      ={options.isSignal}")
-print(f" skipEvents    ={options.skipEvents}")
-print(f" processEvents ={options.processEvents}")
-print(f" inputFiles    ={options.inputFiles}")
-print(f" outputFile    ={options.outputFile}")
-print(f" debug         ={options.debug}")
-print(" ")
-
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.processEvents) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 process.options = cms.untracked.PSet(
+
 )
 
-# Load input files
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) ) # 3400) )
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
-inputFiles = options.inputFiles
-if len(options.inputFiles) == 1 and options.inputFiles[0][-4:] == ".txt": 
-    print( "Reading input files from", options.inputFiles, ":" )
-
-    file = open(options.inputFiles[0], 'r')
-    lines = file.readlines()
-
-    unpackedFilelist = []
-    for line in lines:
-        line_temp = line.replace(" ","")
-        if line_temp[0] == "#": continue
-        unpackedFilelist.append( line.strip() )
-        print( "   ->", line.strip() )
-
-    inputFiles = unpackedFilelist
-
-process.source = cms.Source( "PoolSource",
-    fileNames  = cms.untracked.vstring( inputFiles ),
-    skipEvents = cms.untracked.uint32(options.skipEvents)
-)
-
-# TFileService for output
-process.TFileService = cms.Service( "TFileService",
-    fileName = cms.string(options.outputFile),
+#TFileService for output
+process.TFileService = cms.Service("TFileService",
+	fileName = cms.string('displacedJetMuon_ntupler_1Feb.root'),
     closeFileFast = cms.untracked.bool(True)
 )
 
-# ----- Load Run Conditions ----- #
-
+#load run conditions
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 #process.load('Configuration.Geometry.GeometryIdeal_cff')
 #process.load('Configuration.StandardSequences.MagneticField_38T_cff')
-process.load('Configuration.StandardSequences.GeometryDB_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('Configuration.StandardSequences.GeometrySimDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
 
+#------ Declare the correct global tag ------#
 
-# ------ Declare the correct global tag ------ #
+process.GlobalTag.globaltag = '124X_dataRun3_Prompt_v4'
 
-if options.isData: process.GlobalTag.globaltag = '124X_dataRun3_Prompt_v4'
-else:              process.GlobalTag = GlobalTag(process.GlobalTag,'auto:run3_mc_FULL','')
-
-# ------ If we add any inputs beyond standard event content, import them here ------ #
-
+#------ If we add any inputs beyond standard event content, import them here ------#
 process.load('RecoMET.METFilters.BadPFMuonFilter_cfi')
+
 
 process.output = cms.OutputModule("PoolOutputModule",
     compressionAlgorithm = cms.untracked.string('LZMA'),
@@ -149,11 +60,13 @@ process.output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('miniAOD-prod_PAT.root'),
     outputCommands = cms.untracked.vstring('keep *'),
 )
+
+
+
   
-# ------ Analyzer ------ #
+#------ Analyzer ------#
 
 # For AOD Track variables
-
 process.load("RecoTracker.TkNavigation.NavigationSchoolESProducer_cfi")
 process.MaterialPropagator = cms.ESProducer('PropagatorWithMaterialESProducer',
     ComponentName = cms.string('PropagatorWithMaterial'),
@@ -170,12 +83,9 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 )
 
 
-# Main Analyzer
-
-process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
-    debug =  cms.bool( options.debug ),
-    isData = cms.bool( options.isData ),
-    isSignal = cms.bool( options.isSignal ),
+#list input collections
+process.ntuples = cms.EDAnalyzer('displacedJetMuon_ntupler',
+    isData = cms.bool(True),
     useGen = cms.bool(False),
     isRECO = cms.bool(True),                                
     isRAW = cms.bool(False),                                
@@ -188,34 +98,27 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     enableGenLLPInfo = cms.bool(True),
     readGenVertexTime = cms.bool(False),#need to be false for displaced samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
-    triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/HLTPathsLLPJetsHCAL.dat"),
-    #eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
-    #muonHLTFilterNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/MuonHLTFilterNames.dat"),
-    #photonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorPhotonHLTFilterNames.dat"),
+    triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/trigger_names_llp_Run2022_v1.dat"),
+    eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
+    muonHLTFilterNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/MuonHLTFilterNames.dat"),
+    photonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorPhotonHLTFilterNames.dat"),
 
     #vertices = cms.InputTag("offlinePrimaryVerticesWithBS"),  # for non-timing case
     vertices = cms.InputTag("offlinePrimaryVertices", "", "RECO"),
-
-    electrons = cms.InputTag("gedGsfElectrons"),
     muons = cms.InputTag("muons"),
+    electrons = cms.InputTag("gedGsfElectrons"),
     taus = cms.InputTag("selectedPatTaus"),
     photons = cms.InputTag("gedPhotons"),
-    pfjetsAK4 = cms.InputTag("selectedPatJets"),
-    calojetsAK4 = cms.InputTag("ak4CaloJets","","RECO"),
-    pfjetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
-    calojetsAK8 = cms.InputTag("ak8CaloJets","","RECO"),
-    #jetsPF = cms.InputTag("ak4PFJets"),
+    jetsCalo = cms.InputTag("ak4CaloJets","","RECO"),
+    jetsPF = cms.InputTag("ak4PFJets"),
     #jets = cms.InputTag("ak4PFJetsCHS"),
-    #jets = cms.InputTag("selectedPatJets"),
-    #jets = cms.InputTag("ak4PFJetsPuppi"),
-    #jetsPuppi = cms.InputTag("ak4PFJets"),
+    jets = cms.InputTag("selectedPatJets"),
+    jetsPuppi = cms.InputTag("ak4PFJets"),
     #jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
-    #jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
-
-    #jetsAK8 = cms.InputTag("ak8PFJetsPuppi"),
+    jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
 
     #mets = cms.InputTag("slimmedMETs"),
-    met = cms.InputTag("patMETs"),
+    mets = cms.InputTag("patMETs"),
     #metsNoHF = cms.InputTag("pfMet30"),
     metsPuppi = cms.InputTag("pfMet"),
     pfCands = cms.InputTag("particleFlow","","RECO"),
@@ -223,6 +126,12 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     #packedPfCands = cms.InputTag("packedPFCandidates"),
 
     genParticles = cms.InputTag("genParticles"),
+    MuonCSCSimHits = cms.InputTag("g4SimHits", "MuonCSCHits","SIM"),
+    MuonCSCComparatorDigi = cms.InputTag("simMuonCSCDigis", "MuonCSCComparatorDigi", "HLT"),
+    MuonCSCStripDigi = cms.InputTag("muonCSCDigis", "MuonCSCStripDigi"),
+    MuonCSCWireDigi = cms.InputTag("muonCSCDigis", "MuonCSCWireDigi"),
+    MuonCSCWireDigiSimLinks = cms.InputTag( "simMuonCSCDigis", "MuonCSCWireDigiSimLinks", "HLT"),
+    MuonCSCStripDigiSimLinks = cms.InputTag("simMuonCSCDigis","MuonCSCStripDigiSimLinks", "HLT"),
 
     #packedGenParticles = cms.InputTag("packedGenParticles"),
     #prunedGenParticles = cms.InputTag("prunedGenParticles"),
@@ -308,14 +217,10 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     photon_mvaID_decisions_wp90 = cms.InputTag("egmPhotonIDs", "mvaPhoID-RunIIFall17-v2-wp90", ""),
 )
 
-# ----- Add Additional Info ----- #
-
-# Add jettiness for AK8 jets
-
+#Add jettiness for AK8 jets
 process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
 process.NjettinessAK8CHS = process.Njettiness.clone()
 
-# Add object ids
 
 from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
 electron_id_config = cms.PSet(electron_ids = cms.vstring([                   
@@ -390,7 +295,7 @@ process.selectedPatCandidatesTask = cms.Task(
     #process.selectedPatTaus,
     process.selectedPatPhotons,
     process.selectedPatOOTPhotons,
-    process.selectedPatJets,
+    process.selectedPatJets
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
@@ -399,7 +304,7 @@ process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
 process.patTrigger.onlyStandAlone = cms.bool(False)
 process.patTrigger.packTriggerLabels = cms.bool(False)
 process.patTrigger.packTriggerPathNames = cms.bool(False)
-process.patTrigger.packTriggerPrescales = cms.bool(False) #True)
+process.patTrigger.packTriggerPrescales = cms.bool(True)
 
 process.load('PhysicsTools.PatAlgos.slimming.selectedPatTrigger_cfi')
 process.load('PhysicsTools.PatAlgos.slimming.slimmedPatTrigger_cfi')
@@ -412,12 +317,14 @@ process.patTask = cms.Task(
     #process.slimmedPatTrigger
 )
 
-# ----- Define Execution Paths ----- #
+process.load('EventFilter.CSCRawToDigi.cscUnpacker_cfi')
+process.muonCSCDigis.InputObjects = 'rawDataCollector'
 
+#Define Execution Paths
 process.outputPath = cms.EndPath(process.output)
-process.p = cms.Path(process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.DisplacedHcalJets )
-#process.p = cms.Path( process.ntuples )
+process.p = cms.Path(process.muonCSCDigis * process.primaryVertexAssociation * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFilters * process.ntuples )
 process.schedule = cms.Schedule(process.p )
+
 
 #Define Jet Tool Box Stuff
 #listBtagDiscriminatorsAK4 = [ 
@@ -493,4 +400,3 @@ process.patJets.JetFlavourInfoSource = ''
 # process.patJetsAK8PFCHS.JetFlavourInfoSource = ''
 process.patMETs.addGenMET           = False
 process.patMETs.genMETSource        = ''
-
