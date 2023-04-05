@@ -3031,9 +3031,9 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 		gParticle_Phi.push_back( prunedV[i]->phi() );
 		gParticle_E.push_back( prunedV[i]->energy() );
 
-		gParticle_ProdVtx_X.push_back( prunedV[i]->vx() );
-		gParticle_ProdVtx_Y.push_back( prunedV[i]->vy() );
-		gParticle_ProdVtx_Z.push_back( prunedV[i]->vz() );
+		gParticle_ProdVtx_X.push_back( prunedV[i]->vx() * 10 ); // * 10 to convert cm to mm
+		gParticle_ProdVtx_Y.push_back( prunedV[i]->vy() * 10 );
+		gParticle_ProdVtx_Z.push_back( prunedV[i]->vz() * 10 );
 
 		// ----- Gen LLP Info ----- //
 
@@ -3087,14 +3087,14 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		if( debug ) cout<<" ------ 4"<<endl;
 
-		gLLP_ProdVtx_X.push_back( prunedV[i]->vx() );
-		gLLP_ProdVtx_Y.push_back( prunedV[i]->vy() );
-		gLLP_ProdVtx_Z.push_back( prunedV[i]->vz() );		
+		gLLP_ProdVtx_X.push_back( prunedV[i]->vx() * 10 ); // * 10 to convert cm to mm
+		gLLP_ProdVtx_Y.push_back( prunedV[i]->vy() * 10 );
+		gLLP_ProdVtx_Z.push_back( prunedV[i]->vz() * 10 );		
 
 		if( found_llp_child ){
-			gLLP_DecayVtx_X.push_back( llp_child->vx() );
-			gLLP_DecayVtx_Y.push_back( llp_child->vy() );
-			gLLP_DecayVtx_Z.push_back( llp_child->vz() );
+		        gLLP_DecayVtx_X.push_back( llp_child->vx() * 10 ); // * 10 to convert cm to mm
+			gLLP_DecayVtx_Y.push_back( llp_child->vy() * 10 );
+			gLLP_DecayVtx_Z.push_back( llp_child->vz() * 10 );
 		} else {
 			gLLP_DecayVtx_X.push_back( -9999.9 );
 			gLLP_DecayVtx_Y.push_back( -9999.9 );
