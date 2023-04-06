@@ -3020,9 +3020,16 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		gParticle_Id.push_back( prunedV[i]->pdgId() );
 		gParticle_Status.push_back( prunedV[i]->status() );
-		//gParticleParentId.push_back( 0 );
-		//gParticleParentIndex.push_back( -1 );
-
+		gParticle_ParentId.push_back( prunedV[i]->mother()->pdgId() ); // prunedV[i]->mother() this returns a pointer to mother particle
+		for( unsigned int j=0; j < prunedV.size(); j++ ) {
+		  if (prunedV[j]->pdgId() == prunedV[i]->mother()->pdgId() && prunedV[j]->vx() == prunedV[i]->mother()->vx() && prunedV[j]->vy() == prunedV[i]->mother()->vy() && prunedV[j]->vz() == prunedV[i]->mother()->vz() && prunedV[j]->pt() == prunedV[i]->mother()->pt()) {
+		    gParticle_ParentIndex.push_back(j);
+		  }
+		  else {
+		    gParticle_ParentIndex.push_back( -1 ); // if no mother particle was found to match -- could be the case because not all gen particles are saved in prunedV
+		  }
+		}
+		    
 		gParticle_Pt.push_back( prunedV[i]->pt() );
 		gParticle_Px.push_back( prunedV[i]->px() );
 		gParticle_Py.push_back( prunedV[i]->py() );
@@ -3031,9 +3038,9 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 		gParticle_Phi.push_back( prunedV[i]->phi() );
 		gParticle_E.push_back( prunedV[i]->energy() );
 
-		gParticle_ProdVtx_X.push_back( prunedV[i]->vx() * 10 ); // * 10 to convert cm to mm
-		gParticle_ProdVtx_Y.push_back( prunedV[i]->vy() * 10 );
-		gParticle_ProdVtx_Z.push_back( prunedV[i]->vz() * 10 );
+		gParticle_ProdVtx_X.push_back( prunedV[i]->vx() );
+		gParticle_ProdVtx_Y.push_back( prunedV[i]->vy() );
+		gParticle_ProdVtx_Z.push_back( prunedV[i]->vz() );
 
 		// ----- Gen LLP Info ----- //
 
@@ -3087,14 +3094,14 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		if( debug ) cout<<" ------ 4"<<endl;
 
-		gLLP_ProdVtx_X.push_back( prunedV[i]->vx() * 10 ); // * 10 to convert cm to mm
-		gLLP_ProdVtx_Y.push_back( prunedV[i]->vy() * 10 );
-		gLLP_ProdVtx_Z.push_back( prunedV[i]->vz() * 10 );		
+		gLLP_ProdVtx_X.push_back( prunedV[i]->vx() ); 
+		gLLP_ProdVtx_Y.push_back( prunedV[i]->vy() );
+		gLLP_ProdVtx_Z.push_back( prunedV[i]->vz() );		
 
 		if( found_llp_child ){
-		        gLLP_DecayVtx_X.push_back( llp_child->vx() * 10 ); // * 10 to convert cm to mm
-			gLLP_DecayVtx_Y.push_back( llp_child->vy() * 10 );
-			gLLP_DecayVtx_Z.push_back( llp_child->vz() * 10 );
+		  gLLP_DecayVtx_X.push_back( llp_child->vx() ); // note this is in cm
+			gLLP_DecayVtx_Y.push_back( llp_child->vy() );
+			gLLP_DecayVtx_Z.push_back( llp_child->vz() );
 		} else {
 			gLLP_DecayVtx_X.push_back( -9999.9 );
 			gLLP_DecayVtx_Y.push_back( -9999.9 );
