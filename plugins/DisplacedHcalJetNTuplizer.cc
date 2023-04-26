@@ -13,7 +13,7 @@
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/Selector.hh"
 #include "fastjet/PseudoJet.hh"
-#include "cms_lpc_llp/llp_ntupler/interface/DBSCAN.h"
+//#include "cms_lpc_llp/llp_ntupler/interface/DBSCAN.h"
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "RecoVertex/VertexPrimitives/interface/VertexState.h"
 
@@ -2367,6 +2367,9 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 
 		// Check if we should save
 		bool save_hit = false; 
+		save_hit = true;
+
+		/* Save all hits for now
 		for( int ij = 0; ij < n_jet; ij++ ){
 			
 			for( int ijh = 0; ijh < (int)jet_HcalRechitIndices.at(ij).size(); ijh++ ){
@@ -2377,7 +2380,7 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 			}
 
 			if( save_hit == true ) continue;
-		}
+		}*/
 
 		if( !save_hit ) continue;
 
@@ -2963,6 +2966,8 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		bool already_saved = false;
 
+		// TODO: Add higgs status requirement (pythia progression) -- want to last one
+
 		if(
 			(abs((*genParticles)[i].pdgId()) >= 1 && abs((*genParticles)[i].pdgId()) <= 6 && ( (*genParticles)[i].status() < 30 ))
 			|| (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
@@ -3020,6 +3025,7 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		gParticle_Id.push_back( prunedV[i]->pdgId() );
 		gParticle_Status.push_back( prunedV[i]->status() );
+
 		gParticle_ParentId.push_back( prunedV[i]->mother()->pdgId() ); // prunedV[i]->mother() this returns a pointer to mother particle
 		for( unsigned int j=0; j < prunedV.size(); j++ ) {
 		  if (prunedV[j]->pdgId() == prunedV[i]->mother()->pdgId() && prunedV[j]->vx() == prunedV[i]->mother()->vx() && prunedV[j]->vy() == prunedV[i]->mother()->vy() && prunedV[j]->vz() == prunedV[i]->mother()->vz() && prunedV[j]->pt() == prunedV[i]->mother()->pt()) {
@@ -3094,12 +3100,12 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		if( debug ) cout<<" ------ 4"<<endl;
 
-		gLLP_ProdVtx_X.push_back( prunedV[i]->vx() ); 
+		gLLP_ProdVtx_X.push_back( prunedV[i]->vx() );
 		gLLP_ProdVtx_Y.push_back( prunedV[i]->vy() );
 		gLLP_ProdVtx_Z.push_back( prunedV[i]->vz() );		
 
 		if( found_llp_child ){
-		  gLLP_DecayVtx_X.push_back( llp_child->vx() ); // note this is in cm
+			gLLP_DecayVtx_X.push_back( llp_child->vx() );
 			gLLP_DecayVtx_Y.push_back( llp_child->vy() );
 			gLLP_DecayVtx_Z.push_back( llp_child->vz() );
 		} else {
