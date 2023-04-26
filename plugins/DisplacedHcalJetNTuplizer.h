@@ -160,8 +160,8 @@ using namespace std;
 #include "TLorentzVector.h"
 
 //LOCAL includes
-#include "cms_lpc_llp/llp_ntupler/interface/GetTrackTrajInfo.h"
-#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
+//#include "cms_lpc_llp/llp_ntupler/interface/GetTrackTrajInfo.h"
+//#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
 
 // ------ Class declaration ------ //
 
@@ -476,7 +476,7 @@ protected:
 	vector<int> HLT_Prescale; //[NTriggersMAX];
 
 	//pdf weight helper
-	RazorPDFWeightsHelper pdfweightshelper;
+	//RazorPDFWeightsHelper pdfweightshelper;
 
 	// ----- MET ----- //
 

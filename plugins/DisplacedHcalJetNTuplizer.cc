@@ -13,7 +13,7 @@
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/Selector.hh"
 #include "fastjet/PseudoJet.hh"
-#include "cms_lpc_llp/llp_ntupler/interface/DBSCAN.h"
+//#include "cms_lpc_llp/llp_ntupler/interface/DBSCAN.h"
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "RecoVertex/VertexPrimitives/interface/VertexState.h"
 
@@ -2367,6 +2367,8 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 
 		// Check if we should save
 		bool save_hit = false; 
+		save_hit = true;
+		/*
 		for( int ij = 0; ij < n_jet; ij++ ){
 			
 			for( int ijh = 0; ijh < (int)jet_HcalRechitIndices.at(ij).size(); ijh++ ){
@@ -2377,7 +2379,7 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 			}
 
 			if( save_hit == true ) continue;
-		}
+		}*/
 
 		if( !save_hit ) continue;
 
@@ -2963,6 +2965,8 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		bool already_saved = false;
 
+		// TODO: Add higgs status requirement (pythia progression) -- want to last one
+
 		if(
 			(abs((*genParticles)[i].pdgId()) >= 1 && abs((*genParticles)[i].pdgId()) <= 6 && ( (*genParticles)[i].status() < 30 ))
 			|| (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
@@ -3020,8 +3024,8 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		gParticle_Id.push_back( prunedV[i]->pdgId() );
 		gParticle_Status.push_back( prunedV[i]->status() );
-		//gParticleParentId.push_back( 0 );
-		//gParticleParentIndex.push_back( -1 );
+		//gParticle_ParentId.push_back( 0 );
+		//gParticle_ParentIndex.push_back( -1 );
 
 		gParticle_Pt.push_back( prunedV[i]->pt() );
 		gParticle_Px.push_back( prunedV[i]->px() );
