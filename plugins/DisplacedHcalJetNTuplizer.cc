@@ -74,7 +74,8 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	PFCandsToken_(consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
 	// RecHits
 	ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
-	// hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>(edm::InputTag("reducedHcalRecHits","hbhereco"))),
+	// hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit
+  >(edm::InputTag("reducedHcalRecHits","hbhereco"))),
 	hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>( iConfig.getParameter<edm::InputTag>("hbRecHits") )),
 	// Other
 	electron_cutbasedID_decisions_loose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_loose"))),
@@ -2368,7 +2369,9 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 		// Check if we should save
 		bool save_hit = false; 
 		save_hit = true;
-		/*
+
+		/* Save all hits for now
+
 		for( int ij = 0; ij < n_jet; ij++ ){
 			
 			for( int ijh = 0; ijh < (int)jet_HcalRechitIndices.at(ij).size(); ijh++ ){
@@ -3024,6 +3027,7 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		gParticle_Id.push_back( prunedV[i]->pdgId() );
 		gParticle_Status.push_back( prunedV[i]->status() );
+
 		gParticle_ParentId.push_back( prunedV[i]->mother()->pdgId() ); // prunedV[i]->mother() this returns a pointer to mother particle
 		for( unsigned int j=0; j < prunedV.size(); j++ ) {
 		  if (prunedV[j]->pdgId() == prunedV[i]->mother()->pdgId() && prunedV[j]->vx() == prunedV[i]->mother()->vx() && prunedV[j]->vy() == prunedV[i]->mother()->vy() && prunedV[j]->vz() == prunedV[i]->mother()->vz() && prunedV[j]->pt() == prunedV[i]->mother()->pt()) {
@@ -3098,12 +3102,13 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		if( debug ) cout<<" ------ 4"<<endl;
 
-		gLLP_ProdVtx_X.push_back( prunedV[i]->vx() ); 
+		gLLP_ProdVtx_X.push_back( prunedV[i]->vx() );
 		gLLP_ProdVtx_Y.push_back( prunedV[i]->vy() );
 		gLLP_ProdVtx_Z.push_back( prunedV[i]->vz() );		
 
 		if( found_llp_child ){
 			gLLP_DecayVtx_X.push_back( llp_child->vx() ); // note this is in cm
+			gLLP_DecayVtx_X.push_back( llp_child->vx() );
 			gLLP_DecayVtx_Y.push_back( llp_child->vy() );
 			gLLP_DecayVtx_Z.push_back( llp_child->vz() );
 		} else {
