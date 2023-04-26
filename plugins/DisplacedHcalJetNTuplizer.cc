@@ -13,7 +13,7 @@
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/Selector.hh"
 #include "fastjet/PseudoJet.hh"
-#include "cms_lpc_llp/llp_ntupler/interface/DBSCAN.h"
+//#include "cms_lpc_llp/llp_ntupler/interface/DBSCAN.h"
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "RecoVertex/VertexPrimitives/interface/VertexState.h"
 
@@ -74,8 +74,8 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	PFCandsToken_(consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
 	// RecHits
 	ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
-        // hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>(edm::InputTag("reducedHcalRecHits","hbhereco"))),
-        hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>( iConfig.getParameter<edm::InputTag>("hbRecHits") )),
+	// hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>(edm::InputTag("reducedHcalRecHits","hbhereco"))),
+	hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>( iConfig.getParameter<edm::InputTag>("hbRecHits") )),
 	// Other
 	electron_cutbasedID_decisions_loose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_loose"))),
 	electron_cutbasedID_decisions_medium_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_medium"))),
@@ -2367,6 +2367,8 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 
 		// Check if we should save
 		bool save_hit = false; 
+		save_hit = true;
+		/*
 		for( int ij = 0; ij < n_jet; ij++ ){
 			
 			for( int ijh = 0; ijh < (int)jet_HcalRechitIndices.at(ij).size(); ijh++ ){
@@ -2377,7 +2379,7 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 			}
 
 			if( save_hit == true ) continue;
-		}
+		}*/
 
 		if( !save_hit ) continue;
 
@@ -2963,6 +2965,8 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		bool already_saved = false;
 
+		// TODO: Add higgs status requirement (pythia progression) -- want to last one
+
 		if(
 			(abs((*genParticles)[i].pdgId()) >= 1 && abs((*genParticles)[i].pdgId()) <= 6 && ( (*genParticles)[i].status() < 30 ))
 			|| (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
@@ -3099,7 +3103,7 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 		gLLP_ProdVtx_Z.push_back( prunedV[i]->vz() );		
 
 		if( found_llp_child ){
-		  gLLP_DecayVtx_X.push_back( llp_child->vx() ); // note this is in cm
+			gLLP_DecayVtx_X.push_back( llp_child->vx() ); // note this is in cm
 			gLLP_DecayVtx_Y.push_back( llp_child->vy() );
 			gLLP_DecayVtx_Z.push_back( llp_child->vz() );
 		} else {

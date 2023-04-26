@@ -24,7 +24,7 @@
 <use name="DataFormats/TrackerCommon"/>
 <use name="MagneticField/Records"/>
 <use name="MagneticField/Engine"/>
-<use name="cms_lpc_llp/llp_ntupler"/>
+<use name="cms_lpc_llp/Run3-HCAL-LLP-NTupler"/>
 <flags EDM_PLUGIN="1"/>
 
 
