@@ -1,6 +1,7 @@
 # llp_ntupler
 Long Lived Particle Ntupler based on AOD 
 
+lxplus location: `/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_12_4_6/src/cms_lpc_llp/llp_ntupler`
 
 ### Setup CMSSW & clone the ntuples:
 ```bash
@@ -19,7 +20,7 @@ rm cms_lpc_llp/llp_ntupler/plugins/llp_ntupler*
 mv cms_lpc_llp/llp_ntupler/python/crab_scripts/multi_crab_resubmit.py cms_lpc_llp/llp_ntupler/python/crab_scripts/multi_crab_resubmit.py.old 
 mv cms_lpc_llp/llp_ntupler/python/crab_scripts/multi_crab_ntuples.py cms_lpc_llp/llp_ntupler/python/crab_scripts/multi_crab_ntuples.py.old
 
-scram b
+scram b -j 8
 cmsenv
 
 # Run the ntuples
@@ -29,8 +30,25 @@ voms-proxy-init --rfc --voms cms --valid 48:00
 cp /tmp/x509up_u101898 /afs/cern.ch/user/g/gkopp
 chmod 777 /afs/cern.ch/user/g/gkopp/x509up_u101898
 source /cvmfs/cms.cern.ch/common/crab-setup.sh
+# OR
+proxy
+crab_setup
 
-cmsRun python/DisplacedHcalJetNTuplizer.py <input_arguments>
+scram b -j 8
+
+# below are files directly adapted from muon ntupler
+cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim.py
+cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim_small.py # this is for Run 3 data
+cmsRun python/prod.py # this is for Run 3 MC
+
+# moving to HCAL jets more specific files. Data input is working now, MC gives error (still troubleshooting)
+cmsRun python/DisplacedHcalJetNTuplizer.py isData=1 inputFiles=2022Data.txt processEvents=500
+cmsRun python/DisplacedHcalJetNTuplizer.py inputFiles=2022MC.txt processEvents=500
+
+# full updates with working ntupler for data and MC! Many of the above files have now been moved to python/Archive 
+cd run
+cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=1000 inputFiles=InputDataTest.txt debug=False outputFile=ntuple_output_test_data1.root
+cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=False isSignal=True processEvents=1000 inputFiles=InputSignalFilesTest.txt debug=False outputFile=ntuple_output_test_signal1.root
 ```
 
 The files from the HMT dataset in 2022 are on Caltech T2: `/DisplacedJet/Run2022E-EXOCSCCluster-PromptReco-v1/USER`. This file is used for testing, it has 5k events: `/store/data/Run2022E/DisplacedJet/USER/EXOCSCCluster-PromptReco-v1/000/360/017/00000/eae65e97-9f58-4119-9806-a3226ecba729.root`. 

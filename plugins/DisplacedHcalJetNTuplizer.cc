@@ -74,8 +74,8 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	PFCandsToken_(consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
 	// RecHits
 	ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
-	//hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>(edm::InputTag("reducedHcalRecHits","hbhereco"))),
-	hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>( iConfig.getParameter<edm::InputTag>("hbRecHits") )),
+        // hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>(edm::InputTag("reducedHcalRecHits","hbhereco"))),
+        hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>( iConfig.getParameter<edm::InputTag>("hbRecHits") )),
 	// Other
 	electron_cutbasedID_decisions_loose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_loose"))),
 	electron_cutbasedID_decisions_medium_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_medium"))),
@@ -2368,7 +2368,8 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 		// Check if we should save
 		bool save_hit = false; 
 		save_hit = true;
-		/*
+
+		/* Save all hits for now
 		for( int ij = 0; ij < n_jet; ij++ ){
 			
 			for( int ijh = 0; ijh < (int)jet_HcalRechitIndices.at(ij).size(); ijh++ ){
@@ -3024,9 +3025,17 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		gParticle_Id.push_back( prunedV[i]->pdgId() );
 		gParticle_Status.push_back( prunedV[i]->status() );
-		//gParticle_ParentId.push_back( 0 );
-		//gParticle_ParentIndex.push_back( -1 );
 
+		gParticle_ParentId.push_back( prunedV[i]->mother()->pdgId() ); // prunedV[i]->mother() this returns a pointer to mother particle
+		for( unsigned int j=0; j < prunedV.size(); j++ ) {
+		  if (prunedV[j]->pdgId() == prunedV[i]->mother()->pdgId() && prunedV[j]->vx() == prunedV[i]->mother()->vx() && prunedV[j]->vy() == prunedV[i]->mother()->vy() && prunedV[j]->vz() == prunedV[i]->mother()->vz() && prunedV[j]->pt() == prunedV[i]->mother()->pt()) {
+		    gParticle_ParentIndex.push_back(j);
+		  }
+		  else {
+		    gParticle_ParentIndex.push_back( -1 ); // if no mother particle was found to match -- could be the case because not all gen particles are saved in prunedV
+		  }
+		}
+		    
 		gParticle_Pt.push_back( prunedV[i]->pt() );
 		gParticle_Px.push_back( prunedV[i]->px() );
 		gParticle_Py.push_back( prunedV[i]->py() );
