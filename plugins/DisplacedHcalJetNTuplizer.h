@@ -816,9 +816,12 @@ protected:
 	vector<float> ecalRechit_Phi;
 	vector<float> ecalRechit_E;
 	// Features
-	vector<float> ecalRechit_T;
-	vector<float> ecalRechit_E_Error;
-	vector<float> ecalRechit_T_Error;
+	vector<float> ecalRechit_X;
+	vector<float> ecalRechit_Y;
+	vector<float> ecalRechit_Z;	
+	vector<float> ecalRechit_time;
+	vector<float> ecalRechit_E_err;
+	vector<float> ecalRechit_time_err;
 	vector<bool> ecalRechit_kSaturatedflag;
 	vector<bool> ecalRechit_kLeadingEdgeRecoveredflag;
 	vector<bool> ecalRechit_kPoorRecoflag;

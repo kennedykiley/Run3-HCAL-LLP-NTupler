@@ -13,23 +13,8 @@
 #include "fastjet/ClusterSequence.hh"
 #include "fastjet/Selector.hh"
 #include "fastjet/PseudoJet.hh"
-//#include "cms_lpc_llp/llp_ntupler/interface/DBSCAN.h"
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "RecoVertex/VertexPrimitives/interface/VertexState.h"
-
-struct muonCscLayers{
-	int id;
-	int nSimHits;
-	int nRecHits;
-	int nWireDigis;
-	int nStripDigis;
-	bool Me1112;
-};
-
-/*
-struct largest_muonCscLayers{
-	inline bool operator() (const muonCscLayers& c1, const muonCscLayers& c2){return c1.nSimHits > c2.nSimHits;}
-} my_largest_muonCscLayers;*/
 
 // 
 // ************************************************************************************
@@ -602,9 +587,12 @@ void DisplacedHcalJetNTuplizer::EnableEcalRechitBranches(){
 	output_tree->Branch( "ecalRechit_Eta", &ecalRechit_Eta );
 	output_tree->Branch( "ecalRechit_Phi", &ecalRechit_Phi );
 	output_tree->Branch( "ecalRechit_E", &ecalRechit_E );
-	output_tree->Branch( "ecalRechit_T", &ecalRechit_T );
-	output_tree->Branch( "ecalRechit_E_Error", &ecalRechit_E_Error );
-	output_tree->Branch( "ecalRechit_T_Error", &ecalRechit_T_Error );
+	output_tree->Branch( "ecalRechit_X", &ecalRechit_X );
+	output_tree->Branch( "ecalRechit_Y", &ecalRechit_Y );
+	output_tree->Branch( "ecalRechit_Z", &ecalRechit_Z );	
+	output_tree->Branch( "ecalRechit_time", &ecalRechit_time );
+	output_tree->Branch( "ecalRechit_E_err", &ecalRechit_E_err );
+	output_tree->Branch( "ecalRechit_time_err", &ecalRechit_time_err );
 	output_tree->Branch( "ecalRechit_kSaturatedflag", &ecalRechit_kSaturatedflag );
 	output_tree->Branch( "ecalRechit_kLeadingEdgeRecoveredflag", &ecalRechit_kLeadingEdgeRecoveredflag );
 	output_tree->Branch( "ecalRechit_kPoorRecoflag", &ecalRechit_kPoorRecoflag );
@@ -1092,9 +1080,12 @@ void DisplacedHcalJetNTuplizer::ResetEcalRechitBranches(){
 	ecalRechit_Eta.clear();
 	ecalRechit_Phi.clear();
 	ecalRechit_E.clear();
-	ecalRechit_T.clear();
-	ecalRechit_E_Error.clear();
-	ecalRechit_T_Error.clear();
+	ecalRechit_X.clear();
+	ecalRechit_Y.clear();
+	ecalRechit_Z.clear();	
+	ecalRechit_time.clear();
+	ecalRechit_E_err.clear();
+	ecalRechit_time_err.clear();
 	ecalRechit_kSaturatedflag.clear();
 	ecalRechit_kLeadingEdgeRecoveredflag.clear();
 	ecalRechit_kPoorRecoflag.clear();
@@ -2350,7 +2341,61 @@ bool DisplacedHcalJetNTuplizer::FillSecondaryVerticesBranches( const edm::Event&
 
 bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 
-	return true;
+	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillEcalRechitBranches"<<endl; 			
+
+	for( uint i = 0; i < ebRecHits->size(); i++ ){
+
+		if( debug ) cout<<" -- ecalrechit idx "<<i<<endl;
+
+		const EcalRecHit *recHit = &(*ebRecHits)[i];
+		const DetId recHitId     = recHit->detid();
+		if( recHit->detid().subdetId() != EcalBarrel ) continue;
+
+		// Check if we should save
+		bool save_hit = false; 
+		save_hit = true;
+
+		/* Save all hits for now
+
+		for( int ij = 0; ij < n_jet; ij++ ){
+			
+			for( int ijh = 0; ijh < (int)jet_EcalRechitIndices.at(ij).size(); ijh++ ){
+				if( ih == jet_EcalRechitIndices.at(ij).at(ijh) ){
+					save_hit = true; 
+					break;
+				}
+			}
+
+			if( save_hit == true ) continue;
+		}*/
+
+		if( !save_hit ) continue;
+
+		const auto recHitPos = caloGeometry_EB->getGeometry(recHitId)->getPosition();
+
+		n_ecalRechit++;
+
+		ecalRechit_Eta.push_back( recHitPos.eta() );
+		ecalRechit_Phi.push_back( recHitPos.phi() );
+		ecalRechit_E.push_back( recHit->energy() );
+		// Features
+		ecalRechit_X.push_back( recHitPos.x() );
+		ecalRechit_Y.push_back( recHitPos.y() );
+		ecalRechit_Z.push_back( recHitPos.z() );		
+		ecalRechit_time.push_back( recHit->time() );
+		ecalRechit_E_err.push_back( recHit->energyError() );
+		ecalRechit_time_err.push_back( recHit->timeError() );
+		ecalRechit_kSaturatedflag.push_back( recHit->checkFlag(EcalRecHit::kSaturated) );
+		ecalRechit_kLeadingEdgeRecoveredflag.push_back( recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) );
+		ecalRechit_kPoorRecoflag.push_back( recHit->checkFlag(EcalRecHit::kPoorReco) );
+		ecalRechit_kWeirdflag.push_back( recHit->checkFlag(EcalRecHit::kWeird) );
+		ecalRechit_kDiWeirdflag.push_back( recHit->checkFlag(EcalRecHit::kDiWeird) );	
+	} 
+
+	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillEcalRechitBranches"<<endl; 			
+
+	return true; 
+
 }
 
 bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent, const edm::EventSetup& iSetup){
