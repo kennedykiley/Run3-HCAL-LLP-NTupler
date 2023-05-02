@@ -9,7 +9,7 @@ from Configuration.Eras.Era_Run3_cff import Run3
 process = cms.Process("DisplacedHcalJetNTuplizer", Run3) # line added to fix PCastorRcd error
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load("Configuration.EventContent.EventContent_cff")
-process.load("cms_lpc_llp.llp_ntupler.metFilters_cff_2022")
+process.load("cms_lpc_llp.Run3-HCAL-LLP-NTupler.metFilters_cff_2022")
 
 # Fix GEM Error
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
@@ -188,7 +188,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     enableGenLLPInfo = cms.bool(True),
     readGenVertexTime = cms.bool(False),#need to be false for displaced samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
-    triggerPathNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/HLTPathsLLPJetsHCAL.dat"),
+    triggerPathNamesFile = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/HLTPathsLLPJetsHCAL.dat"),
     #eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
     #muonHLTFilterNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/MuonHLTFilterNames.dat"),
     #photonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorPhotonHLTFilterNames.dat"),
@@ -270,10 +270,10 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
 
     beamSpot = cms.InputTag("offlineBeamSpot", "", "RECO"),
     pfClusters = cms.InputTag("particleFlowClusterECAL","","RECO"),
-    ebRecHits = cms.InputTag("reducedEcalRecHitsEB", "","RECO"),
-    hbRecHits = cms.InputTag("reducedHcalRecHits", "hbhereco","RECO"),
-    #hbRecHits = cms.InputTag("hbhereco", "","RECO"),
+    #hbRecHits = cms.InputTag("reducedHcalRecHits", "hbhereco","RECO"),
+    hbRecHits = cms.InputTag("hbhereco", "","RECO"),
     #ebRecHits = cms.InputTag("EcalRecHit", "reducedEcalRecHitsEB", "RECO"),
+    ebRecHits = cms.InputTag("ecalRecHit", "EcalRecHitsEB", "RECO"), 
     eeRecHits  = cms.InputTag("reducedEcalRecHitsEE", "","RECO"),
     esRecHits = cms.InputTag("reducedEcalRecHitsES", "","RECO"),
     #ebeeClusters = cms.InputTag("reducedEgamma", "reducedEBEEClusters", "RECO"),

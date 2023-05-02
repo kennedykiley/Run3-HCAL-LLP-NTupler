@@ -234,7 +234,7 @@ void DisplacedHcalJetNTuplizer::EnableBranches(){
 	EnableSecondaryVerticesBranches();
 	EnablePFCandidateBranches();
 	// Hits
-	//EnableEcalRechitBranches();
+	EnableEcalRechitBranches();
 	EnableHcalRechitBranches();
 	// MC
 	//EnablePileupBranches();
@@ -2372,7 +2372,6 @@ bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent,
 		if( !save_hit ) continue;
 
 		const auto recHitPos = caloGeometry_EB->getGeometry(recHitId)->getPosition();
-
 		n_ecalRechit++;
 
 		ecalRechit_Eta.push_back( recHitPos.eta() );
@@ -3014,6 +3013,12 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		// TODO: Add higgs status requirement (pythia progression) -- want to last one
 
+		if( abs( (*genParticles)[i].pdgId() ) == 25 && (*genParticles)[i].status() != 62 ){ 
+			if( debug ) cout<<"GenParticle Higgs STatus: "<<(*genParticles)[i].status()<<", isPromptFinalState():"<<(*genParticles)[i].isPromptFinalState()<<", isPromptDecayed():"<<(*genParticles)[i].isPromptDecayed()<<endl;
+			continue;
+		}
+			
+
 		if(
 			(abs((*genParticles)[i].pdgId()) >= 1 && abs((*genParticles)[i].pdgId()) <= 6 && ( (*genParticles)[i].status() < 30 ))
 			|| (abs((*genParticles)[i].pdgId()) >= 11 && abs((*genParticles)[i].pdgId()) <= 16)
@@ -3027,7 +3032,9 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 			|| (abs((*genParticles)[i].pdgId()) == 9000006 || abs((*genParticles)[i].pdgId()) == 9000007)
 			|| (abs((*genParticles)[i].pdgId()) == 6000113 )
 			|| (abs((*genParticles)[i].pdgId()) == 9900012 || abs((*genParticles)[i].pdgId()) == 9900014 || abs((*genParticles)[i].pdgId()) == 9900016)
+			
 			) {
+
 			if( (*genParticles)[i].pt() > pt_cut ){
 				prunedV.push_back(&(*genParticles)[i]);
 				already_saved = true;
@@ -3152,7 +3159,6 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		if( found_llp_child ){
 			gLLP_DecayVtx_X.push_back( llp_child->vx() ); // note this is in cm
-			gLLP_DecayVtx_X.push_back( llp_child->vx() );
 			gLLP_DecayVtx_Y.push_back( llp_child->vy() );
 			gLLP_DecayVtx_Z.push_back( llp_child->vz() );
 		} else {
