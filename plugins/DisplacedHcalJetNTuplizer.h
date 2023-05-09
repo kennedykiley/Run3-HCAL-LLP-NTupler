@@ -32,6 +32,7 @@ using namespace std;
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/Framework/interface/ModuleFactory.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
 #include "CalibCalorimetry/EcalLaserCorrection/interface/EcalLaserDbRecord.h"

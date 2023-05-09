@@ -115,6 +115,20 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 
 	if( debug ) cout<<"Getting triggers..."<<endl;
 
+	triggerPathNames.push_back("1 HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5");
+	triggerPathNames.push_back("2 HLT_HT200_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
+	triggerPathNames.push_back("3 HLT_HT170_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
+	triggerPathNames.push_back("4 HLT_HT200_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
+	triggerPathNames.push_back("5 HLT_HT270_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
+	triggerPathNames.push_back("6 HLT_HT200_L1SingleLLPJet_DisplacedDijet60_DisplacedTrack");
+	triggerPathNames.push_back("7 HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive");
+	triggerPathNames.push_back("8 HLT_HT420_L1SingleLLPJet_DisplacedDijet60_Inclusive");
+	triggerPathNames.push_back("9 HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay0p5nsTrackless");
+	triggerPathNames.push_back("10 HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay1nsInclusive");
+	triggerPathNames.push_back("11 HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay1nsTrackless");
+	triggerPathNames.push_back("12 HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay2nsInclusive");
+
+        /*
 	ifstream myfile (edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str()) ;
 
 	if( myfile.is_open() ){
@@ -124,11 +138,13 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 
 		while( myfile>>index>>hltpathname ){
 			triggerPathNames.push_back( hltpathname );
+                        cout<<hltpathname<<endl;
 		}
 		myfile.close();
 	} else {
 		std::cout << "ERROR!!! Could not open trigger path name file : " << edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str() << "\n";
 	}	
+        */
 
 	if( debug ) cout<<"Defining trigger hists..."<<endl;
 
