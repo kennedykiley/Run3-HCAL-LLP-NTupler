@@ -20,7 +20,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 options = VarParsing.VarParsing()
 
 options.register('isData',
-    False, # default value
+    True, # default value
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.bool,
     "is Data"
@@ -41,21 +41,21 @@ options.register('skipEvents',
 )
 
 options.register('processEvents',
-    -1, # 100, # -1 default value
+    -1, default value
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.int,
     "Number of events to process"
 )
 
 options.register('inputFiles',
-    "",
+    "input.root",
     VarParsing.VarParsing.multiplicity.list,
     VarParsing.VarParsing.varType.string,
     "Input files"
 )
 
 options.register('outputFile',
-    "ntuple_output_test.root",
+    "output.root",
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.string,
     "Output file"
@@ -189,6 +189,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     readGenVertexTime = cms.bool(False),#need to be false for displaced samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/HLTPathsLLPJetsHCAL.dat"),
+    #triggerPathNamesFile = cms.FileInPath("/afs/cern.ch/work/k/kikenned/LLPNTupler/Run3-HCAL-LLP-NTupler/data/HLTPathsLLPJetsHCAL.dat"), #"../data/HLTPathsLLPJetsHCAL.dat"),
     #eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
     #muonHLTFilterNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/MuonHLTFilterNames.dat"),
     #photonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorPhotonHLTFilterNames.dat"),
