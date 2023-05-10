@@ -2,6 +2,7 @@
 Long Lived Particle Ntupler based on AOD 
 
 lxplus location: `/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_12_4_6/src/cms_lpc_llp/llp_ntupler`
+Moved to: `/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_12_4_6/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler'
 
 ### Setup CMSSW & clone the ntuples:
 ```bash
@@ -48,6 +49,8 @@ cmsRun python/DisplacedHcalJetNTuplizer.py inputFiles=2022MC.txt processEvents=5
 # full updates with working ntupler for data and MC! Many of the above files have now been moved to python/Archive 
 cd run
 cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=1000 inputFiles=InputDataTest.txt debug=False outputFile=ntuple_output_test_data1.root
+cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=20000 inputFiles=InputDataMETSkimTest.txt debug=False outputFile=ntuple_output_test_data_METSkimtest.root
+
 cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=False isSignal=True processEvents=1000 inputFiles=InputSignalFilesTest.txt debug=False outputFile=ntuple_output_test_signal1.root
 ```
 
