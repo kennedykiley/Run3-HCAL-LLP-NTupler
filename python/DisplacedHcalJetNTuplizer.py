@@ -41,7 +41,7 @@ options.register('skipEvents',
 )
 
 options.register('processEvents',
-    1000, #-1, # default value
+    -1, # default value
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.int,
     "Number of events to process"
