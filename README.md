@@ -73,7 +73,7 @@ dasgoclient --limit=100 --query="file dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau
 ### Variables to check before running nTupler:
 * isData: False if running signals, True if running data
 * isSignal: True if running signals, False if running data
-** in particular, isSignal and isData need to be set in the file for a crab submission! (until determine how to pass via config)
+  ** in particular, isSignal and isData need to be set in the file for a crab submission! (until determine how to pass via config)
 * readGenVertexTime: False for LLP samples
 
 
