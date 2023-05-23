@@ -26,6 +26,10 @@ datasetnames = [
 '/JetMET/Run2022G-EXOHighMET-PromptReco-v1/RAW-RECO'
 ]
 
+datasetblock = [
+'/JetMET/Run2022G-EXOHighMET-PromptReco-v1/RAW-RECO#8469adfd-7170-448a-a270-211dc028c8d2'
+]
+
 # runrange = '362085,362087' # Nov2022 Phase Scan
 runrange = '362696'
 
@@ -78,6 +82,7 @@ config.JobType.psetName    = psetname
 
 # Data
 config.Data.inputDataset     = datasetnames[number]
+config.Data.inputBlocks      = datasetblock
 config.Data.inputDBS         = 'global'
 config.Data.splitting        = 'Automatic' #'LumiBased'
 #config.Data.unitsPerJob      = 1
