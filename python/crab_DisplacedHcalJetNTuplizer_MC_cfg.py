@@ -23,15 +23,11 @@ number = 0 # starting at 0 -> refers to datasetnames
 
 # List of possible datasets
 datasetnames = [
-'/JetMET/Run2022G-EXOHighMET-PromptReco-v1/RAW-RECO'
-]
-
-datasetblock = [
-'/JetMET/Run2022G-EXOHighMET-PromptReco-v1/RAW-RECO#8469adfd-7170-448a-a270-211dc028c8d2'
+'/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER'
 ]
 
 # runrange = '362085,362087' # Nov2022 Phase Scan
-runrange = '362696'
+runrange = ''
 
 # JSON files for lumiMask are available at: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/
 lumimask = ''
@@ -68,9 +64,9 @@ dataset = list(dataset)
 config = config()
 
 # General
-config.General.workArea        = 'crab_test_2023-05-08'
+config.General.workArea        = 'crab_test_2023-05-10'
 config.General.instance        = 'prod'
-config.General.requestName     = dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp
+config.General.requestName     = 'LLP_MC_test_'+timestamp #dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp
 config.General.transferOutputs = True
 config.General.transferLogs    = True
 
@@ -82,14 +78,13 @@ config.JobType.psetName    = psetname
 
 # Data
 config.Data.inputDataset     = datasetnames[number]
-config.Data.inputBlocks      = datasetblock
-config.Data.inputDBS         = 'global'
-config.Data.splitting        = 'Automatic' #'LumiBased'
-#config.Data.unitsPerJob      = 1
-#config.Data.totalUnits       = 1
+config.Data.inputDBS         = 'phys03' # because input files are from another crab production run #'https://cmsweb.cern.ch/dbs/prod/phys03/DBSWriter/' #'global'
+config.Data.splitting        = 'FileBased' #'Automatic' #'LumiBased'
+config.Data.unitsPerJob      = 5 # with file based splitting, this is how many files in 1 job (5 * 200 events = 1k events)
+config.Data.totalUnits       = 100 # total number of units (not number of jobs!)
 config.Data.ignoreLocality   = True
 config.Data.publication      = False
-config.Data.outputDatasetTag = dataset[1]+'_'+dataset[2]+timestamp
+config.Data.outputDatasetTag = 'LLP_MC_test_'+timestamp #dataset[1]+'_'+dataset[2]+timestamp
 
 config.Data.runRange        =  runrange
 if lumimask != '':

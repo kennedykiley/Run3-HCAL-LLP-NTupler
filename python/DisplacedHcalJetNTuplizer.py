@@ -20,14 +20,14 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 options = VarParsing.VarParsing()
 
 options.register('isData',
-    True, # default value
+    False, # default value
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.bool,
     "is Data"
 )
 
 options.register('isSignal',
-    False, # default value
+    True, # default value
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.bool,
     "is Signal"
@@ -41,7 +41,7 @@ options.register('skipEvents',
 )
 
 options.register('processEvents',
-    -1, default value
+    -1, # default value
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.int,
     "Number of events to process"

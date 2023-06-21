@@ -2,6 +2,7 @@
 Long Lived Particle Ntupler based on AOD 
 
 lxplus location: `/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_12_4_6/src/cms_lpc_llp/llp_ntupler`
+Moved to: `/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_12_4_6/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler'
 
 ### Setup CMSSW & clone the ntuples:
 ```bash
@@ -36,56 +37,45 @@ crab_setup
 
 scram b -j 8
 
-# below are files directly adapted from muon ntupler
-cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim.py
-cmsRun python/displacedJetMuon_ntupler_Data_2022_MuonShowerSkim_small.py # this is for Run 3 data
-cmsRun python/prod.py # this is for Run 3 MC
-
-# moving to HCAL jets more specific files. Data input is working now, MC gives error (still troubleshooting)
-cmsRun python/DisplacedHcalJetNTuplizer.py isData=1 inputFiles=2022Data.txt processEvents=500
-cmsRun python/DisplacedHcalJetNTuplizer.py inputFiles=2022MC.txt processEvents=500
-
-# full updates with working ntupler for data and MC! Many of the above files have now been moved to python/Archive 
+# full updates with working ntupler for data and MC! Many of the earlier files have now been moved to python/Archive 
 cd run
 cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=1000 inputFiles=InputDataTest.txt debug=False outputFile=ntuple_output_test_data1.root
+cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=20000 inputFiles=InputDataMETSkimTest.txt debug=False outputFile=ntuple_output_test_data_METSkimtest.root
+
 cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=False isSignal=True processEvents=1000 inputFiles=InputSignalFilesTest.txt debug=False outputFile=ntuple_output_test_signal1.root
 ```
 
-The files from the HMT dataset in 2022 are on Caltech T2: `/DisplacedJet/Run2022E-EXOCSCCluster-PromptReco-v1/USER`. This file is used for testing, it has 5k events: `/store/data/Run2022E/DisplacedJet/USER/EXOCSCCluster-PromptReco-v1/000/360/017/00000/eae65e97-9f58-4119-9806-a3226ecba729.root`. 
+Running with CRAB:
+```
+cmsenv
+cd python
+crab submit -c crab_DisplacedHcalJetNTuplizer_MC_cfg.py 
+# note that for MC, the variables "signal" and "data" must be set by hand now in python/DisplacedHcalJetNTuplizer.py
+crab submit -c crab_DisplacedHcalJetNTuplizer_cfg.py
+
+# Useful commands
+crab submit -c <crab_cfg.py file> --dryrun
+crab status -d <crab_directory>/<crab_project> --long
+
+crab checkwrite --site T2_US_Wisconsin
+```
+
+Output is in `/hdfs/store/user/gkopp/ggH_HToSSTobbbb_MH*`.
+
+
+The High MET skim we start with from 2022 data are here on [DAS](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FJetMET%2FRun2022G-EXOHighMET-PromptReco-v1%2FRAW-RECO). 
+
+The H->XX->4b MC for 2022 are here:
+```
+dasgoclient --limit=100 --query="file dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER instance=prod/phys03 | grep file.name"
+```
 
 ### Variables to check before running nTupler:
-* isQCD: False if running signals, True if running QCD
-  * Matching is done differently for QCD
-* isFourJet: False for glueball model; True for fourjet
-  * Difference is LLP particle IDs are different in the two models
-* readGenVertexTime: False for glueball model; True for fourjet
-  * Difference is glueball model used 2016 condition, doesn't have genVertexTime info for now. (will have them when the new samples are ready)
-* Output file name:
-```bash
-process.TFileService = cms.Service("TFileService",
-        fileName = cms.string('input.root'),
-    closeFileFast = cms.untracked.bool(True)
-)
-```
-* Input file name:
-```bash
-process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring('output.root'),
-)
-```
+* isData: False if running signals, True if running data
+* isSignal: True if running signals, False if running data
+  ** in particular, isSignal and isData need to be set in the file for a crab submission! (until determine how to pass via config)
+* readGenVertexTime: False for LLP samples
 
-### AODSIM Location
 
-They are all on Caltech tier2: (should be accessible through xrootd)
-```/mnt/hadoop/store/user/christiw/RunII2016/```
-The different directories are different h production mode
-* ggh: ppTohToSS1SS2_SS1Tobb_SS2Toveve_MC_prod
-* vbfh: ppTohjjToSS1SS2_SS1Tobb_SS2Toveve_MC_prod
-* wh: ppTohwToSS1SS2_SS1Tobb_SS2Toveve_MC_prod
-* zh: ppTohwToSS1SS2_SS1Tobb_SS2Toveve_MC_prod
-* ggh with ISR: ppTohToSS1SS2_SS1Tobb_SS2Toveve-ppTojhToSS1SS2_SS1Tobb_SS2Toveve_MC_prod
-* There are a few mass points / ctau points for each production modes, some production modes only have one point
-* Once in a particular mass/ctau directory, AODSIM is in the directory that ends with *DR-AODSIM_CaltechT2/
-* eg: the four ROOT files in ```/mnt/hadoop/store/user/christiw/RunII2016/ppTohToSS1SS2_SS1Tobb_SS2Toveve_MC_prod/ppTohToSS1SS2_SS1Tobb_SS2Toveve_run_m10_pl10000_ev10000/crab_CMSSW_8_0_31_ppTohToSS1SS2_SS1Tobb_SS2Toveve_run_m10_pl10000_ev10000_DR-AODSIM_CaltechT2/19012\
-0_072347/0000/```
-are AODSIM
+## Ntuple use
+After ntuples are made, they are used in the LLP_NuplerAnalyzer, from [here](https://github.com/gk199/Run3-HCAL-LLP-Analysis/tree/main)

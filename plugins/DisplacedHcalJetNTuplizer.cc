@@ -946,6 +946,7 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jet_MedianIP_wp.clear();
 	jet_MinDeltaRAllTracks_wp.clear();
 	jet_MinDeltaRPVTracks_wp.clear();
+	jet_TrackIndices.clear();
 	jet_NPFCands.clear();
 	jet_PFCandIndices.clear();
 	jet_SeedHcalRechitID.clear();
