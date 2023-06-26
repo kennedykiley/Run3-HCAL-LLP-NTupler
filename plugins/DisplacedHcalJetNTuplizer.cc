@@ -1290,6 +1290,16 @@ void DisplacedHcalJetNTuplizer::beginLuminosityBlock(edm::LuminosityBlock const&
 }
 
 // ------------------------------------------------------------------------------------
+void DisplacedHcalJetNTuplizer::endLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const& iSetup) {
+	if (debug) cout << "Running DisplacedHcalJetNTuplizer::endLuminosityBlock" << endl;
+}
+
+// ------------------------------------------------------------------------------------
+void DisplacedHcalJetNTuplizer::endRun(edm::Run const& iRun, edm::EventSetup const& iSetup) {
+	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::endRun"<<endl; 
+}
+
+// ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
 	// Method called for each event
 

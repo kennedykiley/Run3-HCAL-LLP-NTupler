@@ -21,7 +21,8 @@ using namespace std;
 
 // CMSSW framework includes
 #include "FWCore/Common/interface/TriggerNames.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+//#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/Framework/interface/ESTransientHandle.h"
@@ -167,7 +168,8 @@ using namespace std;
 // ------ Class declaration ------ //
 
 // ------------------------------------------------------------------------------------
-class DisplacedHcalJetNTuplizer : public edm::EDAnalyzer {
+class DisplacedHcalJetNTuplizer : public edm::one::EDAnalyzer<edm::one::WatchLuminosityBlocks,edm::one::WatchRuns> {
+//class DisplacedHcalJetNTuplizer : public edm::EDAnalyzer {
 public:
 	//analyzer constructor and destructor
 	explicit DisplacedHcalJetNTuplizer(const edm::ParameterSet&);
@@ -261,11 +263,13 @@ public:
 	double deltaR(double eta1, double phi1, double eta2, double phi2);
 
 protected:
-	virtual void beginJob() override;
-	virtual void beginRun(const edm::Run&, const edm::EventSetup&) override;
-	virtual void beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) override;
-	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-	virtual void endJob() override;
+        virtual void beginJob() override;
+        virtual void beginRun(const edm::Run&, const edm::EventSetup&) override;
+        virtual void beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) override;
+        virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+		virtual void endLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) override;
+    	virtual void endRun(edm::Run const& iRun, edm::EventSetup const&) override;
+        virtual void endJob() override;
 
 	// ----- Member data ------ //
 
