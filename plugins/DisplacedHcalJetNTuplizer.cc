@@ -58,7 +58,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	secondaryVerticesToken_(consumes<vector<reco::VertexCompositePtrCandidate> >(iConfig.getParameter<edm::InputTag>("secondaryVertices"))),	
 	PFCandsToken_(consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
 	// RecHits
-	ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
+	// ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
 	// hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>(edm::InputTag("reducedHcalRecHits","hbhereco"))),
 	hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>( iConfig.getParameter<edm::InputTag>("hbRecHits") )),
 	// Other
@@ -208,7 +208,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 
 	// Rechits
 	iEvent.getByToken(hcalRecHitsHBHEToken_, hcalRecHitsHBHE);
-	iEvent.getByToken(ebRecHitsToken_,ebRecHits);
+	// iEvent.getByToken(ebRecHitsToken_,ebRecHits); // GK remove ebRecHits for LLP HCAL skim
 
 	// Other
 	iEvent.getByToken(electron_cutbasedID_decisions_loose_Token_, electron_cutbasedID_decisions_loose); 
@@ -1991,8 +1991,8 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 		// ----- Find Ecal Rechits Inside Jet ----- //
 
-
 		if( debug ) cout<<" ------ 6"<<endl;  
+		/* GK remove ebRecHits for LLP HCAL skim
 
 		vector<uint> jet_EcalRechitIDs_temp;
 		vector<uint> jet_EcalRechitIndices_temp;
@@ -2018,6 +2018,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 		jet_EcalRechitIDs.push_back( jet_EcalRechitIDs_temp );
 		jet_EcalRechitIndices.push_back( jet_EcalRechitIndices_temp );
+		*/
 
 		// ----- Find Hcal Rechits Inside Jet ----- //
 
@@ -2370,6 +2371,7 @@ bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent,
 
 	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillEcalRechitBranches"<<endl; 			
 
+	/* GK remove ebRecHits for LLP HCAL skim
 	for( uint i = 0; i < ebRecHits->size(); i++ ){
 
 		if( debug ) cout<<" -- ecalrechit idx "<<i<<endl;
@@ -2382,7 +2384,7 @@ bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent,
 		bool save_hit = false; 
 		save_hit = true;
 
-		/* Save all hits for now
+		// Save all hits for now (comment below section)
 
 		for( int ij = 0; ij < n_jet; ij++ ){
 			
@@ -2394,7 +2396,7 @@ bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent,
 			}
 
 			if( save_hit == true ) continue;
-		}*/
+		}
 
 		if( !save_hit ) continue;
 
@@ -2417,6 +2419,7 @@ bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent,
 		ecalRechit_kWeirdflag.push_back( recHit->checkFlag(EcalRecHit::kWeird) );
 		ecalRechit_kDiWeirdflag.push_back( recHit->checkFlag(EcalRecHit::kDiWeird) );	
 	} 
+	*/
 
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillEcalRechitBranches"<<endl; 			
 
