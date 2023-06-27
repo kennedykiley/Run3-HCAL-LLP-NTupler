@@ -33,10 +33,6 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
 	triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
 	triggerPathNamesFile_(iConfig.getParameter<string>( "triggerPathNamesFile" )),
-	//eleHLTFilterNamesFile_(iConfig.getParameter<string>( "electronHLTFilterNamesFile" )),
-	//muonHLTFilterNamesFile_(iConfig.getParameter<string>( "muonHLTFilterNamesFile" )),
-	//phoHLTFilterNamesFile_(iConfig.getParameter<string>( "photonHLTFilterNamesFile" )),
-	//jetHLTFilterNamesFile_(iConfig.getParameter<string>( "jetHLTFilterNamesFile" )),
 	// General 
 	verticesToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
 	primaryVertexAssociationToken_(consumes<edm::Association<vector<reco::Vertex> > >(edm::InputTag("primaryVertexAssociation","original"))),
@@ -56,13 +52,10 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	caloLRJetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK8"))),
 	l1jetsToken_(consumes<BXVector<l1t::Jet>>(iConfig.getParameter<edm::InputTag>("l1jets"))), // GK added for L1 jets access
 	// Low-Level Objects
-	//tracksToken_(consumes<edm::View<reco::Track> >(iConfig.getParameter<edm::InputTag>("tracks"))),
 	generalTracksToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks"))),
 	secondaryVerticesToken_(consumes<vector<reco::VertexCompositePtrCandidate> >(iConfig.getParameter<edm::InputTag>("secondaryVertices"))),	
 	PFCandsToken_(consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
 	// RecHits
-	// ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
-	// hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>(edm::InputTag("reducedHcalRecHits","hbhereco"))),
 	hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>( iConfig.getParameter<edm::InputTag>("hbRecHits") )),
 	// Other
 	electron_cutbasedID_decisions_loose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("electron_cutbasedID_decisions_loose"))),
@@ -98,20 +91,11 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	NEvents = fs->make<TH1F>( "NEvents", " ; ; NEvents;" , 1, -0.5, 0.5 );
 	if (!isData_) {
 		sumWeights = fs->make<TH1D>( "sumWeights", " ; ; sumWeights;", 1, -0.5, 0.5 );
-		//sumScaleWeights = fs->make<TH1D>("sumScaleWeights",";;sumScaleWeights;",9,-0.5,8.5);
-		//sumPdfWeights = fs->make<TH1D>("sumPdfWeights",";;sumPdfWeights;",100,-0.5,99.5);
-		//sumAlphasWeights = fs->make<TH1D>("sumAlphasWeights",";;sumAlphasWeights;",2,-0.5,1.5);
 
 		sumWeights->Sumw2();
-		//sumScaleWeights->Sumw2();
-		//sumPdfWeights->Sumw2();
-		//sumAlphasWeights->Sumw2();
 	}
 	else {
 		sumWeights = 0;
-		//sumScaleWeights = 0;
-		//sumPdfWeights = 0;
-		//sumAlphasWeights = 0;
 	}
 
 	// ----- Get Triggers ----- // 
@@ -130,24 +114,6 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	triggerPathNames.push_back("10 HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay1nsInclusive");
 	triggerPathNames.push_back("11 HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay1nsTrackless");
 	triggerPathNames.push_back("12 HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay2nsInclusive");
-
-        /*
-	ifstream myfile (edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str()) ;
-
-	if( myfile.is_open() ){
-		std::string line;
-		int index;
-		std::string hltpathname;
-
-		while( myfile>>index>>hltpathname ){
-			triggerPathNames.push_back( hltpathname );
-                        cout<<hltpathname<<endl;
-		}
-		myfile.close();
-	} else {
-		std::cout << "ERROR!!! Could not open trigger path name file : " << edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str() << "\n";
-	}	
-        */
 
 	if( debug ) cout<<"Defining trigger hists..."<<endl;
 
@@ -185,8 +151,6 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(triggerObjectsToken_, triggerObjects);
 	if( isData_ ) iEvent.getByToken(triggerPrescalesToken_, triggerPrescales);
 
-	//iEvent.getByToken(hepMCToken_, hepMC);
-	//iEvent.getByToken(metFilterBitsToken_, metFilterBits);
 	iEvent.getByToken(verticesToken_, vertices);
 	iEvent.getByToken(primaryVertexAssociationToken_,primaryVertexAssociation);
 	iEvent.getByToken(primaryVertexAssociationValueMapToken_,primaryVertexAssociationValueMap);
@@ -205,7 +169,6 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(l1jetsToken_, l1jets);
 
 	// Low-level objects
-	//iEvent.getByToken(tracksToken_,tracks);
 	iEvent.getByToken(generalTracksToken_,generalTracks);	
 	iEvent.getByToken(secondaryVerticesToken_,secondaryVertices);	
 	iEvent.getByToken(PFCandsToken_, pfCands);
@@ -341,7 +304,6 @@ void DisplacedHcalJetNTuplizer::EnableElectronBranches(){
 	output_tree->Branch( "ele_EcalRechitIndices", &ele_EcalRechitIndices );
 	output_tree->Branch( "ele_SeedRechitID", &ele_SeedRechitID );
 	output_tree->Branch( "ele_SeedRechitIndex", &ele_SeedRechitIndex );
-	//output_tree->Branch( "ele_passHLTFilter", &ele_passHLTFilter );
 
 };
 
@@ -359,7 +321,6 @@ void DisplacedHcalJetNTuplizer::EnableMuonBranches(){
 	output_tree->Branch( "muon_IsLoose", &muon_IsLoose );
 	output_tree->Branch( "muon_IsMedium", &muon_IsMedium );
 	output_tree->Branch( "muon_IsTight", &muon_IsTight );
-	//output_tree->Branch( "muon_passHLTFilter", &muon_passHLTFilter );
 
 };
 
@@ -396,8 +357,6 @@ void DisplacedHcalJetNTuplizer::EnablePhotonBranches(){
 	output_tree->Branch( "pho_SeedRechitIndex", &pho_SeedRechitIndex );
 	output_tree->Branch( "pho_EcalRechitIDs", &pho_EcalRechitIDs );
 	output_tree->Branch( "pho_EcalRechitIndices", &pho_EcalRechitIndices );
-
-	//output_tree->Branch( "pho_passHLTFilter", &pho_passHLTFilter );
 
 };
 
@@ -1366,14 +1325,11 @@ void DisplacedHcalJetNTuplizer::analyze(const edm::Event& iEvent, const edm::Eve
 	// Standard Objects
 	FillElectronBranches( iEvent );
 	FillMuonBranches( iEvent );
-	//FillTauBranches( iEvent );
 	FillPhotonBranches( iEvent );
 	FillJetBranches( iEvent, iSetup );
 
 	// Low-Level Objects
 	FillTrackBranches( iEvent ); //, iSetup );
-	//FillPFCandidateBranches( iEvent, iSetup );
-	//FillSecondaryVerticesBranches( iEvent, iSetup );
 
 	// Hits
 	FillEcalRechitBranches( iEvent, iSetup ); 
@@ -1381,8 +1337,6 @@ void DisplacedHcalJetNTuplizer::analyze(const edm::Event& iEvent, const edm::Eve
 
 	// MC
 	if( !isData ){
-		//FillPileupBranches();
-		//FillMCBranches( iEvent, iSetup );
 		FillGenParticleBranches();
 	}
 
@@ -1529,95 +1483,6 @@ bool DisplacedHcalJetNTuplizer::FillMetBranches(const edm::Event& iEvent){
 	met_Phi = met_temp.phi();
 	met_SumEt = met_temp.sumEt();
 
-	// metUncorrectedPt = Met.uncorPt();
-	// metUncorrectedPhi = Met.uncorPhi();
-	//metType1Pt = Met.pt();
-	//metType1Phi = Met.phi();
-
-	/*
-	const edm::TriggerNames &metNames = iEvent.triggerNames(*metFilterBits);
-
-
-	iEvent.getByToken(globalSuperTightHalo2016FilterToken_, globalSuperTightHalo2016Filter);
-	iEvent.getByToken(globalTightHalo2016FilterToken_, globalTightHalo2016Filter);
-	iEvent.getByToken(BadChargedCandidateFilterToken_, BadChargedCandidateFilter);
-	iEvent.getByToken(BadPFMuonFilterToken_, BadPFMuonFilter);
-	//iEvent.getByToken(EcalDeadCellTriggerPrimitiveFilterToken_, EcalDeadCellTriggerPrimitiveFilter);
-	iEvent.getByToken(HBHENoiseFilterToken_, HBHENoiseFilter);
-	iEvent.getByToken(HBHEIsoNoiseFilterToken_, HBHEIsoNoiseFilter);
-	// iEvent.getByToken(ecalBadCalibFilterToken_, ecalBadCalibReducedMINIAODFilter);
-	// iEvent.getByToken(eeBadScFilterToken_, eeBadScFilter);
-	// iEvent.getByToken(primaryVertexFilterToken_, primaryVertexFilter);
-
-
-	Flag2_globalSuperTightHalo2016Filter = *globalSuperTightHalo2016Filter;
-	Flag2_globalTightHalo2016Filter = *globalTightHalo2016Filter;
-	Flag2_BadChargedCandidateFilter = *BadChargedCandidateFilter;
-	Flag2_BadPFMuonFilter = *BadPFMuonFilter;
-	//Flag2_EcalDeadCellTriggerPrimitiveFilter = *EcalDeadCellTriggerPrimitiveFilter;
-	Flag2_HBHENoiseFilter = *HBHENoiseFilter;
-	Flag2_HBHEIsoNoiseFilter = *HBHEIsoNoiseFilter;
-	// Flag2_ecalBadCalibFilter = *ecalBadCalibReducedMINIAODFilter;
-	// Flag2_eeBadScFilter = *eeBadScFilter;
-	// Flag2_goodVertices = *primaryVertexFilter;
-
-
-	// *******************************************************************************
-	//For Debug printout
-	// *******************************************************************************
-	// for (unsigned int i = 0, n = metFilterBits->size(); i < n; ++i) {
-	//  std::cout << "MET Filter " << metNames.triggerName(i).c_str() << "\n";
-	// }
-
-	for(unsigned int i = 0, n = metFilterBits->size(); i < n; ++i){
-		if(strcmp(metNames.triggerName(i).c_str(), "Flag_trackingFailureFilter") == 0)
-			Flag_trackingFailureFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_goodVertices") == 0)
-			Flag_goodVertices = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalSuperTightHalo2016Filter") == 0)
-			Flag_globalSuperTightHalo2016Filter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalTightHalo2016Filter") == 0)
-			Flag_globalTightHalo2016Filter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOGFilters") == 0)
-			Flag_trkPOGFilters = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_logErrorTooManyClusters") == 0)
-			Flag_trkPOG_logErrorTooManyClusters = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_EcalDeadCellTriggerPrimitiveFilter") == 0)
-			Flag_EcalDeadCellTriggerPrimitiveFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_EcalDeadCellBoundaryEnergyFilter") == 0)
-			Flag_EcalDeadCellBoundaryEnergyFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_ecalLaserCorrFilter") == 0)
-			Flag_ecalLaserCorrFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_manystripclus53X") == 0)
-			Flag_trkPOG_manystripclus53X = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_eeBadScFilter") == 0)
-			Flag_eeBadScFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_METFilters") == 0)
-			Flag_METFilters = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_HBHENoiseFilter") == 0)
-			Flag_HBHENoiseFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_HBHENoiseIsoFilter") == 0)
-			Flag_HBHEIsoNoiseFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_toomanystripclus53X") == 0)
-			Flag_trkPOG_toomanystripclus53X = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_hcalLaserEventFilter") == 0)
-			Flag_hcalLaserEventFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonFilter") == 0)
-			Flag_BadPFMuonFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadChargedCandidateFilter") == 0)
-			Flag_BadChargedCandidateFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_ecalBadCalibFilter") == 0)
-			Flag_ecalBadCalibFilter = metFilterBits->accept(i);
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_badMuons") == 0) {
-			Flag_badGlobalMuonFilter = metFilterBits->accept(i);
-			//cout << "found bad muon flag : " << "\n";
-		}
-		else if(strcmp(metNames.triggerName(i).c_str(), "Flag_duplicateMuons") == 0)
-			Flag_duplicateMuonFilter = metFilterBits->accept(i);
-	} //loop over met filters
-
-	*/
-
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillMetBranches"<<endl; 
 
 	return true;
@@ -1674,25 +1539,6 @@ bool DisplacedHcalJetNTuplizer::FillElectronBranches(const edm::Event& iEvent){
 		// Other //
 
 		// FIX ele_HoverE.push_back( ele.hcalOverEcal() );
-
-		/*
-		// Conversion Veto		
-		if( beamSpot.isValid() && conversions.isValid() ){
-			ele_PassConvVeto.push_back( !ConversionTools::hasMatchedConversion(ele,(*conversions),beamSpot->position()) );
-		} else {
-			ele_PassConvVeto.push_back( false );
-			cout << "\n\nERROR!!! conversions not found!!!\n";
-		}
-
-		// 1/E - 1/P
-		if( ele.ecalEnergy() == 0 ){
-			ele_OneOverEminusOneOverP.push_back( 1e30 );
-		} else if( !std::isfinite(ele.ecalEnergy())){
-			ele_OneOverEminusOneOverP.push_back( 1e30 );
-		} else {
-			ele_OneOverEminusOneOverP.push_back( 1./ele.ecalEnergy()  -  ele.eSuperClusterOverP()/ele.ecalEnergy() );
-		}
-		*/
 
 	}
 
@@ -2011,34 +1857,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 		// ----- Find Ecal Rechits Inside Jet ----- //
 
-		if( debug ) cout<<" ------ 6"<<endl;  
-		/* GK remove ebRecHits for LLP HCAL skim
-
-		vector<uint> jet_EcalRechitIDs_temp;
-		vector<uint> jet_EcalRechitIndices_temp;
-
-		for( uint ih = 0; ih < ebRecHits->size(); ih++ ){
-
-			const EcalRecHit *recHit = &(*ebRecHits)[ih];
-			const DetId recHitId = recHit->detid();
-
-			// Barrel
-			if( recHit->detid().subdetId() != EcalBarrel ) continue;
-			const auto recHitPos = caloGeometry_EB->getGeometry(recHitId)->getPosition();
-
-			// DR
-			if( deltaR( jet.eta(), jet.phi(), recHitPos.eta(), recHitPos.phi()) > 0.5 ) continue; 
-			// Energy 
-			if( recHit->energy() < 0.1 ) continue;
-
-			jet_EcalRechitIDs_temp.push_back( 0 ); // FIX DetId );
-			jet_EcalRechitIndices_temp.push_back( ih );
-			//cout << "Save this Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";	
-		}
-
-		jet_EcalRechitIDs.push_back( jet_EcalRechitIDs_temp );
-		jet_EcalRechitIndices.push_back( jet_EcalRechitIndices_temp );
-		*/
+		if( debug ) cout<<" ------ 6"<<endl;
 
 		// ----- Find Hcal Rechits Inside Jet ----- //
 
@@ -2096,215 +1915,6 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		l1jet_Phi.push_back( l1jet.phi() );
 		l1jet_hwQual.push_back( l1jet.hwQual() );
 	}
-
-	// ********************************************************
-	// AK8 Jets
-	// ********************************************************
-
-	/*
-	cout<<" ---- ak8 jets"<<endl;  
-
-	for ( auto &j : *jetsAK8) {
-
-		if (j.pt() < 50) continue;
-		nLRJets++;
-
-		//-------------------
-		//Fill Jet-Level Info
-		//-------------------
-
-		LRJet_E.push_back( j.energy() );
-		LRJet_Pt.push_back( j.pt() );
-		LRJet_Eta.push_back( j.eta() );
-		LRJet_Phi.push_back( j.phi() );
-		LRJet_UncorrectedPt.push_back( j.correctedP4(0).Pt() );
-
-		// LRJet_ICSV.push_back( j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") );
-		// LRJet_BoostedDoubleSVAK8.push_back( j.bDiscriminator("pfBoostedDoubleSecondaryVertexAK8BJetTags") );
-
-		LRJet_SoftDropM.push_back( (float) j.userFloat("ak8PFJetsCHSSoftDropMass") );
-		LRJet_Tau1.push_back(  (float) j.userFloat("NjettinessAK8CHS:tau1") );
-		LRJet_Tau2.push_back(  (float) j.userFloat("NjettinessAK8CHS:tau2") );
-		LRJet_Tau3.push_back(  (float) j.userFloat("NjettinessAK8CHS:tau3") );
-
-		//Q: Is this correct?
-		//LRJet_PassIDLoose.push_back( passJetID(&j, 0) );
-		//LRJet_PassIDTight.push_back( passJetID(&j, 1) );
-
-		LRJet_ElectronEnergyFraction.push_back( j.electronEnergyFraction() );
-		LRJet_PhotonEnergyFraction.push_back( j.neutralEmEnergyFraction() );
-		LRJet_ChargedHadronEnergyFraction.push_back( j.chargedHadronEnergyFraction() );
-		LRJet_NeutralHadronEnergyFraction.push_back( j.neutralHadronEnergyFraction() );
-		LRJet_MuonEnergyFraction.push_back( j.muonEnergyFraction() );
-		LRJet_ChargedHadronMultiplicity.push_back( j.chargedHadronMultiplicity() );
-		LRJet_NeutralHadronMultiplicity.push_back( j.neutralHadronMultiplicity() );
-		LRJet_PhotonMultiplicity.push_back( j.photonMultiplicity() );
-		LRJet_ElectronMultiplicity.push_back( j.electronMultiplicity() );
-		LRJet_MuonMultiplicity.push_back( j.muonMultiplicity() );
-
-		//---------------------------
-		//Trackless variables
-		//---------------------------
-		TLorentzVector thisJet;
-		thisJet.SetPtEtaPhiE(LRJet_Pt.back(), LRJet_Eta.back(), LRJet_Phi.back(), LRJet_E.back());
-
-		float alphaMax(0.0),medianTheta2D(0.0),medianIP(0.0),minDeltaRAllTracks(0.0),minDeltaRPVTracks(0.0),ptAllTracks(0.0), ptAllPVTracks(0.0);
-		int nTracksPV(0);
-		findTrackingVariables(thisJet,iSetup,alphaMax,medianTheta2D,medianIP,nTracksPV,ptAllPVTracks,ptAllTracks, minDeltaRAllTracks, minDeltaRPVTracks);
-
-		LRJet_AlphaMax.push_back( alphaMax );
-		LRJet_BetaMax.push_back( alphaMax * ptAllTracks/(j.pt()) );
-		LRJet_GammaMax.push_back( alphaMax * ptAllTracks/(j.energy()) );
-		LRJet_GammaMax_EM.push_back( alphaMax * ptAllTracks/(j.energy()*(j.chargedEmEnergyFraction()+j.neutralEmEnergyFraction())) );
-		LRJet_GammaMax_Hadronic.push_back( alphaMax * ptAllTracks/(j.energy()*(j.chargedHadronEnergyFraction()+j.neutralHadronEnergyFraction())) );
-		LRJet_GammaMax_ET.push_back( alphaMax * ptAllTracks/j.et() );
-		LRJet_MedianTheta2D.push_back( medianTheta2D );
-		LRJet_MedianIP.push_back( medianIP );
-		LRJet_PtAllPVTracks.push_back( ptAllPVTracks );
-		LRJet_PtAllTracks.push_back( ptAllTracks );
-		LRJet_MinDeltaRAllTracks.push_back( minDeltaRAllTracks );
-		LRJet_MinDeltaRPVTracks.push_back( minDeltaRPVTracks );
-
-		// cout << "FatJet: "
-		//   << j.userFloat("pileupJetId:fullDiscriminant") << " "
-		//   << j.userInt("pileupJetId:fullId") << " "
-		//   << "\n";
-
-		//---------------------------
-		//Find PFCandidates Inside the Jet
-		//---------------------------
-
-		 FIX
-		for (uint q=0; q< pfCands->size(); q++) {
-			//const reco::PFCandidate *p = &(*pfCands)[q];
-
-			reco::PFCandidatePtr p_ptr(pfCands,q);
-			bool found = false;
-			for (uint l=0; l < j.getPFConstituents().size(); l++) {
-		if (p_ptr == j.getPFConstituents()[l]) {
-			found = true;
-			break;
-		}
-			}
-
-			if (found) {
-		SaveThisPFCandidate[q] = true;
-		LRJetAllPFCandIndex[nFatJets][LRJetNPFCands[nFatJets]] = q;
-		LRJetNPFCands[nFatJets]++;
-			}
-		}
-
-		int LRJet_NMatchedRechits = 0;
-		for (uint q=0; q<ebRecHits->size(); q++) {
-			const EcalRecHit *recHit = &(*ebRecHits)[q];
-			const DetId recHitId = recHit->detid();
-			const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
-
-			//save the rechits that are within DR 0.5 of the jet axis
-			if ( deltaR(LRJetEta[nFatJets], LRJetPhi[nFatJets], recHitPos.eta(), recHitPos.phi())  < 1.0
-	 && recHit->energy() > 0.2
-	 ) {
-			SaveThisEBRechit[q] = true;
-			}
-
-			if (recHit->checkFlag(EcalRecHit::kSaturated) || recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) || recHit->checkFlag(EcalRecHit::kPoorReco) || recHit->checkFlag(EcalRecHit::kWeird) || recHit->checkFlag(EcalRecHit::kDiWeird)) continue;
-			if (recHit->timeError() < 0 || recHit->timeError() > 100) continue;
-			if (abs(recHit->time()) > 12.5) continue;
-
-			//Calculate jet timestamps
-			if ( deltaR(LRJetEta[nFatJets], LRJetPhi[nFatJets], recHitPos.eta(), recHitPos.phi())  < 0.8) {
-		if (recHit->energy() > Rechit_cut) {
-			LRJetRechitE_Error[nFatJets] += recHit->energyError() * recHit->energyError();
-			LRJetRechitE[nFatJets] += recHit->energy();
-			LRJetRechitT[nFatJets] += recHit->time()*recHit->energy();
-			LRJetRechitT_rms[nFatJets] += recHit->time()*recHit->time();
-			LRJet_NMatchedRechits++;
-		}
-			}
-		}
-
-		LRJetRechitT[nFatJets] = LRJetRechitT[nFatJets]/LRJetRechitE[nFatJets];
-		LRJetNRechits[nFatJets] = LRJet_NMatchedRechits;
-		LRJetRechitE_Error[nFatJets] = sqrt(LRJetRechitE_Error[nFatJets]);
-		LRJetRechitT_rms[nFatJets] = sqrt(LRJetRechitT_rms[nFatJets]);
-
-		for (uint q=0; q<eeRecHits->size(); q++) {
-			const EcalRecHit *recHit = &(*eeRecHits)[q];
-			const DetId recHitId = recHit->detid();
-			const auto recHitPos = endcapGeometry->getGeometry(recHitId)->getPosition();
-
-			//save the rechits that are within DR 0.5 of the jet axis
-			if ( deltaR(LRJetEta[nFatJets], LRJetPhi[nFatJets], recHitPos.eta(), recHitPos.phi())  < 1.0
-	 && recHit->energy() > 0.2
-	 ) {
-			SaveThisEERechit[q] = true;
-			}
-		}
-
-	 //loop over hcal hits
-	for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
-		const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
-		
-		double hiteta = -999;
-		double hitphi = -999;
-		if (recHit->energy() < 0.1) continue;
-		const HcalDetId recHitId = recHit->detid();
-		if (recHit->detid().subdetId() == HcalBarrel) {
-			const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
-			hiteta = recHitPos.eta();
-			hitphi = recHitPos.phi();
-		} else if (recHit->detid().subdetId() == HcalEndcap) {
-			const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
-			hiteta = recHitPos.eta();
-			hitphi = recHitPos.phi();
-		} else {
-			cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
-		}
-		
-		if ( deltaR(LRJetEta[nFatJets], LRJetPhi[nFatJets], hiteta, hitphi)  < 1.0 ) {
-			SaveThisHCALRechit[iHit] = true;
-		}
-		} 
-	
-	
-		//loop over HO hits
-		for (unsigned int iHit = 0; iHit < hcalRecHitsHO->size(); iHit ++){
-			const HORecHit *recHit = &(*hcalRecHitsHO)[iHit];
-			const DetId recHitId = recHit->detid();
-			double hiteta = -999;
-			double hitphi = -999;
-			if (recHit->energy() < 0.1) continue;
-			const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
-			hiteta = recHitPos.eta();
-			hitphi = recHitPos.phi();
-
-			//save all HO rechits which have more than 1.5 GeV of energy
-			if (recHit->energy() > 1.5) SaveThisHORechit[iHit] = true;
-			if ( deltaR(LRJetEta[nFatJets], LRJetPhi[nFatJets], hiteta, hitphi)  < 1.0
- ) {
-		SaveThisHORechit[iHit] = true;
-			}
-		}
-
-
-
-		//loop over tracks
-		for (unsigned int iTrack = 0; iTrack < generalTracks->size(); iTrack ++){
-			reco::Track generalTrack = generalTracks->at(iTrack);
-			if ( deltaR(LRJetEta[nFatJets], LRJetPhi[nFatJets], generalTrack.eta(), generalTrack.phi())  < 1.0
- && generalTrack.pt() > 1
- ) {
-		SaveThisTrack[iTrack] = true;
-			}
-		}
-		
-
-		//if (nFatJets > OBJECTARRAYSIZE) {
-		//  cout << "ERROR: nFatJets exceeded maximum array size: " << OBJECTARRAYSIZE << "\n";
-		//  assert(false);
-		//}
-
-	}*/
 
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillJetBranches"<<endl; 			
 
@@ -2414,56 +2024,6 @@ bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent,
 
 	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillEcalRechitBranches"<<endl; 			
 
-	/* GK remove ebRecHits for LLP HCAL skim
-	for( uint i = 0; i < ebRecHits->size(); i++ ){
-
-		if( debug ) cout<<" -- ecalrechit idx "<<i<<endl;
-
-		const EcalRecHit *recHit = &(*ebRecHits)[i];
-		const DetId recHitId     = recHit->detid();
-		if( recHit->detid().subdetId() != EcalBarrel ) continue;
-
-		// Check if we should save
-		bool save_hit = false; 
-		save_hit = true;
-
-		// Save all hits for now (comment below section)
-
-		for( int ij = 0; ij < n_jet; ij++ ){
-			
-			for( int ijh = 0; ijh < (int)jet_EcalRechitIndices.at(ij).size(); ijh++ ){
-				if( ih == jet_EcalRechitIndices.at(ij).at(ijh) ){
-					save_hit = true; 
-					break;
-				}
-			}
-
-			if( save_hit == true ) continue;
-		}
-
-		if( !save_hit ) continue;
-
-		const auto recHitPos = caloGeometry_EB->getGeometry(recHitId)->getPosition();
-		n_ecalRechit++;
-
-		ecalRechit_Eta.push_back( recHitPos.eta() );
-		ecalRechit_Phi.push_back( recHitPos.phi() );
-		ecalRechit_E.push_back( recHit->energy() );
-		// Features
-		ecalRechit_X.push_back( recHitPos.x() );
-		ecalRechit_Y.push_back( recHitPos.y() );
-		ecalRechit_Z.push_back( recHitPos.z() );		
-		ecalRechit_time.push_back( recHit->time() );
-		ecalRechit_E_err.push_back( recHit->energyError() );
-		ecalRechit_time_err.push_back( recHit->timeError() );
-		ecalRechit_kSaturatedflag.push_back( recHit->checkFlag(EcalRecHit::kSaturated) );
-		ecalRechit_kLeadingEdgeRecoveredflag.push_back( recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered) );
-		ecalRechit_kPoorRecoflag.push_back( recHit->checkFlag(EcalRecHit::kPoorReco) );
-		ecalRechit_kWeirdflag.push_back( recHit->checkFlag(EcalRecHit::kWeird) );
-		ecalRechit_kDiWeirdflag.push_back( recHit->checkFlag(EcalRecHit::kDiWeird) );	
-	} 
-	*/
-
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillEcalRechitBranches"<<endl; 			
 
 	return true; 
@@ -2502,6 +2062,8 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 
 		if( !save_hit ) continue;
 
+		if (recHit->energy() < 0.5) continue;
+
 		const auto recHitPos = caloGeometry_HB->getGeometry(recHitId)->getPosition();
 
 		n_hbheRechit++;
@@ -2529,410 +2091,6 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 }
 
 
-//Needs to be called AFTER jet filler and after muon detector cluster filler
-/*
-bool DisplacedHcalJetNTuplizer::fillHitsTracksAndPFCands(const edm::Event& iEvent, const edm::EventSetup& iSetup){ // GK 
-// added "const edm::Event& iEvent," to fix error about "Called EventSetupRecord::get without using a ESGetToken." This portion not working yet!
-
-	// not working with CaloGeometry uncommented! 
-	std::cout << "just before getting calo geometry" << std::endl;
-	//  const CaloGeometry* geoHandle = &iSetup.getData(caloGeometryToken_); // compiles with this line, referenced from https://cmssdt.cern.ch/lxr/source/Calibration/HcalAlCaRecoProducers/plugins/AlCaHcalIsotrkProducer.cc
-	auto const& geoHandle = iSetup.getData(caloGeometryToken_); // compiles with this line, similar to how muon system is done, and recommended from twiki
-	// both lines above give an error in running though, about : CastorGeometryRecord  Exception Message: No "PCastorRcd" record found in the EventSetup. 
-	// added includes of PCaloTowerRcd.h, ESGetToken of PCastorRcd, and ESConsumes. Still have error
-	std::cout << "just after getting calo geometry" << std::endl;
-
-	//  edm::ESHandle<CaloGeometry> geoHandle;
-	geoHandle = iSetup.get<CaloGeometryRecord>(geoHandleToken);
-	//  iSetup.get<CaloGeometryRecord>().get(geoHandle);
-	const CaloSubdetectorGeometry *barrelGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
-	const CaloSubdetectorGeometry *endcapGeometry = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
-	const CaloSubdetectorGeometry *hbGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
-	const CaloSubdetectorGeometry *heGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
-	const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter); */
-
-	// ********************************************************
-	// Save EB Rechits inside Jets and AK8 Jets
-	// ********************************************************
-	/*  for (uint q=0; q<ebRecHits->size(); q++) {
-		const EcalRecHit *recHit = &(*ebRecHits)[q];
-		const DetId recHitId = recHit->detid();
-		const auto recHitPos = barrelGeometry->getGeometry(recHitId)->getPosition();
-		if (SaveThisEBRechit[q]) {
-			ecalRechit_Eta[nRechits] = recHitPos.eta();
-			ecalRechit_Phi[nRechits] = recHitPos.phi();
-			ecalRechit_E[nRechits] = recHit->energy();
-			ecalRechit_T[nRechits] = recHit->time();
-			ecalRechit_E_Error[nRechits] = recHit->energyError();
-			ecalRechit_T_Error[nRechits] = recHit->timeError();
-			ecalRechit_kSaturatedflag[nRechits] = recHit->checkFlag(EcalRecHit::kSaturated);
-			ecalRechit_kLeadingEdgeRecoveredflag[nRechits] = recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered);
-			ecalRechit_kPoorRecoflag[nRechits] = recHit->checkFlag(EcalRecHit::kPoorReco);
-			ecalRechit_kWeirdflag[nRechits]= recHit->checkFlag(EcalRecHit::kWeird);
-			ecalRechit_kDiWeirdflag[nRechits] = recHit->checkFlag(EcalRecHit::kDiWeird);
-			nRechits++;
-
-			if (nRechits > RECHITARRAYSIZE) {
-	cout << "ERROR: nRechits exceeded maximum array size: " << RECHITARRAYSIZE << "\n";
-	assert(false);
-			}
-		}
-		//cout << "After Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
-		} */
-
-	// ********************************************************
-	// Save EE Rechits inside Jets and AK8 Jets
-	// ********************************************************
-	/*  for (uint q=0; q<eeRecHits->size(); q++) {
-		const EcalRecHit *recHit = &(*eeRecHits)[q];
-		const DetId recHitId = recHit->detid();
-		const auto recHitPos = endcapGeometry->getGeometry(recHitId)->getPosition();
-		if (SaveThisEERechit[q]) {
-			ecalRechit_Eta[nRechits] = recHitPos.eta();
-			ecalRechit_Phi[nRechits] = recHitPos.phi();
-			ecalRechit_E[nRechits] = recHit->energy();
-			ecalRechit_T[nRechits] = recHit->time();
-			ecalRechit_E_Error[nRechits] = recHit->energyError();
-			ecalRechit_T_Error[nRechits] = recHit->timeError();
-			ecalRechit_kSaturatedflag[nRechits] = recHit->checkFlag(EcalRecHit::kSaturated);
-			ecalRechit_kLeadingEdgeRecoveredflag[nRechits] = recHit->checkFlag(EcalRecHit::kLeadingEdgeRecovered);
-			ecalRechit_kPoorRecoflag[nRechits] = recHit->checkFlag(EcalRecHit::kPoorReco);
-			ecalRechit_kWeirdflag[nRechits]= recHit->checkFlag(EcalRecHit::kWeird);
-			ecalRechit_kDiWeirdflag[nRechits] = recHit->checkFlag(EcalRecHit::kDiWeird);
-			nRechits++;
-
-			if (nRechits > RECHITARRAYSIZE) {
-	cout << "ERROR: nRechits exceeded maximum array size: " << RECHITARRAYSIZE << "\n";
-	assert(false);
-			}
-		}
-		//cout << "After Rechit: " << q << " | " << SaveThisEBRechit[q] << " : " << recHit->energy() << " " << recHitPos.eta() << " " << recHitPos.phi() << "\n";
-		} */
-
-
-	// SX: Disabled this because it was too many hits and causing the output to be excessively large
-	// // ********************************************************
-	// // Save HCAL Rechits inside Jets and AK8 Jets
-	// // ********************************************************
-	/*)
-	for (unsigned int iHit = 0; iHit < hcalRecHitsHBHE->size(); iHit ++){
-		const HBHERecHit *recHit = &(*hcalRecHitsHBHE)[iHit];
-		const HcalDetId recHitId = recHit->detid();
-
-		if (iHit == 0) cout << "HCALREchit iHit : subdet (HB=1, HE=2) : depth ieta iphi | energy" << "\n";
-		cout << "HCALREchit " << iHit << " : " << recHit->detid().subdetId() << " : " << recHitId.depth() << " " << recHitId.ieta() << " " << recHitId.iphi() << " "
-	 << " | " << recHit->energy() << " "
-	 << "\n";
-
-		if (SaveThisHCALRechit[iHit]) { // if we want to do jet matching, would likely only save HCAL rechits inside a jet. This relies on geometry, as in L4356 where the HCAL rechits inside a jet are marked to save
-			hbheRechit_iEta[nHBHERechits]  = recHitId.ieta();
-			hbheRechit_iPhi[nHBHERechits]  = recHitId.iphi();
-			hbheRechit_depth[nHBHERechits]  = recHitId.depth();
-			if (recHit->detid().subdetId() == HcalBarrel) {
-	  const auto recHitPos = hbGeometry->getGeometry(recHitId)->getPosition();
-		hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
-		hbheRechit_Eta[nHBHERechits] = recHitPos.eta();
-		hbheRechit_X[nHBHERechits] = recHitPos.x();
-		hbheRechit_Y[nHBHERechits] = recHitPos.y();
-		hbheRechit_Z[nHBHERechits] = recHitPos.z(); 
- } else if (recHit->detid().subdetId() == HcalEndcap) {
-		const auto recHitPos = heGeometry->getGeometry(recHitId)->getPosition();
-		hbheRechit_Phi[nHBHERechits] = recHitPos.phi();
-		hbheRechit_Eta[nHBHERechits] = recHitPos.eta();
-		hbheRechit_X[nHBHERechits] = recHitPos.x();
-		hbheRechit_Y[nHBHERechits] = recHitPos.y();
-		hbheRechit_Z[nHBHERechits] = recHitPos.z();  
-	} else {
-		cout << "Error: HCAL Rechit has detId subdet = " << recHit->detid().subdetId() << "  which is not HcalBarrel or HcalEndcap. skipping it. \n";
-			}
-
-			hbheRechit_E[nHBHERechits] = recHit->energy();
-			// GK various HCAL rechit time variables 
-			hbheRechit_time[nHBHERechits] = recHit->time(); // time() is MAHI fit time in ns
-			hbheRechit_auxTDC[nHBHERechits] = recHit->auxTDC(); // contains TDC values in 6 bits in HE (2 bits in HB) for each of 5 TS (timeslice 3 = SOI). Copy of HCAL Digis. Extra bit set to distinguish case of data packed from no data
-			hbheRechit_timeFalling[nHBHERechits] = recHit->timeFalling(); // HBHE rise time
-			//      hbheRechit_cctime[nHBHERechits] = recHit->ccTime(); // cross correlation time, https://indico.cern.ch/event/1142347/contributions/4793749/attachments/2412936/4129323/HCAL%20timing%20update.pdf
-
-			if (hbheRechit_E[nHORechits] < -1) {
-	cout << "HCAL Hit: " << hbheRechit_Eta[nHORechits] << " " << hbheRechit_Phi[nHBHERechits] << " : " << hbheRechit_E[nHORechits] << " | " << nHORechits << "\n";
-			}
-
-			nHBHERechits++;
-
-			if (nHBHERechits > RECHITARRAYSIZE) {
-		cout << "ERROR: nHBHERechits exceeded maximum array size: " << RECHITARRAYSIZE << "\n";
-		//assert(false);
-		break;
-			}
-		}
-	}
-
-	// ********************************************************
-	// Save HO Rechits inside Jets and AK8 Jets
-	// ********************************************************
-	for (unsigned int iHit = 0; iHit < hcalRecHitsHO->size(); iHit ++){
-		const HORecHit *recHit = &(*hcalRecHitsHO)[iHit];
-		if (SaveThisHORechit[iHit]) {
-				 const DetId recHitId = recHit->detid();
-			const auto recHitPos = hoGeometry->getGeometry(recHitId)->getPosition();
-			hoRechit_Phi[nHORechits] = recHitPos.phi();
-			hoRechit_Eta[nHORechits] = recHitPos.eta();
-			hoRechit_X[nHORechits] = recHitPos.x();
-			hoRechit_Y[nHORechits] = recHitPos.y();
-			hoRechit_Z[nHORechits] = recHitPos.z();
-			hoRechit_E[nHORechits] = recHit->energy();
-			hoRechit_T[nHORechits] = recHit->time(); 
-			nHORechits ++;
-
-			if (nHORechits > HORECHITARRAYSIZE) {
-	cout << "ERROR: nHORechits exceeded maximum array size: " << HORECHITARRAYSIZE << "\n";
-	assert(false);
-			}
-		}
-	} 
-
-	// ********************************************************
-	// Save PF Candidates inside Jets and AK8 Jets
-	// ********************************************************
-	for (uint q=0; q< pfCands->size(); q++) {
-		if (SaveThisPFCandidate[q]) {
-			const reco::PFCandidate *p = &(*pfCands)[q];
-
-			PFCandidatePdgId[nPFCandidates] = p->pdgId();
-			PFCandidatePt[nPFCandidates] = p->pt();
-			PFCandidateEta[nPFCandidates] = p->eta();
-			PFCandidatePhi[nPFCandidates] = p->phi();
-			PFCandidateTrackIndex[nPFCandidates] = -1;
-			PFCandidatePVIndex[nPFCandidates] = -1;
-
-			//find the matching PV
-			const reco::VertexRef &PVOrig = (*primaryVertexAssociation)[reco::CandidatePtr(pfCands,q)];
-			if(PVOrig.isNonnull()) {
-
-	int matchedPVIndex = -1;
-	for (int ipv = 0; ipv < nPVAll; ++ipv) {
-		const reco::VertexRef vtxRef(vertices,ipv);
-		if (PVOrig.id() == vtxRef.id() && PVOrig.key() == vtxRef.key()) {
-			matchedPVIndex = ipv;
-			break;
-		}
-	}
-
-	// if (matchedPVIndex>=0) {
-	//   cout << "PFCandidate " << q << " : " << matchedPVIndex << " --> " << pvAllX[matchedPVIndex] << " " << pvAllY[matchedPVIndex] << " " << pvAllZ[matchedPVIndex] << " | "
-	//  << PVOrig->x() << " " << PVOrig->y() << " " << PVOrig->z() << " "
-	//  << " \n";
-	// }
-
-	PFCandidatePVIndex[nPFCandidates] = matchedPVIndex;
-			}
-
-			//find track ref
-			if (p->trackRef().isNonnull()) {
-	for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
-		reco::TrackBaseRef tref(generalTrackHandle,iTrack);
-		reco::TrackBaseRef pTrackRef(p->trackRef());
-		//cout << "Track " << p->trackRef().id() << " " << p->trackRef().key() << " | " << pTrackRef.id() << " " << pTrackRef.key() << " | " << iTrack << " " << tref.id() << " " << tref.key() << " \n";
-		if (pTrackRef.id() == tref.id() && pTrackRef.key() == tref.key() ) {
-			//cout << "found track match: " << p->trackRef()->pt() << " " << p->trackRef()->eta() << " " << p->trackRef()->phi() << " | "
-			//   << tref->pt() << " " << tref->eta() << " " << tref->phi() << " "
-			//   << "\n";
-			SaveThisTrack[iTrack] = true;
-			PFCandidateGeneralTrackIndex[nPFCandidates] = iTrack;
-			break;
-		}
-	}
-			}
-			PFCandToSavedPFCandMap[q] = nPFCandidates;
-			nPFCandidates++;
-			if (nPFCandidates > MAX_NPFCAND) {
-	cout << "ERROR: nPFCandidates exceeded maximum array size: " << MAX_NPFCAND << "\n";
-	assert(false);
-			}
-		}
-	}
-
-	// GK
-	// ********************************************************
-	// Save Tracks inside Jets and AK8 Jets
-	// ********************************************************
-	// Magnetic field
-	//  auto const& magneticField = iSetup.getData(magneticFieldToken_); // GK
-	edm::ESHandle<MagneticField> magneticField;
-	iSetup.get<IdealMagneticFieldRecord>().get(magneticField);
-	magneticFieldGeometry = &*magneticField; 
-	std::string thePropagatorName_ = "PropagatorWithMaterial";
-	iSetup.get<TrackingComponentsRecord>().get(thePropagatorName_,thePropagator_);
-	StateOnTrackerBound stateOnTracker(thePropagator_.product());
-
-	for (unsigned int iTrack = 0; iTrack < generalTrackHandle->size(); iTrack ++){
-
-
-		// reco::Track generalTrack = generalTracks->at(iTrack);
-		// //const auto& generalTrack = generalTracks->at(iTrack);
-		// // TLorentzVector generalTrackVecTemp;
-		// // generalTrackVecTemp.SetPtEtaPhiM(generalTrack.pt(),generalTrack.eta(),generalTrack.phi(),0);
-
-		if (SaveThisTrack[iTrack]) {
-
-			reco::TrackBaseRef tref(generalTrackHandle,iTrack);
-			// make transient track (unfolding effects of B field ?)
-
-			reco::TransientTrack tt(generalTrackHandle->at(iTrack),magneticFieldGeometry);
-
-			if(!tt.isValid()) {
-	std::cout << "Error: Transient Track not valid ("
-			<< tref->pt() << " " << tref->eta() << " " << tref->phi()
-			<< "). Skipping the track\n";
-	continue;
-	} 
-
-			track_Pt[nTracks] = tref->pt();
-			track_Eta[nTracks] = tref->eta();
-			track_Phi[nTracks] = tref->phi();
-
-			//find the best vertex for this track
-			float maxWeight = 0;
-			int bestVertexIndex = -1;
-			for(int k = 0; k < (int)vertices->size();k++){
-	if(vertices->at(k).trackWeight(tref) > maxWeight){
-		maxWeight = vertices->at(k).trackWeight(tref);
-		bestVertexIndex = k;
-	}
-			}
-			track_bestVertexIndex[nTracks] = bestVertexIndex;
-			track_nMissingInnerHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_INNER_HITS);
-			track_nMissingOuterHits[nTracks] = tref->hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS);
-			track_nPixelHits[nTracks] = tref->hitPattern().numberOfValidPixelHits();
-			track_nHits[nTracks] = tref->hitPattern().numberOfValidHits();
-			track_dxyToBS[nTracks] = tref->dxy(*beamSpot);
-			track_dxyErr[nTracks] = tref->dxyError();
-			track_dzToPV[nTracks] = tref->dz(beamSpot->position());
-			track_dzErr[nTracks] = tref->dzError();
-			track_charge[nTracks] = tref->charge();
-			track_chi2[nTracks] = tref->chi2();
-			track_ndof[nTracks] = tref->ndof();
-
-			// ********************************************************
-			// For track angle
-			// ********************************************************
-			// get track trajectory info
-			static GetTrackTrajInfo getTrackTrajInfo;
-			vector<GetTrackTrajInfo::Result> trajInfo = getTrackTrajInfo.analyze(iSetup, (*tref));
-			if ( trajInfo.size() > 0 && trajInfo[0].valid) {
-	// get inner tracker hit from trajectory state
-	const TrajectoryStateOnSurface& tsosInnerHit = trajInfo[0].detTSOS;
-
-	//  here's the track angle
-	// find beamspot x,y coordinates
-	const reco::BeamSpot& pat_beamspot = (*beamSpot);
-	TVector2 bmspot(pat_beamspot.x0(),pat_beamspot.y0());
-	// find track trajectory state on surface inner hit
-	GlobalPoint  innerPos = tsosInnerHit.globalPosition();
-	GlobalVector innerMom = tsosInnerHit.globalMomentum();
-
-	// calculate the difference between inner hit and beamspot
-	TVector2 sv(innerPos.x(),innerPos.y());
-	TVector2 diff = (sv-bmspot);
-	//cout<<"bs x: "<<bmspot.X()<<" y: "<<bmspot.Y()<<endl;
-	//cout<<" sv x: "<<sv.X()<<" y: "<<sv.Y()<<endl;
-	//cout<<" diff phi: "<<diff.Phi()<<endl;
-	TVector2 momentum(innerMom.x(),innerMom.y());
-	//cout<<" p x: "<<momentum.X()<<" y: "<<momentum.Y()<<endl;
-	//cout<<" p phi: "<<momentum.Phi()<<endl;
-	//cout<<" dPhi: "<<diff.DeltaPhi(momentum)<<endl;
-	track_angle[nTracks] = fabs( diff.DeltaPhi(momentum) ) ;
-			}
-
-			TrackToSavedTrackMap[iTrack] = nTracks;
-			nTracks++; //increment saved tracks
-
-			if (nTracks > RECHITARRAYSIZE) {
-	cout << "ERROR: nTracks exceeded maximum array size: " << RECHITARRAYSIZE << "\n";
-	assert(false);
-			}
-		} //end if save this Track
-	} //loop over tracks
-	
-
-	// **********************************************************************
-	// Cross-reference PFCandidate Indices in jets with Saved PF Candidates
-	// **********************************************************************
-	if (nJets >= 0) {
-		for (uint q=0; q < uint(nJets); q++) {
-			if (jetNPFCands[q] >= 0) {
-	for (uint l=0; l < uint(jetNPFCands[q]); l++) {
-		jetPFCandIndex[q][l] = PFCandToSavedPFCandMap[jetAllPFCandIndex[q][l]];
-	}
-			}
-		}
-	}
-	if (nFatJets >= 0) {
-		for (uint q=0; q < uint(nFatJets); q++) {
-			if (jetNPFCands[q] >= 0) {
-	for (uint l=0; l < uint(fatJetNPFCands[q]); l++) {
-		fatJetPFCandIndex[q][l] = PFCandToSavedPFCandMap[fatJetAllPFCandIndex[q][l]];
-	}
-			}
-		}
-	}
-
-	// *************************************************************
-	// Cross-reference TrackIndex of PF Candidate with Saved Tracks
-	// *************************************************************
-	if (nPFCandidates >= 0 ) {
-		for (uint q=0; q < uint(nPFCandidates); q++) {
-			if (PFCandidateGeneralTrackIndex[q] >= 0) {
-	PFCandidateTrackIndex[q] = TrackToSavedTrackMap[PFCandidateGeneralTrackIndex[q]];
-			}
-		}
-	}
-	
-
-	return true;
-
-} //end function fillHitsTracksAndPFCands
-*/
-
-/*
-bool DisplacedHcalJetNTuplizer::fillSecondaryVertices(){
-
-	VertexDistance3D vdist;
-	for(unsigned int i = 0; i < secondaryVertices->size(); i++) {
-
-		nSecondaryVertices++;
-
-		// if (SaveThisSecondaryVertex[i]) {
-		const reco::VertexCompositePtrCandidate *sv = &(secondaryVertices->at(i));
-		GlobalVector flightDir(sv->vertex().x() - PV_global->x(), sv->vertex().y() - PV_global->y(),sv->vertex().z() - PV_global->z());
-		Measurement1D dl= vdist.distance(*PV_global,VertexState(RecoVertex::convertPos(sv->position()),RecoVertex::convertError(sv->error())));
-			
-		// cout << "secVertex " << i << " : " << sv->vertex().x() << " " << sv->vertex().y()  << " " << sv->vertex().z()  << " | " 
-		//     << sv->pt() << " " << sv->eta() << " " << sv->phi() << " " << sv->p4().M() << " " 
-		//     << sv->charge() << " "
-		//     << dl.significance() << " " 
-		//     << dl.value() << " "
-		//     << dl.error() << " " 
-		//     << sv->numberOfSourceCandidatePtrs() << " "
-		//     << "\n";  
-			
-		secVtx_Pt.push_back( sv->pt() );
-		secVtx_Eta.push_back( sv->eta() );
-		secVtx_Phi.push_back( sv->phi() );
-		secVtx_charge.push_back( sv->charge() );
-		secVtx_nConstituents.push_back( sv->numberOfSourceCandidatePtrs() );
-		secVtx_X.push_back( sv->vertex().x() );
-		secVtx_Y.push_back( sv->vertex().y() );
-		secVtx_Z.push_back( sv->vertex().z() );
-		secVtx_Distance.push_back( dl.value() );
-		secVtx_DistanceError.push_back( dl.error() );
-
-		// }
-	}
-	return true;
-}*/
-
-
 // ------------------------------------------------------------------------------------
 bool DisplacedHcalJetNTuplizer::FillPileupBranches(){
 
@@ -2953,103 +2111,6 @@ bool DisplacedHcalJetNTuplizer::FillPileupBranches(){
 // ------------------------------------------------------------------------------------
 bool DisplacedHcalJetNTuplizer::FillMCBranches() {
 
-/*
-	for(const reco::GenJet &j : *genJets) {
-		//std::cout << nGenJets << std::endl;
-		if (j.pt() > 10) {
-			genJetE[nGenJets] = j.energy();
-			genJetPt[nGenJets] = j.pt();
-			genJetEta[nGenJets] = j.eta();
-			genJetPhi[nGenJets] = j.phi();
-			genJetMET[nGenJets] = j.invisibleEnergy();
-			nGenJets++;
-		}
-	}
-
-	const reco::GenMET &GenMetCalo = genMetsCalo->front();
-	genMetPtCalo  = GenMetCalo.pt();
-	genMetPhiCalo = GenMetCalo.phi();
-
-	const reco::GenMET &GenMetTrue = genMetsTrue->front();
-	genMetPtTrue  = GenMetTrue.pt();
-	genMetPhiTrue = GenMetTrue.phi();
-
-	bool foundGenVertex = false;
-	for(size_t i=0; i<genParticles->size();i++) {
-		if (!foundGenVertex) {
-			for (unsigned int j=0; j<(*genParticles)[i].numberOfDaughters(); ++j) {
-	const reco::Candidate *dau = (*genParticles)[i].daughter(j);
-	if (dau) {
-		genVertexX = dau->vx();
-		genVertexY = dau->vy();
-		genVertexZ = dau->vz();
-		if(readGenVertexTime_) genVertexT = *genParticles_t0;
-		foundGenVertex = true;
-		break;
-	}
-			}
-		}
-	}
-
-	genWeight = genInfo->weight();
-	genSignalProcessID = genInfo->signalProcessID();
-	genQScale = genInfo->qScale();
-	genAlphaQCD = genInfo->alphaQCD();
-	genAlphaQED = genInfo->alphaQED();
-
-	//get lhe weights for systematic uncertainties:
-	double nomlheweight = genInfo->weights()[0];
-
-	//fill scale variation weights
-	if (genInfo->weights().size()>=10) {
-		for (unsigned int iwgt=1; iwgt<10; ++iwgt) {
-			//normalize to
-			double wgtval = genInfo->weights()[iwgt]*genWeight/genInfo->weights()[1];
-			scaleWeights->push_back(wgtval);
-		}
-	}
-
-	//fill pdf variation weights
-	if (firstPdfWeight>=0 && lastPdfWeight>=0 && lastPdfWeight<int(genInfo->weights().size()) && (lastPdfWeight-firstPdfWeight+1)==100) {
-
-		//fill pdf variation weights after converting with mc2hessian transformation
-		std::array<double, 100> inpdfweights;
-		for (int iwgt=firstPdfWeight, ipdf=0; iwgt<=lastPdfWeight; ++iwgt, ++ipdf) {
-			inpdfweights[ipdf] = genInfo->weights()[iwgt]/genInfo->weights()[firstPdfWeight-1];
-		}
-
-		std::array<double, 60> outpdfweights;
-		pdfweightshelper.DoMC2Hessian(inpdfweights.data(),outpdfweights.data());
-
-		for (unsigned int iwgt=0; iwgt<60; ++iwgt) {
-			double wgtval = outpdfweights[iwgt]*genWeight;
-			pdfWeights->push_back(wgtval);
-		}
-
-		//fill alpha_s variation weights
-		if (firstAlphasWeight>=0 && lastAlphasWeight>=0 && lastAlphasWeight<int(genInfo->weights().size())) {
-			for (int iwgt = firstAlphasWeight; iwgt<=lastAlphasWeight; ++iwgt) {
-	double wgtval = genInfo->weights()[iwgt]*genWeight/nomlheweight;
-	alphasWeights->push_back(wgtval);
-			}
-		}
-
-	}
-
-	//fill sum of weights histograms
-	sumWeights->Fill(0.,genWeight);
-
-	for (unsigned int iwgt=0; iwgt<scaleWeights->size(); ++iwgt) {
-		sumScaleWeights->Fill(double(iwgt),(*scaleWeights)[iwgt]);
-	}
-	for (unsigned int iwgt=0; iwgt<pdfWeights->size(); ++iwgt) {
-		sumPdfWeights->Fill(double(iwgt),(*pdfWeights)[iwgt]);
-	}
-	for (unsigned int iwgt=0; iwgt<alphasWeights->size(); ++iwgt) {
-		sumAlphasWeights->Fill(double(iwgt),(*alphasWeights)[iwgt]);
-	}
-
-	*/
 	return true;
 
 };
@@ -3117,23 +2178,6 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 
 		if( already_saved ) continue;
 	
-		// If particle is a daughter of a tau, then save it
-
-		/*if((*genParticles)[i].numberOfMothers() > 0) {
-			const reco::Candidate* firstMotherWithDifferentID = findFirstMotherWithDifferentID(&(*genParticles)[i]);
-			if (firstMotherWithDifferentID && abs(firstMotherWithDifferentID->pdgId()) == 15 ) {
-				// cout << "GenParticles " << i << " : " << (*genParticles)[i].pdgId() << " "
-				//      << (*genParticles)[i].status() << " "
-				//      << (*genParticles)[i].pt() << " " << (*genParticles)[i].eta() << " "
-				//      << " ---> " << firstMotherWithDifferentID->pdgId() << " " << firstMotherWithDifferentID->status() << " "
-				//      << firstMotherWithDifferentID->pt() << " " << firstMotherWithDifferentID->eta() << " "
-				//      << firstMotherWithDifferentID->phi() << " "
-				//      << "\n";
-				prunedV.push_back(&(*genParticles)[i]);
-				already_saved = true;
-				continue;
-			}
-		}*/
 
 	} // End loop over genParticles
 
@@ -3288,8 +2332,5 @@ double DisplacedHcalJetNTuplizer::deltaR(double eta1, double phi1, double eta2, 
 };
 
 
-
 //define this as a plug-in
 DEFINE_FWK_MODULE(DisplacedHcalJetNTuplizer);
-
-
