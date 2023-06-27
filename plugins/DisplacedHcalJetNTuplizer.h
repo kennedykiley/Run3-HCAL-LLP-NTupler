@@ -74,6 +74,8 @@ using namespace std;
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
+#include "DataFormats/L1Trigger/interface/BXVector.h"
+#include "DataFormats/L1Trigger/interface/Jet.h"
 #include "DataFormats/METReco/interface/GenMET.h"
 #include "DataFormats/METReco/interface/GenMETCollection.h"
 #include "DataFormats/METReco/interface/HcalNoiseSummary.h"
@@ -312,7 +314,7 @@ protected:
 	edm::EDGetTokenT<reco::CaloJetCollection> calojetsToken_;
 	edm::EDGetTokenT<pat::JetCollection> LRJetsToken_;
 	edm::EDGetTokenT<reco::CaloJetCollection> caloLRJetsToken_;
-	// edm::EDGetTokenT<l1t::JetCollection> l1jetsToken_;
+	edm::EDGetTokenT<BXVector<l1t::Jet>> l1jetsToken_;
 
 	// Low-Level Objects
 	//edm::EDGetTokenT<edm::View<reco::Track>> tracksToken_;
@@ -375,6 +377,7 @@ protected:
 	edm::Handle<reco::CaloJetCollection> calojets;
 	edm::Handle<pat::JetCollection> LRJets;
 	edm::Handle<reco::CaloJetCollection> caloLRJets;
+	edm::Handle<BXVector<l1t::Jet>> l1jets;
 
 	// Low Level Objects
 	edm::Handle<edm::View<reco::Track> > tracks;
