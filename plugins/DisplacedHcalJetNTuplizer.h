@@ -300,6 +300,8 @@ protected:
 
 	// Event Level
 	edm::EDGetTokenT<pat::METCollection> metToken_;
+	edm::InputTag bsTag_;
+	edm::EDGetTokenT<reco::BeamSpot> bsToken_;
 
 	// Physics Objects
 	edm::EDGetTokenT<reco::GsfElectronCollection> electronsToken_;
@@ -310,6 +312,7 @@ protected:
 	edm::EDGetTokenT<reco::CaloJetCollection> calojetsToken_;
 	edm::EDGetTokenT<pat::JetCollection> LRJetsToken_;
 	edm::EDGetTokenT<reco::CaloJetCollection> caloLRJetsToken_;
+	// edm::EDGetTokenT<l1t::JetCollection> l1jetsToken_;
 
 	// Low-Level Objects
 	//edm::EDGetTokenT<edm::View<reco::Track>> tracksToken_;
