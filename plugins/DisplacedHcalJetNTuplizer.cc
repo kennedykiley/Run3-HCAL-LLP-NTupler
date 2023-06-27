@@ -54,7 +54,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	calojetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK4"))),
 	LRJetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK8"))),
 	caloLRJetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK8"))),
-	// l1jetsToken_(consumes<l1t::JetCollection>(iConfig.getParameter<edm::InputTag>("l1jets"))), // GK added for L1 jets access
+	l1jetsToken_(consumes<BXVector<l1t::Jet>>(iConfig.getParameter<edm::InputTag>("l1jets"))), // GK added for L1 jets access
 	// Low-Level Objects
 	//tracksToken_(consumes<edm::View<reco::Track> >(iConfig.getParameter<edm::InputTag>("tracks"))),
 	generalTracksToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks"))),
@@ -202,7 +202,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(calojetsToken_, calojets);
 	iEvent.getByToken(LRJetsToken_, LRJets);
 	iEvent.getByToken(caloLRJetsToken_, caloLRJets);
-	//iEvent.getByToken(l1jetsToken_, jets);
+	iEvent.getByToken(l1jetsToken_, l1jets);
 
 	// Low-level objects
 	//iEvent.getByToken(tracksToken_,tracks);

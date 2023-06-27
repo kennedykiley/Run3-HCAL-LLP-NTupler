@@ -205,6 +205,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     calojetsAK4 = cms.InputTag("ak4CaloJets","","RECO"),
     pfjetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
     calojetsAK8 = cms.InputTag("ak8CaloJets","","RECO"),
+    l1jets = cms.InputTag("gtStage2Digis","Jet","RECO"), # GK, added for L1 jets access
     #jetsPF = cms.InputTag("ak4PFJets"),
     #jets = cms.InputTag("ak4PFJetsCHS"),
     #jets = cms.InputTag("selectedPatJets"),
