@@ -476,6 +476,14 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "calojet_HcalRechitIndices", &calojet_HcalRechitIndices );
 	//output_tree->Branch( "calojet_passHLTFilter", &calojet_passHLTFilter );	
 
+	// L1 Jets
+	output_tree->Branch( "n_l1jet", &n_l1jet);
+	output_tree->Branch( "l1jet_Pt", &l1jet_Pt);
+	output_tree->Branch( "l1jet_Eta", &l1jet_Eta);
+	output_tree->Branch( "l1jet_Phi", &l1jet_Phi);
+	output_tree->Branch( "l1jet_E", &l1jet_E);	
+	output_tree->Branch( "l1jet_hwQual", &l1jet_hwQual);
+
 	// AK8 PF Jets
 	output_tree->Branch( "n_LRJet", &n_LRJet );
 	output_tree->Branch( "LRJet_Pt", &LRJet_Pt );
@@ -975,6 +983,14 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	calojet_EcalRechitIndices.clear();
 	calojet_HcalRechitIDs.clear();
 	calojet_HcalRechitIndices.clear();
+
+	// L1 jets
+	n_l1jet = 0;
+	l1jet_Pt.clear();
+	l1jet_Eta.clear();
+	l1jet_Phi.clear();
+	l1jet_E.clear();
+	l1jet_hwQual.clear();
 
 	// AK8 PF Jets 
 	n_LRJet = 0;
@@ -2060,6 +2076,26 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 	} //loop over jets
 
+	// ********************************************************
+	// L1 Jets
+	// ******************************************************** 
+
+	for ( auto &l1jet : *l1jets) {
+
+		if( l1jet.pt() < 10 || fabs(l1jet.eta()) > 1.5 ) continue;
+
+		if( debug ) cout<<" ------ L1 jet idx"<<n_l1jet<<endl;  
+
+		n_l1jet++;
+		
+		// ----- Basics ----- // 
+
+		l1jet_E.push_back( l1jet.energy() );
+		l1jet_Pt.push_back( l1jet.pt() );
+		l1jet_Eta.push_back( l1jet.eta() );
+		l1jet_Phi.push_back( l1jet.phi() );
+		l1jet_hwQual.push_back( l1jet.hwQual() );
+	}
 
 	// ********************************************************
 	// AK8 Jets
