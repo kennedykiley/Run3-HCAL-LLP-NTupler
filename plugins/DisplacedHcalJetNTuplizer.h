@@ -876,49 +876,11 @@ protected:
 	vector<float> hoRechit_Y;
 	vector<float> hoRechit_Z;
 
-	// ------------------------------------------------------------------------------------
-	// Flags...????
- 
-	/*bool Flag_HBHENoiseFilter;
-	bool Flag_HBHETightNoiseFilter;
-	bool Flag_HBHEIsoNoiseFilter;
-	bool Flag_badChargedCandidateFilter;
-	bool Flag_badMuonFilter;
-	bool Flag_badGlobalMuonFilter;
-	bool Flag_duplicateMuonFilter;
-	bool Flag_globalTightHalo2016Filter;
-	bool Flag_globalSuperTightHalo2016Filter;
-	bool Flag_hcalLaserEventFilter;
-	bool Flag_EcalDeadCellTriggerPrimitiveFilter;
-	bool Flag_EcalDeadCellBoundaryEnergyFilter;
-	bool Flag_goodVertices;
-	bool Flag_trackingFailureFilter;
-	bool Flag_eeBadScFilter;
-	bool Flag_ecalLaserCorrFilter;
-	bool Flag_trkPOGFilters;
-	bool Flag_trkPOG_manystripclus53X;
-	bool Flag_trkPOG_toomanystripclus53X;
-	bool Flag_trkPOG_logErrorTooManyClusters;
-	bool Flag_BadPFMuonFilter;
-	bool Flag_BadChargedCandidateFilter;
-	bool Flag_ecalBadCalibFilter;
-	bool Flag_METFilters;
-
-	bool Flag2_globalSuperTightHalo2016Filter;
-	bool Flag2_globalTightHalo2016Filter;
-	bool Flag2_goodVertices;
-	bool Flag2_BadChargedCandidateFilter;
-	bool Flag2_BadPFMuonFilter;
-	bool Flag2_EcalDeadCellTriggerPrimitiveFilter;
-	bool Flag2_HBHENoiseFilter;
-	bool Flag2_HBHEIsoNoiseFilter;
-	bool Flag2_ecalBadCalibFilter;
-	bool Flag2_eeBadScFilter;*/
 
 	// ------------------------------------------------------------------------------------
 	// MC Truth Info
 
-	 // Gen info
+	// Gen info
 
  	int n_gParticle;
 	vector<int>   gParticle_Id;
@@ -952,116 +914,6 @@ protected:
 	vector<float> gLLP_DecayVtx_X;
 	vector<float> gLLP_DecayVtx_Y;
 	vector<float> gLLP_DecayVtx_Z;
-
- //MC
- /*int nGenJets;
- float genJetE[OBJECTARRAYSIZE];
- float genJetPt[OBJECTARRAYSIZE];
- float genJetEta[OBJECTARRAYSIZE];
- float genJetPhi[OBJECTARRAYSIZE];
- float genJetMET[OBJECTARRAYSIZE];
- float genMetPtCalo;
- float genMetPhiCalo;
- float genMetPtTrue;
- float genMetPhiTrue;
- float genVertexX;
- float genVertexY;
- float genVertexZ;
- float genVertexT;
- float genWeight;
- unsigned int genSignalProcessID;
- float genQScale;
- float genAlphaQCD;
- float genAlphaQED;
- string lheComments;
- vector<float> *scaleWeights;
- vector<float> *pdfWeights;
- vector<float> *alphasWeights;
-
- int firstPdfWeight;
- int lastPdfWeight;
- int firstAlphasWeight;
- int lastAlphasWeight;
-
- //gen info
- int nGenParticle;
- int gParticleMotherId[GENPARTICLEARRAYSIZE];
- int gParticleMotherIndex[GENPARTICLEARRAYSIZE];
- int gParticleId[GENPARTICLEARRAYSIZE];
- int gParticleStatus[GENPARTICLEARRAYSIZE];
- float gParticleE[GENPARTICLEARRAYSIZE];
- float gParticlePt[GENPARTICLEARRAYSIZE];
- float gParticlePx[GENPARTICLEARRAYSIZE];
- float gParticlePy[GENPARTICLEARRAYSIZE];
- float gParticlePz[GENPARTICLEARRAYSIZE];
- float gParticleEta[GENPARTICLEARRAYSIZE];
- float gParticlePhi[GENPARTICLEARRAYSIZE];
-
- float gParticleProdVertexX[GENPARTICLEARRAYSIZE];
- float gParticleProdVertexY[GENPARTICLEARRAYSIZE];
- float gParticleProdVertexZ[GENPARTICLEARRAYSIZE];
-
- float gParticleDecayVertexX[GENPARTICLEARRAYSIZE];
- float gParticleDecayVertexY[GENPARTICLEARRAYSIZE];
- float gParticleDecayVertexZ[GENPARTICLEARRAYSIZE];
- float gLLP_prod_vertex_x[LLP_ARRAY_SIZE];
- float gLLP_prod_vertex_y[LLP_ARRAY_SIZE];
- float gLLP_prod_vertex_z[LLP_ARRAY_SIZE];
- float gLLP_decay_vertex_x[LLP_ARRAY_SIZE];
- float gLLP_decay_vertex_y[LLP_ARRAY_SIZE];
- float gLLP_decay_vertex_z[LLP_ARRAY_SIZE];
- float gLLP_beta[LLP_ARRAY_SIZE];
- float gLLP_travel_time[LLP_ARRAY_SIZE];
- float gLLP_pt[LLP_ARRAY_SIZE];
- float gLLP_e[LLP_ARRAY_SIZE];
- float gLLP_eta[LLP_ARRAY_SIZE];
- float gLLP_phi[LLP_ARRAY_SIZE];
- bool gLLP_csc[LLP_ARRAY_SIZE];
- bool gLLP_dt[LLP_ARRAY_SIZE];
-
- float photon_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
- float photon_travel_time_pv[LLP_DAUGHTER_ARRAY_SIZE];
-
- float gen_time[LLP_DAUGHTER_ARRAY_SIZE];
- float gen_time_pv[LLP_DAUGHTER_ARRAY_SIZE];
- float gLLP_daughter_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
- int   gLLP_daughter_id[LLP_DAUGHTER_ARRAY_SIZE];
- float gLLP_daughter_pt[LLP_DAUGHTER_ARRAY_SIZE];
- float gLLP_daughter_eta[LLP_DAUGHTER_ARRAY_SIZE];
- float gLLP_daughter_phi[LLP_DAUGHTER_ARRAY_SIZE];
- float gLLP_daughter_eta_ecalcorr[LLP_DAUGHTER_ARRAY_SIZE];
- float gLLP_daughter_phi_ecalcorr[LLP_DAUGHTER_ARRAY_SIZE];
- float gLLP_daughter_e[LLP_DAUGHTER_ARRAY_SIZE];
- float gLLP_daughter_mass[LLP_DAUGHTER_ARRAY_SIZE];
-
- //grandaughters
- float gen_time_dau[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gen_time_dau_pv[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float photon_travel_time_dau[LLP_DAUGHTER_ARRAY_SIZE];
- float photon_travel_time_dau_pv[LLP_DAUGHTER_ARRAY_SIZE];
- float gLLP_grandaughter_travel_time[LLP_DAUGHTER_ARRAY_SIZE];
-
- //bool gLLP_grandaughter_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- //bool gLLP_grandaughter_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
-
- //float gLLP_grandaughter_photon_travel_time_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- //float gLLP_grandaughter_photon_travel_time_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
-
- //float gLLP_grandaughter_travel_time_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- //float gLLP_grandaughter_travel_time_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
-
- //float gen_time_grandaughter_EB[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- //float gen_time_grandaughter_ETL[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
-
- int   gLLP_grandaughter_id[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gLLP_grandaughter_pt[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gLLP_grandaughter_eta[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gLLP_grandaughter_phi[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gLLP_grandaughter_eta_ecalcorr[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gLLP_grandaughter_phi_ecalcorr[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gLLP_grandaughter_e[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
- float gLLP_grandaughter_mass[LLP_GRAND_DAUGHTER_ARRAY_SIZE];
-	*/
 
 };
 

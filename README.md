@@ -30,14 +30,21 @@ The HCAL LLP skim is EXOLLPJetHCAL, in the dataset DisplacedJet. This can be fou
 ```
 dasgoclient --query="file dataset=/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD" > InputData_Run2023C-EXOLLPJetHCAL-PromptReco-v4.txt
 ```
-Can also add specifications to ensure files are on DISK, such as `site=T1_US_FNAL_Disk`.
+Can also add specifications to ensure files are on DISK, such as `site=T1_US_FNAL_Disk`. Check event content with
+```
+edmDumpEventContent root://cmsxrootd.fnal.gov/</store/path/to/file.root> > EDM_content.txt
+```
 
 ```
 cd run
-# cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=1000 inputFiles=InputDataTest.txt debug=False outputFile=ntuple_output_test_data1.root # outdated, use High METSkim below
-cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=20000 inputFiles=InputDataMETSkimTest.txt debug=False outputFile=ntuple_output_test_data_METSkimtest.root
+# High MET skim
+cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=200 inputFiles=InputDataMETSkimTest.txt debug=False outputFile=ntuple_output_test_data_METSkimtest.root
 
-cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=False isSignal=True processEvents=1000 inputFiles=InputSignalFilesTest.txt debug=False outputFile=ntuple_output_test_signal1.root
+# HCAL LLP skim
+cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=200 inputFiles=InputData_Run2023C-EXOLLPJetHCAL-PromptReco-v4.txt debug=False outputFile=ntuple_output_data_Run2023C-EXOLLPJetHCAL-PromptReco-v4.root
+
+# MC signal 
+cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=False isSignal=True processEvents=200 inputFiles=InputSignalFilesTest.txt debug=False outputFile=ntuple_output_test_signal1.root
 ```
 
 Running with CRAB:
