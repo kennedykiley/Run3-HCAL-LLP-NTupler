@@ -678,6 +678,14 @@ protected:
 	// HLT
 	//vector<vector<bool>> calojet_passHLTFilter; //[OBJECTARRAYSIZE][MAX_ElectronHLTFilters];
 
+	// ----- L1 jets ----- //
+	int n_l1jet;
+	vector<float> l1jet_Pt;
+	vector<float> l1jet_Eta;
+	vector<float> l1jet_Phi;
+	vector<float> l1jet_E;
+	vector<float> l1jet_hwQual;
+
 	// ----- AK8 PF Jets ----- //
 
 	int n_LRJet;
