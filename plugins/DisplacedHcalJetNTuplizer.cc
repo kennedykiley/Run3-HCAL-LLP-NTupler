@@ -43,6 +43,8 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	primaryVertexAssociationValueMapToken_(consumes<edm::ValueMap<int> >(edm::InputTag("primaryVertexAssociation","original"))),
 	// Event-Level Info
 	metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("met"))),
+	bsTag_(iConfig.getUntrackedParameter<edm::InputTag>("offlineBeamSpot", edm::InputTag("offlineBeamSpot"))),
+	bsToken_(consumes<reco::BeamSpot>(bsTag_)),
 	// Physics Objects
 	electronsToken_(consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
 	muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
@@ -52,6 +54,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	calojetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK4"))),
 	LRJetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK8"))),
 	caloLRJetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK8"))),
+	// l1jetsToken_(consumes<l1t::JetCollection>(iConfig.getParameter<edm::InputTag>("l1jets"))), // GK added for L1 jets access
 	// Low-Level Objects
 	//tracksToken_(consumes<edm::View<reco::Track> >(iConfig.getParameter<edm::InputTag>("tracks"))),
 	generalTracksToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks"))),
@@ -199,6 +202,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(calojetsToken_, calojets);
 	iEvent.getByToken(LRJetsToken_, LRJets);
 	iEvent.getByToken(caloLRJetsToken_, caloLRJets);
+	//iEvent.getByToken(l1jetsToken_, jets);
 
 	// Low-level objects
 	//iEvent.getByToken(tracksToken_,tracks);
@@ -2276,6 +2280,9 @@ bool DisplacedHcalJetNTuplizer::FillTrackBranches( const edm::Event& iEvent ){
 
 	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillJetBranches"<<endl; 			
 
+	edm::Handle<reco::BeamSpot> beamSpot;
+	iEvent.getByToken(bsToken_, beamSpot);
+
 	for( uint it = 0; it < generalTracks->size(); it ++ ){
 
 		// reco::Track generalTrack = generalTracks->at(iTrack);
@@ -2327,9 +2334,9 @@ bool DisplacedHcalJetNTuplizer::FillTrackBranches( const edm::Event& iEvent ){
 		track_nMissingOuterHits.push_back( track.hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS) );
 		track_nPixelHits.push_back( track.hitPattern().numberOfValidPixelHits() );
 		track_nHits.push_back( track.hitPattern().numberOfValidHits() );
-		track_dxyToBS.push_back( -9999.9 ); // FIX tref->dxy(*beamSpot) );
+		track_dxyToBS.push_back( track.dxy(beamSpot->position()) ); 
 		track_dxyErr.push_back( track.dxyError() );
-		track_dzToPV.push_back( -9999.9 ); // FIX tref->dz(beamSpot->position()) ); 
+		track_dzToPV.push_back( track.dz(beamSpot->position()) );
 		track_dzErr.push_back( track.dzError() ); 
 		track_chi2.push_back( track.chi2() ); 
 		track_ndof.push_back( track.ndof() ); 
