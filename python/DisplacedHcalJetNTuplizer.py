@@ -186,9 +186,13 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     enableEcalRechits = cms.bool(False),
     enableCaloJet = cms.bool(True),
     enableGenLLPInfo = cms.bool(True),
-    readGenVertexTime = cms.bool(False), # need to be false for displaced samples
+    readGenVertexTime = cms.bool(False),#need to be false for displaced samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
     triggerPathNamesFile = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/HLTPathsLLPJetsHCAL.dat"),
+    #triggerPathNamesFile = cms.FileInPath("/afs/cern.ch/work/k/kikenned/LLPNTupler/Run3-HCAL-LLP-NTupler/data/HLTPathsLLPJetsHCAL.dat"), #"../data/HLTPathsLLPJetsHCAL.dat"),
+    #eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
+    #muonHLTFilterNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/MuonHLTFilterNames.dat"),
+    #photonHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorPhotonHLTFilterNames.dat"),
 
     #vertices = cms.InputTag("offlinePrimaryVerticesWithBS"),  # for non-timing case
     vertices = cms.InputTag("offlinePrimaryVertices", "", "RECO"),
@@ -202,18 +206,34 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     pfjetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
     calojetsAK8 = cms.InputTag("ak8CaloJets","","RECO"),
     l1jets = cms.InputTag("gtStage2Digis","Jet","RECO"), # GK, added for L1 jets access
+    #jetsPF = cms.InputTag("ak4PFJets"),
+    #jets = cms.InputTag("ak4PFJetsCHS"),
+    #jets = cms.InputTag("selectedPatJets"),
+    #jets = cms.InputTag("ak4PFJetsPuppi"),
+    #jetsPuppi = cms.InputTag("ak4PFJets"),
+    #jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
+    #jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
 
+    #jetsAK8 = cms.InputTag("ak8PFJetsPuppi"),
+
+    #mets = cms.InputTag("slimmedMETs"),
     met = cms.InputTag("patMETs"),
+    #metsNoHF = cms.InputTag("pfMet30"),
     metsPuppi = cms.InputTag("pfMet"),
     pfCands = cms.InputTag("particleFlow","","RECO"),
 
+    #packedPfCands = cms.InputTag("packedPFCandidates"),
 
     genParticles = cms.InputTag("genParticles"),
+
+    #packedGenParticles = cms.InputTag("packedGenParticles"),
+    #prunedGenParticles = cms.InputTag("prunedGenParticles"),
     genMetsCalo = cms.InputTag("genMetCalo"),
     genMetsTrue = cms.InputTag("genMetTrue"),
     genJets = cms.InputTag("ak4GenJets"),
 
     triggerBits = cms.InputTag("TriggerResults","","HLT"),
+    #triggerBits = cms.InputTag("TriggerResults","","RECO"),
     hepMC = cms.InputTag("generatorSmeared", "", "SIM"),
 
     triggerPrescales = cms.InputTag("patTrigger"),
@@ -221,13 +241,25 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
 
     metFilterBits = cms.InputTag("TriggerResults", "", "RECO"),
 
+    #hbheNoiseFilter = cms.InputTag("HBHENoiseFilterResultProducer","HBHENoiseFilterResult"),
+    #hbheTightNoiseFilter = cms.InputTag("HBHENoiseFilterResultProducer","HBHENoiseFilterResultRun2Tight"),
+    #hbheIsoNoiseFilter = cms.InputTag("HBHENoiseFilterResultProducer","HBHEIsoNoiseFilterResult"),
+
+    #BadChargedCandidateFilter = cms.InputTag("BadChargedCandidateFilter",""),
+    #BadMuonFilter = cms.InputTag("BadPFMuonFilter",""),
+
+    #lheInfo = cms.InputTag("externalLHEProducer", "", ""),
     genInfo = cms.InputTag("generator", "", "SIM"),
 
     tracks = cms.InputTag("generalTracks", "", "RECO"),
- 
+    #trackTime = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModel"),
+    #trackTimeReso = cms.InputTag("trackTimeValueMapProducer","generalTracksConfigurableFlatResolutionModelResolution"),
+
     #puInfo = cms.InputTag("addPileupInfo", "", "HLT"), #uncomment if no pre-mixing
     puInfo = cms.InputTag("mixData", "", "HLT"), #uncomment for samples with pre-mixed pileup
+    #hcalNoiseInfo = cms.InputTag("hcalnoise", "", "RECO"),
 
+    #secondaryVertices = cms.InputTag("inclusiveSecondaryVertices", "", "RECO"),
     secondaryVertices = cms.InputTag("inclusiveCandidateSecondaryVertices","", "RECO"),
 
     rhoAll = cms.InputTag("fixedGridRhoAll", "", "RECO"),
@@ -240,18 +272,27 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
 
     beamSpot = cms.InputTag("offlineBeamSpot", "", "RECO"),
     pfClusters = cms.InputTag("particleFlowClusterECAL","","RECO"),
+    #hbRecHits = cms.InputTag("reducedHcalRecHits", "hbhereco","RECO"),
     hbRecHits = cms.InputTag("hbhereco", "","RECO"),
+    #ebRecHits = cms.InputTag("EcalRecHit", "reducedEcalRecHitsEB", "RECO"),
+    #ebRecHits = cms.InputTag("ecalRecHit", "EcalRecHitsEB", "RECO"), # GK, errors with HCAL LLP skim, as with below
     eeRecHits  = cms.InputTag("reducedEcalRecHitsEE", "","RECO"),
     esRecHits = cms.InputTag("reducedEcalRecHitsES", "","RECO"),
+    #ebeeClusters = cms.InputTag("reducedEgamma", "reducedEBEEClusters", "RECO"),
     ebeeClusters = cms.InputTag("particleFlowEGamma", "EBEEClusters", "RECO"),
     esClusters = cms.InputTag("particleFlowEGamma", "ESClusters", "RECO"),
+    #conversions = cms.InputTag("reducedEgamma", "reducedConversions", "RECO"),
     conversions = cms.InputTag("allConversions", "", "RECO"),
 
+    #singleLegConversions = cms.InputTag("reducedEgamma", "reducedSingleLegConversions", "RECO"),
     singleLegConversions = cms.InputTag("particleFlowEGamma", "", "RECO"),
 
     gedGsfElectronCores = cms.InputTag("gedGsfElectronCores", "", "RECO"),
     gedPhotonCores = cms.InputTag("gedPhotonCore", "", "RECO"),
     generalTracks = cms.InputTag("generalTracks", "", "RECO"),
+    #superClusters = cms.InputTag("reducedEgamma", "reducedSuperClusters", "RECO"),
+
+    #lostTracks = cms.InputTag("lostTracks", "", "RECO")
 
     electron_cutbasedID_decisions_veto = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-veto", ""),
     electron_cutbasedID_decisions_loose = cms.InputTag("egmGsfElectronIDs", "cutBasedElectronID-Fall17-94X-V2-loose", ""),
@@ -303,7 +344,7 @@ switchOnVIDPhotonIdProducer(process,DataFormat.AOD)
 process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag("gedGsfElectrons")
 process.electronMVAValueMapProducer.src = cms.InputTag("gedGsfElectrons")
 process.photonMVAValueMapProducer.src = cms.InputTag("gedPhotons")
-
+#process.electronRegressionValueMapProducer.src = cms.InputTag('reducedEgamma','gedGsfElectrons')
 for idmod in electron_id_config.electron_ids.value():
     setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
 for idmod in photon_id_config.photon_ids.value():
@@ -332,6 +373,7 @@ process.makePatJetsTask.add(process.pfImpactParameterTagInfos,
 process.patCandidatesTask = cms.Task(
     process.makePatElectronsTask,
     process.makePatMuonsTask,
+    #process.makePatTausTask,
     process.makePatPhotonsTask,
     process.makePatOOTPhotonsTask,
     process.makePatJetsTask,
@@ -349,6 +391,7 @@ process.load('PhysicsTools.PatAlgos.selectionLayer1.ootPhotonSelector_cff')
 process.selectedPatCandidatesTask = cms.Task(
     process.selectedPatElectrons,
     process.selectedPatMuons,
+    #process.selectedPatTaus,
     process.selectedPatPhotons,
     process.selectedPatOOTPhotons,
     process.selectedPatJets,
@@ -368,6 +411,9 @@ process.load('PhysicsTools.PatAlgos.slimming.slimmedPatTrigger_cfi')
 process.patTask = cms.Task(
     process.patCandidatesTask,
     process.selectedPatCandidatesTask,
+    #process.patTrigger,
+    #process.selectedPatTrigger,
+    #process.slimmedPatTrigger
 )
 
 # ----- Define Execution Paths ----- #
@@ -377,10 +423,34 @@ process.p = cms.Path(process.primaryVertexAssociation * process.egmGsfElectronID
 #process.p = cms.Path( process.ntuples )
 process.schedule = cms.Schedule(process.p )
 
+#Define Jet Tool Box Stuff
+#listBtagDiscriminatorsAK4 = [ 
+#                'pfJetProbabilityBJetTags',
+#                'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+#                'pfCombinedMVAV2BJetTags',
+#                'pfCombinedCvsLJetTags',
+#                'pfCombinedCvsBJetTags',
+#                ]
+#from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
+#jetToolbox( process, 'ak8', 'ak8JetSubs', "out", PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addSoftDrop=True, addNsub=True, addNsubSubjets=True, miniAOD=False )   ### For example
+
+
 #Add PAT tasks for jet Toolbox to execution schedule
 process.schedule.associate(process.patTask)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
+
+
+#miniAOD_customize stuff
+# process.patTaus.isoDeposits = cms.PSet()
+# process.patTaus.addGenMatch = cms.bool(False)
+# process.patTaus.embedGenMatch = cms.bool(False)
+# process.patTaus.addGenJetMatch   = cms.bool(False)
+# process.patTaus.embedGenJetMatch = cms.bool(False)
+# process.patTaus.genParticleMatch = ''
+# process.patTaus.genJetMatch      = ''
+# process.selectedPatTaus.cut = cms.string("pt > 18. && tauID('decayModeFindingNewDMs')> 0.5")
+# process.selectedPatJets.cut = cms.string("pt > 10")
 
 ## PU JetID
 process.load("RecoJets.JetProducers.PileupJetID_cfi")
@@ -392,6 +462,13 @@ process.patJets.discriminatorSources = cms.VInputTag(
     cms.InputTag("pfJetBProbabilityBJetTags"),
     cms.InputTag("pfJetProbabilityBJetTags"),
     cms.InputTag("pfTrackCountingHighEffBJetTags"),
+    # cms.InputTag("pfSimpleSecondaryVertexHighEffBJetTags"), # GK, errors with HCAL LLP skim, as with below 7
+    # cms.InputTag("pfSimpleInclusiveSecondaryVertexHighEffBJetTags"),
+    # cms.InputTag("pfCombinedSecondaryVertexV2BJetTags"),
+    # cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
+    # cms.InputTag("softPFMuonBJetTags"),
+    # cms.InputTag("softPFElectronBJetTags"),
+    # cms.InputTag("pfCombinedMVAV2BJetTags"),   
     )
 process.patJets.addTagInfos     = cms.bool(True)
 process.patJets.tagInfoSources  = cms.VInputTag( 'pfImpactParameterTagInfos'
@@ -408,5 +485,16 @@ process.patJets.addJetFlavourInfo  = cms.bool(False)
 process.patJets.JetPartonMapSource = ''
 process.patJets.JetFlavourInfoSource = ''
 
+# process.patJetsAK8PFCHS.addGenPartonMatch   = cms.bool(False)
+# process.patJetsAK8PFCHS.embedGenPartonMatch = cms.bool(False)
+# process.patJetsAK8PFCHS.genPartonMatch      = ''
+# process.patJetsAK8PFCHS.addGenJetMatch      = cms.bool(False)
+# process.patJetsAK8PFCHS.embedGenJetMatch    = cms.bool(False)
+# process.patJetsAK8PFCHS.genJetMatch         = ''
+# process.patJetsAK8PFCHS.getJetMCFlavour    = cms.bool(False)
+# process.patJetsAK8PFCHS.addJetFlavourInfo  = cms.bool(False)
+# process.patJetsAK8PFCHS.JetPartonMapSource = ''
+# process.patJetsAK8PFCHS.JetFlavourInfoSource = ''
 process.patMETs.addGenMET           = False
 process.patMETs.genMETSource        = ''
+
