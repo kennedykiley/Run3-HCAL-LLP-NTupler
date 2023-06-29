@@ -52,7 +52,7 @@ Running with CRAB:
 cmsenv
 cd python
 crab submit -c crab_DisplacedHcalJetNTuplizer_MC_cfg.py 
-# note that for MC, the variables "signal" and "data" must be set by hand now in python/DisplacedHcalJetNTuplizer.py
+# note that for crab jobs (MC and data), the variables "signal" and "data" must be set by hand now in python/DisplacedHcalJetNTuplizer.py
 crab submit -c crab_DisplacedHcalJetNTuplizer_cfg.py
 
 # Useful commands

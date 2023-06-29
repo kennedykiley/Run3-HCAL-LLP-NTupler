@@ -23,15 +23,15 @@ number = 0 # starting at 0 -> refers to datasetnames
 
 # List of possible datasets
 datasetnames = [
-'/JetMET/Run2022G-EXOHighMET-PromptReco-v1/RAW-RECO'
+'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD'
 ]
 
 datasetblock = [
-'/JetMET/Run2022G-EXOHighMET-PromptReco-v1/RAW-RECO#8469adfd-7170-448a-a270-211dc028c8d2'
+'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD#0882cc9a-f2ab-4626-992e-c787a9d5017c'
 ]
 
 # runrange = '362085,362087' # Nov2022 Phase Scan
-runrange = '362696'
+runrange = ''
 
 # JSON files for lumiMask are available at: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/
 lumimask = ''
@@ -68,7 +68,7 @@ dataset = list(dataset)
 config = config()
 
 # General
-config.General.workArea        = 'crab_test_2023-05-08'
+config.General.workArea        = 'crab_LLPskim_2023-06-29'
 config.General.instance        = 'prod'
 config.General.requestName     = dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp
 config.General.transferOutputs = True
