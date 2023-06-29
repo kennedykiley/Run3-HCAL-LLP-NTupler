@@ -64,7 +64,7 @@ dataset = list(dataset)
 config = config()
 
 # General
-config.General.workArea        = 'crab_test_2023-05-10'
+config.General.workArea        = 'crab_signalMC_2023-06-29'
 config.General.instance        = 'prod'
 config.General.requestName     = 'LLP_MC_test_'+timestamp #dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp
 config.General.transferOutputs = True
@@ -81,7 +81,8 @@ config.Data.inputDataset     = datasetnames[number]
 config.Data.inputDBS         = 'phys03' # because input files are from another crab production run #'https://cmsweb.cern.ch/dbs/prod/phys03/DBSWriter/' #'global'
 config.Data.splitting        = 'FileBased' #'Automatic' #'LumiBased'
 config.Data.unitsPerJob      = 5 # with file based splitting, this is how many files in 1 job (5 * 200 events = 1k events)
-config.Data.totalUnits       = 100 # total number of units (not number of jobs!)
+nJobs                        = 100
+config.Data.totalUnits       = config.Data.unitsPerJob * nJobs # total number of units (not number of jobs!). 100 * 200 events = 20k events
 config.Data.ignoreLocality   = True
 config.Data.publication      = False
 config.Data.outputDatasetTag = 'LLP_MC_test_'+timestamp #dataset[1]+'_'+dataset[2]+timestamp
