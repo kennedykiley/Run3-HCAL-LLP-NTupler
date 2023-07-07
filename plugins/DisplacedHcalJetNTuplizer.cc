@@ -2534,7 +2534,11 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 		hbheRechit_E.push_back( recHit->energy() );
 		// Features  
 		hbheRechit_time.push_back( recHit->time() );
-		hbheRechit_auxTDC.push_back( recHit->auxTDC() );
+		int six_bits_mask = 0x3f;
+		int ts = 3; // aux TDC contains TS 0 - 5, with ts3 as SOI
+		int SOI_TDC = CaloRecHitAuxSetter::getField(recHit->auxTDC(), six_bits_mask, ts * 6);
+		hbheRechit_auxTDC.push_back( SOI_TDC );
+		//hbheRechit_auxTDC.push_back( recHit->auxTDC() );
 		hbheRechit_timeFalling.push_back( recHit->timeFalling() );
 		//hbheRechit_cctime.push_back( );
 		hbheRechit_X.push_back( recHitPos.x() );
