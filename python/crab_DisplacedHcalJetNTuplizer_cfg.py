@@ -81,11 +81,15 @@ config.JobType.psetName    = psetname
 #config.JobType.pyCfgParams = ['outputFile='+OutputFilename]
 
 # Data
+# four below lines for standard dataset input
 config.Data.inputDataset     = datasetnames[number]
 config.Data.inputBlocks      = datasetblock
 config.Data.inputDBS         = 'global'
 config.Data.splitting        = 'Automatic' #'LumiBased'
-#config.Data.unitsPerJob      = 1
+# for single file test (3 below lines)
+#config.Data.userInputFiles    = ['/store/data/Run2023C/DisplacedJet/AOD/EXOLLPJetHCAL-PromptReco-v4/000/367/881/00000/36ade28b-f320-4680-9dab-57ce2b536531.root']
+#config.Data.splitting         = 'FileBased'
+#config.Data.unitsPerJob       = 1
 #config.Data.totalUnits       = 1
 config.Data.ignoreLocality   = True
 config.Data.publication      = False
