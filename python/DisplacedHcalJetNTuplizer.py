@@ -205,6 +205,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     calojetsAK4 = cms.InputTag("ak4CaloJets","","RECO"),
     pfjetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
     calojetsAK8 = cms.InputTag("ak8CaloJets","","RECO"),
+    l1jets = cms.InputTag("gtStage2Digis","Jet","RECO"), # GK, added for L1 jets access
     #jetsPF = cms.InputTag("ak4PFJets"),
     #jets = cms.InputTag("ak4PFJetsCHS"),
     #jets = cms.InputTag("selectedPatJets"),
@@ -274,7 +275,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     #hbRecHits = cms.InputTag("reducedHcalRecHits", "hbhereco","RECO"),
     hbRecHits = cms.InputTag("hbhereco", "","RECO"),
     #ebRecHits = cms.InputTag("EcalRecHit", "reducedEcalRecHitsEB", "RECO"),
-    ebRecHits = cms.InputTag("ecalRecHit", "EcalRecHitsEB", "RECO"), 
+    #ebRecHits = cms.InputTag("ecalRecHit", "EcalRecHitsEB", "RECO"), # GK, errors with HCAL LLP skim, as with below
     eeRecHits  = cms.InputTag("reducedEcalRecHitsEE", "","RECO"),
     esRecHits = cms.InputTag("reducedEcalRecHitsES", "","RECO"),
     #ebeeClusters = cms.InputTag("reducedEgamma", "reducedEBEEClusters", "RECO"),
@@ -461,13 +462,13 @@ process.patJets.discriminatorSources = cms.VInputTag(
     cms.InputTag("pfJetBProbabilityBJetTags"),
     cms.InputTag("pfJetProbabilityBJetTags"),
     cms.InputTag("pfTrackCountingHighEffBJetTags"),
-    cms.InputTag("pfSimpleSecondaryVertexHighEffBJetTags"),
-    cms.InputTag("pfSimpleInclusiveSecondaryVertexHighEffBJetTags"),
-    cms.InputTag("pfCombinedSecondaryVertexV2BJetTags"),
-    cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
-    cms.InputTag("softPFMuonBJetTags"),
-    cms.InputTag("softPFElectronBJetTags"),
-    cms.InputTag("pfCombinedMVAV2BJetTags"),   
+    # cms.InputTag("pfSimpleSecondaryVertexHighEffBJetTags"), # GK, errors with HCAL LLP skim, as with below 7
+    # cms.InputTag("pfSimpleInclusiveSecondaryVertexHighEffBJetTags"),
+    # cms.InputTag("pfCombinedSecondaryVertexV2BJetTags"),
+    # cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
+    # cms.InputTag("softPFMuonBJetTags"),
+    # cms.InputTag("softPFElectronBJetTags"),
+    # cms.InputTag("pfCombinedMVAV2BJetTags"),   
     )
 process.patJets.addTagInfos     = cms.bool(True)
 process.patJets.tagInfoSources  = cms.VInputTag( 'pfImpactParameterTagInfos'

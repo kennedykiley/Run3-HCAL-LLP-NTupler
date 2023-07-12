@@ -21,7 +21,8 @@ using namespace std;
 
 // CMSSW framework includes
 #include "FWCore/Common/interface/TriggerNames.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+//#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "FWCore/Framework/interface/ESTransientHandle.h"
@@ -66,6 +67,7 @@ using namespace std;
 #include "DataFormats/HcalDetId/interface/HcalDetId.h"
 #include "DataFormats/HcalRecHit/interface/HORecHit.h"
 #include "DataFormats/HcalRecHit/interface/HcalRecHitCollections.h"
+#include "DataFormats/HcalRecHit/interface/CaloRecHitAuxSetter.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/JetReco/interface/BasicJetCollection.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
@@ -73,6 +75,8 @@ using namespace std;
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/JetReco/interface/PFJetCollection.h"
+#include "DataFormats/L1Trigger/interface/BXVector.h"
+#include "DataFormats/L1Trigger/interface/Jet.h"
 #include "DataFormats/METReco/interface/GenMET.h"
 #include "DataFormats/METReco/interface/GenMETCollection.h"
 #include "DataFormats/METReco/interface/HcalNoiseSummary.h"
@@ -167,7 +171,8 @@ using namespace std;
 // ------ Class declaration ------ //
 
 // ------------------------------------------------------------------------------------
-class DisplacedHcalJetNTuplizer : public edm::EDAnalyzer {
+class DisplacedHcalJetNTuplizer : public edm::one::EDAnalyzer<edm::one::WatchLuminosityBlocks,edm::one::WatchRuns> {
+//class DisplacedHcalJetNTuplizer : public edm::EDAnalyzer {
 public:
 	//analyzer constructor and destructor
 	explicit DisplacedHcalJetNTuplizer(const edm::ParameterSet&);
@@ -261,11 +266,13 @@ public:
 	double deltaR(double eta1, double phi1, double eta2, double phi2);
 
 protected:
-	virtual void beginJob() override;
-	virtual void beginRun(const edm::Run&, const edm::EventSetup&) override;
-	virtual void beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) override;
-	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-	virtual void endJob() override;
+        virtual void beginJob() override;
+        virtual void beginRun(const edm::Run&, const edm::EventSetup&) override;
+        virtual void beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) override;
+        virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+		virtual void endLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const&) override;
+    	virtual void endRun(edm::Run const& iRun, edm::EventSetup const&) override;
+        virtual void endJob() override;
 
 	// ----- Member data ------ //
 
@@ -296,6 +303,8 @@ protected:
 
 	// Event Level
 	edm::EDGetTokenT<pat::METCollection> metToken_;
+	edm::InputTag bsTag_;
+	edm::EDGetTokenT<reco::BeamSpot> bsToken_;
 
 	// Physics Objects
 	edm::EDGetTokenT<reco::GsfElectronCollection> electronsToken_;
@@ -306,6 +315,7 @@ protected:
 	edm::EDGetTokenT<reco::CaloJetCollection> calojetsToken_;
 	edm::EDGetTokenT<pat::JetCollection> LRJetsToken_;
 	edm::EDGetTokenT<reco::CaloJetCollection> caloLRJetsToken_;
+	edm::EDGetTokenT<BXVector<l1t::Jet>> l1jetsToken_;
 
 	// Low-Level Objects
 	//edm::EDGetTokenT<edm::View<reco::Track>> tracksToken_;
@@ -368,6 +378,7 @@ protected:
 	edm::Handle<reco::CaloJetCollection> calojets;
 	edm::Handle<pat::JetCollection> LRJets;
 	edm::Handle<reco::CaloJetCollection> caloLRJets;
+	edm::Handle<BXVector<l1t::Jet>> l1jets;
 
 	// Low Level Objects
 	edm::Handle<edm::View<reco::Track> > tracks;
@@ -667,6 +678,14 @@ protected:
 	vector<vector<uint>> calojet_HcalRechitIndices;
 	// HLT
 	//vector<vector<bool>> calojet_passHLTFilter; //[OBJECTARRAYSIZE][MAX_ElectronHLTFilters];
+
+	// ----- L1 jets ----- //
+	int n_l1jet;
+	vector<float> l1jet_Pt;
+	vector<float> l1jet_Eta;
+	vector<float> l1jet_Phi;
+	vector<float> l1jet_E;
+	vector<float> l1jet_hwQual;
 
 	// ----- AK8 PF Jets ----- //
 

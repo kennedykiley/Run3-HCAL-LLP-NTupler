@@ -43,6 +43,8 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	primaryVertexAssociationValueMapToken_(consumes<edm::ValueMap<int> >(edm::InputTag("primaryVertexAssociation","original"))),
 	// Event-Level Info
 	metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("met"))),
+	bsTag_(iConfig.getUntrackedParameter<edm::InputTag>("offlineBeamSpot", edm::InputTag("offlineBeamSpot"))),
+	bsToken_(consumes<reco::BeamSpot>(bsTag_)),
 	// Physics Objects
 	electronsToken_(consumes<reco::GsfElectronCollection>(iConfig.getParameter<edm::InputTag>("electrons"))),
 	muonsToken_(consumes<reco::MuonCollection>(iConfig.getParameter<edm::InputTag>("muons"))),
@@ -52,13 +54,14 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	calojetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK4"))),
 	LRJetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK8"))),
 	caloLRJetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK8"))),
+	l1jetsToken_(consumes<BXVector<l1t::Jet>>(iConfig.getParameter<edm::InputTag>("l1jets"))), // GK added for L1 jets access
 	// Low-Level Objects
 	//tracksToken_(consumes<edm::View<reco::Track> >(iConfig.getParameter<edm::InputTag>("tracks"))),
 	generalTracksToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks"))),
 	secondaryVerticesToken_(consumes<vector<reco::VertexCompositePtrCandidate> >(iConfig.getParameter<edm::InputTag>("secondaryVertices"))),	
 	PFCandsToken_(consumes<reco::PFCandidateCollection>(iConfig.getParameter<edm::InputTag>("pfCands"))),
 	// RecHits
-	ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
+	// ebRecHitsToken_(consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > >(iConfig.getParameter<edm::InputTag>("ebRecHits"))),
 	// hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>(edm::InputTag("reducedHcalRecHits","hbhereco"))),
 	hcalRecHitsHBHEToken_(consumes<edm::SortedCollection<HBHERecHit,edm::StrictWeakOrdering<HBHERecHit>>>( iConfig.getParameter<edm::InputTag>("hbRecHits") )),
 	// Other
@@ -115,18 +118,39 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 
 	if( debug ) cout<<"Getting triggers..."<<endl;
 
-	triggerPathNames.push_back("1 HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5");
-	triggerPathNames.push_back("2 HLT_HT200_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
-	triggerPathNames.push_back("3 HLT_HT170_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
-	triggerPathNames.push_back("4 HLT_HT200_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
-	triggerPathNames.push_back("5 HLT_HT270_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
-	triggerPathNames.push_back("6 HLT_HT200_L1SingleLLPJet_DisplacedDijet60_DisplacedTrack");
-	triggerPathNames.push_back("7 HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive");
-	triggerPathNames.push_back("8 HLT_HT420_L1SingleLLPJet_DisplacedDijet60_Inclusive");
-	triggerPathNames.push_back("9 HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay0p5nsTrackless");
-	triggerPathNames.push_back("10 HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay1nsInclusive");
-	triggerPathNames.push_back("11 HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay1nsTrackless");
-	triggerPathNames.push_back("12 HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay2nsInclusive");
+	/* // trigger names as of June 13, run 368822
+	HLT_L1SingleLLPJet_v2
+	HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5_v5
+	HLT_HT200_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5_v5
+	HLT_HT240_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5_v2 
+	HLT_HT280_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5_v2
+	HLT_HT170_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack_v5
+	HLT_HT200_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack_v5
+	HLT_HT270_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack_v5
+	HLT_HT200_L1SingleLLPJet_DisplacedDijet60_DisplacedTrack_v5
+	HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive_v5
+	HLT_HT420_L1SingleLLPJet_DisplacedDijet60_Inclusive_v5
+	HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay0p5nsTrackless_v5 
+	HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay1nsInclusive_v5
+	HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay1nsTrackless_v5
+	HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay2nsInclusive_v5
+	*/
+
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
+	triggerPathNames.push_back("HLT_HT240_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
+	triggerPathNames.push_back("HLT_HT280_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
+	triggerPathNames.push_back("HLT_HT170_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
+	triggerPathNames.push_back("HLT_HT270_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet60_DisplacedTrack");
+	triggerPathNames.push_back("HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive");
+	triggerPathNames.push_back("HLT_HT420_L1SingleLLPJet_DisplacedDijet60_Inclusive");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay0p5nsTrackless");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay1nsInclusive");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay1nsTrackless");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay2nsInclusive");
+	triggerPathNames.push_back("HLT_L1SingleLLPJet");
 
         /*
 	ifstream myfile (edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str()) ;
@@ -199,6 +223,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(calojetsToken_, calojets);
 	iEvent.getByToken(LRJetsToken_, LRJets);
 	iEvent.getByToken(caloLRJetsToken_, caloLRJets);
+	iEvent.getByToken(l1jetsToken_, l1jets);
 
 	// Low-level objects
 	//iEvent.getByToken(tracksToken_,tracks);
@@ -208,7 +233,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 
 	// Rechits
 	iEvent.getByToken(hcalRecHitsHBHEToken_, hcalRecHitsHBHE);
-	iEvent.getByToken(ebRecHitsToken_,ebRecHits);
+	// iEvent.getByToken(ebRecHitsToken_,ebRecHits); // GK remove ebRecHits for LLP HCAL skim
 
 	// Other
 	iEvent.getByToken(electron_cutbasedID_decisions_loose_Token_, electron_cutbasedID_decisions_loose); 
@@ -471,6 +496,14 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "calojet_HcalRechitIDs", &calojet_HcalRechitIDs );
 	output_tree->Branch( "calojet_HcalRechitIndices", &calojet_HcalRechitIndices );
 	//output_tree->Branch( "calojet_passHLTFilter", &calojet_passHLTFilter );	
+
+	// L1 Jets
+	output_tree->Branch( "n_l1jet", &n_l1jet);
+	output_tree->Branch( "l1jet_Pt", &l1jet_Pt);
+	output_tree->Branch( "l1jet_Eta", &l1jet_Eta);
+	output_tree->Branch( "l1jet_Phi", &l1jet_Phi);
+	output_tree->Branch( "l1jet_E", &l1jet_E);	
+	output_tree->Branch( "l1jet_hwQual", &l1jet_hwQual);
 
 	// AK8 PF Jets
 	output_tree->Branch( "n_LRJet", &n_LRJet );
@@ -972,6 +1005,14 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	calojet_HcalRechitIDs.clear();
 	calojet_HcalRechitIndices.clear();
 
+	// L1 jets
+	n_l1jet = 0;
+	l1jet_Pt.clear();
+	l1jet_Eta.clear();
+	l1jet_Phi.clear();
+	l1jet_E.clear();
+	l1jet_hwQual.clear();
+
 	// AK8 PF Jets 
 	n_LRJet = 0;
 	LRJet_Pt.clear();
@@ -1287,6 +1328,16 @@ void DisplacedHcalJetNTuplizer::beginLuminosityBlock(edm::LuminosityBlock const&
 
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::beginLuminosityBlock"<<endl; 
 
+}
+
+// ------------------------------------------------------------------------------------
+void DisplacedHcalJetNTuplizer::endLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const& iSetup) {
+	if (debug) cout << "Running DisplacedHcalJetNTuplizer::endLuminosityBlock" << endl;
+}
+
+// ------------------------------------------------------------------------------------
+void DisplacedHcalJetNTuplizer::endRun(edm::Run const& iRun, edm::EventSetup const& iSetup) {
+	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::endRun"<<endl; 
 }
 
 // ------------------------------------------------------------------------------------
@@ -1981,8 +2032,8 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 		// ----- Find Ecal Rechits Inside Jet ----- //
 
-
 		if( debug ) cout<<" ------ 6"<<endl;  
+		/* GK remove ebRecHits for LLP HCAL skim
 
 		vector<uint> jet_EcalRechitIDs_temp;
 		vector<uint> jet_EcalRechitIndices_temp;
@@ -2008,6 +2059,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 		jet_EcalRechitIDs.push_back( jet_EcalRechitIDs_temp );
 		jet_EcalRechitIndices.push_back( jet_EcalRechitIndices_temp );
+		*/
 
 		// ----- Find Hcal Rechits Inside Jet ----- //
 
@@ -2045,6 +2097,26 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 	} //loop over jets
 
+	// ********************************************************
+	// L1 Jets
+	// ******************************************************** 
+
+	for ( auto &l1jet : *l1jets) {
+
+		if( l1jet.pt() < 10 || fabs(l1jet.eta()) > 1.5 ) continue;
+
+		if( debug ) cout<<" ------ L1 jet idx"<<n_l1jet<<endl;  
+
+		n_l1jet++;
+		
+		// ----- Basics ----- // 
+
+		l1jet_E.push_back( l1jet.energy() );
+		l1jet_Pt.push_back( l1jet.pt() );
+		l1jet_Eta.push_back( l1jet.eta() );
+		l1jet_Phi.push_back( l1jet.phi() );
+		l1jet_hwQual.push_back( l1jet.hwQual() );
+	}
 
 	// ********************************************************
 	// AK8 Jets
@@ -2265,6 +2337,9 @@ bool DisplacedHcalJetNTuplizer::FillTrackBranches( const edm::Event& iEvent ){
 
 	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillJetBranches"<<endl; 			
 
+	edm::Handle<reco::BeamSpot> beamSpot;
+	iEvent.getByToken(bsToken_, beamSpot);
+
 	for( uint it = 0; it < generalTracks->size(); it ++ ){
 
 		// reco::Track generalTrack = generalTracks->at(iTrack);
@@ -2316,9 +2391,9 @@ bool DisplacedHcalJetNTuplizer::FillTrackBranches( const edm::Event& iEvent ){
 		track_nMissingOuterHits.push_back( track.hitPattern().numberOfLostTrackerHits(reco::HitPattern::MISSING_OUTER_HITS) );
 		track_nPixelHits.push_back( track.hitPattern().numberOfValidPixelHits() );
 		track_nHits.push_back( track.hitPattern().numberOfValidHits() );
-		track_dxyToBS.push_back( -9999.9 ); // FIX tref->dxy(*beamSpot) );
+		track_dxyToBS.push_back( track.dxy(beamSpot->position()) ); 
 		track_dxyErr.push_back( track.dxyError() );
-		track_dzToPV.push_back( -9999.9 ); // FIX tref->dz(beamSpot->position()) ); 
+		track_dzToPV.push_back( track.dz(beamSpot->position()) );
 		track_dzErr.push_back( track.dzError() ); 
 		track_chi2.push_back( track.chi2() ); 
 		track_ndof.push_back( track.ndof() ); 
@@ -2360,6 +2435,7 @@ bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent,
 
 	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillEcalRechitBranches"<<endl; 			
 
+	/* GK remove ebRecHits for LLP HCAL skim
 	for( uint i = 0; i < ebRecHits->size(); i++ ){
 
 		if( debug ) cout<<" -- ecalrechit idx "<<i<<endl;
@@ -2372,7 +2448,7 @@ bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent,
 		bool save_hit = false; 
 		save_hit = true;
 
-		/* Save all hits for now
+		// Save all hits for now (comment below section)
 
 		for( int ij = 0; ij < n_jet; ij++ ){
 			
@@ -2384,7 +2460,7 @@ bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent,
 			}
 
 			if( save_hit == true ) continue;
-		}*/
+		}
 
 		if( !save_hit ) continue;
 
@@ -2407,6 +2483,7 @@ bool DisplacedHcalJetNTuplizer::FillEcalRechitBranches(const edm::Event& iEvent,
 		ecalRechit_kWeirdflag.push_back( recHit->checkFlag(EcalRecHit::kWeird) );
 		ecalRechit_kDiWeirdflag.push_back( recHit->checkFlag(EcalRecHit::kDiWeird) );	
 	} 
+	*/
 
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillEcalRechitBranches"<<endl; 			
 
@@ -2446,6 +2523,8 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 
 		if( !save_hit ) continue;
 
+		if (recHit->energy() < 0.5) continue;
+
 		const auto recHitPos = caloGeometry_HB->getGeometry(recHitId)->getPosition();
 
 		n_hbheRechit++;
@@ -2455,7 +2534,11 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 		hbheRechit_E.push_back( recHit->energy() );
 		// Features  
 		hbheRechit_time.push_back( recHit->time() );
-		hbheRechit_auxTDC.push_back( recHit->auxTDC() );
+		int six_bits_mask = 0x3f;
+		int ts = 3; // aux TDC contains TS 0 - 5, with ts3 as SOI
+		int SOI_TDC = CaloRecHitAuxSetter::getField(recHit->auxTDC(), six_bits_mask, ts * 6);
+		hbheRechit_auxTDC.push_back( SOI_TDC );
+		//hbheRechit_auxTDC.push_back( recHit->auxTDC() );
 		hbheRechit_timeFalling.push_back( recHit->timeFalling() );
 		//hbheRechit_cctime.push_back( );
 		hbheRechit_X.push_back( recHitPos.x() );
