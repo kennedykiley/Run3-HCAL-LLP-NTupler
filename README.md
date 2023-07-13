@@ -37,9 +37,6 @@ edmDumpEventContent root://cmsxrootd.fnal.gov/</store/path/to/file.root> > EDM_c
 
 ```
 cd run
-# High MET skim
-cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=200 inputFiles=InputDataMETSkimTest.txt debug=False outputFile=ntuple_output_test_data_METSkimtest.root
-
 # HCAL LLP skim
 cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False processEvents=200 inputFiles=InputData_Run2023C-EXOLLPJetHCAL-PromptReco-v4.txt debug=False outputFile=ntuple_output_data_Run2023C-EXOLLPJetHCAL-PromptReco-v4.root
 
@@ -51,8 +48,8 @@ Running with CRAB:
 ```
 cmsenv
 cd python
-crab submit -c crab_DisplacedHcalJetNTuplizer_MC_cfg.py 
 # note that for crab jobs (MC and data), the variables "signal" and "data" must be set by hand now in python/DisplacedHcalJetNTuplizer.py
+crab submit -c crab_DisplacedHcalJetNTuplizer_MC_cfg.py 
 crab submit -c crab_DisplacedHcalJetNTuplizer_cfg.py
 
 # Useful commands
@@ -61,16 +58,15 @@ crab status -d <crab_directory>/<crab_project> --long
 
 crab checkwrite --site T2_US_Wisconsin
 ```
-
 Output is in `/hdfs/store/user/gkopp/ggH_HToSSTobbbb_MH*`.
-
-
-The High MET skim we start with from 2022 data are here on [DAS](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FJetMET%2FRun2022G-EXOHighMET-PromptReco-v1%2FRAW-RECO). 
 
 The H->XX->4b MC for 2022 are here:
 ```
 dasgoclient --limit=100 --query="file dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER instance=prod/phys03 | grep file.name"
 ```
+
+The High MET skim we start with from 2022 data are here on [DAS](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FJetMET%2FRun2022G-EXOHighMET-PromptReco-v1%2FRAW-RECO). 
+
 
 ### Variables to check before running nTupler:
 * isData: False if running signals, True if running data
@@ -83,7 +79,7 @@ After ntuples are made, they are used in the LLP_NuplerAnalyzer, from [here](htt
 
 ## Location 
 
-lxplus location (Gillian): `/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_12_4_6/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler'
+lxplus location (Gillian): `/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_13_1_0/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler'
 
 ## Archive
 
