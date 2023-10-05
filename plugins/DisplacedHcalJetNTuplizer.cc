@@ -1500,37 +1500,54 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
 
 	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillTriggerBranches"<<endl; 
 
+	string hltPathNameReq = "HLT_";
+
 	//fill trigger information
 	const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
 
 	if( debug ) cout<<"N TRIGGER BITS = "<<triggerBits->size()<<endl;
 
-	for( uint i = 0; i < triggerBits->size(); ++i) { // TODO: CHECK OUT INDEXING
+	for( auto triggerPathName: triggerPathNames ){
 
-		if( debug && triggerBits->accept(i) ) cout<<"PASS TRIGGER "<<names.triggerName(i)<<endl;
+		if( debug ) cout<<"  -- "<<triggerPathName<<endl;
 
-		string hltPathNameReq = "HLT_";
-		
-		if( (names.triggerName(i)).find(hltPathNameReq) == string::npos ) continue;
-		if( (names.triggerName(i)).find_last_of("_") == string::npos ) continue;
+		if( triggerPathName == "" ) continue;
 
-		int lastUnderscorePos = (names.triggerName(i)).find_last_of("_");
-		string hltPathNameWithoutVersionNumber = (names.triggerName(i)).substr(0,lastUnderscorePos);
+		bool found_trigger = false;
 
-		//for( uint j = 0; j < triggerPathNames->size(); ++j) {
-		for( auto triggerPathName: triggerPathNames ){
-			if( triggerPathName == "" ) continue;
-			if( hltPathNameWithoutVersionNumber == triggerPathName ){
-				//HLT_Names.push_back( triggerPathName );
-				HLT_Decision.push_back( triggerBits->accept(i) );
-				HLT_Prescale.push_back( -1 );
+		for( uint i = 0; i < triggerBits->size(); ++i) { // TODO: CHECK OUT INDEXING
 
-				if( triggerBits->accept(i) )
-					NEvents_HLT->Fill(triggerPathNamesIndices[triggerPathName]); // FIX WEIGHTS
-				//if (isData_) HLT_Prescale.push_back( triggerPrescales->getPrescaleForIndex(i) );
-				//else HLT_Prescale.push_back( 1 ); // TODO Need to figure out yields
-			}
+			if( (names.triggerName(i)).find(hltPathNameReq) == string::npos ) continue;
+
+			int lastUnderscorePos = (names.triggerName(i)).find_last_of("_");
+			//if( lastUnderscorePos == string::npos ) continue;
+
+			string hltPathNameWithoutVersionNumber = (names.triggerName(i)).substr(0,lastUnderscorePos);
+			if( hltPathNameWithoutVersionNumber != triggerPathName ) continue;
+
+			if( debug && triggerBits->accept(i) ) cout<<"PASS TRIGGER "<<names.triggerName(i)<<endl;
+
+			// Fill Branches //
+
+			HLT_Decision.push_back( triggerBits->accept(i) );
+			HLT_Prescale.push_back( -1 );			
+                        // if (isData_) HLT_Prescale.push_back( triggerPrescales->getPrescaleForIndex(i) ); // FIX
+                        // else HLT_Prescale.push_back( 1 ); // TODO Need to figure out yields
+
+			if( triggerBits->accept(i) ) NEvents_HLT->Fill(triggerPathNamesIndices[triggerPathName]); // FIX WEIGHTS
+
+			found_trigger = true;
+
+			break;
+	
 		}
+		
+		if( !found_trigger ){
+			if( debug ) cout<<"    --> trig not found in triggerBits"<<endl;
+			HLT_Decision.push_back( false );
+			HLT_Prescale.push_back( -2 );
+		}
+
 	}
 
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillTriggerBranches"<<endl; 
