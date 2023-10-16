@@ -73,6 +73,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	photon_cutbasedID_decisions_tight_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_tight"))),
 	// MC
 	genParticlesToken_(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"))),
+        puInfoToken_(consumes<std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puInfo"))),
 	// Geometry
 	caloGeometryToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()), // GK
 	castorGeometryToken_(esConsumes<PCaloGeometry, PCastorRcd>()), // GK
@@ -136,7 +137,8 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay2nsInclusive_v5
 	*/
 
-	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5");
+	//triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5");
+        triggerPathNames.push_back("HLT_L1SingleLLPJet");
 	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
 	triggerPathNames.push_back("HLT_HT240_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
 	triggerPathNames.push_back("HLT_HT280_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
@@ -150,7 +152,6 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay1nsInclusive");
 	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay1nsTrackless");
 	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay2nsInclusive");
-	triggerPathNames.push_back("HLT_L1SingleLLPJet");
 
         /*
 	ifstream myfile (edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str()) ;
@@ -175,6 +176,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	const int NTriggers = triggerPathNames.size();
 	NEvents_HLT = fs->make<TH1F>( "NEvents_HLT", " ; ; NEvents_HLT;" , NTriggers, 0, NTriggers );
 
+		bool save_hit = false; 
 	if( debug ) cout<<"Defining trigger hists..."<<endl;
 
 	for( int i=0; i<NTriggers; i++ ){
@@ -244,7 +246,8 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(photon_cutbasedID_decisions_tight_Token_, photon_cutbasedID_decisions_tight); 
 
 	iEvent.getByToken(genParticlesToken_,genParticles);
-
+	iEvent.getByToken(puInfoToken_,puInfo);
+	
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::loadEvent"<<endl;	
 
 }
@@ -684,10 +687,10 @@ void DisplacedHcalJetNTuplizer::EnableHcalRechitBranches(){
 // ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::EnablePileupBranches(){
 
-	/*output_tree->Branch( "nBunchXing", &nBunchXing );
-	output_tree->Branch( "BunchXing", &BunchXing );
+        output_tree->Branch( "n_BunchXing", &n_BunchXing );
+        output_tree->Branch( "BunchXing", &BunchXing );
 	output_tree->Branch( "nPU", &nPU );
-	output_tree->Branch( "nPUmean", &nPUmean );*/
+	output_tree->Branch( "nPUmean", &nPUmean );
 
 };
 
@@ -1184,10 +1187,10 @@ void DisplacedHcalJetNTuplizer::ResetHcalRechitBranches(){
 // ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::ResetPileupBranches(){
 
-	/*nBunchXing = 0;
-	BunchXing.clear();
+        n_BunchXing = 0;
+        BunchXing.clear();
 	nPU.clear();
-	nPUmean.clear();*/
+	nPUmean.clear();
 
 };
 
@@ -2520,12 +2523,12 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 		const HcalDetId recHitId = recHit->detid();
 		if( recHit->detid().subdetId() != HcalBarrel ) continue;
 
-		// Check if we should save
-		bool save_hit = false; 
-		save_hit = true;
+		// Check if we should save //
 
-		/* Save all hits for now
+		if( recHit->energy() < 0.1 ) continue;
 
+		// Only save hits around a jet
+                bool save_hit = false;
 		for( int ij = 0; ij < n_jet; ij++ ){
 			
 			for( int ijh = 0; ijh < (int)jet_HcalRechitIndices.at(ij).size(); ijh++ ){
@@ -2535,12 +2538,10 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 				}
 			}
 
-			if( save_hit == true ) continue;
-		}*/
+			if( save_hit == true ) break;
+		}
 
 		if( !save_hit ) continue;
-
-		if (recHit->energy() < 0.5) continue;
 
 		const auto recHitPos = caloGeometry_HB->getGeometry(recHitId)->getPosition();
 
@@ -2982,12 +2983,12 @@ bool DisplacedHcalJetNTuplizer::FillPileupBranches(){
 
 	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillPileup"<<endl; 
 
-	/*for(const PileupSummaryInfo &pu : *puInfo){
-		nBunchXing++;
-		BunchXing.push_back( pu.getBunchCrossing() );
+	n_BunchXing = puInfo->size();
+	for(const PileupSummaryInfo &pu : *puInfo){
+                BunchXing.push_back( pu.getBunchCrossing() );
 		nPU.push_back( pu.getPU_NumInteractions() );
 		nPUmean.push_back( pu.getTrueNumInteractions() );
-	}*/
+	}
 	
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillPileup"<<endl; 
 

@@ -337,6 +337,7 @@ protected:
 
 	// MC
 	edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken_;
+        edm::EDGetTokenT<std::vector<PileupSummaryInfo> > puInfoToken_;
 
 	// Calo Geometry
 	const edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_; // GK
@@ -400,6 +401,7 @@ protected:
 
 	// MC
 	edm::Handle<reco::GenParticleCollection> genParticles;
+	edm::Handle<std::vector<PileupSummaryInfo> > puInfo;
 
 	// ----- Globals & Constants ----- //
 
@@ -476,10 +478,10 @@ protected:
 
 	// ----- Pileup ----- // 
 
-	//int n_BunchXing;
-	//vector<int> BunchXing; //[MAX_NBX];
-	//vector<int> nPU; //[MA_NBX];
-	//vector<float> nPUmean; //[MAX_NBX];
+	int n_BunchXing;
+	vector<int> BunchXing; //[MAX_NBX];
+	vector<int> nPU; //[MA_NBX];
+	vector<float> nPUmean; //[MAX_NBX];
 
 	// ----- Trigger Info ----- // 
 
