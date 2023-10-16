@@ -137,8 +137,8 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay2nsInclusive_v5
 	*/
 
-	//triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5");
-        triggerPathNames.push_back("HLT_L1SingleLLPJet");
+	triggerPathNames.push_back("HLT_L1SingleLLPJet");
+  //triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5");
 	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
 	triggerPathNames.push_back("HLT_HT240_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
 	triggerPathNames.push_back("HLT_HT280_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
@@ -2542,6 +2542,8 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 		}
 
 		if( !save_hit ) continue;
+
+		if (recHit->energy() < 0.5) continue;
 
 		const auto recHitPos = caloGeometry_HB->getGeometry(recHitId)->getPosition();
 
