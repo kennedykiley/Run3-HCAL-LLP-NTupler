@@ -2543,8 +2543,6 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 
 		if( !save_hit ) continue;
 
-		if (recHit->energy() < 0.5) continue;
-
 		const auto recHitPos = caloGeometry_HB->getGeometry(recHitId)->getPosition();
 
 		n_hbheRechit++;
