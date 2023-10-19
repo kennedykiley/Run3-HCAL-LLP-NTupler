@@ -1,5 +1,5 @@
 # LLP Ntupler
-Long Lived Particle Ntupler based on AOD, adapted for use with HBHE rechits for Run 3 LLP analysis.
+Long-Lived Particle Ntupler based on AOD, adapted for use with HBHE rechits for Run 3 LLP analysis.
 
 # Setup Ntupler
 ```
@@ -67,11 +67,11 @@ dasgoclient --limit=100 --query="file dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau
 
 The High MET skim we start with from 2022 data are here on [DAS](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FJetMET%2FRun2022G-EXOHighMET-PromptReco-v1%2FRAW-RECO). 
 
-
 ### Variables to check before running nTupler:
 * isData: False if running signals, True if running data
 * isSignal: True if running signals, False if running data
-  ** in particular, isSignal and isData need to be set in the file for a crab submission! (until determine how to pass via config)
+  * in particular, isSignal and isData need to be set in the file for a crab submission!
+  * TODO: determine how to pass via config
 * readGenVertexTime: False for LLP samples
 
 ## Ntuple use
@@ -79,7 +79,10 @@ After ntuples are made, they are used in the LLP_NuplerAnalyzer, from [here](htt
 
 ## Location 
 
-lxplus location (Gillian): `/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_13_1_0/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler'
+lxplus location (Gillian):
+```
+/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_13_1_0/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler
+```
 
 ## Archive
 
