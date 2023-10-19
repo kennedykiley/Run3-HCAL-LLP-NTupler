@@ -29,3 +29,4 @@ Location of ntuples:
 /store/user/gkopp/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4_AOD_20231017_175654/231017_155703/0000/*.root				# 2023 Era C data
 /store/user/gkopp/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/LLP_MC_test__20231017_175630/231017_155638/0000/*.root			# LLP MC, MH125, MS15, cTau1000
 ```
+About 500k events in LLP MC and LLP skim, and about 250k events in QCD MC. 
