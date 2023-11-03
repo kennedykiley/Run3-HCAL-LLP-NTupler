@@ -300,6 +300,7 @@ protected:
 	edm::EDGetTokenT<reco::VertexCollection> verticesToken_;
   	edm::EDGetTokenT<edm::Association<vector<reco::Vertex> > > primaryVertexAssociationToken_;
   	edm::EDGetTokenT<edm::ValueMap<int> > primaryVertexAssociationValueMapToken_;
+	edm::EDGetTokenT<double> rhoFastjetAllToken_;
 
 	// Event Level
 	edm::EDGetTokenT<pat::METCollection> metToken_;
@@ -369,7 +370,8 @@ protected:
 	edm::Handle<reco::VertexCollection> vertices;
 	edm::Handle<edm::Association<vector<reco::Vertex>>> primaryVertexAssociation;
 	edm::Handle<edm::ValueMap<int>> primaryVertexAssociationValueMap;
-
+	edm::Handle<double> rhoFastjetAll;
+	
 	// Objects
 	edm::Handle<reco::GsfElectronCollection> electrons;
 	edm::Handle<reco::MuonCollection> muons;
@@ -443,9 +445,9 @@ protected:
 	ULong64_t eventNumber;
 	uint eventTime; //in seconds, since 1970
 
-	/*float fixedGridRhoAll;
+	//float fixedGridRhoAll;
 	float fixedGridRhoFastjetAll;
-	float fixedGridRhoFastjetAllCalo;
+	/* float fixedGridRhoFastjetAllCalo;
 	float fixedGridRhoFastjetCentralCalo;
 	float fixedGridRhoFastjetCentralChargedPileUp;
 	float fixedGridRhoFastjetCentralNeutral;*/
@@ -524,10 +526,16 @@ protected:
 	vector<float> ele_dZ;
 	vector<float> ele_dEta;
 	vector<float> ele_dPhi;
+	vector<float> ele_EtaSC;
 	// ID
 	vector<bool> ele_passCutBasedIDLoose;
 	vector<bool> ele_passCutBasedIDMedium;
 	vector<bool> ele_passCutBasedIDTight;
+	// Isolation
+	vector<float> ele_pileupIso;
+	vector<float> ele_chargedIso;
+	vector<float> ele_photonIso;
+	vector<float> ele_neutralHadIso;
 	// Rechits Association
 	vector<uint> ele_SeedRechitID;
 	vector<uint> ele_SeedRechitIndex;
@@ -552,6 +560,13 @@ protected:
 	vector<bool> muon_IsLoose;
 	vector<bool> muon_IsMedium;
 	vector<bool> muon_IsTight;
+	// Isolation
+	vector<float> muon_pileupIso;
+	vector<float> muon_chargedIso;
+	vector<float> muon_photonIso;
+	vector<float> muon_neutralHadIso;
+	// IP significance
+	vector<float> muon_ip3dSignificance;
 	// Rechits Association (None for now)
 	// HLT
 	//vector<vector<bool>> muon_passHLTFilter; //[OBJECTARRAYSIZE][MAX_ElectronHLTFilters];
