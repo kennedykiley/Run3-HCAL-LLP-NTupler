@@ -30,3 +30,10 @@ Location of ntuples:
 /store/user/gkopp/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/LLP_MC_test__20231017_175630/231017_155638/0000/*.root			# LLP MC, MH125, MS15, cTau1000
 ```
 About 500k events in LLP MC and LLP skim, and about 250k events in QCD MC. 
+
+* Add muon and electron isolation variables (pileup, charged, photon, and neutral hadron isolation)
+* Save eta of electron super cluster
+* Save muon IP 3D significance (for muon ID requirements)
+* Save fixed grid rho fast jet all (for electron isolation calculation)
+
+Location of ntuples:
