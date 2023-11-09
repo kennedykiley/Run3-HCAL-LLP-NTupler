@@ -59,7 +59,7 @@ crab status -d <crab_directory>/<crab_project> --long
 
 crab checkwrite --site T2_US_Wisconsin
 ```
-Output is in `/hdfs/store/user/gkopp/ggH_HToSSTobbbb_MH*`.
+Output is in `/hdfs/store/user/gkopp/ggH_HToSSTobbbb_MH*`. Note that the `number` in the CRAB python script must be changed for each job to run over all the datasets input. 
 
 The H->XX->4b MC for 2022 are here:
 ```

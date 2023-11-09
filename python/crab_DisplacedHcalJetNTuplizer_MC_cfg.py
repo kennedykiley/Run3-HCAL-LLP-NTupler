@@ -64,7 +64,8 @@ dataset = list(dataset)
 config = config()
 
 # General
-config.General.workArea        = 'crab_signalMC_2023-06-29'
+#config.General.workArea        = 'crab_signalMC_2023-06-29'
+config.General.workArea        = 'crab_signalMC'+date
 config.General.instance        = 'prod'
 config.General.requestName     = 'LLP_MC_test_'+timestamp #dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp
 config.General.transferOutputs = True

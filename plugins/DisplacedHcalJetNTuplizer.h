@@ -566,7 +566,9 @@ protected:
 	vector<float> muon_photonIso;
 	vector<float> muon_neutralHadIso;
 	// IP significance
-	vector<float> muon_ip3dSignificance;
+	vector<double> muon_ip3dSignificance;
+	vector<double> muon_dB;
+	vector<double> muon_edB;
 	// Rechits Association (None for now)
 	// HLT
 	//vector<vector<bool>> muon_passHLTFilter; //[OBJECTARRAYSIZE][MAX_ElectronHLTFilters];

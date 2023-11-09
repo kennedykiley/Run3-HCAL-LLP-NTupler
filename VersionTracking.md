@@ -31,9 +31,19 @@ Location of ntuples:
 ```
 About 500k events in LLP MC and LLP skim, and about 250k events in QCD MC. 
 
+## V3
+Updates:
 * Add muon and electron isolation variables (pileup, charged, photon, and neutral hadron isolation)
 * Save eta of electron super cluster
-* Save muon IP 3D significance (for muon ID requirements)
+* Save muon IP 3D significance (for muon ID requirements) -- note, this is saved, but in all test files is the default value (max of a double for the vars used to calculate this)
 * Save fixed grid rho fast jet all (for electron isolation calculation)
 
+Processed 2023 DisplacedJet skim data.
+
 Location of ntuples:
+```
+/hdfs/store/user/gkopp/DisplacedJet/Run2023B-EXOLLPJetHCAL-PromptReco-v1_AOD_20231107_180123/231107_170140/0000/*.root
+/hdfs/store/user/gkopp/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v1_AOD_20231108_105637/231108_095708/0000/*.root
+/hdfs/store/user/gkopp/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v2_AOD_20231108_110936/231108_101012/0000/*.root and .../0001/*.root
+/hdfs/store/user/gkopp/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v3_AOD_20231108_112347/231108_102434/0000/*.root and .../0001/*.root
+```

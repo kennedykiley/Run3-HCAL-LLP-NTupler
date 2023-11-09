@@ -397,6 +397,8 @@ void DisplacedHcalJetNTuplizer::EnableMuonBranches(){
 	output_tree->Branch( "muon_photonIso", &muon_photonIso );
 	output_tree->Branch( "muon_neutralHadIso", &muon_neutralHadIso );
 	output_tree->Branch( "muon_ip3dSignificance", &muon_ip3dSignificance );
+	output_tree->Branch( "muon_dB", &muon_dB );
+	output_tree->Branch( "muon_edB", &muon_edB );
 	//output_tree->Branch( "muon_passHLTFilter", &muon_passHLTFilter );
 
 };
@@ -921,8 +923,9 @@ void DisplacedHcalJetNTuplizer::ResetMuonBranches(){
 	muon_photonIso.clear();
 	muon_neutralHadIso.clear();
 	muon_ip3dSignificance.clear();
+	muon_dB.clear();
+	muon_edB.clear();
 	//muon_passHLTFilter.clear();
-
 };
 
 // ------------------------------------------------------------------------------------
@@ -1816,7 +1819,9 @@ bool DisplacedHcalJetNTuplizer::FillMuonBranches(const edm::Event& iEvent) {
 
 		// IP significance
 		muon_ip3dSignificance.push_back( muon.dB(pat::Muon::PV3D)/muon.edB(pat::Muon::PV3D) );
-
+		muon_dB.push_back( muon.dB(pat::Muon::PV3D) );
+		muon_edB.push_back( muon.edB(pat::Muon::PV3D) ); // both muon_edB and muon_dB are set to the maximum possible value of a double
+		// also checked PV2D, BS2D, BS3D, and PVDZ for muon.dB and muon.edB. These are all set to the maximum possible value of a double
 	}
 
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillMuonBranches"<<endl; 	
