@@ -57,7 +57,7 @@ blackList = ['']
 
 import datetime
 timestamp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
-
+date = datetime.datetime.now().strftime("_%Y%m%d")
 
 dataset = filter(None, datasetnames[number].split('/'))
 dataset = list(dataset)

@@ -24,6 +24,7 @@ number = 0 # starting at 0 -> refers to datasetnames
 # List of possible datasets
 datasetnames = [
 '/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER'
+# /eos/uscms/store/user/lpclonglived/apresyan/privateProduction/DR/step2_RECOSIM/Run3Summer22/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV
 ]
 
 # runrange = '362085,362087' # Nov2022 Phase Scan
@@ -56,7 +57,7 @@ blackList = ['']
 
 import datetime
 timestamp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
-
+date = datetime.datetime.now().strftime("_%Y%m%d")
 
 dataset = filter(None, datasetnames[number].split('/'))
 dataset = list(dataset)
