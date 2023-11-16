@@ -44,7 +44,7 @@ cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False process
 cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=False isSignal=True processEvents=200 inputFiles=InputSignalFilesTest.txt debug=False outputFile=ntuple_output_test_signal1.root
 ```
 
-Running with CRAB:
+Running with CRAB (remember to change the Data / Signal flags in `DisplacedHcalJetNTuplizer.py`!):
 ```
 cmsenv
 cd python
