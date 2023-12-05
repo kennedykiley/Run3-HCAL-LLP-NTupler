@@ -78,7 +78,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	// Geometry
 	caloGeometryToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()), // GK
 	castorGeometryToken_(esConsumes<PCaloGeometry, PCastorRcd>()), // GK
-	gemGeoToken_(esConsumes<RecoIdealGeometry, GEMRecoGeometryRcd>()), 
+	// gemGeoToken_(esConsumes<RecoIdealGeometry, GEMRecoGeometryRcd>()), // commenting out to test 350 GeV MC
 	magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>()), // GK
 	propagatorToken_(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", "PropagatorWithMaterial"))) // GK // thePropagatorToken(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", thePropagatorName))),
 

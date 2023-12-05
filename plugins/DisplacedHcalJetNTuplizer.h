@@ -343,7 +343,7 @@ protected:
 	// Calo Geometry
 	const edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_; // GK
 	const edm::ESGetToken<PCaloGeometry, PCastorRcd> castorGeometryToken_; // GK
-	const edm::ESGetToken<RecoIdealGeometry, GEMRecoGeometryRcd> gemGeoToken_;	
+	// const edm::ESGetToken<RecoIdealGeometry, GEMRecoGeometryRcd> gemGeoToken_;	// commenting out to test 350 GeV MC
 	const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_; // GK
 	const edm::ESGetToken<Propagator, TrackingComponentsRecord> propagatorToken_; // GK
 
