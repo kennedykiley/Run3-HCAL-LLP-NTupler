@@ -19,15 +19,21 @@ from CRABClient.UserUtilities import config
 #from CRABClient.UserUtilities import getUsernameFromSiteDB
 
 # Select dataset to crab over
-number = 0 # starting at 0 -> refers to datasetnames
+number = 4 # starting at 0 -> refers to datasetnames
 
 # List of possible datasets
 datasetnames = [
-'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD'
+'/DisplacedJet/Run2023B-EXOLLPJetHCAL-PromptReco-v1/AOD',
+'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v1/AOD',
+'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v2/AOD',
+'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v3/AOD',
+'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD',
+'/DisplacedJet/Run2023D-EXOLLPJetHCAL-PromptReco-v1/AOD',
+'/DisplacedJet/Run2023D-EXOLLPJetHCAL-PromptReco-v2/AOD'
 ]
 
 datasetblock = [
-'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD#0882cc9a-f2ab-4626-992e-c787a9d5017c'
+#'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD#0882cc9a-f2ab-4626-992e-c787a9d5017c' # in 2023C v4
 ]
 
 # runrange = '362085,362087' # Nov2022 Phase Scan
@@ -60,7 +66,7 @@ blackList = ['']
 
 import datetime
 timestamp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
-
+date = datetime.datetime.now().strftime("_%Y%m%d")
 
 dataset = filter(None, datasetnames[number].split('/'))
 dataset = list(dataset)
@@ -68,7 +74,8 @@ dataset = list(dataset)
 config = config()
 
 # General
-config.General.workArea        = 'crab_LLPskim_2023-06-29'
+#config.General.workArea        = 'crab_LLPskim_2023-06-29'
+config.General.workArea        = 'crab_LLPskim'+date
 config.General.instance        = 'prod'
 config.General.requestName     = dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp
 config.General.transferOutputs = True

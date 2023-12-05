@@ -44,12 +44,13 @@ cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False process
 cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=False isSignal=True processEvents=200 inputFiles=InputSignalFilesTest.txt debug=False outputFile=ntuple_output_test_signal1.root
 ```
 
-Running with CRAB:
+Running with CRAB (remember to change the Data / Signal flags in `DisplacedHcalJetNTuplizer.py`!):
 ```
 cmsenv
 cd python
 # note that for crab jobs (MC and data), the variables "signal" and "data" must be set by hand now in python/DisplacedHcalJetNTuplizer.py
 crab submit -c crab_DisplacedHcalJetNTuplizer_MC_cfg.py 
+crab submit -c crab_DisplacedHcalJetNTuplizer_QCD_cfg.py 
 crab submit -c crab_DisplacedHcalJetNTuplizer_cfg.py
 
 # Useful commands
@@ -58,7 +59,7 @@ crab status -d <crab_directory>/<crab_project> --long
 
 crab checkwrite --site T2_US_Wisconsin
 ```
-Output is in `/hdfs/store/user/gkopp/ggH_HToSSTobbbb_MH*`.
+Output is in `/hdfs/store/user/gkopp/ggH_HToSSTobbbb_MH*`. Note that the `number` in the CRAB python script must be changed for each job to run over all the datasets input. 
 
 The H->XX->4b MC for 2022 are here:
 ```

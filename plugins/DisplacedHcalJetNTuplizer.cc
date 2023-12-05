@@ -41,6 +41,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	verticesToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
 	primaryVertexAssociationToken_(consumes<edm::Association<vector<reco::Vertex> > >(edm::InputTag("primaryVertexAssociation","original"))),
 	primaryVertexAssociationValueMapToken_(consumes<edm::ValueMap<int> >(edm::InputTag("primaryVertexAssociation","original"))),
+  	rhoFastjetAllToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoFastjetAll"))),
 	// Event-Level Info
 	metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("met"))),
 	bsTag_(iConfig.getUntrackedParameter<edm::InputTag>("offlineBeamSpot", edm::InputTag("offlineBeamSpot"))),
@@ -73,11 +74,11 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	photon_cutbasedID_decisions_tight_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_tight"))),
 	// MC
 	genParticlesToken_(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"))),
-        puInfoToken_(consumes<std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puInfo"))),
+    puInfoToken_(consumes<std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puInfo"))),
 	// Geometry
 	caloGeometryToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()), // GK
 	castorGeometryToken_(esConsumes<PCaloGeometry, PCastorRcd>()), // GK
-	gemGeoToken_(esConsumes<RecoIdealGeometry, GEMRecoGeometryRcd>()), 
+	// gemGeoToken_(esConsumes<RecoIdealGeometry, GEMRecoGeometryRcd>()), // commenting out to test 350 GeV MC
 	magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>()), // GK
 	propagatorToken_(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", "PropagatorWithMaterial"))) // GK // thePropagatorToken(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", thePropagatorName))),
 
@@ -213,6 +214,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(verticesToken_, vertices);
 	iEvent.getByToken(primaryVertexAssociationToken_,primaryVertexAssociation);
 	iEvent.getByToken(primaryVertexAssociationValueMapToken_,primaryVertexAssociationValueMap);
+	iEvent.getByToken(rhoFastjetAllToken_,rhoFastjetAll);
 
 	iEvent.getByToken(metToken_, met);
 
@@ -320,6 +322,8 @@ void DisplacedHcalJetNTuplizer::EnablePVBranches(){
 	output_tree->Branch( "PVTrack_Eta", &PVTrack_Eta );
 	output_tree->Branch( "PVTrack_Phi", &PVTrack_Phi );
 
+	output_tree->Branch( "fixedGridRhoFastjetAll", &fixedGridRhoFastjetAll );
+
 };
 
 // ------------------------------------------------------------------------------------
@@ -358,9 +362,14 @@ void DisplacedHcalJetNTuplizer::EnableElectronBranches(){
 	output_tree->Branch( "ele_dZ", &ele_dZ );
 	output_tree->Branch( "ele_dEta", &ele_dEta );
 	output_tree->Branch( "ele_dPhi", &ele_dPhi );
+	output_tree->Branch( "ele_EtaSC", &ele_EtaSC);
 	output_tree->Branch( "ele_passCutBasedIDLoose", &ele_passCutBasedIDLoose );
 	output_tree->Branch( "ele_passCutBasedIDMedium", &ele_passCutBasedIDMedium );
 	output_tree->Branch( "ele_passCutBasedIDTight", &ele_passCutBasedIDTight );
+	output_tree->Branch( "ele_pileupIso", &ele_pileupIso );
+	output_tree->Branch( "ele_chargedIso", &ele_chargedIso );
+	output_tree->Branch( "ele_photonIso", &ele_photonIso );
+	output_tree->Branch( "ele_neutralHadIso", &ele_neutralHadIso );
 	output_tree->Branch( "ele_EcalRechitIDs", &ele_EcalRechitIDs );
 	output_tree->Branch( "ele_EcalRechitIndices", &ele_EcalRechitIndices );
 	output_tree->Branch( "ele_SeedRechitID", &ele_SeedRechitID );
@@ -383,6 +392,13 @@ void DisplacedHcalJetNTuplizer::EnableMuonBranches(){
 	output_tree->Branch( "muon_IsLoose", &muon_IsLoose );
 	output_tree->Branch( "muon_IsMedium", &muon_IsMedium );
 	output_tree->Branch( "muon_IsTight", &muon_IsTight );
+	output_tree->Branch( "muon_pileupIso", &muon_pileupIso );
+	output_tree->Branch( "muon_chargedIso", &muon_chargedIso );
+	output_tree->Branch( "muon_photonIso", &muon_photonIso );
+	output_tree->Branch( "muon_neutralHadIso", &muon_neutralHadIso );
+	output_tree->Branch( "muon_ip3dSignificance", &muon_ip3dSignificance );
+	output_tree->Branch( "muon_dB", &muon_dB );
+	output_tree->Branch( "muon_edB", &muon_edB );
 	//output_tree->Branch( "muon_passHLTFilter", &muon_passHLTFilter );
 
 };
@@ -824,6 +840,8 @@ void DisplacedHcalJetNTuplizer::ResetPVBranches(){
 	PV_Y  = -9999.9;
 	PV_Z  = -9999.9;
 
+	fixedGridRhoFastjetAll 	= -9999.9;
+
 	n_PVCand = 0;
 	PVCand_X.clear();
 	PVCand_Y.clear();
@@ -870,9 +888,14 @@ void DisplacedHcalJetNTuplizer::ResetElectronBranches(){
 	ele_dZ.clear();
 	ele_dEta.clear();
 	ele_dPhi.clear();
+	ele_EtaSC.clear();
 	ele_passCutBasedIDLoose.clear();
 	ele_passCutBasedIDMedium.clear();
 	ele_passCutBasedIDTight.clear();
+	ele_pileupIso.clear();
+	ele_chargedIso.clear();
+	ele_photonIso.clear();
+	ele_neutralHadIso.clear();
 	ele_SeedRechitID.clear();
 	ele_SeedRechitIndex.clear();
 	ele_EcalRechitIDs.clear();
@@ -895,8 +918,14 @@ void DisplacedHcalJetNTuplizer::ResetMuonBranches(){
 	muon_IsLoose.clear();
 	muon_IsMedium.clear();
 	muon_IsTight.clear();
+	muon_pileupIso.clear();
+	muon_chargedIso.clear();
+	muon_photonIso.clear();
+	muon_neutralHadIso.clear();
+	muon_ip3dSignificance.clear();
+	muon_dB.clear();
+	muon_edB.clear();
 	//muon_passHLTFilter.clear();
-
 };
 
 // ------------------------------------------------------------------------------------
@@ -1474,8 +1503,8 @@ bool DisplacedHcalJetNTuplizer::FillPVBranches( const edm::Event& iEvent ){
 	PV_Y = PV_global->y();
 	PV_Z = PV_global->z();
 
-	// get rho -- FIX
-	// fixedGridRhoFastjetAll = *rhoFastjetAll;
+	// get rho
+	fixedGridRhoFastjetAll = *rhoFastjetAll;
 
 	// Get All PVs //
 
@@ -1698,12 +1727,19 @@ bool DisplacedHcalJetNTuplizer::FillElectronBranches(const edm::Event& iEvent){
 		ele_dZ.push_back( ele.gsfTrack().get()->dz(PV_global->position()) );
 		ele_dEta.push_back( ele.deltaEtaSuperClusterTrackAtVtx() - ele.superCluster()->eta() + ele.superCluster()->seed()->eta() );
 		ele_dPhi.push_back( ele.deltaPhiSuperClusterTrackAtVtx() );
+		ele_EtaSC.push_back( ele.superCluster()->eta() );
 
 		// ID //
 
 		ele_passCutBasedIDLoose.push_back( (*electron_cutbasedID_decisions_loose)[eleRef] );
 		ele_passCutBasedIDMedium.push_back( (*electron_cutbasedID_decisions_medium)[eleRef] );
 		ele_passCutBasedIDTight.push_back( (*electron_cutbasedID_decisions_tight)[eleRef] );
+
+		// Isolation //
+		ele_pileupIso.push_back( ele.pfIsolationVariables().sumPUPt );
+    	ele_chargedIso.push_back( ele.pfIsolationVariables().sumChargedHadronPt );
+    	ele_photonIso.push_back( ele.pfIsolationVariables().sumPhotonEt );
+    	ele_neutralHadIso.push_back( ele.pfIsolationVariables().sumNeutralHadronEt );
 
 		// Rechits Association //
 
@@ -1775,6 +1811,17 @@ bool DisplacedHcalJetNTuplizer::FillMuonBranches(const edm::Event& iEvent) {
 		muon_IsMedium.push_back( muon.isMediumMuon() );
 		muon_IsTight.push_back( muon.isTightMuon(*PV_global) );
 
+		// Isolation //
+		muon_pileupIso.push_back( muon.pfIsolationR04().sumPUPt );
+    	muon_chargedIso.push_back( muon.pfIsolationR04().sumChargedHadronPt );
+    	muon_photonIso.push_back( muon.pfIsolationR04().sumPhotonEt );
+    	muon_neutralHadIso.push_back( muon.pfIsolationR04().sumNeutralHadronEt );
+
+		// IP significance
+		muon_ip3dSignificance.push_back( muon.dB(pat::Muon::PV3D)/muon.edB(pat::Muon::PV3D) );
+		muon_dB.push_back( muon.dB(pat::Muon::PV3D) );
+		muon_edB.push_back( muon.edB(pat::Muon::PV3D) ); // both muon_edB and muon_dB are set to the maximum possible value of a double
+		// also checked PV2D, BS2D, BS3D, and PVDZ for muon.dB and muon.edB. These are all set to the maximum possible value of a double
 	}
 
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillMuonBranches"<<endl; 	

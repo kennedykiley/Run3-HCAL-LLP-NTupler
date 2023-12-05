@@ -23,7 +23,6 @@ number = 0 # starting at 0 -> refers to datasetnames
 
 # List of possible datasets
 datasetnames = [
-#'/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER'
 #'/QCD_PT-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter23Reco-FlatPU0to120GTv3_GTv3_126X_mcRun3_2023_forPU65_v3-v2/GEN-SIM-RECO'
 '/QCD_PT-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter23Reco-FlatPU0to120_126X_mcRun3_2023_forPU65_v1-v2/GEN-SIM-RECO'
 ]
@@ -58,7 +57,7 @@ blackList = ['']
 
 import datetime
 timestamp = datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
-
+date = datetime.datetime.now().strftime("_%Y%m%d")
 
 dataset = filter(None, datasetnames[number].split('/'))
 dataset = list(dataset)
@@ -66,7 +65,8 @@ dataset = list(dataset)
 config = config()
 
 # General
-config.General.workArea        = 'crab_QCD-MC_2023-10-09'
+#config.General.workArea        = 'crab_QCD-MC_2023-10-09'
+config.General.workArea        = 'crab_QCD_MC'+date
 config.General.instance        = 'prod'
 config.General.requestName     = 'QCD_MC_'+timestamp #dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp
 config.General.transferOutputs = True
