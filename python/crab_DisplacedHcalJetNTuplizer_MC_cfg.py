@@ -83,7 +83,7 @@ config.JobType.psetName    = psetname
 config.Data.inputDataset     = datasetnames[number]
 config.Data.inputDBS         = 'phys03' # because input files are from another crab production run #'https://cmsweb.cern.ch/dbs/prod/phys03/DBSWriter/' #'global'
 config.Data.splitting        = 'FileBased' #'Automatic' #'LumiBased'
-config.Data.unitsPerJob      = 50 # with file based splitting, this is how many files in 1 job (50 * 100 events = 5k events, for 350 GeV MC. 200 events for 125 GeV MC)
+config.Data.unitsPerJob      = 50 # with file based splitting, this is how many files in 1 job (50 * 100 events = 5k events, for 350 GeV MC. 25 * 200 events = 5k events for 125 GeV MC)
 nJobs                        = 100
 config.Data.totalUnits       = config.Data.unitsPerJob * nJobs # total number of units (not number of jobs!). 100 jobs * 50 units per job = 5000 units, with 100 events per unit * 5000 units = 500k events
 config.Data.ignoreLocality   = True
