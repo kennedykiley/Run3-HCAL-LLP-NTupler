@@ -53,11 +53,18 @@ Location of ntuples:
 
 * Removed `GEMRecoGeometryRcd` as it is not a collection present in the 350 GeV H->LLP samples and not needed for the analysis.
 
-Location of ntuples:
+Location of 350 GeV ntuples:
 ```
 /hdfs/store/user/gkopp/HToSSTo4B_MH350_MS80_CTau500/LLP_MC_350__20231129_104033/231129_094141/0000/*.root (500k events, all available MC processed)
+```
+
+Location of 125 GeV ntuples:
+```
+/hdfs/store/user/gkopp/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/LLP_MC_125__20240119_174604/240119_164620/0000/*.root (500k events, 25\% of available MC)
 ```
 
 ## V4
 Updates:
 * MET filters added
+* All displaced jet HLT paths added
+* Prescale for HLT paths added
