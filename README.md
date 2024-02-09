@@ -15,11 +15,12 @@ git checkout -b <your-branch>
 Setup grid proxy
 ```
 voms-proxy-init --rfc --voms cms --valid 48:00
-cp /tmp/x509up_u101898 /afs/cern.ch/user/g/gkopp
-chmod 777 /afs/cern.ch/user/g/gkopp/x509up_u101898
+cp /tmp/x509up_u101898 /afs/cern.ch/user/<initial>/<name>
+chmod 777 /afs/cern.ch/user/<initial>/<name>/x509up_u101898
 source /cvmfs/cms.cern.ch/common/crab-setup.sh
-
-#### OR use shortcuts ####
+```
+Or use the bash shortcuts (if setup):
+```
 proxy
 crab_setup
 ```
@@ -36,15 +37,23 @@ dasgoclient --query="file dataset=/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptRec
 ```
 Can also add specifications to ensure files are on DISK, such as `site=T1_US_FNAL_Disk`. CRAB job submission will cause a TAPE recall if the entire dataset is on TAPE, otherwise need to create a Rucio rule.
 
-The H->XX->4b MC for 2022 are on DAS for [125 GeV](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV%2Flpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883%2FUSER+instance%3Dprod%2Fphys03) and [350 GeV](https://cmsweb.cern.ch/das/request?input=dataset%3D%2FHToSSTo4B_MH350_MS80_CTau500%2Flpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76%2FUSER&instance=prod/phys03):
+The H->XX->4b MC for 2022 are on DAS for [125 GeV, mX = 15](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV%2Flpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883%2FUSER+instance%3Dprod%2Fphys03) (2M total events) and [350 GeV, mX = 80](https://cmsweb.cern.ch/das/request?input=dataset%3D%2FHToSSTo4B_MH350_MS80_CTau500%2Flpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76%2FUSER&instance=prod/phys03) (0.5M total events)
 ```
 dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER instance=prod/phys03
 
-dataset=/HToSSTo4B_MH350_MS80_CTau500/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER/HToSSTo4B_MH350_MS80_CTau500/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+dataset=/HToSSTo4B_MH350_MS80_CTau500/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER/
+```
+The samples produced in 2024 have higher LLP masses, with 125 GeV (mX = 50, 1M events), 250 GeV (mX = 120, 1M events), and 350 GeV (mX = 160, 1M events):
+```
+dataset=/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+
+dataset=/HToSSTo4B_MH250_MS120_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH250_MS120_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+
+dataset=/HToSSTo4B_MH350_MS160_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS160_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
 ```
 On command line, can be found via:
 ```
-dasgoclient --limit=100 --query="file dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER instance=prod/phys03 | grep file.name"
+dasgoclient --limit=100 --query="file dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER instance=prod/phys03" >> output_file_name.txt
 ```
 ### Running the ntupler
 Test by running small numbers of events for testing:
