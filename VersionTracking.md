@@ -63,15 +63,25 @@ Location of 125 GeV ntuples (these have the update of all displaced jet HLT path
 /hdfs/store/user/gkopp/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/LLP_MC_125__20240119_174604/240119_164620/0000/*.root (500k events, 25\% of available MC)
 ```
 
-## V4
+### V3.4
 Updates:
 * All displaced jet HLT paths added (also in some of the later processed v3 files, Jan 2024 and after)
 
-Processed the higher LLP mass samples avaliable in February 2024. 
+Processed the higher LLP mass samples avaliable in February 2024. All LLP samples have 200 ntuple files per sample. For the 2023 displaced jet skim, there are about 800-2500 nuple files per sample.
 
 Location of ntuples:
 ```
+/hdfs/store/user/gkopp/HToSSTo4B_MH125_MS50_CTau3000/LLP_MC_125_mX50_batch1_20240212_181805/240212_171836/0000/
+/hdfs/store/user/gkopp/HToSSTo4B_MH125_MS50_CTau3000/LLP_MC_125_mX50_batch2_20240212_181848/240212_171936/0000/
+
+/hdfs/store/user/gkopp/HToSSTo4B_MH250_MS120_CTau10000/LLP_MC_250_mX120_batch1_20240213_005212/240212_235307/0000/
+/hdfs/store/user/gkopp/HToSSTo4B_MH250_MS120_CTau10000/LLP_MC_250_mX120_batch2_20240213_004947/240212_235132/0000/
+
+/hdfs/store/user/gkopp/HToSSTo4B_MH350_MS160_CTau10000/LLP_MC_350_mX160__20240212_170955/240212_161056/0000/
+/hdfs/store/user/gkopp/HToSSTo4B_MH350_MS160_CTau10000/LLP_MC_350_mX160_batch2_20240212_181643/240212_171714/0000/
 ```
+
+## V4
 
 Still on the to-do list:
 * MET filters added

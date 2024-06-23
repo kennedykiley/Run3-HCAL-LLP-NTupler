@@ -26,6 +26,7 @@ crab_setup
 ```
 Compile: 
 ```
+cmsenv
 scram b -j 8
 ```
 If there is an error of the form `edmWriteConfigs: error while loading shared libraries: libssl.so.10: cannot open shared object file: No such file or directory`, try moving to lxplus8 and recompiling with `scram b clean; scram b -j 8`.
@@ -43,13 +44,16 @@ dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_Private
 
 dataset=/HToSSTo4B_MH350_MS80_CTau500/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER/
 ```
-The samples produced in 2024 have higher LLP masses, with 125 GeV (mX = 50, 1M events), 250 GeV (mX = 120, 1M events), and 350 GeV (mX = 160, 1M events):
+The samples produced in 2024 have higher LLP masses, with 125 GeV (mX = 50), 250 GeV (mX = 120), and 350 GeV (mX = 160). Batch 1 has 1M events and 10k files per sample (100 events per file). Batch 2 has higher stats, with 3M events total and 10k files per sample (300 events per sample). In the crab config, set: `units per job = 50`, `n jobs = 200`, which will work for both batch 1 and batch 2.
 ```
 dataset=/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+dataset=/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
 
 dataset=/HToSSTo4B_MH250_MS120_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH250_MS120_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+dataset=/HToSSTo4B_MH250_MS120_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH250_MS120_CTau10000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
 
 dataset=/HToSSTo4B_MH350_MS160_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS160_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+dataset=/HToSSTo4B_MH350_MS160_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS160_CTau10000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
 ```
 On command line, can be found via:
 ```
@@ -72,6 +76,7 @@ Use CRAB to submit jobs (remember to change the Data / Signal flags in `Displace
 cmsenv
 cd python
 # note that for crab jobs (MC and data), the variables "signal" and "data" must be set by hand now in python/DisplacedHcalJetNTuplizer.py
+# note that as of February 2024, the crab submissions ONLY work on lxplus 7, with crab-pre submit
 crab submit -c crab_DisplacedHcalJetNTuplizer_MC_cfg.py 
 crab submit -c crab_DisplacedHcalJetNTuplizer_QCD_cfg.py 
 crab submit -c crab_DisplacedHcalJetNTuplizer_cfg.py

@@ -46,7 +46,7 @@ psetname = 'DisplacedHcalJetNTuplizer.py'
 storageSite = 'T2_US_Wisconsin' # no write access to: 'T2_CH_CERN'
 
 # White list sites
-whiteList = ['T1_UK_RAL', 'T2_CH_CERN','T2_US_Caltech','T2_US_Florida', 'T2_US_MIT', 'T2_US_Nebraska', 'T2_US_Purdue', 'T2_US_UCSD', 'T2_US_Vanderbilt', 'T2_US_Wisconsin', 'T1_US_FNAL','T2_US_MIT']
+whiteList = ['T1_UK_RAL', 'T2_CH_CERN','T2_US_Caltech','T2_US_Florida', 'T2_US_MIT', 'T2_US_Nebraska', 'T2_US_Purdue', 'T2_US_UCSD', 'T2_US_Vanderbilt', 'T2_US_Wisconsin', 'T1_US_FNAL', 'T2_US_MIT', 'T2_KR_KISTI']
 # ['T2_US_UCSD']
 
 # Black list sites
