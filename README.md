@@ -26,6 +26,7 @@ crab_setup
 ```
 Compile: 
 ```
+cmsenv
 scram b -j 8
 ```
 If there is an error of the form `edmWriteConfigs: error while loading shared libraries: libssl.so.10: cannot open shared object file: No such file or directory`, try moving to lxplus8 and recompiling with `scram b clean; scram b -j 8`.
@@ -75,6 +76,7 @@ Use CRAB to submit jobs (remember to change the Data / Signal flags in `Displace
 cmsenv
 cd python
 # note that for crab jobs (MC and data), the variables "signal" and "data" must be set by hand now in python/DisplacedHcalJetNTuplizer.py
+# note that as of February 2024, the crab submissions ONLY work on lxplus 7, with crab-pre submit
 crab submit -c crab_DisplacedHcalJetNTuplizer_MC_cfg.py 
 crab submit -c crab_DisplacedHcalJetNTuplizer_QCD_cfg.py 
 crab submit -c crab_DisplacedHcalJetNTuplizer_cfg.py
