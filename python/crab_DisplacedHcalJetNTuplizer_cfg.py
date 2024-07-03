@@ -19,17 +19,25 @@ from CRABClient.UserUtilities import config
 #from CRABClient.UserUtilities import getUsernameFromSiteDB
 
 # Select dataset to crab over
-number = 4 # starting at 0 -> refers to datasetnames
+number = 14 # starting at 0 -> refers to datasetnames
 
 # List of possible datasets
 datasetnames = [
-'/DisplacedJet/Run2023B-EXOLLPJetHCAL-PromptReco-v1/AOD',
+'/DisplacedJet/Run2023B-EXOLLPJetHCAL-PromptReco-v1/AOD', # 0
 '/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v1/AOD',
 '/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v2/AOD',
 '/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v3/AOD',
 '/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD',
 '/DisplacedJet/Run2023D-EXOLLPJetHCAL-PromptReco-v1/AOD',
-'/DisplacedJet/Run2023D-EXOLLPJetHCAL-PromptReco-v2/AOD'
+'/DisplacedJet/Run2023D-EXOLLPJetHCAL-PromptReco-v2/AOD',
+'/JetMET1/Run2023A-EXOHighMET-PromptReco-v2/RAW-RECO',    # 7
+'/JetMET1/Run2023B-EXOHighMET-PromptReco-v1/RAW-RECO',
+'/JetMET1/Run2023C-EXOHighMET-PromptReco-v1/RAW-RECO',
+'/JetMET1/Run2023C-EXOHighMET-PromptReco-v2/RAW-RECO',
+'/JetMET1/Run2023C-EXOHighMET-PromptReco-v3/RAW-RECO',
+'/JetMET1/Run2023C-EXOHighMET-PromptReco-v4/RAW-RECO',
+'/JetMET1/Run2023D-EXOHighMET-PromptReco-v1/RAW-RECO',
+'/JetMET1/Run2023D-EXOHighMET-PromptReco-v2/RAW-RECO' # 14
 ]
 
 datasetblock = [
@@ -74,7 +82,6 @@ dataset = list(dataset)
 config = config()
 
 # General
-#config.General.workArea        = 'crab_LLPskim_2023-06-29'
 config.General.workArea        = 'crab_LLPskim'+date
 config.General.instance        = 'prod'
 config.General.requestName     = dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp

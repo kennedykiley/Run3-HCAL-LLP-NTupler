@@ -38,6 +38,13 @@ dasgoclient --query="file dataset=/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptRec
 ```
 Can also add specifications to ensure files are on DISK, such as `site=T1_US_FNAL_Disk`. CRAB job submission will cause a TAPE recall if the entire dataset is on TAPE, otherwise need to create a Rucio rule.
 
+Data:
+```
+dataset=/DisplacedJet/Run2023*-EXOLLPJetHCAL-PromptReco*/AOD
+dataset=/JetMET*/Run*EXOHighMET-PromptReco*/RAW-RECO
+```
+which is the displaced jet skim (implemented for 2023 onwards) and the EXO high MET skim, for the background estimation. 
+
 The H->XX->4b MC for 2022 are on DAS for [125 GeV, mX = 15](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV%2Flpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883%2FUSER+instance%3Dprod%2Fphys03) (2M total events) and [350 GeV, mX = 80](https://cmsweb.cern.ch/das/request?input=dataset%3D%2FHToSSTo4B_MH350_MS80_CTau500%2Flpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76%2FUSER&instance=prod/phys03) (0.5M total events)
 ```
 dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER instance=prod/phys03
@@ -69,7 +76,7 @@ cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=True isSignal=False process
 # MC signal 
 cmsRun ../python/DisplacedHcalJetNTuplizer.py isData=False isSignal=True processEvents=200 inputFiles=InputSignalFilesTest.txt debug=False outputFile=ntuple_output_test_signal1.root
 ```
-If there are issues with file access (''failed to open fiele at URL''), check on DAS if the data has been moved to TAPE. A temp workaround before they are accessible is to only use ones on disk.
+If there are issues with file access (''failed to open file at URL''), check on DAS if the data has been moved to TAPE. A temp workaround before they are accessible is to only use ones on disk.
 
 Use CRAB to submit jobs (remember to change the Data / Signal flags in `DisplacedHcalJetNTuplizer.py`!). Note that the `number` in the CRAB python script must be changed for each job to run over all the datasets input. 
 ```
