@@ -19,7 +19,7 @@ from CRABClient.UserUtilities import config
 #from CRABClient.UserUtilities import getUsernameFromSiteDB
 
 # Select dataset to crab over
-number = 14 # starting at 0 -> refers to datasetnames
+number = 23 # starting at 0 -> refers to datasetnames
 
 # List of possible datasets
 datasetnames = [
@@ -37,7 +37,23 @@ datasetnames = [
 '/JetMET1/Run2023C-EXOHighMET-PromptReco-v3/RAW-RECO',
 '/JetMET1/Run2023C-EXOHighMET-PromptReco-v4/RAW-RECO',
 '/JetMET1/Run2023D-EXOHighMET-PromptReco-v1/RAW-RECO',
-'/JetMET1/Run2023D-EXOHighMET-PromptReco-v2/RAW-RECO' # 14
+'/JetMET1/Run2023D-EXOHighMET-PromptReco-v2/RAW-RECO', # 14
+'/Muon0/Run2023A-ZMu-PromptReco-v2/RAW-RECO',
+'/Muon0/Run2023B-ZMu-PromptReco-v1/RAW-RECO',
+'/Muon0/Run2023C-ZMu-PromptReco-v1/RAW-RECO',
+'/Muon0/Run2023C-ZMu-PromptReco-v2/RAW-RECO',
+'/Muon0/Run2023C-ZMu-PromptReco-v3/RAW-RECO',
+'/Muon0/Run2023C-ZMu-PromptReco-v4/RAW-RECO',
+'/Muon0/Run2023D-ZMu-PromptReco-v1/RAW-RECO', # 21
+'/Muon0/Run2023D-ZMu-PromptReco-v2/RAW-RECO',
+'/Muon1/Run2023A-ZMu-PromptReco-v2/RAW-RECO',
+'/Muon1/Run2023B-ZMu-PromptReco-v1/RAW-RECO',
+'/Muon1/Run2023C-ZMu-PromptReco-v1/RAW-RECO',
+'/Muon1/Run2023C-ZMu-PromptReco-v2/RAW-RECO',
+'/Muon1/Run2023C-ZMu-PromptReco-v3/RAW-RECO',
+'/Muon1/Run2023C-ZMu-PromptReco-v4/RAW-RECO', # 28
+'/Muon1/Run2023D-ZMu-PromptReco-v1/RAW-RECO',
+'/Muon1/Run2023D-ZMu-PromptReco-v2/RAW-RECO'
 ]
 
 datasetblock = [
