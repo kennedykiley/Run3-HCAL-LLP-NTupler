@@ -22,6 +22,10 @@ datasets = ['/Muon0/Run2023B-ZMu-PromptReco-v1/RAW-RECO',
             '/Muon0/Run2023D-ZMu-PromptReco-v1/RAW-RECO', 
             '/Muon0/Run2023D-ZMu-PromptReco-v2/RAW-RECO']
 
+number = 0
+
+version = "v3"
+
 # -----------------------------------------------------------------------------------------
 def sed(pattern, replace, source, dest=None, count=0):
     """
@@ -66,23 +70,55 @@ def sed(pattern, replace, source, dest=None, count=0):
         shutil.move(name, source) 
 
 # -----------------------------------------------------------------------------------------
-def edit_cfg():
-    for i in range(len(datasets)):
-        print(i)
-        print(datasets[i])
-        dataset_replace = "datasetnames = [\'" + datasets[i] + "\']"
-        print(dataset_replace)
-        sed('datasetnames = \[.*$',dataset_replace,'test.py',count=1)
-"""
-Things that need to change in the displaced jet ntuplizer python script:
-number which dataset to look at
-datasetnames from inputs given here
-config.General.workArea change name, make non-local
-config.General.requestName to add version number
-"""
+def edit_cfg(data_num = 0):
+    """
+    Things that need to change in the displaced jet ntuplizer python script:
+    number which dataset to look at
+    datasetnames from inputs given here
+    config.General.workArea change name, make non-local
+    config.General.requestName to add version number
+    """
+    print(data_num)
+    print(datasets[data_num])
+    dataset_replace = "datasetnames = [\'" + datasets[data_num] + "\']"
+    print(dataset_replace)
+    #sed('datasetnames = \[.*$',dataset_replace,'test.py',count=1)
+    sed('.*# dataset wrapper',dataset_replace + '# dataset wrapper','test.py',count=1)
+
+    #sed('number = .*$','number = 0','test.py',count=1)
+    sed('.*# number wrapper','number = 0 # starting at 0 -> refers to datasetnames # number wrapper','test.py',count=1)
+
+    pwd = os.getcwd()
+    # date = str(datetime.now())[:10]                                         # get date in year-month-day
+    date = datetime.now().strftime("_%Y%m%d")
+    timestamp = datetime.now().strftime("_%Y%m%d_%H%M%S")
+
+    workArea = "'" + pwd + "/../../../../../crab_Zmu" + date + "'"                # in 2022_LLP_analysis directory
+    #sed('config\\.General\\.workArea.*$','config.General.workArea=' + workArea,'test.py',count=1)
+    sed('.*# workArea wrapper','config.General.workArea        = ' + workArea + ' # workArea wrapper','test.py',count=1)
+
+    dataset = filter(None, datasets[i].split('/'))
+    dataset = list(dataset)
+    requestName = dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp+'_'+version
+    #sed('config\\.General\\.requestName.*$','config.General.requestName=' + requestName,'test.py',count=1)
+    sed('.*# requestName wrapper','config.General.requestName     = ' + requestName + ' # requestName wrapper','test.py',count=1)
+
+# -----------------------------------------------------------------------------------------
+def submit_cfg():
+    """
+    Submit the displaced jet ntuplizer python script:
+    cmsenv
+    scram b -j 8
+    crab submit -c crab_DisplacedHcalJetNtuplizer_cfg.py
+    """
+    os.system("echo 'Setting up environment' ")
+    os.system("cmsenv")
+    os.system("scram b -j 8")
 
 # -----------------------------------------------------------------------------------------
 if __name__ == "__main__":
     sed('regex.*$','regex foo replaced full','test.py',count=1)
     # using .*$ enables replacing to the end of the line
-    edit_cfg()
+    for i in range(len(datasets)):
+        edit_cfg(i)
+        if (i == 0): submit_cfg()
