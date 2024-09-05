@@ -101,6 +101,14 @@ Check event content with
 edmDumpEventContent root://cmsxrootd.fnal.gov/</store/path/to/file.root> > EDM_content.txt
 ```
 
+### CRAB Wrapper for Automating Submissions
+```
+proxy
+crab_setup
+python3 CrabSubmitWrapper.py
+```
+This handles changing the variables (isData and isSignal) in DisplacedHcalJetNTuplizer.py, as well as doing one crab submission per dataset listed. 
+
 ### Variables to check before running ntupler:
 * isData: False if running signals, True if running data
 * isSignal: True if running signals, False if running data

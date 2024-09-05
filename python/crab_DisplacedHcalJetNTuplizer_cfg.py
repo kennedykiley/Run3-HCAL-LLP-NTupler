@@ -19,10 +19,11 @@ from CRABClient.UserUtilities import config
 #from CRABClient.UserUtilities import getUsernameFromSiteDB
 
 # Select dataset to crab over
-number = 23 # starting at 0 -> refers to datasetnames
+number = 0 # starting at 0 -> refers to datasetnames # number wrapper
 
 # List of possible datasets
-datasetnames = [
+datasetnames = ['/Muon0/Run2023C-ZMu-PromptReco-v4/RAW-RECO']# dataset wrapper
+"""
 '/DisplacedJet/Run2023B-EXOLLPJetHCAL-PromptReco-v1/AOD', # 0
 '/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v1/AOD',
 '/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v2/AOD',
@@ -38,7 +39,7 @@ datasetnames = [
 '/JetMET1/Run2023C-EXOHighMET-PromptReco-v4/RAW-RECO',
 '/JetMET1/Run2023D-EXOHighMET-PromptReco-v1/RAW-RECO',
 '/JetMET1/Run2023D-EXOHighMET-PromptReco-v2/RAW-RECO', # 14
-'/Muon0/Run2023A-ZMu-PromptReco-v2/RAW-RECO',
+'/Muon0/Run2023A-ZMu-PromptReco-v2/RAW-RECO', # no events, do not submit! 
 '/Muon0/Run2023B-ZMu-PromptReco-v1/RAW-RECO',
 '/Muon0/Run2023C-ZMu-PromptReco-v1/RAW-RECO',
 '/Muon0/Run2023C-ZMu-PromptReco-v2/RAW-RECO',
@@ -55,6 +56,7 @@ datasetnames = [
 '/Muon1/Run2023D-ZMu-PromptReco-v1/RAW-RECO',
 '/Muon1/Run2023D-ZMu-PromptReco-v2/RAW-RECO'
 ]
+"""
 
 datasetblock = [
 #'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD#0882cc9a-f2ab-4626-992e-c787a9d5017c' # in 2023C v4
@@ -79,7 +81,7 @@ psetname = 'DisplacedHcalJetNTuplizer.py'
 storageSite = 'T2_US_Wisconsin' # no write access to: 'T2_CH_CERN'
 
 # White list sites
-whiteList = ['T2_CH_CERN','T2_US_Caltech','T2_US_Florida', 'T2_US_MIT', 'T2_US_Nebraska', 'T2_US_Purdue', 'T2_US_UCSD', 'T2_US_Vanderbilt', 'T2_US_Wisconsin', 'T1_US_FNAL','T2_US_MIT']
+whiteList = ['T2_CH_CERN','T2_US_Caltech','T2_US_Florida', 'T2_US_MIT', 'T2_US_Nebraska', 'T2_US_Purdue', 'T2_US_UCSD', 'T2_US_Vanderbilt', 'T2_US_Wisconsin', 'T1_US_FNAL','T2_US_MIT','T1_FR_CCIN2P3']
 # ['T2_US_UCSD']
 
 # Black list sites
@@ -98,9 +100,9 @@ dataset = list(dataset)
 config = config()
 
 # General
-config.General.workArea        = 'crab_LLPskim'+date
+config.General.workArea        = '/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_14_0_0/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/../../../../../crab_ZMu_20240905' # workArea wrapper
 config.General.instance        = 'prod'
-config.General.requestName     = dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp
+config.General.requestName     = 'Muon0_Run2023C-ZMu-PromptReco-v4_RAW-RECO_20240905_204857_version3' # requestName wrapper
 config.General.transferOutputs = True
 config.General.transferLogs    = True
 
@@ -123,7 +125,7 @@ config.Data.splitting        = 'Automatic' #'LumiBased'
 #config.Data.totalUnits       = 1
 config.Data.ignoreLocality   = True
 config.Data.publication      = False
-config.Data.outputDatasetTag = dataset[1]+'_'+dataset[2]+timestamp
+config.Data.outputDatasetTag = 'Run2023C-ZMu-PromptReco-v4_RAW-RECO_20240905_204857_version3' # outputDatasetTag wrapper
 
 config.Data.runRange        =  runrange
 if lumimask != '':

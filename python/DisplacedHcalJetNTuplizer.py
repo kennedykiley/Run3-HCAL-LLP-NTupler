@@ -20,14 +20,14 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 options = VarParsing.VarParsing()
 
 options.register('isData',
-    False, # default value
+    False, # default value # isData wrapper
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.bool,
     "is Data"
 )
 
 options.register('isSignal',
-    True, # default value
+    False, # default value # isSignal wrapper
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.bool,
     "is Signal"

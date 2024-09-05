@@ -19,13 +19,15 @@ from CRABClient.UserUtilities import config
 #from CRABClient.UserUtilities import getUsernameFromSiteDB
 
 # Select dataset to crab over
-number = 0 # starting at 0 -> refers to datasetnames
+number = 0 # starting at 0 -> refers to datasetnames # number wrapper
 
 # List of possible datasets
-datasetnames = [
+datasetnames = ['/QCD_PT-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter23Reco-FlatPU0to120_126X_mcRun3_2023_forPU65_v1-v2/GEN-SIM-RECO']# dataset wrapper
+'''
 #'/QCD_PT-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter23Reco-FlatPU0to120GTv3_GTv3_126X_mcRun3_2023_forPU65_v3-v2/GEN-SIM-RECO'
 '/QCD_PT-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter23Reco-FlatPU0to120_126X_mcRun3_2023_forPU65_v1-v2/GEN-SIM-RECO'
 ]
+'''
 
 # runrange = '362085,362087' # Nov2022 Phase Scan
 runrange = ''
@@ -65,10 +67,9 @@ dataset = list(dataset)
 config = config()
 
 # General
-#config.General.workArea        = 'crab_QCD-MC_2023-10-09'
-config.General.workArea        = 'crab_QCD_MC'+date
+config.General.workArea        = '/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_14_0_0/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/../../../../../crab_QCD_MC_20240905' # workArea wrapper
 config.General.instance        = 'prod'
-config.General.requestName     = 'QCD_MC_'+timestamp #dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp
+config.General.requestName     = 'QCD_PT_13p6TeV_GEN-SIM-RECO_submission8_20240905_204933_version3' # requestName wrapper
 config.General.transferOutputs = True
 config.General.transferLogs    = True
 
@@ -87,7 +88,7 @@ nJobs                        = 150
 config.Data.totalUnits       = config.Data.unitsPerJob * nJobs # total number of units (not number of jobs!). 100 jobs * 5 units per job = 500 units, with 200 events per unit * 500 units = 100k events
 config.Data.ignoreLocality   = True
 config.Data.publication      = False
-config.Data.outputDatasetTag = 'QCD_MC_'+timestamp #dataset[1]+'_'+dataset[2]+timestamp
+config.Data.outputDatasetTag = 'QCD_PT_13p6TeV_GEN-SIM-RECO_submission8_20240905_204933_version3' # outputDatasetTag wrapper
 
 config.Data.runRange        =  runrange
 if lumimask != '':

@@ -19,10 +19,11 @@ from CRABClient.UserUtilities import config
 #from CRABClient.UserUtilities import getUsernameFromSiteDB
 
 # Select dataset to crab over
-number = 0 # starting at 0 -> refers to datasetnames
+number = 0 # starting at 0 -> refers to datasetnames # number wrapper
 
 # List of possible datasets
-datasetnames = [
+datasetnames = ['/HToSSTo4B_MH350_MS80_CTau500/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER']# dataset wrapper 
+'''
 #'/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER'
 #'/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER'
 #'/HToSSTo4B_MH250_MS120_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH250_MS120_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER'
@@ -33,6 +34,7 @@ datasetnames = [
 '/HToSSTo4B_MH350_MS80_CTau500/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER'
 # /eos/uscms/store/user/lpclonglived/apresyan/privateProduction/DR/step2_RECOSIM/Run3Summer22/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV
 ]
+'''
 
 # runrange = '362085,362087' # Nov2022 Phase Scan
 runrange = ''
@@ -72,10 +74,9 @@ dataset = list(dataset)
 config = config()
 
 # General
-#config.General.workArea        = 'crab_signalMC_2023-06-29'
-config.General.workArea        = 'crab_signalMC'+date
+config.General.workArea        = '/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_14_0_0/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/../../../../../crab_signalMC_20240905' # workArea wrapper
 config.General.instance        = 'prod'
-config.General.requestName     = 'LLP_MC_350_mX80_batch1'+timestamp #dataset[0]+'_'+dataset[1]+'_'+dataset[2]+timestamp
+config.General.requestName     = 'HToSSTo4B_MH350_MS80_CTau500_USER_submission7_20240905_204933_version3' # requestName wrapper
 config.General.transferOutputs = True
 config.General.transferLogs    = True
 
@@ -94,7 +95,7 @@ nJobs                        = 200
 config.Data.totalUnits       = config.Data.unitsPerJob * nJobs # total number of units (not number of jobs!). 100 jobs * 50 units per job = 5000 units, with 100 events per unit * 5000 units = 500k events
 config.Data.ignoreLocality   = True
 config.Data.publication      = False
-config.Data.outputDatasetTag = 'LLP_MC_3350_mX80_batch1'+timestamp #dataset[1]+'_'+dataset[2]+timestamp
+config.Data.outputDatasetTag = 'HToSSTo4B_MH350_MS80_CTau500_USER_submission7_20240905_204933_version3' # outputDatasetTag wrapper
 
 config.Data.runRange        =  runrange
 if lumimask != '':
