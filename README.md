@@ -102,6 +102,11 @@ edmDumpEventContent root://cmsxrootd.fnal.gov/</store/path/to/file.root> > EDM_c
 ```
 
 ### CRAB Wrapper for Automating Submissions
+First check that the dataset is on disk:
+```
+python3 checkDatasetAvailability.py <txt file of datasets to check>
+```
+If so, proceed with the crab submission. AOD-tier will be automaticall recalled, but RAW-RECO will not. 
 ```
 proxy
 crab_setup

@@ -132,7 +132,7 @@ def edit_cfg(data_num = 0):
     sed('.*# requestName wrapper','config.General.requestName     = ' + requestName + ' # requestName wrapper',fileToEdit,count=1)
     sed('.*# outputDatasetTag wrapper','config.Data.outputDatasetTag = ' + outputDatasetTag + ' # outputDatasetTag wrapper',fileToEdit,count=1)
 
-    if (data_num == 4): submit_cfg(fileToEdit, workArea)
+    submit_cfg(fileToEdit, workArea)
 
 # -----------------------------------------------------------------------------------------
 def submit_cfg(cfg_file = "", area = ""):
@@ -153,4 +153,4 @@ def submit_cfg(cfg_file = "", area = ""):
 # -----------------------------------------------------------------------------------------
 if __name__ == "__main__":
     for i in range(len(datasets)):
-        if (i == 4 or i > 6): edit_cfg(i)
+        edit_cfg(i)
