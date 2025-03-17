@@ -27,7 +27,7 @@ options.register('isData',
 )
 
 options.register('isSignal',
-    False, # default value # isSignal wrapper
+    True, # default value # isSignal wrapper
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.bool,
     "is Signal"

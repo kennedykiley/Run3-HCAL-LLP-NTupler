@@ -14,16 +14,24 @@ from tempfile import mkstemp
 
 # -----------------------------------------------------------------------------------------
 # Section to modify datasets! 
-datasets = ['/Muon0/Run2023B-ZMu-PromptReco-v1/RAW-RECO',
-            '/Muon0/Run2023C-ZMu-PromptReco-v1/RAW-RECO',
-            '/Muon0/Run2023C-ZMu-PromptReco-v2/RAW-RECO',
-            '/Muon0/Run2023C-ZMu-PromptReco-v3/RAW-RECO',
-            '/Muon0/Run2023C-ZMu-PromptReco-v4/RAW-RECO',
-            '/Muon0/Run2023D-ZMu-PromptReco-v1/RAW-RECO', 
-            '/Muon0/Run2023D-ZMu-PromptReco-v2/RAW-RECO',
-            '/HToSSTo4B_MH350_MS80_CTau500/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER',
-            '/QCD_PT-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter23Reco-FlatPU0to120_126X_mcRun3_2023_forPU65_v1-v2/GEN-SIM-RECO']
-# LLP MC will have CTau*USER
+datasets = ['/HTo2LongLivedTo4b_MH-125_MFF-50_CTau-3000mm_TuneCP5_13p6TeV-pythia8/Run3Winter24Reco-133X_mcRun3_2024_realistic_v8-v2/GEN-SIM-RECO', # 40k for the below 8 samples
+            '/HTo2LongLivedTo4b_MH-125_MFF-50_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Winter24Reco-133X_mcRun3_2024_realistic_v8-v2/GEN-SIM-RECO']
+#            '/HTo2LongLivedTo4b_MH-350_MFF-80_CTau-500mm_TuneCP5_13p6TeV-pythia8/Run3Winter24Reco-133X_mcRun3_2024_realistic_v8-v2/GEN-SIM-RECO',
+#            '/HTo2LongLivedTo4b_MH-350_MFF-80_CTau-500mm_TuneCP5_13p6TeV_pythia8/Run3Winter24Reco-133X_mcRun3_2024_realistic_v8-v2/GEN-SIM-RECO']
+#            '/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-100000mm_TuneCP5_13p6TeV-pythia8/Run3Winter24Reco-133X_mcRun3_2024_realistic_v8-v2/GEN-SIM-RECO',
+#            '/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-100000mm_TuneCP5_13p6TeV_pythia8/Run3Winter24Reco-133X_mcRun3_2024_realistic_v8-v2/GEN-SIM-RECO',
+#            '/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-10000mm_TuneCP5_13p6TeV-pythia8/Run3Winter24Reco-133X_mcRun3_2024_realistic_v8-v2/GEN-SIM-RECO',
+#            '/HTo2LongLivedTo4b_MH-1000_MFF-450_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Winter24Reco-133X_mcRun3_2024_realistic_v8-v2/GEN-SIM-RECO']
+            #'/Muon0/Run2023B-ZMu-PromptReco-v1/RAW-RECO',
+            #'/Muon0/Run2023C-ZMu-PromptReco-v1/RAW-RECO',
+            #'/Muon0/Run2023C-ZMu-PromptReco-v2/RAW-RECO',
+            #'/Muon0/Run2023C-ZMu-PromptReco-v3/RAW-RECO',
+            #'/Muon0/Run2023C-ZMu-PromptReco-v4/RAW-RECO',
+            #'/Muon0/Run2023D-ZMu-PromptReco-v1/RAW-RECO', 
+            #'/Muon0/Run2023D-ZMu-PromptReco-v2/RAW-RECO',
+            #'/HToSSTo4B_MH350_MS80_CTau500/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER',
+            #'/QCD_PT-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter23Reco-FlatPU0to120_126X_mcRun3_2023_forPU65_v1-v2/GEN-SIM-RECO']
+# LLP MC will have CTau*USER or *GEN-SIM-RECO
 # QCD MC will have QCD*GEN-SIM-RECO
 # look at string in datasets to determine what type this is, and set isData, isSignal accordingly 
 
@@ -88,7 +96,7 @@ def edit_cfg(data_num = 0):
     var_isData = 'False'
     var_isSignal = 'False'
     fileToEdit = 'crab_DisplacedHcalJetNTuplizer_cfg.py'
-    if ("CTau" in datasets[data_num] and "USER" in datasets[data_num]): 
+    if ("CTau" in datasets[data_num] and ("USER" in datasets[data_num] or "GEN-SIM-RECO" in datasets[data_num])): 
         var_isSignal = 'True'
         fileToEdit = 'crab_DisplacedHcalJetNTuplizer_MC_cfg.py'
     elif ("Run2023" in datasets[data_num] and "PromptReco" in datasets[data_num]): 
@@ -121,7 +129,7 @@ def edit_cfg(data_num = 0):
 
     if (fileToEdit == 'crab_DisplacedHcalJetNTuplizer_MC_cfg.py'): 
         workArea = "'" + pwd + "/../../../../../crab_signalMC" + date + "'"
-        requestName = "'" + dataset[0]+'_'+dataset[2]+'_submission'+str(data_num)+timestamp+'_'+version + "'"
+        requestName = "'" + dataset[0][18:]+'_'+dataset[2]+'_sub'+str(data_num)+timestamp+'_'+version + "'"
         outputDatasetTag = "'" + dataset[0]+'_'+dataset[2]+'_submission'+str(data_num)+timestamp+'_'+version + "'"
     elif (fileToEdit == 'crab_DisplacedHcalJetNTuplizer_QCD_cfg.py'): 
         workArea = "'" + pwd + "/../../../../../crab_QCD_MC" + date + "'"
@@ -147,7 +155,7 @@ def submit_cfg(cfg_file = "", area = ""):
     os.system("scram b -j 8")
     os.system("pwd")
     os.system("echo 'Submitting crab jobs' ")
-    os.system("crab submit -c " + cfg_file) # + " --dir=" + area)
+    os.system("crab submit -c " + cfg_file) # + " --dir=" + area) # --dryrun
     os.system("echo ' ' ")
 
 # -----------------------------------------------------------------------------------------
