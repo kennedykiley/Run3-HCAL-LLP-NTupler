@@ -51,7 +51,7 @@ whiteList = ['T2_CH_CERN','T2_US_Caltech','T2_US_Florida', 'T2_US_MIT', 'T2_US_N
 # ['T2_US_UCSD']
 
 # Black list sites
-blackList = ['']
+blackList = ['T2_BE_UCL']
 
 # -----------------------------------------------------------------------------------------------------------------------------
 # No modifications below this line are necessary
@@ -68,7 +68,8 @@ config = config()
 # Arguments
 config.JobType.pyCfgParams = [
     'isData=MYVAR_ISDATA',
-    'isSignal=MYVAR_ISSIGNAL'
+    'isSignal=MYVAR_ISSIGNAL',
+    'recoFromRAW=MYVAR_RECO_FROM_RAW'
 ]
 
 # General
@@ -88,16 +89,18 @@ config.JobType.psetName    = psetname
 # four below lines for standard dataset input
 config.Data.inputDataset     = datasetnames[number]
 config.Data.inputBlocks      = datasetblock
-config.Data.inputDBS         = 'global'
+config.Data.inputDBS         = 'MY_VAR_INPUTDBS'
 config.Data.splitting        = 'Automatic' #'LumiBased'
 # for single file test (3 below lines)
 #config.Data.userInputFiles    = ['/store/data/Run2023C/DisplacedJet/AOD/EXOLLPJetHCAL-PromptReco-v4/000/367/881/00000/36ade28b-f320-4680-9dab-57ce2b536531.root']
-config.Data.splitting         = 'LumiBased' #'FileBased'
-config.Data.unitsPerJob       = 100
+#config.Data.splitting         = 'FileBased' #'EventAwareLumiBased' #'FileBased'
+#config.Data.unitsPerJob       = 400 #MYVAR_EVENTS_PER_FILE
 #config.Data.totalUnits       = 1
 config.Data.ignoreLocality   = True
 config.Data.publication      = False
 config.Data.outputDatasetTag = "MYVAR_DATASET_TAG"
+
+# MYVAR_EXTRACONFIG
 
 config.Data.runRange        =  runrange
 if lumimask != '':
