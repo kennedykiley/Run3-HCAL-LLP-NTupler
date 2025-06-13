@@ -73,7 +73,7 @@ config.JobType.pyCfgParams = [
 ]
 
 # General
-config.General.workArea        = '/afs/cern.ch/work/k/kikenned/Run3-HCAL-LLP-NTupler/CRAB_Workarea/NTuples_v4/'
+config.General.workArea        = 'MYVAR_CRAB_OUTPUT_NAME' #'/afs/cern.ch/work/k/kikenned/Run3-HCAL-LLP-NTupler/CRAB_Workarea/NTuples_v4/'
 config.General.instance        = 'prod'
 config.General.requestName     = "MYVAR_REQUEST_NAME"
 config.General.transferOutputs = True

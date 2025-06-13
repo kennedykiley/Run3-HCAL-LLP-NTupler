@@ -11,6 +11,9 @@ import os, re, sys
 pwd = os.getcwd()
 crab_filepath = os.path.join(pwd, "../python/crab_DisplacedHcalJetNTuplizer_DO-NOT-EDIT_cfg.py")
 
+# Edit me:
+crab_output_dir = '/afs/cern.ch/work/k/kikenned/Run3-HCAL-LLP-NTupler/CRAB_Workarea/NTuples_v4/'
+
 datasets = {}
 
 
@@ -147,6 +150,7 @@ def main():
         for dataset_name in datasets[dataset_tag]:
 
             replacements = {
+                "MYVAR_CRAB_OUTPUT_NAME": crab_output_dir, 
                 "MYVAR_DATASET_NAME": dataset_name,
                 "MYVAR_GOLDEN_JSON": "",
                 "MYVAR_ISDATA": "False",
