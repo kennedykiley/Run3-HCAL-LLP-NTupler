@@ -38,6 +38,12 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	//phoHLTFilterNamesFile_(iConfig.getParameter<string>( "photonHLTFilterNamesFile" )),
 	//jetHLTFilterNamesFile_(iConfig.getParameter<string>( "jetHLTFilterNamesFile" )),
 	// General 
+	//metFilterBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"))),
+    metFilterBitsToken_(
+        iConfig.getParameter<edm::InputTag>("metFilterBits").label().empty() ?
+        edm::EDGetTokenT<edm::TriggerResults>() :  // default-initialized token
+        mayConsume<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"))
+    ),
 	verticesToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
 	primaryVertexAssociationToken_(consumes<edm::Association<vector<reco::Vertex> > >(edm::InputTag("primaryVertexAssociation","original"))),
 	primaryVertexAssociationValueMapToken_(consumes<edm::ValueMap<int> >(edm::InputTag("primaryVertexAssociation","original"))),
@@ -80,10 +86,36 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	castorGeometryToken_(esConsumes<PCaloGeometry, PCastorRcd>()), // GK
 	// gemGeoToken_(esConsumes<RecoIdealGeometry, GEMRecoGeometryRcd>()), // commenting out to test 350 GeV MC
 	magneticFieldToken_(esConsumes<MagneticField, IdealMagneticFieldRecord>()), // GK
-	propagatorToken_(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", "PropagatorWithMaterial"))) // GK // thePropagatorToken(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", thePropagatorName))),
+	propagatorToken_(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", "PropagatorWithMaterial"))), // GK // thePropagatorToken(esConsumes<Propagator, TrackingComponentsRecord>(edm::ESInputTag("", thePropagatorName))),
 
-	// MC
-
+	// Noise Filters
+	Flag_HBHENoiseFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_HBHENoiseFilter"))),
+	Flag_HBHENoiseIsoFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_HBHENoiseIsoFilter"))),
+	Flag_CSCTightHaloFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_CSCTightHaloFilter"))),
+	Flag_CSCTightHaloTrkMuUnvetoFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_CSCTightHaloTrkMuUnvetoFilter"))),
+	Flag_CSCTightHalo2015FilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_CSCTightHalo2015Filter"))),
+	Flag_globalTightHalo2016FilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_globalTightHalo2016Filter"))),
+	Flag_globalSuperTightHalo2016FilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_globalSuperTightHalo2016Filter"))),
+	Flag_HcalStripHaloFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_HcalStripHaloFilter"))),
+	Flag_hcalLaserEventFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_hcalLaserEventFilter"))),
+	Flag_EcalDeadCellTriggerPrimitiveFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_EcalDeadCellTriggerPrimitiveFilter"))),
+	Flag_EcalDeadCellBoundaryEnergyFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_EcalDeadCellBoundaryEnergyFilter"))),
+	Flag_ecalBadCalibFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_ecalBadCalibFilter"))),
+	Flag_goodVerticesToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_goodVertices"))),
+	Flag_eeBadScFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_eeBadScFilter"))),
+	Flag_ecalLaserCorrFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_ecalLaserCorrFilter"))),
+	Flag_trkPOGFiltersToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_trkPOGFilters"))),
+	Flag_chargedHadronTrackResolutionFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_chargedHadronTrackResolutionFilter"))),
+	Flag_muonBadTrackFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_muonBadTrackFilter"))),
+	Flag_BadChargedCandidateFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_BadChargedCandidateFilter"))),
+	Flag_BadPFMuonFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_BadPFMuonFilter"))),
+	Flag_BadChargedCandidateSummer16FilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_BadChargedCandidateSummer16Filter"))),
+	Flag_BadPFMuonSummer16FilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_BadPFMuonSummer16Filter"))),
+	Flag_BadPFMuonDzFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_BadPFMuonDzFilter"))),
+	Flag_hfNoisyHitsFilterToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_hfNoisyHitsFilter"))),
+	Flag_trkPOG_manystripclus53XToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_trkPOG_manystripclus53X"))),
+	Flag_trkPOG_toomanystripclus53XToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_trkPOG_toomanystripclus53X"))),
+	Flag_trkPOG_logErrorTooManyClustersToken_(mayConsume<edm::HLTPathStatus>(iConfig.getParameter<edm::InputTag>("Flag_trkPOG_logErrorTooManyClusters")))
 	{
 
 	cout<<"Option Settings:"<<endl;
@@ -170,6 +202,9 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
     triggerPathNames.push_back("HLT_HT270_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
     triggerPathNames.push_back("HLT_HT280_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
     triggerPathNames.push_back("HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive");
+    triggerPathNames.push_back("HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive");
+    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_PFJet60_NeutralHadronFrac0p7");
+    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_PFJet60_NeutralHadronFrac0p8");
     triggerPathNames.push_back("HLT_HT350_DelayedJet40_SingleDelay3nsInclusive");
     triggerPathNames.push_back("HLT_HT350_DelayedJet40_SingleDelay3p25nsInclusive");
     triggerPathNames.push_back("HLT_HT350_DelayedJet40_SingleDelay3p5nsInclusive");
@@ -254,6 +289,13 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 		triggerPathNamesIndices[triggerPathNames.at(i)] = i;
 	}
 
+    // Check metFilterBitsToken initialization:
+    metFilterBitsToken_isValid = false;
+    if (!iConfig.getParameter<edm::InputTag>("metFilterBits").label().empty()) {
+        metFilterBitsToken_ = mayConsume<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"));
+        metFilterBitsToken_isValid = true;
+    }
+
 	cout<<"DisplacedHcalJetNTuplizer DONE"<<endl;
 
 }
@@ -278,8 +320,6 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(triggerObjectsToken_, triggerObjects);
 	if( isData_ ) iEvent.getByToken(triggerPrescalesToken_, triggerPrescales);
 
-	//iEvent.getByToken(hepMCToken_, hepMC);
-	//iEvent.getByToken(metFilterBitsToken_, metFilterBits);
 	iEvent.getByToken(verticesToken_, vertices);
 	iEvent.getByToken(primaryVertexAssociationToken_,primaryVertexAssociation);
 	iEvent.getByToken(primaryVertexAssociationValueMapToken_,primaryVertexAssociationValueMap);
@@ -415,6 +455,35 @@ void DisplacedHcalJetNTuplizer::EnableMetBranches(){
 	output_tree->Branch( "met_Pt", &met_Pt );
 	output_tree->Branch( "met_Phi", &met_Phi );
 	output_tree->Branch( "met_SumEt", &met_SumEt );
+
+    output_tree->Branch( "Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter);
+    output_tree->Branch( "Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter);
+    output_tree->Branch( "Flag_CSCTightHaloFilter", &Flag_CSCTightHaloFilter);
+    output_tree->Branch( "Flag_CSCTightHaloTrkMuUnvetoFilter", &Flag_CSCTightHaloTrkMuUnvetoFilter);
+    output_tree->Branch( "Flag_CSCTightHalo2015Filter", &Flag_CSCTightHalo2015Filter);
+    output_tree->Branch( "Flag_globalTightHalo2016Filter", &Flag_globalTightHalo2016Filter);
+    output_tree->Branch( "Flag_globalSuperTightHalo2016Filter", &Flag_globalSuperTightHalo2016Filter);
+    output_tree->Branch( "Flag_HcalStripHaloFilter", &Flag_HcalStripHaloFilter);
+    output_tree->Branch( "Flag_hcalLaserEventFilter", &Flag_hcalLaserEventFilter);
+    output_tree->Branch( "Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter);
+    output_tree->Branch( "Flag_EcalDeadCellBoundaryEnergyFilter", &Flag_EcalDeadCellBoundaryEnergyFilter);
+    output_tree->Branch( "Flag_ecalBadCalibFilter", &Flag_ecalBadCalibFilter);
+    output_tree->Branch( "Flag_goodVertices", &Flag_goodVertices);
+    output_tree->Branch( "Flag_eeBadScFilter", &Flag_eeBadScFilter);
+    output_tree->Branch( "Flag_ecalLaserCorrFilter", &Flag_ecalLaserCorrFilter);
+    output_tree->Branch( "Flag_trkPOGFilters", &Flag_trkPOGFilters);
+    output_tree->Branch( "Flag_chargedHadronTrackResolutionFilter", &Flag_chargedHadronTrackResolutionFilter);
+    output_tree->Branch( "Flag_muonBadTrackFilter", &Flag_muonBadTrackFilter);
+    output_tree->Branch( "Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter);
+    output_tree->Branch( "Flag_BadPFMuonFilter", &Flag_BadPFMuonFilter);
+    output_tree->Branch( "Flag_BadPFMuonDzFilter", &Flag_BadPFMuonDzFilter);
+    output_tree->Branch( "Flag_hfNoisyHitsFilter", &Flag_hfNoisyHitsFilter);
+    output_tree->Branch( "Flag_BadChargedCandidateSummer16Filter", &Flag_BadChargedCandidateSummer16Filter);
+    output_tree->Branch( "Flag_BadPFMuonSummer16Filter", &Flag_BadPFMuonSummer16Filter);
+    output_tree->Branch( "Flag_trkPOG_manystripclus53X", &Flag_trkPOG_manystripclus53X);
+    output_tree->Branch( "Flag_trkPOG_toomanystripclus53X", &Flag_trkPOG_toomanystripclus53X);
+    output_tree->Branch( "Flag_trkPOG_logErrorTooManyClusters", &Flag_trkPOG_logErrorTooManyClusters);
+    output_tree->Branch( "Flag_METFilters_2022_2023_PromptReco", &Flag_METFilters_2022_2023_PromptReco);
 
 };
 
@@ -556,6 +625,10 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "jet_MedianIP_wp", &jet_MedianIP_wp );
 	output_tree->Branch( "jet_MinDeltaRAllTracks_wp", &jet_MinDeltaRAllTracks_wp );
 	output_tree->Branch( "jet_MinDeltaRPVTracks_wp", &jet_MinDeltaRPVTracks_wp );
+    output_tree->Branch( "jet_DeepCSV_prob_b", &jet_DeepCSV_prob_b ); 
+    output_tree->Branch( "jet_DeepCSV_prob_c", &jet_DeepCSV_prob_c ); 
+    output_tree->Branch( "jet_DeepCSV_prob_bb", &jet_DeepCSV_prob_bb ); 
+    output_tree->Branch( "jet_DeepCSV_prob_udsg", &jet_DeepCSV_prob_udsg ); 
 	output_tree->Branch( "jet_NTracks", &jet_NTracks );
 	output_tree->Branch( "jet_TrackIndices", &jet_TrackIndices );
 	output_tree->Branch( "jet_NPFCands", &jet_NPFCands );
@@ -942,6 +1015,36 @@ void DisplacedHcalJetNTuplizer::ResetMetBranches(){
 	met_Phi = -9999.9;
 	met_SumEt = -9999.9;
 
+	Flag_HBHENoiseFilter = false;
+	Flag_HBHENoiseIsoFilter = false;
+	Flag_CSCTightHaloFilter = false;
+	Flag_CSCTightHaloTrkMuUnvetoFilter = false;
+	Flag_CSCTightHalo2015Filter = false;
+	Flag_globalTightHalo2016Filter = false;
+	Flag_globalSuperTightHalo2016Filter = false;
+	Flag_HcalStripHaloFilter = false;
+	Flag_hcalLaserEventFilter = false;
+	Flag_EcalDeadCellTriggerPrimitiveFilter = false;
+	Flag_EcalDeadCellBoundaryEnergyFilter = false;
+	Flag_ecalBadCalibFilter = false;
+	Flag_goodVertices = false;
+	//Flag_trackingFailureFilter = false;
+	Flag_eeBadScFilter = false;
+	Flag_ecalLaserCorrFilter = false;
+	Flag_trkPOGFilters = false;
+	Flag_chargedHadronTrackResolutionFilter = false;
+	Flag_muonBadTrackFilter = false;
+	Flag_BadChargedCandidateFilter = false;
+	Flag_BadPFMuonFilter = false;
+	Flag_BadChargedCandidateSummer16Filter = false;
+	Flag_BadPFMuonSummer16Filter = false;
+	Flag_BadPFMuonDzFilter = false;
+	Flag_hfNoisyHitsFilter = false;
+	Flag_trkPOG_manystripclus53X = false;
+	Flag_trkPOG_toomanystripclus53X = false;
+	Flag_trkPOG_logErrorTooManyClusters = false;
+	Flag_METFilters_2022_2023_PromptReco = false;
+
 }
 
 // ------------------------------------------------------------------------------------
@@ -1080,6 +1183,10 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jet_MedianIP_wp.clear();
 	jet_MinDeltaRAllTracks_wp.clear();
 	jet_MinDeltaRPVTracks_wp.clear();
+    jet_DeepCSV_prob_b.clear();
+    jet_DeepCSV_prob_c.clear();
+    jet_DeepCSV_prob_bb.clear();
+    jet_DeepCSV_prob_udsg.clear();
 	jet_TrackIndices.clear();
 	jet_NPFCands.clear();
 	jet_PFCandIndices.clear();
@@ -1668,6 +1775,163 @@ bool DisplacedHcalJetNTuplizer::FillMetBranches(const edm::Event& iEvent){
 	met_Phi = met_temp.phi();
 	met_SumEt = met_temp.sumEt();
 
+	if( metFilterBitsToken_isValid ){ 
+		iEvent.getByToken(metFilterBitsToken_, metFilterBits);
+	
+    	const edm::TriggerNames &metNames = iEvent.triggerNames(*metFilterBits);
+
+	    for(unsigned int i = 0, n = metFilterBits->size(); i < n; ++i){
+	        if( debug && metNames.triggerName(i).find("Flag_") != std::string::npos ){ cout<<metNames.triggerName(i).c_str()<<"  "<<metFilterBits->accept(i)<<endl; }
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_HBHENoiseFilter") == 0)                    Flag_HBHENoiseFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_HBHENoiseIsoFilter") == 0)                 Flag_HBHENoiseIsoFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_CSCTightHaloFilter") == 0)                 Flag_CSCTightHaloFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_CSCTightHaloTrkMuUnvetoFilter") == 0)      Flag_CSCTightHaloTrkMuUnvetoFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_CSCTightHalo2015Filter") == 0)             Flag_CSCTightHalo2015Filter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalTightHalo2016Filter") == 0)          Flag_globalTightHalo2016Filter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalSuperTightHalo2016Filter") == 0)     Flag_globalSuperTightHalo2016Filter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_HcalStripHaloFilter") == 0)                Flag_HcalStripHaloFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_hcalLaserEventFilter") == 0)               Flag_hcalLaserEventFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_EcalDeadCellTriggerPrimitiveFilter") == 0) Flag_EcalDeadCellTriggerPrimitiveFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_EcalDeadCellBoundaryEnergyFilter") == 0)   Flag_EcalDeadCellBoundaryEnergyFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_ecalBadCalibFilter") == 0)                 Flag_ecalBadCalibFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_goodVertices") == 0)                       Flag_goodVertices = metFilterBits->accept(i);
+	        //if(strcmp(metNames.triggerName(i).c_str(), "Flag_trackingFailureFilter") == 0) Flag_trackingFailureFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_eeBadScFilter") == 0)                      Flag_eeBadScFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_ecalLaserCorrFilter") == 0)                Flag_ecalLaserCorrFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOGFilters") == 0)                      Flag_trkPOGFilters = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_chargedHadronTrackResolutionFilter") == 0) Flag_chargedHadronTrackResolutionFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_muonBadTrackFilter") == 0)                 Flag_muonBadTrackFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadChargedCandidateFilter") == 0)          Flag_BadChargedCandidateFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonFilter") == 0)                    Flag_BadPFMuonFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadChargedCandidateSummer16Filter") == 0)  Flag_BadChargedCandidateSummer16Filter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonSummer16Filter") == 0)            Flag_BadPFMuonSummer16Filter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonDzFilter") == 0)                  Flag_BadPFMuonDzFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_hfNoisyHitsFilter") == 0)                  Flag_hfNoisyHitsFilter = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_manystripclus53X") == 0)            Flag_trkPOG_manystripclus53X = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_toomanystripclus53X") == 0)         Flag_trkPOG_toomanystripclus53X = metFilterBits->accept(i);
+	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_logErrorTooManyClusters") == 0)     Flag_trkPOG_logErrorTooManyClusters = metFilterBits->accept(i);
+	    }
+
+	} else {
+		edm::Handle<edm::HLTPathStatus> Flag_HBHENoiseFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_HBHENoiseIsoFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_CSCTightHaloFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_CSCTightHaloTrkMuUnvetoFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_CSCTightHalo2015FilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_globalTightHalo2016FilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_globalSuperTightHalo2016FilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_HcalStripHaloFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_hcalLaserEventFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_EcalDeadCellTriggerPrimitiveFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_EcalDeadCellBoundaryEnergyFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_ecalBadCalibFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_goodVerticesHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_eeBadScFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_ecalLaserCorrFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_trkPOGFiltersHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_chargedHadronTrackResolutionFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_muonBadTrackFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_BadChargedCandidateFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_BadPFMuonFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_BadChargedCandidateSummer16FilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_BadPFMuonSummer16FilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_BadPFMuonDzFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_hfNoisyHitsFilterHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_trkPOG_manystripclus53XHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_trkPOG_toomanystripclus53XHandle;
+		edm::Handle<edm::HLTPathStatus> Flag_trkPOG_logErrorTooManyClustersHandle;
+
+		iEvent.getByToken(Flag_HBHENoiseFilterToken_, Flag_HBHENoiseFilterHandle);
+		iEvent.getByToken(Flag_HBHENoiseIsoFilterToken_, Flag_HBHENoiseIsoFilterHandle);
+		iEvent.getByToken(Flag_CSCTightHaloFilterToken_, Flag_CSCTightHaloFilterHandle);
+		iEvent.getByToken(Flag_CSCTightHaloTrkMuUnvetoFilterToken_, Flag_CSCTightHaloTrkMuUnvetoFilterHandle);
+		iEvent.getByToken(Flag_CSCTightHalo2015FilterToken_, Flag_CSCTightHalo2015FilterHandle);
+		iEvent.getByToken(Flag_globalTightHalo2016FilterToken_, Flag_globalTightHalo2016FilterHandle);
+		iEvent.getByToken(Flag_globalSuperTightHalo2016FilterToken_, Flag_globalSuperTightHalo2016FilterHandle);
+		iEvent.getByToken(Flag_HcalStripHaloFilterToken_, Flag_HcalStripHaloFilterHandle);
+		iEvent.getByToken(Flag_hcalLaserEventFilterToken_, Flag_hcalLaserEventFilterHandle);
+		iEvent.getByToken(Flag_EcalDeadCellTriggerPrimitiveFilterToken_, Flag_EcalDeadCellTriggerPrimitiveFilterHandle);
+		iEvent.getByToken(Flag_EcalDeadCellBoundaryEnergyFilterToken_, Flag_EcalDeadCellBoundaryEnergyFilterHandle);
+		iEvent.getByToken(Flag_ecalBadCalibFilterToken_, Flag_ecalBadCalibFilterHandle);
+		iEvent.getByToken(Flag_goodVerticesToken_, Flag_goodVerticesHandle);
+		iEvent.getByToken(Flag_eeBadScFilterToken_, Flag_eeBadScFilterHandle);
+		iEvent.getByToken(Flag_ecalLaserCorrFilterToken_, Flag_ecalLaserCorrFilterHandle);
+		iEvent.getByToken(Flag_trkPOGFiltersToken_, Flag_trkPOGFiltersHandle);
+		iEvent.getByToken(Flag_chargedHadronTrackResolutionFilterToken_, Flag_chargedHadronTrackResolutionFilterHandle);
+		iEvent.getByToken(Flag_muonBadTrackFilterToken_, Flag_muonBadTrackFilterHandle);
+		iEvent.getByToken(Flag_BadChargedCandidateFilterToken_, Flag_BadChargedCandidateFilterHandle);
+		iEvent.getByToken(Flag_BadPFMuonFilterToken_, Flag_BadPFMuonFilterHandle);
+		iEvent.getByToken(Flag_BadChargedCandidateSummer16FilterToken_, Flag_BadChargedCandidateSummer16FilterHandle);
+		iEvent.getByToken(Flag_BadPFMuonSummer16FilterToken_, Flag_BadPFMuonSummer16FilterHandle);
+		iEvent.getByToken(Flag_BadPFMuonDzFilterToken_, Flag_BadPFMuonDzFilterHandle);
+		iEvent.getByToken(Flag_hfNoisyHitsFilterToken_, Flag_hfNoisyHitsFilterHandle);
+		iEvent.getByToken(Flag_trkPOG_manystripclus53XToken_, Flag_trkPOG_manystripclus53XHandle);
+		iEvent.getByToken(Flag_trkPOG_toomanystripclus53XToken_, Flag_trkPOG_toomanystripclus53XHandle);
+		iEvent.getByToken(Flag_trkPOG_logErrorTooManyClustersToken_, Flag_trkPOG_logErrorTooManyClustersHandle);
+
+		Flag_HBHENoiseFilter = Flag_HBHENoiseFilterHandle->wasrun() && Flag_HBHENoiseFilterHandle->accept();
+		Flag_HBHENoiseIsoFilter = Flag_HBHENoiseIsoFilterHandle->wasrun() && Flag_HBHENoiseIsoFilterHandle->accept();
+		Flag_CSCTightHaloFilter = Flag_CSCTightHaloFilterHandle->wasrun() && Flag_CSCTightHaloFilterHandle->accept();
+		Flag_CSCTightHaloTrkMuUnvetoFilter = Flag_CSCTightHaloTrkMuUnvetoFilterHandle->wasrun() && Flag_CSCTightHaloTrkMuUnvetoFilterHandle->accept();
+		Flag_CSCTightHalo2015Filter = Flag_CSCTightHalo2015FilterHandle->wasrun() && Flag_CSCTightHalo2015FilterHandle->accept();
+		Flag_globalTightHalo2016Filter = Flag_globalTightHalo2016FilterHandle->wasrun() && Flag_globalTightHalo2016FilterHandle->accept();
+		Flag_globalSuperTightHalo2016Filter = Flag_globalSuperTightHalo2016FilterHandle->wasrun() && Flag_globalSuperTightHalo2016FilterHandle->accept();
+		Flag_HcalStripHaloFilter = Flag_HcalStripHaloFilterHandle->wasrun() && Flag_HcalStripHaloFilterHandle->accept();
+		Flag_hcalLaserEventFilter = Flag_hcalLaserEventFilterHandle->wasrun() && Flag_hcalLaserEventFilterHandle->accept();
+		Flag_EcalDeadCellTriggerPrimitiveFilter = Flag_EcalDeadCellTriggerPrimitiveFilterHandle->wasrun() && Flag_EcalDeadCellTriggerPrimitiveFilterHandle->accept();
+		Flag_EcalDeadCellBoundaryEnergyFilter = Flag_EcalDeadCellBoundaryEnergyFilterHandle->wasrun() && Flag_EcalDeadCellBoundaryEnergyFilterHandle->accept();
+		Flag_ecalBadCalibFilter = Flag_ecalBadCalibFilterHandle->wasrun() && Flag_ecalBadCalibFilterHandle->accept();
+		Flag_goodVertices = Flag_goodVerticesHandle->wasrun() && Flag_goodVerticesHandle->accept();
+		Flag_eeBadScFilter = Flag_eeBadScFilterHandle->wasrun() && Flag_eeBadScFilterHandle->accept();
+		Flag_ecalLaserCorrFilter = Flag_ecalLaserCorrFilterHandle->wasrun() && Flag_ecalLaserCorrFilterHandle->accept();
+		Flag_trkPOGFilters = Flag_trkPOGFiltersHandle->wasrun() && Flag_trkPOGFiltersHandle->accept();
+		Flag_chargedHadronTrackResolutionFilter = Flag_chargedHadronTrackResolutionFilterHandle->wasrun() && Flag_chargedHadronTrackResolutionFilterHandle->accept();
+		Flag_muonBadTrackFilter = Flag_muonBadTrackFilterHandle->wasrun() && Flag_muonBadTrackFilterHandle->accept();
+		Flag_BadChargedCandidateFilter = Flag_BadChargedCandidateFilterHandle->wasrun() && Flag_BadChargedCandidateFilterHandle->accept();
+		Flag_BadPFMuonFilter = Flag_BadPFMuonFilterHandle->wasrun() && Flag_BadPFMuonFilterHandle->accept();
+		Flag_BadChargedCandidateSummer16Filter = Flag_BadChargedCandidateSummer16FilterHandle->wasrun() && Flag_BadChargedCandidateSummer16FilterHandle->accept();
+		Flag_BadPFMuonSummer16Filter = Flag_BadPFMuonSummer16FilterHandle->wasrun() && Flag_BadPFMuonSummer16FilterHandle->accept();
+		Flag_BadPFMuonDzFilter = Flag_BadPFMuonDzFilterHandle->wasrun() && Flag_BadPFMuonDzFilterHandle->accept();
+		Flag_hfNoisyHitsFilter = Flag_hfNoisyHitsFilterHandle->wasrun() && Flag_hfNoisyHitsFilterHandle->accept();
+		Flag_trkPOG_manystripclus53X = Flag_trkPOG_manystripclus53XHandle->wasrun() && Flag_trkPOG_manystripclus53XHandle->accept();
+		Flag_trkPOG_toomanystripclus53X = Flag_trkPOG_toomanystripclus53XHandle->wasrun() && Flag_trkPOG_toomanystripclus53XHandle->accept();
+		Flag_trkPOG_logErrorTooManyClusters = Flag_trkPOG_logErrorTooManyClustersHandle->wasrun() && Flag_trkPOG_logErrorTooManyClustersHandle->accept();
+
+		if( debug ) { 
+			cout<<"Flag_HBHENoiseFilter  "<<Flag_HBHENoiseFilter<<endl;
+			cout<<"Flag_HBHENoiseIsoFilter  "<<Flag_HBHENoiseIsoFilter<<endl;
+			cout<<"Flag_CSCTightHaloFilter  "<<Flag_CSCTightHaloFilter<<endl;
+			cout<<"Flag_CSCTightHaloTrkMuUnvetoFilter  "<<Flag_CSCTightHaloTrkMuUnvetoFilter<<endl;
+			cout<<"Flag_CSCTightHalo2015Filter  "<<Flag_CSCTightHalo2015Filter<<endl;
+			cout<<"Flag_globalTightHalo2016Filter  "<<Flag_globalTightHalo2016Filter<<endl;
+			cout<<"Flag_globalSuperTightHalo2016Filter  "<<Flag_globalSuperTightHalo2016Filter<<endl;
+			cout<<"Flag_HcalStripHaloFilter  "<<Flag_HcalStripHaloFilter<<endl;
+			cout<<"Flag_hcalLaserEventFilter  "<<Flag_hcalLaserEventFilter<<endl;
+			cout<<"Flag_EcalDeadCellTriggerPrimitiveFilter  "<<Flag_EcalDeadCellTriggerPrimitiveFilter<<endl;
+			cout<<"Flag_EcalDeadCellBoundaryEnergyFilter  "<<Flag_EcalDeadCellBoundaryEnergyFilter<<endl;
+			cout<<"Flag_ecalBadCalibFilter  "<<Flag_ecalBadCalibFilter<<endl;
+			cout<<"Flag_goodVertices  "<<Flag_goodVertices<<endl;
+			cout<<"Flag_eeBadScFilter  "<<Flag_eeBadScFilter<<endl;
+			cout<<"Flag_ecalLaserCorrFilter  "<<Flag_ecalLaserCorrFilter<<endl;
+			cout<<"Flag_trkPOGFilters  "<<Flag_trkPOGFilters<<endl;
+			cout<<"Flag_chargedHadronTrackResolutionFilter  "<<Flag_chargedHadronTrackResolutionFilter<<endl;
+			cout<<"Flag_muonBadTrackFilter  "<<Flag_muonBadTrackFilter<<endl;
+			cout<<"Flag_BadChargedCandidateFilter  "<<Flag_BadChargedCandidateFilter<<endl;
+			cout<<"Flag_BadPFMuonFilter  "<<Flag_BadPFMuonFilter<<endl;
+			cout<<"Flag_BadChargedCandidateSummer16Filter  "<<Flag_BadChargedCandidateSummer16Filter<<endl;
+			cout<<"Flag_BadPFMuonSummer16Filter  "<<Flag_BadPFMuonSummer16Filter<<endl;
+			cout<<"Flag_BadPFMuonDzFilter  "<<Flag_BadPFMuonDzFilter<<endl;
+			cout<<"Flag_hfNoisyHitsFilter  "<<Flag_hfNoisyHitsFilter<<endl;
+			cout<<"Flag_trkPOG_manystripclus53X  "<<Flag_trkPOG_manystripclus53X<<endl;
+			cout<<"Flag_trkPOG_toomanystripclus53X  "<<Flag_trkPOG_toomanystripclus53X<<endl;
+			cout<<"Flag_trkPOG_logErrorTooManyClusters  "<<Flag_trkPOG_logErrorTooManyClusters<<endl;
+		}
+
+	}
+   
+    // Recommendations for Run3 (2022 and 2023 Prompt Reco)
+    Flag_METFilters_2022_2023_PromptReco = Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && Flag_BadPFMuonDzFilter && Flag_hfNoisyHitsFilter && Flag_eeBadScFilter && Flag_ecalBadCalibFilter;
+
 	// metUncorrectedPt = Met.uncorPt();
 	// metUncorrectedPhi = Met.uncorPhi();
 	//metType1Pt = Met.pt();
@@ -2065,6 +2329,20 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		//jet_PileupE.push_back( jet.pileup() );
 		//jet_PileupId.push_back( jet.userFloat("pileupJetId:fullDiscriminant") );
 		//jet_PileupIdFlag.push_back( jet.userInt("pileupJetId:fullId") ); //A bit map for loose, medium, and tight working points
+
+        // ----- BTagging  ----- //
+        //std::vector<std::pair<std::string, float>>& Jet::getPairDiscri()
+        
+        auto jet_pair_discrim = jet.getPairDiscri();
+        jet_DeepCSV_prob_b.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probb") );
+        jet_DeepCSV_prob_c.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probc") );
+        jet_DeepCSV_prob_bb.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probbb") );
+        jet_DeepCSV_prob_udsg.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probudsg") );
+
+        //for( auto jet_pair_discrim: jet.getPairDiscri() ){
+        //    cout<<jet_pair_discrim.first<<"  "<<jet_pair_discrim.second<<endl;
+        //}
+        //cout<<jet.bDiscriminator("trackCountingHighPurBJetTags")<<endl;
 
 		// ----- Secondary Vertex Features ----- //
 
