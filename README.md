@@ -3,7 +3,7 @@ Long-Lived Particle Ntupler based on AOD, adapted for use with HBHE rechits for 
 
 # Setup Ntupler
 ```
-cmsrel CMSSW_<>
+cmsrel <CMSSW version> # Use CMSSW_13_2_0 for NTuples v4
 mkdir cms_lpc_llp
 cd cms_lpc_llp
 git clone git@github.com:kennedykiley/Run3-HCAL-LLP-NTupler.git
@@ -101,7 +101,7 @@ Check event content with
 edmDumpEventContent root://cmsxrootd.fnal.gov/</store/path/to/file.root> > EDM_content.txt
 ```
 
-### CRAB Wrapper for Automating Submissions
+### CRAB Wrapper 1 for Automating Submissions
 First check that the dataset is on disk:
 ```
 python3 checkDatasetAvailability.py <txt file of datasets to check>
@@ -113,6 +113,28 @@ crab_setup
 python3 CrabSubmitWrapper.py
 ```
 This handles changing the variables (isData and isSignal) in DisplacedHcalJetNTuplizer.py, as well as doing one crab submission per dataset listed. 
+
+### CRAB Wrapper 2 for Automating Submissions
+
+From src/
+```
+cmsenv
+voms-proxy-init -voms cms
+source /cvmfs/cms.cern.ch/crab3/crab.sh
+# scram b -j 10 # if needed
+cd cms_lpc_llp/Run3-HCAL-LLP-NTupler/python
+```
+Edit `makeBulkCrabSubmission.py`:
+* Update line 15 to point to your crab output directory (should be outside of your CMSSW area). Make this directory if it does not exist
+
+Run: 
+```
+# Setup crab jobs (setup to signal by default, but need to edit line 147 of `makeBulkCrabSubmission.py` to run over other datasets):
+python3 makeBulkCrabSubmission.py Signal
+
+# Submit crab jobs
+source Signal/submit.sh
+```
 
 ### Variables to check before running ntupler:
 * isData: False if running signals, True if running data
