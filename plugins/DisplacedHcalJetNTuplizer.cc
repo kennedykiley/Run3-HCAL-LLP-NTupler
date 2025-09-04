@@ -58,6 +58,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	tausToken_(consumes<pat::TauCollection>(iConfig.getParameter<edm::InputTag>("taus"))),
 	photonsToken_(consumes<reco::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
 	jetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4"))),
+	jetsCorrToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4_corrected"))), // GK, adding JECs
 	calojetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK4"))),
 	LRJetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK8"))),
 	caloLRJetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK8"))),
@@ -333,6 +334,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(tausToken_, taus);
 	iEvent.getByToken(photonsToken_, photons);
 	iEvent.getByToken(jetsToken_, jets);
+	iEvent.getByToken(jetsCorrToken_, jetsCorr); // GK, adding JECs
 	iEvent.getByToken(calojetsToken_, calojets);
 	iEvent.getByToken(LRJetsToken_, LRJets);
 	iEvent.getByToken(caloLRJetsToken_, caloLRJets);
@@ -590,6 +592,10 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "jet_E", &jet_E );
 	output_tree->Branch( "jet_Mass", &jet_Mass );
 	output_tree->Branch( "jet_JetArea", &jet_JetArea );
+	output_tree->Branch( "jetRaw_Pt", &jetRaw_Pt );
+	output_tree->Branch( "jetRaw_E", &jetRaw_E );
+	output_tree->Branch( "jetRaw_Eta", &jetRaw_Eta );
+	output_tree->Branch( "jetRaw_Phi", &jetRaw_Phi );	
 	output_tree->Branch( "jet_ChargedHadEFrac", &jet_ChargedHadEFrac );
 	output_tree->Branch( "jet_NeutralHadEFrac", &jet_NeutralHadEFrac );
 	output_tree->Branch( "jet_PhoEFrac", &jet_PhoEFrac );
@@ -1148,6 +1154,10 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jet_E.clear();
 	jet_Mass.clear();
 	jet_JetArea.clear();
+	jetRaw_Pt.clear();
+	jetRaw_E.clear();
+	jetRaw_Eta.clear();
+	jetRaw_Phi.clear();
 	jet_ChargedHadEFrac.clear();
 	jet_NeutralHadEFrac.clear();
 	jet_PhoEFrac.clear();
@@ -2269,7 +2279,8 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 	if( debug ) cout<<" -> AK4 PF Jets"<<endl;  
 
 	//for (const pat::Jet &j : *jets) {
-	for( auto &jet : *jets ) {
+	// for( auto &jet : *jets ) { // uncorrected jets
+	for( auto &jet : *jetsCorr ) { // GK, corrected PF ak4 jets
 
 		if( jet.pt() < 10 || fabs(jet.eta()) > 1.5 ) continue;
 
@@ -2289,6 +2300,13 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		jet_Eta.push_back( jet.eta() );
 		jet_Phi.push_back( jet.phi() );
 		jet_Mass.push_back( jet.mass() );
+
+		// ----- uncorrected jet quantities (no JECs!) ----- //
+		auto rawP4 = jet.correctedP4("Uncorrected");
+    	jetRaw_Pt.push_back( rawP4.pt() );
+    	jetRaw_E.push_back( rawP4.energy() );
+		jetRaw_Eta.push_back( rawP4.eta() );
+		jetRaw_Phi.push_back( rawP4.phi() );
 
 		// ----- ID ----- //
 

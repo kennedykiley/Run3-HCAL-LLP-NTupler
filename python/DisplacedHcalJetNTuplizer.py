@@ -307,6 +307,27 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 )
 """
 
+# ----- Jet Energy Corrections ----- # GK, still testing!!!!
+
+from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+
+# Define correction levels
+if options.isData:
+    jecLevels = ['L1FastJet','L2Relative','L3Absolute','L2L3Residual']
+else:
+    jecLevels = ['L1FastJet','L2Relative','L3Absolute']
+
+# Update PAT jets with JEC
+updateJetCollection(
+    process,
+    jetSource = cms.InputTag('selectedPatJets'),
+    labelName = 'UpdatedJEC',
+    jetCorrections = ('AK4PFchs', cms.vstring(jecLevels), 'None'),
+    pvSource = cms.InputTag('offlinePrimaryVertices') # specifically point to the PV collection, in RECO need the offline PVs (instead of offlineSlimmedPrimaryVertices used at miniAOD)
+    # svSource = cms.InputTag('slimmedSecondaryVertices'),
+)
+# now we have a new collection, selectedUpdatedPatJetsUpdatedJEC = corrected jets. As before, selectedPatJets = still the uncorrected PAT jets.
+
 # ------ Analyzer ------ #
 
 process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
@@ -343,6 +364,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     pfjetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
     calojetsAK8 = cms.InputTag("ak8CaloJets"), #,"","RECO"),
     l1jets = cms.InputTag("gtStage2Digis","Jet"), #,"RECO"), # GK, added for L1 jets access
+    pfjetsAK4_corrected = cms.InputTag("selectedUpdatedPatJetsUpdatedJEC"), # GK, adding JECs # Point analyzer to corrected jets
     #jetsPF = cms.InputTag("ak4PFJets"),
     #jets = cms.InputTag("ak4PFJetsCHS"),
     #jets = cms.InputTag("selectedPatJets"),

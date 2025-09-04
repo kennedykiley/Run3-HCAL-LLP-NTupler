@@ -314,6 +314,7 @@ protected:
 	edm::EDGetTokenT<pat::TauCollection> tausToken_;
 	edm::EDGetTokenT<reco::PhotonCollection> photonsToken_;
 	edm::EDGetTokenT<pat::JetCollection> jetsToken_;
+	edm::EDGetTokenT<pat::JetCollection> jetsCorrToken_; // GK, adding JECs
 	edm::EDGetTokenT<reco::CaloJetCollection> calojetsToken_;
 	edm::EDGetTokenT<pat::JetCollection> LRJetsToken_;
 	edm::EDGetTokenT<reco::CaloJetCollection> caloLRJetsToken_;
@@ -409,6 +410,7 @@ protected:
 	edm::Handle<pat::TauCollection> taus;
 	edm::Handle<reco::PhotonCollection> photons;
 	edm::Handle<pat::JetCollection> jets;
+	edm::Handle<pat::JetCollection> jetsCorr; // GK, for JECs
 	edm::Handle<reco::CaloJetCollection> calojets;
 	edm::Handle<pat::JetCollection> LRJets;
 	edm::Handle<reco::CaloJetCollection> caloLRJets;
@@ -656,6 +658,10 @@ protected:
 	vector<float> jet_Phi;
 	vector<float> jet_E;
 	vector<float> jet_Mass;
+	vector<float> jetRaw_Pt;
+	vector<float> jetRaw_Eta;
+	vector<float> jetRaw_Phi;
+	vector<float> jetRaw_E;
 	// Features 
 	vector<float> jet_JetArea;  
 	vector<float> jet_ChargedHadEFrac;
