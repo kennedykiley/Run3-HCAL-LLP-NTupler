@@ -43,6 +43,7 @@ using namespace std;
 
 #include "CondFormats/GeometryObjects/interface/PCaloGeometry.h" // GK
 #include "CondFormats/GeometryObjects/interface/RecoIdealGeometry.h" // GK
+#include "JetMETCorrections/Modules/interface/JetResolution.h" // GK
 
 #include "DataFormats/CSCDigi/interface/CSCComparatorDigi.h"
 #include "DataFormats/CSCDigi/interface/CSCComparatorDigiCollection.h"
@@ -285,6 +286,11 @@ protected:
 	// ====================================================================================
 	// EDM Tokens (miniAOD Inputs)
 	// ====================================================================================
+	// // Random engine for smearing
+	// TRandom3 rand_;
+	// // JER tools
+	// JME::JetResolution jerRes_;
+	// JME::JetResolutionScaleFactor jerSF_;
 
 	edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken_;
 	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
@@ -662,6 +668,10 @@ protected:
 	vector<float> jetRaw_Eta;
 	vector<float> jetRaw_Phi;
 	vector<float> jetRaw_E;
+	vector<float> jetSmear_Pt;
+	vector<float> jetSmear_Eta;
+	vector<float> jetSmear_Phi;
+	vector<float> jetSmear_E;
 	// Features 
 	vector<float> jet_JetArea;  
 	vector<float> jet_ChargedHadEFrac;

@@ -28,6 +28,11 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	debug(iConfig.getParameter<bool>( "debug" )),
 	isData_(iConfig.getParameter<bool>( "isData" )),
 	isSignal_(iConfig.getParameter<bool>( "isSignal" )),
+	// rand_(), // random seed // GK for JER. TODO need to seed with random number?
+	// if (!isData) {
+	// 	jerRes_(JME::JetResolution(iConfig.getParameter<edm::FileInPath>("jer_PtResolution").fullPath()) ),
+	// 	jerSF_(JME::JetResolutionScaleFactor(iConfig.getParameter<edm::FileInPath>("jer_ScaleFactor").fullPath()) )
+	// }
 	// Trigger
 	triggerBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerBits"))),
 	triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
@@ -596,6 +601,10 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "jetRaw_E", &jetRaw_E );
 	output_tree->Branch( "jetRaw_Eta", &jetRaw_Eta );
 	output_tree->Branch( "jetRaw_Phi", &jetRaw_Phi );	
+	output_tree->Branch( "jetSmear_Pt", &jetSmear_Pt );
+	output_tree->Branch( "jetSmear_E", &jetSmear_E );
+	output_tree->Branch( "jetSmear_Eta", &jetSmear_Eta );
+	output_tree->Branch( "jetSmear_Phi", &jetSmear_Phi );
 	output_tree->Branch( "jet_ChargedHadEFrac", &jet_ChargedHadEFrac );
 	output_tree->Branch( "jet_NeutralHadEFrac", &jet_NeutralHadEFrac );
 	output_tree->Branch( "jet_PhoEFrac", &jet_PhoEFrac );
@@ -1158,6 +1167,10 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jetRaw_E.clear();
 	jetRaw_Eta.clear();
 	jetRaw_Phi.clear();
+	jetSmear_Pt.clear();
+	jetSmear_E.clear();
+	jetSmear_Eta.clear();
+	jetSmear_Phi.clear();
 	jet_ChargedHadEFrac.clear();
 	jet_NeutralHadEFrac.clear();
 	jet_PhoEFrac.clear();
@@ -2294,6 +2307,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		//thisJet.SetPtEtaPhiE(jetPt[nJets], jetEta[nJets], jetPhi[nJets], jetE[nJets]);
 
 		// ----- Basics ----- // 
+		// ----- JEC only ----- // 
 
 		jet_E.push_back( jet.energy() );
 		jet_Pt.push_back( jet.pt() );
@@ -2307,6 +2321,41 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
     	jetRaw_E.push_back( rawP4.energy() );
 		jetRaw_Eta.push_back( rawP4.eta() );
 		jetRaw_Phi.push_back( rawP4.phi() );
+
+		// // ----- JEC + JER (only for MC) ----- //
+		// if (!isData_) {
+		// 	double smearedPt = jet.pt();
+		// 	// build parameters for JER
+		// 	JME::JetParameters params;
+		// 	params.setJetPt(jet.pt());
+		// 	params.setJetEta(jet.eta());
+		// 	params.setRho(*rhoFastjetAll);
+
+		// 	double res = jerRes_.getResolution(params);
+		// 	double sf  = jerSF_.getScaleFactor(params);
+		// 	// TODO up down variation in JER
+		// 	// double sf_nom = jerSF_.getScaleFactor(params, Variation::NOMINAL);
+		// 	// double sf_up  = jerSF_.getScaleFactor(params, Variation::UP);
+		// 	// double sf_down= jerSF_.getScaleFactor(params, Variation::DOWN);
+
+		// 	double smearFactor = 1.0;
+		// 	// Option A: gen-jet match (if available)
+		// 	if (jet.genJet()) {
+		// 		double dPt = jet.pt() - jet.genJet()->pt();
+		// 		smearFactor = 1.0 + (sf - 1.0) * dPt / jet.pt();
+		// 	}
+		// 	// Option B: random smearing (no gen match)
+		// 	else {
+		// 		double sigma = res * std::sqrt(std::max(sf*sf - 1, 0.));
+		// 		smearFactor = 1.0 + rand_.Gaus(0, sigma);
+		// 	}
+		// 	smearedPt = jet.pt() * smearFactor;
+
+		// 	jetSmear_Pt.push_back(smearedPt);
+		// 	jetSmear_E.push_back(jet.energy() * smearFactor);
+		// 	jetSmear_Eta.push_back(jet.eta());
+		// 	jetSmear_Phi.push_back(jet.phi());
+		// }
 
 		// ----- ID ----- //
 

@@ -328,6 +328,16 @@ updateJetCollection(
 )
 # now we have a new collection, selectedUpdatedPatJetsUpdatedJEC = corrected jets. As before, selectedPatJets = still the uncorrected PAT jets.
 
+# ----- Jet Energy Resolution ----- # GK, still testing!!!!
+# if options.isData: 
+#     jer_PtResolution = cms.FileInPath("")
+#     jer_ScaleFactor = cms.FileInPath("")
+# else:
+#     jer_PtResolution = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv1234_JRV1_MC_PtResolution_AK4PFchs.txt"),
+#     jer_ScaleFactor  = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv1234_JRV1_MC_SF_AK4PFchs.txt")
+    # from https://github.com/cms-jet/JRDatabase/blob/master/textFiles/Summer23Prompt23_RunCv1234_JRV1_MC/
+    # based on https://cms-jerc.web.cern.ch/Recommendations/#2023_1
+
 # ------ Analyzer ------ #
 
 process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
