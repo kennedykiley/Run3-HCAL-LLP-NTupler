@@ -286,11 +286,11 @@ protected:
 	// ====================================================================================
 	// EDM Tokens (miniAOD Inputs)
 	// ====================================================================================
-	// // Random engine for smearing
-	// TRandom3 rand_;
-	// // JER tools
-	// JME::JetResolution jerRes_;
-	// JME::JetResolutionScaleFactor jerSF_;
+	// Random engine for smearing // GK
+	TRandom3 rand_;
+	// JER tools // GK
+	JME::JetResolution jerRes_;
+	JME::JetResolutionScaleFactor jerSF_;
 
 	edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken_;
 	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
