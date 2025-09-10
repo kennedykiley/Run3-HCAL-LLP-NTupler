@@ -156,8 +156,10 @@ process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cf
 
 # ------ Declare the correct global tag ------ #
 
-if options.isData: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '') # auto:run3_data
-else:              process.GlobalTag = GlobalTag(process.GlobalTag,'auto:run3_mc_FULL','')
+if options.isData: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '') 
+else:              process.GlobalTag = GlobalTag(process.GlobalTag,'130X_mcRun3_2023_realistic_v14','')
+# referenced from here: https://twiki.cern.ch/twiki/bin/view/CMSPublic/GTsRun3 
+# else:              process.GlobalTag = GlobalTag(process.GlobalTag,'auto:run3_mc_FULL','')
 
 # ------ Declare Output ------ #
 
@@ -307,7 +309,7 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 )
 """
 
-# ----- Jet Energy Corrections ----- # GK, still testing!!!!
+# ----- Jet Energy Corrections ----- # GK
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
@@ -502,14 +504,21 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
 
 # ----- Add Additional Info ----- #
 
-# ----- Jet Energy Resolution ----- # GK, still testing!!!!
+# ----- Jet Energy Resolution (only MC), and JEC uncertainties (data and MC) ----- # GK
 if not options.isData: 
     process.DisplacedHcalJets.jer_PtResolution = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv1234_JRV1_MC_PtResolution_AK4PFchs.txt")
     process.DisplacedHcalJets.jer_ScaleFactor  = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv1234_JRV1_MC_SF_AK4PFchs.txt")
     # from https://github.com/cms-jet/JRDatabase/blob/master/textFiles/Summer23Prompt23_RunCv1234_JRV1_MC/
+    # TODO need to handle different eras 
     # based on https://cms-jerc.web.cern.ch/Recommendations/#2023_1
-# Add jettiness for AK8 jets
+    process.DisplacedHcalJets.jec_Uncertainty = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_V3_MC_Uncertainty_AK4PFchs.txt")
+    # from https://github.com/cms-jet/JECDatabase/blob/master/textFiles/Summer23Prompt23_V1_MC/Summer23Prompt23_V1_MC_Uncertainty_AK4PFPuppi.txt
+    # V3 -> V2 -> V1 -> Puppi
+if options.isData:
+    process.DisplacedHcalJets.jec_Uncertainty = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv4_V3_DATA_Uncertainty_AK4PFchs.txt")
+    # same link as for MC, different folder, and DATA -> MC
 
+# Add jettiness for AK8 jets
 process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
 process.NjettinessAK8CHS = process.Njettiness.clone()
 

@@ -44,6 +44,8 @@ using namespace std;
 #include "CondFormats/GeometryObjects/interface/PCaloGeometry.h" // GK
 #include "CondFormats/GeometryObjects/interface/RecoIdealGeometry.h" // GK
 #include "JetMETCorrections/Modules/interface/JetResolution.h" // GK
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h" // GK
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h" // GK
 
 #include "DataFormats/CSCDigi/interface/CSCComparatorDigi.h"
 #include "DataFormats/CSCDigi/interface/CSCComparatorDigiCollection.h"
@@ -291,6 +293,8 @@ protected:
 	// JER tools // GK
 	JME::JetResolution jerRes_;
 	JME::JetResolutionScaleFactor jerSF_;
+	// JEC uncertainty
+	std::unique_ptr<JetCorrectionUncertainty> jecUnc_;
 
 	edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken_;
 	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
@@ -659,19 +663,23 @@ protected:
 
 	int n_jet;
 	// Basics
+	vector<float> jetRaw_Pt;
+	vector<float> jetRaw_E;
 	vector<float> jet_Pt;
+	vector<float> jet_E;
 	vector<float> jet_Eta;
 	vector<float> jet_Phi;
-	vector<float> jet_E;
 	vector<float> jet_Mass;
-	vector<float> jetRaw_Pt;
-	vector<float> jetRaw_Eta;
-	vector<float> jetRaw_Phi;
-	vector<float> jetRaw_E;
-	vector<float> jetSmear_Pt;
-	vector<float> jetSmear_Eta;
-	vector<float> jetSmear_Phi;
-	vector<float> jetSmear_E;
+	vector<float> jet_Pt_JES_up;
+	vector<float> jet_E_JES_up;
+	vector<float> jet_Pt_JES_down;
+	vector<float> jet_E_JES_down;
+	vector<float> jet_Pt_JER;
+	vector<float> jet_E_JER;
+	vector<float> jet_Pt_JER_up;
+	vector<float> jet_E_JER_up;
+	vector<float> jet_Pt_JER_down;
+	vector<float> jet_E_JER_down;
 	// Features 
 	vector<float> jet_JetArea;  
 	vector<float> jet_ChargedHadEFrac;
