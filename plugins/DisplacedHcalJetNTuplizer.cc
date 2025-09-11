@@ -607,8 +607,8 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "jet_E_JES_up", &jet_E_JES_up );	
 	output_tree->Branch( "jet_Pt_JES_down", &jet_Pt_JES_down );	
 	output_tree->Branch( "jet_E_JES_down", &jet_E_JES_down );	
-	output_tree->Branch( "jet_Pt_JER", &jet_Pt_JER );
-	output_tree->Branch( "jet_E_JER", &jet_E_JER );
+	output_tree->Branch( "jet_Pt_noJER", &jet_Pt_noJER );
+	output_tree->Branch( "jet_E_noJER", &jet_E_noJER );
 	output_tree->Branch( "jet_Pt_JER_up", &jet_Pt_JER_up );
 	output_tree->Branch( "jet_E_JER_up", &jet_E_JER_up );
 	output_tree->Branch( "jet_Pt_JER_down", &jet_Pt_JER_down );
@@ -1177,8 +1177,8 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jet_E_JES_up.clear();
 	jet_Pt_JES_down.clear();
 	jet_E_JES_down.clear();
-	jet_Pt_JER.clear();
-	jet_E_JER.clear();
+	jet_Pt_noJER.clear();
+	jet_E_noJER.clear();
 	jet_Pt_JER_up.clear();
 	jet_E_JER_up.clear();
 	jet_Pt_JER_down.clear();
@@ -2325,31 +2325,37 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		//thisJet.SetPtEtaPhiE(jetPt[nJets], jetEta[nJets], jetPhi[nJets], jetE[nJets]);
 
 		// ----- Basics ----- // 
-		// ----- uncorrected jet quantities (no JECs!) ----- //
+		// ----- uncorrected jet quantities (no JECs!) ----- // GK
 		auto rawP4 = jet.correctedP4("Uncorrected");
     	jetRaw_Pt.push_back( rawP4.pt() );
     	jetRaw_E.push_back( rawP4.energy() );
 		
 		// ----- JEC only ----- // 
-		jet_E.push_back( jet.energy() );
-		jet_Pt.push_back( jet.pt() );
+		if (isData) { // for data, no JER needed, so save as _Pt and _E
+			jet_E.push_back( jet.energy() );
+			jet_Pt.push_back( jet.pt() );
+		}
+		if (!isData) { // for MC, specify if JER is applied or not. Save JEC + JER as _Pt and _E
+			jet_E_noJER.push_back( jet.energy() );
+			jet_Pt_noJER.push_back( jet.pt() );
+		}
 		jet_Eta.push_back( jet.eta() );
 		jet_Phi.push_back( jet.phi() );
 		jet_Mass.push_back( jet.mass() );
 
-		// JEC / jet energy scale uncertainty
+		// JEC, jet energy scale uncertainty
 		jecUnc_->setJetPt(jet.pt());
 		jecUnc_->setJetEta(jet.eta());
 		double unc = jecUnc_->getUncertainty(true);  // true = up variation
 		double factor_jesUp = (1 + unc);
 		double factor_jesDown = (1 - unc);
 		// Save to tree
-		jet_Pt_JES_up.push_back(jet.pt() * factor_jesUp);
-		jet_E_JES_up.push_back(jet.energy() * factor_jesUp);
-		jet_Pt_JES_down.push_back(jet.pt() * factor_jesDown);
-		jet_E_JES_down.push_back(jet.energy() * factor_jesDown);
+		jet_Pt_JES_up.		push_back(jet.pt() 		* factor_jesUp);
+		jet_E_JES_up.		push_back(jet.energy() 	* factor_jesUp);
+		jet_Pt_JES_down.	push_back(jet.pt() 		* factor_jesDown);
+		jet_E_JES_down.		push_back(jet.energy() 	* factor_jesDown);
 
-		// ----- JEC + JER (only for MC) ----- // // GK
+		// ----- JEC + JER (only for MC) ----- // GK
 		if (!isData_) {
 			// build parameters for JER
 			JME::JetParameters params;
@@ -2380,8 +2386,8 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 				return std::max(0.0, smearFactor);
 			};
 
-			jet_Pt_JER		.push_back(jet.pt() 	* smearJetFactor(jet, sf_nom));
-			jet_E_JER		.push_back(jet.energy() * smearJetFactor(jet, sf_nom));
+			jet_Pt			.push_back(jet.pt() 	* smearJetFactor(jet, sf_nom));
+			jet_E			.push_back(jet.energy() * smearJetFactor(jet, sf_nom));
 			jet_Pt_JER_up	.push_back(jet.pt() 	* smearJetFactor(jet, sf_up));
 			jet_E_JER_up	.push_back(jet.energy() * smearJetFactor(jet, sf_up));
 			jet_Pt_JER_down	.push_back(jet.pt() 	* smearJetFactor(jet, sf_down));

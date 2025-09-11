@@ -674,8 +674,8 @@ protected:
 	vector<float> jet_E_JES_up;
 	vector<float> jet_Pt_JES_down;
 	vector<float> jet_E_JES_down;
-	vector<float> jet_Pt_JER;
-	vector<float> jet_E_JER;
+	vector<float> jet_Pt_noJER;
+	vector<float> jet_E_noJER;
 	vector<float> jet_Pt_JER_up;
 	vector<float> jet_E_JER_up;
 	vector<float> jet_Pt_JER_down;
