@@ -310,6 +310,21 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 """
 
 # ----- Jet Energy Corrections ----- # GK
+# JEC from sqlite file # following here: https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JecSqliteFile
+# from CondCore.CondDB.CondDB_cfi import CondDB
+# CondDBJECFile = CondDB.clone(connect = cms.string( 'sqlite:Summer23Prompt23_RunCv123_V3_DATA.db' ) ) # file must be local! 
+## Error: Tag "JetCorrectorParametersCollection_Run2_Run3_DATA_AK4PFchs_offline_v3" has not been found in the database. from IOVProxy::load 
+# process.jec = cms.ESSource('PoolDBESSource',
+#     CondDBJECFile,
+#     toGet = cms.VPSet(
+#         cms.PSet(
+#             record = cms.string('JetCorrectionsRecord'),
+#             tag    = cms.string('JetCorrectorParametersCollection_Run2_Run3_DATA_AK4PFchs_offline_v3'), # from https://cms-conddb.cern.ch/cmsDbBrowser/list/Prod/gts/140X_dataRun3_v17
+#             label  = cms.untracked.string('AK4PFchs')
+#         ),
+#     )
+# )
+# process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
@@ -517,7 +532,17 @@ if not options.isData:
 if options.isData:
     process.DisplacedHcalJets.jec_Uncertainty = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv4_V3_DATA_Uncertainty_AK4PFchs.txt")
     # same link as for MC, different folder, and DATA -> MC
-
+    # Test FileInPath (doesn't like symlinks) and cms.string (still complains "JetCorrectorParameters: No definitions found!!!")
+    # if     "Run2023C" in inputFiles[0] and ("PromptReco-v1" in inputFiles[0] or "PromptReco-v2" in inputFiles[0] or "PromptReco-v3" in inputFiles[0]): 
+    #     process.DisplacedHcalJets.jec_Uncertainty = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/Summer23Prompt23_RunCv123_V3_DATA/Summer23Prompt23_RunCv123_V3_DATA_Uncertainty_AK4PFchs.txt")
+    #     print("using Cv123 JEC files!")
+    # elif   "Run2023C" in inputFiles[0] and "PromptReco-v4" in inputFiles[0]: 
+    #     process.DisplacedHcalJets.jec_Uncertainty = cms.string("cms_lpc_llp/Run3x-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/Summer23Prompt23_RunCv4_V3_DATA/Summer23Prompt23_RunCv4_V3_DATA_Uncertainty_AK4PFchs.txt")
+    #     print("using Cv4 JEC files!")
+    # elif   "Run2023D" in inputFiles[0]: process.DisplacedHcalJets.jec_Uncertainty = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/Summer23BPixPrompt23_RunD_V3_DATA/Summer23BPixPrompt23_RunD_V3_DATA_Uncertainty_AK4PFchs.txt")
+    # elif   "Run2023D" in inputFiles[0]: process.DisplacedHcalJets.jec_Uncertainty = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/Summer23BPixPrompt23_RunD_V2xHFscale_DATA/Summer23BPixPrompt23_RunD_V2xHFscale_DATA_Uncertainty_AK4PFchs.txt")
+    # TODO determine which one of Run D we should use
+        
 # Add jettiness for AK8 jets
 process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
 process.NjettinessAK8CHS = process.Njettiness.clone()

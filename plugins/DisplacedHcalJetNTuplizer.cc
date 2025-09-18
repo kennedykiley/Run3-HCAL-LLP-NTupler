@@ -154,6 +154,8 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 		//sumAlphasWeights = 0;
 	}
 	// JEC uncertainty, data and MC txt paths are listed in .py file
+	// std::string jecUncPath = iConfig.getParameter<std::string>("jec_Uncertainty"); // for cms.string
+	// jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecUncPath);
 	edm::FileInPath jecUncPath = iConfig.getParameter<edm::FileInPath>("jec_Uncertainty");
 	JetCorrectorParameters jecUncParams(jecUncPath.fullPath());
     jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecUncParams);
