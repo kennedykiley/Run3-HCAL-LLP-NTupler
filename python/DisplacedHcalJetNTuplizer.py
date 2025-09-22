@@ -153,6 +153,9 @@ process.load('Configuration.StandardSequences.GeometryDB_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.GeometrySimDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
+# for accessing factors froom the DB for JEC (https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyResolution#Accessing_factors_from_Global_Ta)
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('JetMETCorrections.Modules.JetResolutionESProducer_cfi')
 
 # ------ Declare the correct global tag ------ #
 
@@ -310,21 +313,57 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 """
 
 # ----- Jet Energy Corrections ----- # GK
-# JEC from sqlite file # following here: https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JecSqliteFile
-# from CondCore.CondDB.CondDB_cfi import CondDB
-# CondDBJECFile = CondDB.clone(connect = cms.string( 'sqlite:Summer23Prompt23_RunCv123_V3_DATA.db' ) ) # file must be local! 
-## Error: Tag "JetCorrectorParametersCollection_Run2_Run3_DATA_AK4PFchs_offline_v3" has not been found in the database. from IOVProxy::load 
-# process.jec = cms.ESSource('PoolDBESSource',
-#     CondDBJECFile,
-#     toGet = cms.VPSet(
-#         cms.PSet(
-#             record = cms.string('JetCorrectionsRecord'),
-#             tag    = cms.string('JetCorrectorParametersCollection_Run2_Run3_DATA_AK4PFchs_offline_v3'), # from https://cms-conddb.cern.ch/cmsDbBrowser/list/Prod/gts/140X_dataRun3_v17
-#             label  = cms.untracked.string('AK4PFchs')
-#         ),
-#     )
-# )
-# process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
+# JEC from sqlite file # following here: 
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JecSqliteFile
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyResolution#Accessing_factors_from_Global_Ta
+# Tag from https://cms-conddb.cern.ch/cmsDbBrowser/list/Prod/gts/140X_dataRun3_v17, and use "conddb --db <.db file> listTags" to confirm name from .db file
+# This is to use a .db file to over-ride the conditions from the GT 
+from CondCore.CondDB.CondDB_cfi import CondDB
+if options.isData:
+    mapping = {
+        ("Run2022C", ""):               "Summer22_22Sep2023_RunCD_V3_DATA",
+        ("Run2022D", ""):               "Summer22_22Sep2023_RunCD_V3_DATA",
+        ("Run2022E", ""):               "Summer22EE_22Sep2023_RunE_V3_DATA",
+        ("Run2022F", ""):               "Summer22EE_22Sep2023_RunF_V3_DATA",
+        ("Run2022G", ""):               "Summer22EE_22Sep2023_RunG_V3_DATA",
+        ("Run2023C", "PromptReco-v1"):  "Summer23Prompt23_RunCv123_V3_DATA",
+        ("Run2023C", "PromptReco-v2"):  "Summer23Prompt23_RunCv123_V3_DATA",
+        ("Run2023C", "PromptReco-v3"):  "Summer23Prompt23_RunCv123_V3_DATA",
+        ("Run2023C", "PromptReco-v4"):  "Summer23Prompt23_RunCv4_V3_DATA",
+        ("Run2023D", ""):               "Summer23BPixPrompt23_RunD_V3_DATA",
+    }
+else:
+    mapping = { # TODO make sure this agrees with MC naming scheme
+        ("", ""):                                   "Summer23BPixPrompt23_V3_MC",
+        ("Run3_ggH_HToSSTobbbb", "2022EEPrompt"):   "Summer22EEPrompt22_V1_MC",
+        ("Run3_ggH_HToSSTobbbb", "2022EE"):         "Summer22EE_22Sep2023_V3_MC",
+        ("Run3_ggH_HToSSTobbbb", "2022_"):          "Summer22_22Sep2023_V3_MC",
+        ("Run3_ggH_HToSSTobbbb", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
+        ("Run3_ggH_HToSSTobbbb", "2023Prompt_"):    "Summer23Prompt23_V3_MC",
+    }
+
+tag_name = None
+for (run, reco), name in mapping.items():
+    if run in inputFiles[0] and reco in inputFiles[0]:
+        tag_name = name
+        break
+if tag_name is None:
+    raise RuntimeError("No matching tag found for input file " + inputFiles[0])
+
+JEC_file_path = 'sqlite:../data/JEC_JER/JECDatabase/SQLiteFiles/' + tag_name + '.db'
+CondDBJECFile = CondDB.clone(connect = cms.string(JEC_file_path))
+CollectionName = 'JetCorrectorParametersCollection_' + tag_name + '_AK4PFchs'
+process.jec = cms.ESSource('PoolDBESSource',
+    CondDBJECFile,
+    toGet = cms.VPSet(
+        cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag    = cms.string(CollectionName), 
+            label  = cms.untracked.string('AK4PFchs')
+        ),
+    )
+)
+process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
