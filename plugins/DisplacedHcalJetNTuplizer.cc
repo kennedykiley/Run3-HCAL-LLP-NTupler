@@ -607,14 +607,19 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "jet_JetArea", &jet_JetArea );
 	output_tree->Branch( "jet_Pt_JES_up", &jet_Pt_JES_up );	
 	output_tree->Branch( "jet_E_JES_up", &jet_E_JES_up );	
+	output_tree->Branch( "jet_Mass_JES_up", &jet_Mass_JES_up );
 	output_tree->Branch( "jet_Pt_JES_down", &jet_Pt_JES_down );	
 	output_tree->Branch( "jet_E_JES_down", &jet_E_JES_down );	
+	output_tree->Branch( "jet_Mass_JES_down", &jet_Mass_JES_down );
 	output_tree->Branch( "jet_Pt_noJER", &jet_Pt_noJER );
 	output_tree->Branch( "jet_E_noJER", &jet_E_noJER );
+	output_tree->Branch( "jet_Mass_noJER", &jet_Mass_noJER );
 	output_tree->Branch( "jet_Pt_JER_up", &jet_Pt_JER_up );
 	output_tree->Branch( "jet_E_JER_up", &jet_E_JER_up );
+	output_tree->Branch( "jet_Mass_JER_up", &jet_Mass_JER_up );
 	output_tree->Branch( "jet_Pt_JER_down", &jet_Pt_JER_down );
 	output_tree->Branch( "jet_E_JER_down", &jet_E_JER_down );
+	output_tree->Branch( "jet_Mass_JER_down", &jet_Mass_JER_down );
 	output_tree->Branch( "jet_ChargedHadEFrac", &jet_ChargedHadEFrac );
 	output_tree->Branch( "jet_NeutralHadEFrac", &jet_NeutralHadEFrac );
 	output_tree->Branch( "jet_PhoEFrac", &jet_PhoEFrac );
@@ -1177,14 +1182,19 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jetRaw_E.clear();
 	jet_Pt_JES_up.clear();
 	jet_E_JES_up.clear();
+	jet_Mass_JES_up.clear();
 	jet_Pt_JES_down.clear();
 	jet_E_JES_down.clear();
+	jet_Mass_JES_down.clear();
 	jet_Pt_noJER.clear();
 	jet_E_noJER.clear();
+	jet_Mass_noJER.clear();
 	jet_Pt_JER_up.clear();
 	jet_E_JER_up.clear();
+	jet_Mass_JER_up.clear();
 	jet_Pt_JER_down.clear();
 	jet_E_JER_down.clear();
+	jet_Mass_JER_down.clear();
 	jet_ChargedHadEFrac.clear();
 	jet_NeutralHadEFrac.clear();
 	jet_PhoEFrac.clear();
@@ -2336,14 +2346,15 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		if (isData) { // for data, no JER needed, so save as _Pt and _E
 			jet_E.push_back( jet.energy() );
 			jet_Pt.push_back( jet.pt() );
+			jet_Mass.push_back( jet.mass() );
 		}
 		if (!isData) { // for MC, specify if JER is applied or not. Save JEC + JER as _Pt and _E
 			jet_E_noJER.push_back( jet.energy() );
 			jet_Pt_noJER.push_back( jet.pt() );
+			jet_Mass_noJER.push_back( jet.mass() );
 		}
 		jet_Eta.push_back( jet.eta() );
 		jet_Phi.push_back( jet.phi() );
-		jet_Mass.push_back( jet.mass() );
 
 		// JEC, jet energy scale uncertainty
 		jecUnc_->setJetPt(jet.pt());
@@ -2354,8 +2365,10 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		// Save to tree
 		jet_Pt_JES_up.		push_back(jet.pt() 		* factor_jesUp);
 		jet_E_JES_up.		push_back(jet.energy() 	* factor_jesUp);
+		jet_Mass_JES_up.	push_back(jet.mass() 	* factor_jesUp);
 		jet_Pt_JES_down.	push_back(jet.pt() 		* factor_jesDown);
 		jet_E_JES_down.		push_back(jet.energy() 	* factor_jesDown);
+		jet_Mass_JES_down.	push_back(jet.mass() 	* factor_jesDown);
 
 		// ----- JEC + JER (only for MC) ----- // GK
 		if (!isData_) {
@@ -2390,10 +2403,13 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 			jet_Pt			.push_back(jet.pt() 	* smearJetFactor(jet, sf_nom));
 			jet_E			.push_back(jet.energy() * smearJetFactor(jet, sf_nom));
+			jet_Mass		.push_back(jet.mass()   * smearJetFactor(jet, sf_nom));
 			jet_Pt_JER_up	.push_back(jet.pt() 	* smearJetFactor(jet, sf_up));
 			jet_E_JER_up	.push_back(jet.energy() * smearJetFactor(jet, sf_up));
+			jet_Mass_JER_up	.push_back(jet.mass()   * smearJetFactor(jet, sf_up));
 			jet_Pt_JER_down	.push_back(jet.pt() 	* smearJetFactor(jet, sf_down));
 			jet_E_JER_down	.push_back(jet.energy() * smearJetFactor(jet, sf_down));
+			jet_Mass_JER_down.push_back(jet.mass()  * smearJetFactor(jet, sf_down));
 		}
 
 		// ----- ID ----- //

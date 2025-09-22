@@ -672,14 +672,19 @@ protected:
 	vector<float> jet_Mass;
 	vector<float> jet_Pt_JES_up;
 	vector<float> jet_E_JES_up;
+	vector<float> jet_Mass_JES_up;
 	vector<float> jet_Pt_JES_down;
 	vector<float> jet_E_JES_down;
+	vector<float> jet_Mass_JES_down;
 	vector<float> jet_Pt_noJER;
 	vector<float> jet_E_noJER;
+	vector<float> jet_Mass_noJER;
 	vector<float> jet_Pt_JER_up;
 	vector<float> jet_E_JER_up;
+	vector<float> jet_Mass_JER_up;
 	vector<float> jet_Pt_JER_down;
 	vector<float> jet_E_JER_down;
+	vector<float> jet_Mass_JER_down;
 	// Features 
 	vector<float> jet_JetArea;  
 	vector<float> jet_ChargedHadEFrac;
