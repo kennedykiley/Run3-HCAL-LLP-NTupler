@@ -2362,13 +2362,16 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		double unc = jecUnc_->getUncertainty(true);  // true = up variation
 		double factor_jesUp = (1 + unc);
 		double factor_jesDown = (1 - unc);
+		// correct 4 vector instead of each component
+		auto jet_JES_up = jet.p4() * factor_jesUp;
+		auto jet_JES_down = jet.p4() * factor_jesDown;
 		// Save to tree
-		jet_Pt_JES_up.		push_back(jet.pt() 		* factor_jesUp);
-		jet_E_JES_up.		push_back(jet.energy() 	* factor_jesUp);
-		jet_Mass_JES_up.	push_back(jet.mass() 	* factor_jesUp);
-		jet_Pt_JES_down.	push_back(jet.pt() 		* factor_jesDown);
-		jet_E_JES_down.		push_back(jet.energy() 	* factor_jesDown);
-		jet_Mass_JES_down.	push_back(jet.mass() 	* factor_jesDown);
+		jet_Pt_JES_up.		push_back(jet_JES_up.pt());
+		jet_E_JES_up.		push_back(jet_JES_up.energy());
+		jet_Mass_JES_up.	push_back(jet_JES_up.mass());
+		jet_Pt_JES_down.	push_back(jet_JES_down.pt());
+		jet_E_JES_down.		push_back(jet_JES_down.energy());
+		jet_Mass_JES_down.	push_back(jet_JES_down.mass());
 
 		// ----- JEC + JER (only for MC) ----- // GK
 		if (!isData_) {
@@ -2401,15 +2404,20 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 				return std::max(0.0, smearFactor);
 			};
 
-			jet_Pt			.push_back(jet.pt() 	* smearJetFactor(jet, sf_nom));
-			jet_E			.push_back(jet.energy() * smearJetFactor(jet, sf_nom));
-			jet_Mass		.push_back(jet.mass()   * smearJetFactor(jet, sf_nom));
-			jet_Pt_JER_up	.push_back(jet.pt() 	* smearJetFactor(jet, sf_up));
-			jet_E_JER_up	.push_back(jet.energy() * smearJetFactor(jet, sf_up));
-			jet_Mass_JER_up	.push_back(jet.mass()   * smearJetFactor(jet, sf_up));
-			jet_Pt_JER_down	.push_back(jet.pt() 	* smearJetFactor(jet, sf_down));
-			jet_E_JER_down	.push_back(jet.energy() * smearJetFactor(jet, sf_down));
-			jet_Mass_JER_down.push_back(jet.mass()  * smearJetFactor(jet, sf_down));
+			auto jet_JER = jet.p4() * smearJetFactor(jet, sf_nom);
+			jet_Pt			.push_back(jet_JER.pt());
+			jet_E			.push_back(jet_JER.energy());
+			jet_Mass		.push_back(jet_JER.mass());
+
+			auto jet_JER_up = jet.p4() * smearJetFactor(jet, sf_up);
+			jet_Pt_JER_up	.push_back(jet_JER_up.pt());
+			jet_E_JER_up	.push_back(jet_JER_up.energy());
+			jet_Mass_JER_up	.push_back(jet_JER_up.mass());
+			
+			auto jet_JER_down = jet.p4() * smearJetFactor(jet, sf_down);
+			jet_Pt_JER_down	.push_back(jet_JER_down.pt());
+			jet_E_JER_down	.push_back(jet_JER_down.energy());
+			jet_Mass_JER_down.push_back(jet_JER_down.mass());
 		}
 
 		// ----- ID ----- //

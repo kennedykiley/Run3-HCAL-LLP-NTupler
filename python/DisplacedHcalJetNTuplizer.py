@@ -334,12 +334,12 @@ if options.isData:
     }
 else:
     mapping = { # TODO make sure this agrees with MC naming scheme
-        ("", ""):                                   "Summer23BPixPrompt23_V3_MC",
-        ("Run3_ggH_HToSSTobbbb", "2022EEPrompt"):   "Summer22EEPrompt22_V1_MC",
-        ("Run3_ggH_HToSSTobbbb", "2022EE"):         "Summer22EE_22Sep2023_V3_MC",
-        ("Run3_ggH_HToSSTobbbb", "2022_"):          "Summer22_22Sep2023_V3_MC",
-        ("Run3_ggH_HToSSTobbbb", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
-        ("Run3_ggH_HToSSTobbbb", "2023Prompt_"):    "Summer23Prompt23_V3_MC",
+        ("HToSSTo4B", "23BPix"):         "Summer23BPixPrompt23_V3_MC",
+        # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
+        ("HToSSTo4B", "2023Prompt_"):    "Summer23Prompt23_V3_MC",
+        ("HToSSTo4B", "2022EEPrompt"):   "Summer22EEPrompt22_V1_MC",
+        ("HToSSTo4B", "2022EE"):         "Summer22EE_22Sep2023_V3_MC",
+        ("HToSSTo4B", "1022_"):          "Summer22_22Sep2023_V3_MC",
     }
 
 tag_name = None
@@ -707,9 +707,9 @@ process.patTask = cms.Task(
 ## PU JetID
 process.load("RecoJets.JetProducers.PileupJetID_cfi")
 process.patTask.add(process.pileUpJetIDTask)
+# process.pileupJetId.jets = cms.InputTag("ak4PFJetsCHS") # Point pileupJetId to the initial jets 
 process.patJets.userData.userFloats.src = [ cms.InputTag("pileupJetId:fullDiscriminant"), ]
 process.patJets.userData.userInts.src = [ cms.InputTag("pileupJetId:fullId"), ]
-
 
 #from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 #updateJetCollection(
