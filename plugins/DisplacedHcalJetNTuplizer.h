@@ -264,6 +264,9 @@ public:
 
 	double deltaPhi(double phi1, double phi2);
 	double deltaR(double eta1, double phi1, double eta2, double phi2);
+	double GetL1SF(double ptLead, double ptSub, std::string filename);
+	double GetHLTSF(double ptLead, int nTrk, std::string filename);
+
 
 protected:
         virtual void beginJob() override;
@@ -286,6 +289,7 @@ protected:
 	// EDM Tokens (miniAOD Inputs)
 	// ====================================================================================
 
+	const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> theTTBToken;
 	edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken_;
 	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
 	edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;
@@ -490,6 +494,8 @@ protected:
 	//vector<string> HLT_Names;
 	vector<bool> HLT_Decision; //[NTriggersMAX];
 	vector<int> HLT_Prescale; //[NTriggersMAX];
+	vector<double> HLT_SF_Tot; //[NTriggersMAX];
+	vector<double> HLT_SF_L1; //[NTriggersMAX];
 
 	//pdf weight helper
 	//RazorPDFWeightsHelper pdfweightshelper;
@@ -663,6 +669,7 @@ protected:
 	vector<float> jet_MinDeltaRPVTracks_wp;
 	// Rechits Association 
 	vector<uint> jet_NTracks;
+	vector<int> jet_NPromptTracks;
 	vector<vector<uint>> jet_TrackIndices;
 	vector<uint> jet_NPFCands;
 	vector<vector<uint>> jet_PFCandIndices;
