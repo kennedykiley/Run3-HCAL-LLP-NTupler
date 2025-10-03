@@ -325,6 +325,7 @@ protected:
 	edm::EDGetTokenT<reco::PhotonCollection> photonsToken_;
 	edm::EDGetTokenT<pat::JetCollection> jetsToken_;
 	edm::EDGetTokenT<pat::JetCollection> jetsCorrToken_; // GK, adding JECs
+	// edm::EDGetTokenT<pat::JetCollection> jetsPuppiCorrToken_; // GK, adding JECs, PUPPI
 	edm::EDGetTokenT<reco::CaloJetCollection> calojetsToken_;
 	edm::EDGetTokenT<pat::JetCollection> LRJetsToken_;
 	edm::EDGetTokenT<reco::CaloJetCollection> caloLRJetsToken_;
@@ -421,6 +422,7 @@ protected:
 	edm::Handle<reco::PhotonCollection> photons;
 	edm::Handle<pat::JetCollection> jets;
 	edm::Handle<pat::JetCollection> jetsCorr; // GK, for JECs
+	// edm::Handle<pat::JetCollection> jetsPuppiCorr; // GK, for JECs, PUPPI
 	edm::Handle<reco::CaloJetCollection> calojets;
 	edm::Handle<pat::JetCollection> LRJets;
 	edm::Handle<reco::CaloJetCollection> caloLRJets;
@@ -665,6 +667,10 @@ protected:
 	// Basics
 	vector<float> jetRaw_Pt;
 	vector<float> jetRaw_E;
+	vector<float> jet_Puppi_Pt;
+	vector<float> jet_Puppi_E;
+	vector<float> jet_Puppi_Eta;
+	vector<float> jet_Puppi_Phi;
 	vector<float> jet_Pt;
 	vector<float> jet_E;
 	vector<float> jet_Eta;

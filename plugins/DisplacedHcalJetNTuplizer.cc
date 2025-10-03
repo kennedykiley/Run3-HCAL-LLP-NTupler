@@ -60,6 +60,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	photonsToken_(consumes<reco::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
 	jetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4"))),
 	jetsCorrToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4_corrected"))), // GK, adding JECs
+	// jetsPuppiCorrToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4Puppi"))), // GK, adding JECs for PUPPI jets 
 	calojetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK4"))),
 	LRJetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK8"))),
 	caloLRJetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK8"))),
@@ -346,6 +347,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(photonsToken_, photons);
 	iEvent.getByToken(jetsToken_, jets);
 	iEvent.getByToken(jetsCorrToken_, jetsCorr); // GK, adding JECs
+	// iEvent.getByToken(jetsPuppiCorrToken_, jetsPuppiCorr);
 	iEvent.getByToken(calojetsToken_, calojets);
 	iEvent.getByToken(LRJetsToken_, LRJets);
 	iEvent.getByToken(caloLRJetsToken_, caloLRJets);
@@ -599,6 +601,10 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "n_jet", &n_jet );
 	output_tree->Branch( "jetRaw_Pt", &jetRaw_Pt );
 	output_tree->Branch( "jetRaw_E", &jetRaw_E );
+	output_tree->Branch( "jet_Puppi_Pt", &jet_Puppi_Pt );
+	output_tree->Branch( "jet_Puppi_Eta", &jet_Puppi_Eta );
+	output_tree->Branch( "jet_Puppi_Phi", &jet_Puppi_Phi );
+	output_tree->Branch( "jet_Puppi_E", &jet_Puppi_E );
 	output_tree->Branch( "jet_Pt", &jet_Pt );
 	output_tree->Branch( "jet_Eta", &jet_Eta );
 	output_tree->Branch( "jet_Phi", &jet_Phi );
@@ -1172,6 +1178,10 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 
 	// AK4 PF Jets 
 	n_jet = 0;
+	jet_Puppi_Pt.clear();
+	jet_Puppi_Eta.clear();
+	jet_Puppi_Phi.clear();
+	jet_Puppi_E.clear();
 	jet_Pt.clear();
 	jet_Eta.clear();
 	jet_Phi.clear();
@@ -2323,6 +2333,13 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 	//for (const pat::Jet &j : *jets) {
 	// for( auto &jet : *jets ) { // uncorrected jets
+	// GK PUPPI
+	// for ( auto &jet : *jetsPuppiCorr ) {
+	// 	jet_Puppi_Pt.push_back( jet.pt() );
+	// 	jet_Puppi_E.push_back( jet.energy() );
+	// 	jet_Puppi_Phi.push_back( jet.phi() );
+	// 	jet_Puppi_Eta.push_back( jet.eta() );
+	// }
 	for( auto &jet : *jetsCorr ) { // GK, corrected PF ak4 jets
 
 		if( jet.pt() < 10 || fabs(jet.eta()) > 1.5 ) continue;

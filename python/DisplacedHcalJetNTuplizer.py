@@ -318,6 +318,7 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyResolution#Accessing_factors_from_Global_Ta
 # Tag from https://cms-conddb.cern.ch/cmsDbBrowser/list/Prod/gts/140X_dataRun3_v17, and use "conddb --db <.db file> listTags" to confirm name from .db file
 # This is to use a .db file to over-ride the conditions from the GT 
+# https://cms-jerc.web.cern.ch/Recommendations/#2022
 from CondCore.CondDB.CondDB_cfi import CondDB
 if options.isData:
     mapping = {
@@ -353,14 +354,22 @@ if tag_name is None:
 JEC_file_path = 'sqlite:../data/JEC_JER/JECDatabase/SQLiteFiles/' + tag_name + '.db'
 CondDBJECFile = CondDB.clone(connect = cms.string(JEC_file_path))
 CollectionName = 'JetCorrectorParametersCollection_' + tag_name + '_AK4PFchs'
+PuppiCollectionName = 'JetCorrectorParametersCollection_' + tag_name + '_AK4PFPuppi'
 process.jec = cms.ESSource('PoolDBESSource',
     CondDBJECFile,
     toGet = cms.VPSet(
+        # CHS jets first
         cms.PSet(
             record = cms.string('JetCorrectionsRecord'),
             tag    = cms.string(CollectionName), 
             label  = cms.untracked.string('AK4PFchs')
         ),
+        # PUPPI jets
+        cms.PSet(
+            record = cms.string("JetCorrectionsRecord"),
+            tag    = cms.string(PuppiCollectionName),
+            label  = cms.untracked.string("AK4PFPuppi")
+        )
     )
 )
 process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
@@ -383,6 +392,37 @@ updateJetCollection(
     # svSource = cms.InputTag('slimmedSecondaryVertices'),
 )
 # now we have a new collection, selectedUpdatedPatJetsUpdatedJEC = corrected jets. As before, selectedPatJets = still the uncorrected PAT jets.
+from PhysicsTools.PatAlgos.producersLayer1.jetProducer_cfi import patJets
+# GK PUPPI
+# from PhysicsTools.PatAlgos.JetCorrFactorsProducer_cfi import JetCorrFactorsProducer
+# process.patJetCorrFactorsPuppi = JetCorrFactorsProducer.clone(
+#     src = cms.InputTag("ak4PFJetsPuppi"),  # input RECO jets
+#     levels = jecLevels,  # JEC levels you want
+#     payload = 'AK4PFPuppi'  # must match the label in PoolDBESSource
+# )
+# # Step 1: make PAT jets from RECO PUPPI jets. Step 2: add correction factors, done inside here otherwise had issues with "updateJetCollection" about gen particles
+# --- PUPPI PAT jets (no JEC, no gen, safe for RECO/AOD) --- #
+# process.patJetsPuppi = patJets.clone(
+#     jetSource = cms.InputTag("ak4PFJetsPuppi"),
+#     addBTagInfo = cms.bool(False),
+#     addDiscriminators = cms.bool(False),
+#     addAssociatedTracks = cms.bool(False),
+#     addJetCorrFactors = cms.bool(False),
+#     # jetCorrFactorsSource = cms.VInputTag(
+#     #     cms.InputTag('patJetCorrFactorsPuppi')  
+#     # ),
+#     addGenPartonMatch = cms.bool(False),
+#     addGenJetMatch    = cms.bool(False),
+#     getJetMCFlavour   = cms.bool(False),
+#     addJetFlavourInfo = cms.bool(False),
+#     JetFlavourInfoSource = cms.InputTag(""),
+#     JetPartonMapSource   = cms.InputTag(""),
+#     embedGenPartonMatch  = cms.bool(False),
+#     embedGenJetMatch     = cms.bool(False),
+#     embedPFCandidates    = cms.bool(False),
+#     embedCaloTowers      = cms.bool(False),
+#     addTagInfos          = cms.bool(False)
+# )
 
 # ------ Analyzer ------ #
 
@@ -424,7 +464,9 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     #jetsPF = cms.InputTag("ak4PFJets"),
     #jets = cms.InputTag("ak4PFJetsCHS"),
     #jets = cms.InputTag("selectedPatJets"),
-    #jets = cms.InputTag("ak4PFJetsPuppi"),
+    # GK PUPPI
+    # jets = cms.InputTag("ak4PFJetsPuppi"),
+    # pfjetsAK4Puppi = cms.InputTag("patJetsPuppi"), # selectedUpdatedPatJetsPuppiUpdatedJEC"), # use the second one if updateJetCollection is used
     #jetsPuppi = cms.InputTag("ak4PFJets"),
     #jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
     #jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
@@ -653,6 +695,7 @@ process.load('PhysicsTools.PatAlgos.selectionLayer1.electronSelector_cfi')
 process.load('PhysicsTools.PatAlgos.selectionLayer1.muonSelector_cfi')
 process.load('PhysicsTools.PatAlgos.selectionLayer1.photonSelector_cfi')
 process.load('PhysicsTools.PatAlgos.selectionLayer1.ootPhotonSelector_cff')
+# --- CHS PAT candidates task --- #
 process.selectedPatCandidatesTask = cms.Task(
     process.selectedPatElectrons,
     process.selectedPatMuons,
@@ -663,6 +706,23 @@ process.selectedPatCandidatesTask = cms.Task(
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
+# GK PUPPI
+# # --- Puppi PAT task --- #
+# process.selectedPatPuppiTask = cms.Task(
+#     process.patJetCorrFactorsPuppi,
+#     process.patJetsPuppi,
+#     # process.updatedPatJetsPuppiUpdatedJEC (if used)
+# )
+# process.selectedPatPuppi = cms.Sequence(process.selectedPatPuppiTask)
+
+# Now fix patTask to not drag in parton matching
+# for modname in ["patJetPartons",
+#                 "patJetFlavourAssociation",
+#                 "patJetFlavourAssociationLegacy",
+#                 "patJetPartonMatch",
+#                 "patJetGenJetMatch"]:
+#     if hasattr(process, modname):
+#         process.patTask.remove(getattr(process, modname))
 
 process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
 process.patTrigger.onlyStandAlone = cms.bool(False)
@@ -676,6 +736,7 @@ process.load('PhysicsTools.PatAlgos.slimming.slimmedPatTrigger_cfi')
 process.patTask = cms.Task(
     process.patCandidatesTask,
     process.selectedPatCandidatesTask,
+    # process.selectedPatPuppiTask, # add Puppi workflow
     #process.patTrigger,
     #process.selectedPatTrigger,
     #process.slimmedPatTrigger
@@ -827,3 +888,7 @@ process = customiseLogErrorHarvesterUsingOutputCommands(process)
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
 # End adding early deletion
+
+# Write full configuration to a file for debugging
+with open("configDump.py", "w") as f:
+    f.write(process.dumpPython())
