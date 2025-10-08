@@ -331,6 +331,12 @@ protected:
 	edm::EDGetTokenT<reco::CaloJetCollection> caloLRJetsToken_;
 	edm::EDGetTokenT<BXVector<l1t::Jet>> l1jetsToken_;
 
+	// JER
+	edm::ESGetToken<JME::JetResolution, JetResolutionRcd> jerResToken_CHS_;
+	edm::ESGetToken<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd> jerSFToken_CHS_;
+	edm::ESGetToken<JME::JetResolution, JetResolutionRcd> jerResToken_;
+	edm::ESGetToken<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd> jerSFToken_;
+
 	// Low-Level Objects
 	//edm::EDGetTokenT<edm::View<reco::Track>> tracksToken_;
 	edm::EDGetTokenT<vector<reco::Track>> generalTracksToken_;
@@ -667,10 +673,16 @@ protected:
 	// Basics
 	vector<float> jetRaw_Pt;
 	vector<float> jetRaw_E;
+	vector<float> jetRaw_Puppi_Pt;
+	vector<float> jetRaw_Puppi_E;
 	vector<float> jet_Puppi_Pt;
 	vector<float> jet_Puppi_E;
 	vector<float> jet_Puppi_Eta;
 	vector<float> jet_Puppi_Phi;
+	vector<float> jet_Puppi_Mass;
+	vector<float> jet_Puppi_Pt_noJER;
+	vector<float> jet_Puppi_E_noJER;
+	vector<float> jet_Puppi_Mass_noJER;
 	vector<float> jet_Pt;
 	vector<float> jet_E;
 	vector<float> jet_Eta;

@@ -312,7 +312,7 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 )
 """
 
-# ----- Jet Energy Corrections ----- # GK
+# ----- Jet Energy Corrections and Jet Energy Resolution for MC ----- # GK
 # JEC from sqlite file # following here: 
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JecSqliteFile
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyResolution#Accessing_factors_from_Global_Ta
@@ -322,35 +322,39 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 from CondCore.CondDB.CondDB_cfi import CondDB
 if options.isData:
     mapping = {
-        ("Run2022C", ""):               "Summer22_22Sep2023_RunCD_V3_DATA",
-        ("Run2022D", ""):               "Summer22_22Sep2023_RunCD_V3_DATA",
-        ("Run2022E", ""):               "Summer22EE_22Sep2023_RunE_V3_DATA",
-        ("Run2022F", ""):               "Summer22EE_22Sep2023_RunF_V3_DATA",
-        ("Run2022G", ""):               "Summer22EE_22Sep2023_RunG_V3_DATA",
-        ("Run2023C", "PromptReco-v1"):  "Summer23Prompt23_RunCv123_V3_DATA",
-        ("Run2023C", "PromptReco-v2"):  "Summer23Prompt23_RunCv123_V3_DATA",
-        ("Run2023C", "PromptReco-v3"):  "Summer23Prompt23_RunCv123_V3_DATA",
-        ("Run2023C", "PromptReco-v4"):  "Summer23Prompt23_RunCv4_V3_DATA",
-        ("Run2023D", ""):               "Summer23BPixPrompt23_RunD_V3_DATA",
+        ("Run2022C", ""):               ("Summer22_22Sep2023_RunCD_V3_DATA", "Summer22_22Sep2023_JRV1_DATA"),
+        ("Run2022D", ""):               ("Summer22_22Sep2023_RunCD_V3_DATA", "Summer22_22Sep2023_JRV1_DATA"),
+        ("Run2022E", ""):               ("Summer22EE_22Sep2023_RunE_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
+        ("Run2022F", ""):               ("Summer22EE_22Sep2023_RunF_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
+        ("Run2022G", ""):               ("Summer22EE_22Sep2023_RunG_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
+        ("Run2023C", "PromptReco-v1"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv123_JRV1_DATA"),
+        ("Run2023C", "PromptReco-v2"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv123_JRV1_DATA"),
+        ("Run2023C", "PromptReco-v3"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv123_JRV1_DATA"),
+        ("Run2023C", "PromptReco-v4"):  ("Summer23Prompt23_RunCv4_V3_DATA", "Summer23Prompt23_RunCv4_JRV1_DATA"),
+        ("Run2023D", ""):               ("Summer23BPixPrompt23_RunD_V3_DATA", "Summer23BPixPrompt23_RunD_JRV1_DATA"),
     }
 else:
     mapping = { # TODO make sure this agrees with MC naming scheme
-        ("HToSSTo4B", "23BPix"):         "Summer23BPixPrompt23_V3_MC",
+        ("HToSSTo4B", "23BPix"):         ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC"),
         # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
-        ("HToSSTo4B", "2023Prompt_"):    "Summer23Prompt23_V3_MC",
-        ("HToSSTo4B", "2022EEPrompt"):   "Summer22EEPrompt22_V1_MC",
-        ("HToSSTo4B", "2022EE"):         "Summer22EE_22Sep2023_V3_MC",
-        ("HToSSTo4B", "1022_"):          "Summer22_22Sep2023_V3_MC",
+        ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC.db"), # Summer23Prompt23_RunCv123_JRV1_MC and RunCv4_JRV1_MC when have all eras of MC
+        ("HToSSTo4B", "2022EE"):         ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC"),
+        ("HToSSTo4B", "2022_"):          ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
     }
 
 tag_name = None
-for (run, reco), name in mapping.items():
+JER_tag_name = None
+for (run, reco), (name, JERname) in mapping.items():
     if run in inputFiles[0] and reco in inputFiles[0]:
         tag_name = name
+        JER_tag_name = JERname
         break
 if tag_name is None:
-    raise RuntimeError("No matching tag found for input file " + inputFiles[0])
+    raise RuntimeError("No matching JEC tag found for input file " + inputFiles[0])
+if JER_tag_name is None:
+    raise RuntimeError("No matching JER tag found for input file " + inputFiles[0])
 
+# ---------- JEC -----------
 JEC_file_path = 'sqlite:../data/JEC_JER/JECDatabase/SQLiteFiles/' + tag_name + '.db'
 CondDBJECFile = CondDB.clone(connect = cms.string(JEC_file_path))
 CollectionName = 'JetCorrectorParametersCollection_' + tag_name + '_AK4PFchs'
@@ -373,6 +377,51 @@ process.jec = cms.ESSource('PoolDBESSource',
     )
 )
 process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
+
+# ---------- JER -----------
+from JetMETCorrections.Modules.JetResolutionESProducer_cfi import *
+JER_file_path = 'sqlite:../data/JEC_JER/JRDatabase/SQLiteFiles/' + JER_tag_name + '.db'
+CondDBJERFile = CondDB.clone(connect = cms.string(JER_file_path))
+CollectionName = 'JR_' + JER_tag_name + '_SF_AK4PFchs' 
+PuppiCollectionName = 'JR_' + JER_tag_name + '_SF_AK4PFPuppi'
+CollectionName_Pt = 'JR_' + JER_tag_name + '_PtResolution_AK4PFchs' 
+PuppiCollectionName_Pt = 'JR_' + JER_tag_name + '_PtResolution_AK4PFPuppi'
+process.jer = cms.ESSource('PoolDBESSource',
+    CondDBJERFile,
+    toGet = cms.VPSet(
+        # CHS jets
+        cms.PSet(
+            record = cms.string('JetResolutionRcd'),
+            tag    = cms.string(CollectionName_Pt),
+            label  = cms.untracked.string('AK4PFchs_pt')
+        ),
+        cms.PSet(
+            record = cms.string('JetResolutionScaleFactorRcd'),
+            tag    = cms.string(CollectionName),
+            label  = cms.untracked.string('AK4PFchs')
+        ),
+        # PUPPI jets
+        cms.PSet(
+            record = cms.string('JetResolutionRcd'),
+            tag    = cms.string(PuppiCollectionName_Pt),
+            label  = cms.untracked.string('AK4PFPuppi_pt')
+        ),
+        cms.PSet(
+            record = cms.string('JetResolutionScaleFactorRcd'),
+            tag    = cms.string(PuppiCollectionName),
+            label  = cms.untracked.string('AK4PFPuppi')
+        )
+    )
+)
+process.es_prefer_jer = cms.ESPrefer('PoolDBESSource', 'jer')
+
+# process.ak4PFPuppi = cms.ESProducer("JetResolutionESProducer",
+#     label = cms.string("ak4PFPuppi")
+# )
+# process.ak4PFPuppiSF = cms.ESProducer("JetResolutionScaleFactorESProducer",
+#     resolution = cms.string("ak4PFPuppi"),
+#     algo = cms.string("AK4PFPuppi")
+# )
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
@@ -397,7 +446,7 @@ from PhysicsTools.PatAlgos.producersLayer1.jetProducer_cfi import patJets
 from PhysicsTools.PatAlgos.JetCorrFactorsProducer_cfi import JetCorrFactorsProducer
 process.patJetCorrFactorsPuppi = JetCorrFactorsProducer.clone(
     src = cms.InputTag("ak4PFJetsPuppi"),  # input RECO jets
-    levels = jecLevels,  # JEC levels needed
+    levels = jecLevels,  # JEC levels
     payload = 'AK4PFPuppi'  # must match the label in PoolDBESSource
 )
 # Step 1: make PAT jets from RECO PUPPI jets. Step 2: add correction factors, done inside here otherwise had issues with "updateJetCollection" about gen particles
@@ -406,8 +455,17 @@ process.patJetsPuppi = patJets.clone(
     jetSource = cms.InputTag("ak4PFJetsPuppi"),
     addBTagInfo         = cms.bool(True),
     addDiscriminators   = cms.bool(False),
+    # discriminatorSources = cms.VInputTag(
+    #     cms.InputTag("pfDeepCSVJetTags:probb"),
+    #     cms.InputTag("pfDeepCSVJetTags:probc"),
+    #     cms.InputTag("pfDeepCSVJetTags:probudsg"),
+    #     cms.InputTag("pfDeepCSVJetTags:probbb")
+    # ),
+    addJetCorrFactors   = cms.bool(True),
+    jetCorrFactorsSource = cms.VInputTag(
+        cms.InputTag('patJetCorrFactorsPuppi')  # JEC for PUPPI jets
+    ),
     addAssociatedTracks = cms.bool(False),
-    addJetCorrFactors   = cms.bool(False),
     addGenPartonMatch   = cms.bool(False),
     addGenJetMatch      = cms.bool(False),
     getJetMCFlavour     = cms.bool(False),
@@ -420,11 +478,8 @@ process.patJetsPuppi = patJets.clone(
     embedGenJetMatch    = cms.bool(False),
     embedPFCandidates   = cms.bool(False),
     embedCaloTowers     = cms.bool(False),
-    addTagInfos         = cms.bool(False),
-    # TODO also need to add JECs / JER
-    # jetCorrFactorsSource = cms.VInputTag(
-    #     cms.InputTag('patJetCorrFactorsPuppi')  
-    # )
+    addTagInfos         = cms.bool(True)
+
 )
 
 # ------ Analyzer ------ #
@@ -605,8 +660,8 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
 
 # ----- Jet Energy Resolution (only MC), and JEC uncertainties (data and MC) ----- # GK
 if not options.isData: 
-    process.DisplacedHcalJets.jer_PtResolution = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv1234_JRV1_MC_PtResolution_AK4PFchs.txt")
-    process.DisplacedHcalJets.jer_ScaleFactor  = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv1234_JRV1_MC_SF_AK4PFchs.txt")
+    # process.DisplacedHcalJets.jer_PtResolution = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv1234_JRV1_MC_PtResolution_AK4PFchs.txt")
+    # process.DisplacedHcalJets.jer_ScaleFactor  = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv1234_JRV1_MC_SF_AK4PFchs.txt")
     # from https://github.com/cms-jet/JRDatabase/blob/master/textFiles/Summer23Prompt23_RunCv1234_JRV1_MC/
     # TODO need to handle different eras 
     # based on https://cms-jerc.web.cern.ch/Recommendations/#2023_1
@@ -712,7 +767,7 @@ process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 # GK PUPPI
 # --- Puppi PAT task --- #
 process.selectedPatPuppiTask = cms.Task(
-    # process.patJetCorrFactorsPuppi, (unclear if needed)
+    process.patJetCorrFactorsPuppi, # (unclear if needed)
     process.patJetsPuppi,
     # process.updatedPatJetsPuppiUpdatedJEC (if used)
 )
