@@ -289,7 +289,7 @@ protected:
 	// EDM Tokens (miniAOD Inputs)
 	// ====================================================================================
 
-	const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> theTTBToken;
+	const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> theTTBToken_;
 	edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken_;
 	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
 	edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;

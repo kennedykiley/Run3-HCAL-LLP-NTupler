@@ -15,6 +15,7 @@
 #include "fastjet/PseudoJet.hh"
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "RecoVertex/VertexPrimitives/interface/VertexState.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 
 // 
 // ************************************************************************************
@@ -29,7 +30,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	isData_(iConfig.getParameter<bool>( "isData" )),
 	isSignal_(iConfig.getParameter<bool>( "isSignal" )),
 	// Trigger
-	theTTBToken(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
+	theTTBToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
 	triggerBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerBits"))),
 	triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
 	triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
@@ -337,7 +338,6 @@ void DisplacedHcalJetNTuplizer::EnableBranches(){
 
 	EnableEventInfoBranches();
 	EnablePVBranches();
-	EnableTriggerBranches();
 	EnableMetBranches();
 	// Standard Objects
 	EnableElectronBranches();
@@ -346,6 +346,7 @@ void DisplacedHcalJetNTuplizer::EnableBranches(){
 	EnablePhotonBranches();
 	EnableJetBranches();
 	// Low-Level Objects
+	EnableTriggerBranches();
 	EnableTrackBranches();
 	EnableSecondaryVerticesBranches();
 	EnablePFCandidateBranches();
@@ -870,7 +871,6 @@ void DisplacedHcalJetNTuplizer::ResetBranches(){
 	// Event Level Info
 	ResetEventInfoBranches();
 	ResetPVBranches();
-	ResetTriggerBranches();
 	ResetMetBranches();
 	// Standard Objects
 	ResetElectronBranches();
@@ -879,6 +879,7 @@ void DisplacedHcalJetNTuplizer::ResetBranches(){
 	ResetPhotonBranches();
 	ResetJetBranches();
 	// Low-Level Objects
+	ResetTriggerBranches();
 	ResetTrackBranches();
 	ResetPFCandidateBranches();
 	ResetSecondaryVerticesBranches();
@@ -1488,7 +1489,6 @@ void DisplacedHcalJetNTuplizer::analyze(const edm::Event& iEvent, const edm::Eve
 	// Event Level Info
 	FillEventInfoBranches( iEvent );
 	FillPVBranches( iEvent );
-	FillTriggerBranches( iEvent );
 	FillMetBranches( iEvent );
 
 	// Standard Objects
@@ -1499,7 +1499,8 @@ void DisplacedHcalJetNTuplizer::analyze(const edm::Event& iEvent, const edm::Eve
 	FillJetBranches( iEvent, iSetup );
 
 	// Low-Level Objects
-	FillTrackBranches( iEvent );//, iSetup );
+	FillTriggerBranches( iEvent );
+	FillTrackBranches( iEvent ); //, iSetup );
 	//FillPFCandidateBranches( iEvent, iSetup );
 	//FillSecondaryVerticesBranches( iEvent, iSetup );
 
@@ -1642,15 +1643,26 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
                         // else HLT_Prescale.push_back( 1 ); // TODO Need to figure out yields
 
 			float pT_0, pT_1;
-			if (jet_Pt.size() > 1) {pT_0 = jet_Pt[0];}
-			else {pT_0 = -999;}
-			if (jet_Pt.size() > 1) {pT_1 = jet_Pt[1];}
-			else {pT_1 = -999;}
+			if (jets->size() > 0) {pT_0 = (*jets)[0].pt();}
+			else {pT_0 = -9999;}
+			if (jets->size() > 1) {pT_1 = (*jets)[1].pt();}
+			else {pT_1 = -9999;}
+
+			int nPromptTracksLead = 0;
+			if (!jet_NPromptTracks.empty()) {nPromptTracksLead = jet_NPromptTracks[0];} 
+			else { 
+				if (debug) std::cout << "[Warning] jet_NPromptTracks is empty!" << std::endl;
+				nPromptTracksLead = -1;
+			}
+
+
+			
+			if( debug ) cout<<"pT : "<< pT_0 << ", "<< pT_1 <<endl; 
 
 			float SF_L1 = GetL1SF(pT_0,pT_1,"cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/L1_Trigger_SF.txt");
-			float SF_HLT_1 = GetHLTSF(pT_0, jet_NPromptTracks[0], "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_PtrkShortSig5.txt");
-			float SF_HLT_2 = GetHLTSF(pT_0, jet_NPromptTracks[0], "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_Inclusive.txt");
-			float SF_HLT_3 = GetHLTSF(pT_0, jet_NPromptTracks[0], "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_DisplacedTrack.txt");
+			float SF_HLT_1 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_PtrkShortSig5.txt");
+			float SF_HLT_2 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_Inclusive.txt");
+			float SF_HLT_3 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_DisplacedTrack.txt");
 			
 			HLT_SF_L1.push_back(SF_L1);
 			HLT_SF_Tot.push_back(SF_L1*SF_HLT_1*SF_HLT_2*SF_HLT_3);
@@ -1691,7 +1703,13 @@ double DisplacedHcalJetNTuplizer::GetL1SF(double ptLead, double ptSub, std::stri
         std::vector<Row> rows;
         std::vector<double> ptLeadVals, ptSubVals;
 
-        std::ifstream infile(filename);
+        edm::FileInPath fip(filename);
+        std::ifstream infile(fip.fullPath().c_str());
+	std::cout << "[INFO] Using file path: " << fip.fullPath() << std::endl;
+        if (!infile.is_open()) {
+            std::cerr << "[GetHLTSF ERROR] Could not open file: " << fip.fullPath() << std::endl;
+            return 1.0;
+        }
 
         std::string line;
         while (std::getline(infile, line)) {
@@ -1728,7 +1746,7 @@ double DisplacedHcalJetNTuplizer::GetL1SF(double ptLead, double ptSub, std::stri
     for (const auto &b : l1SFs) {
         if (ptLead >= b.ptLeadLow && ptLead < b.ptLeadHigh &&
             ptSub  >= b.ptSubLow  && ptSub  < b.ptSubHigh) {
-            std::cout << "[L1SF] Loaded: " << b.sf << std::endl;
+            if (debug) {std::cout << "[L1SF] Loaded: " << b.sf << std::endl;}
             return b.sf;
         }
     }
@@ -1743,11 +1761,20 @@ double DisplacedHcalJetNTuplizer::GetHLTSF(double ptLead, int nTrk, std::string 
         double sf, err;
     };
 
+std::ifstream test("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_PtrkShortSig5.txt");
+
     static std::vector<Bin1D> ptBins;
     static std::vector<Bin1D> ntrkBins;
 
     if (ptBins.empty() || ntrkBins.empty()) {
-        std::ifstream infile(filename);
+
+        edm::FileInPath fip(filename);
+        std::ifstream infile(fip.fullPath().c_str());
+	std::cout << "[INFO] Using file path: " << fip.fullPath() << std::endl;
+        if (!infile.is_open()) {
+            std::cerr << "[GetHLTSF ERROR] Could not open file: " << fip.fullPath() << std::endl;
+            return 1.0;
+        }
 
         std::string line;
         enum Section { NONE, PT, NTRK };
@@ -1799,8 +1826,8 @@ double DisplacedHcalJetNTuplizer::GetHLTSF(double ptLead, int nTrk, std::string 
             ntrkBins.push_back({r.x, high, r.sf, r.err});
         }
 
-        std::cout << "[GetHLTSF] Loaded " << ptBins.size() << " pt bins and "
-                  << ntrkBins.size() << " ntrk bins." << std::endl;
+        if (debug) {std::cout << "[GetHLTSF] Loaded " << ptBins.size() << " pt bins and "
+                  << ntrkBins.size() << " ntrk bins." << std::endl;}
     }
 
     double sf_pt = 1.0;
@@ -1818,7 +1845,7 @@ double DisplacedHcalJetNTuplizer::GetHLTSF(double ptLead, int nTrk, std::string 
             break;
         }
     }
-    std::cout << "[GetHLTSF] Loaded: " << sf_pt << " and " << sf_ntrk << std::endl;
+    if (debug) {std::cout << "[GetHLTSF] Loaded: " << sf_pt << " and " << sf_ntrk << std::endl;}
 
 
     return sf_pt * sf_ntrk;
@@ -2165,7 +2192,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 	//  const CaloSubdetectorGeometry *hbGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
 	//  const CaloSubdetectorGeometry *heGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
 	// const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter); 
-	const auto& theB = &iSetup.getData(theTTBToken);
+	const auto& theB = &iSetup.getData(theTTBToken_);
 
 	// ********************************************************
 	// AK4 Jets
@@ -2708,7 +2735,7 @@ bool DisplacedHcalJetNTuplizer::FillTrackBranches( const edm::Event& iEvent ){
 		track_dzToPV.push_back( track.dz(beamSpot->position()) );
 		track_dzErr.push_back( track.dzError() ); 
 		track_chi2.push_back( track.chi2() ); 
-		track_ndof.push_back( track.ndof() );
+		track_ndof.push_back( track.ndof() ); 
 		track_index.push_back( it ); 
 
 	} //loop over tracks
