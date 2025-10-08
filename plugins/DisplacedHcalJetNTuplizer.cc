@@ -60,7 +60,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	photonsToken_(consumes<reco::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
 	jetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4"))),
 	jetsCorrToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4_corrected"))), // GK, adding JECs
-	// jetsPuppiCorrToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4Puppi"))), // GK, adding JECs for PUPPI jets 
+	jetsPuppiCorrToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4Puppi"))), // GK, adding JECs for PUPPI jets 
 	calojetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK4"))),
 	LRJetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK8"))),
 	caloLRJetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK8"))),
@@ -347,7 +347,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(photonsToken_, photons);
 	iEvent.getByToken(jetsToken_, jets);
 	iEvent.getByToken(jetsCorrToken_, jetsCorr); // GK, adding JECs
-	// iEvent.getByToken(jetsPuppiCorrToken_, jetsPuppiCorr);
+	iEvent.getByToken(jetsPuppiCorrToken_, jetsPuppiCorr);
 	iEvent.getByToken(calojetsToken_, calojets);
 	iEvent.getByToken(LRJetsToken_, LRJets);
 	iEvent.getByToken(caloLRJetsToken_, caloLRJets);
@@ -2332,14 +2332,15 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 	if( debug ) cout<<" -> AK4 PF Jets"<<endl;  
 
 	//for (const pat::Jet &j : *jets) {
-	// for( auto &jet : *jets ) { // uncorrected jets
 	// GK PUPPI
-	// for ( auto &jet : *jetsPuppiCorr ) {
-	// 	jet_Puppi_Pt.push_back( jet.pt() );
-	// 	jet_Puppi_E.push_back( jet.energy() );
-	// 	jet_Puppi_Phi.push_back( jet.phi() );
-	// 	jet_Puppi_Eta.push_back( jet.eta() );
-	// }
+	for ( auto &jet : *jetsPuppiCorr ) {
+		if( jet.pt() < 10 || fabs(jet.eta()) > 1.5 ) continue;
+		jet_Puppi_Pt.push_back( jet.pt() );
+		jet_Puppi_E.push_back( jet.energy() );
+		jet_Puppi_Phi.push_back( jet.phi() );
+		jet_Puppi_Eta.push_back( jet.eta() );
+	}
+	// for( auto &jet : *jets ) { // uncorrected jets
 	for( auto &jet : *jetsCorr ) { // GK, corrected PF ak4 jets
 
 		if( jet.pt() < 10 || fabs(jet.eta()) > 1.5 ) continue;

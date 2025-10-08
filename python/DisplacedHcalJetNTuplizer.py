@@ -394,35 +394,38 @@ updateJetCollection(
 # now we have a new collection, selectedUpdatedPatJetsUpdatedJEC = corrected jets. As before, selectedPatJets = still the uncorrected PAT jets.
 from PhysicsTools.PatAlgos.producersLayer1.jetProducer_cfi import patJets
 # GK PUPPI
-# from PhysicsTools.PatAlgos.JetCorrFactorsProducer_cfi import JetCorrFactorsProducer
-# process.patJetCorrFactorsPuppi = JetCorrFactorsProducer.clone(
-#     src = cms.InputTag("ak4PFJetsPuppi"),  # input RECO jets
-#     levels = jecLevels,  # JEC levels you want
-#     payload = 'AK4PFPuppi'  # must match the label in PoolDBESSource
-# )
-# # Step 1: make PAT jets from RECO PUPPI jets. Step 2: add correction factors, done inside here otherwise had issues with "updateJetCollection" about gen particles
+from PhysicsTools.PatAlgos.JetCorrFactorsProducer_cfi import JetCorrFactorsProducer
+process.patJetCorrFactorsPuppi = JetCorrFactorsProducer.clone(
+    src = cms.InputTag("ak4PFJetsPuppi"),  # input RECO jets
+    levels = jecLevels,  # JEC levels needed
+    payload = 'AK4PFPuppi'  # must match the label in PoolDBESSource
+)
+# Step 1: make PAT jets from RECO PUPPI jets. Step 2: add correction factors, done inside here otherwise had issues with "updateJetCollection" about gen particles
 # --- PUPPI PAT jets (no JEC, no gen, safe for RECO/AOD) --- #
-# process.patJetsPuppi = patJets.clone(
-#     jetSource = cms.InputTag("ak4PFJetsPuppi"),
-#     addBTagInfo = cms.bool(False),
-#     addDiscriminators = cms.bool(False),
-#     addAssociatedTracks = cms.bool(False),
-#     addJetCorrFactors = cms.bool(False),
-#     # jetCorrFactorsSource = cms.VInputTag(
-#     #     cms.InputTag('patJetCorrFactorsPuppi')  
-#     # ),
-#     addGenPartonMatch = cms.bool(False),
-#     addGenJetMatch    = cms.bool(False),
-#     getJetMCFlavour   = cms.bool(False),
-#     addJetFlavourInfo = cms.bool(False),
-#     JetFlavourInfoSource = cms.InputTag(""),
-#     JetPartonMapSource   = cms.InputTag(""),
-#     embedGenPartonMatch  = cms.bool(False),
-#     embedGenJetMatch     = cms.bool(False),
-#     embedPFCandidates    = cms.bool(False),
-#     embedCaloTowers      = cms.bool(False),
-#     addTagInfos          = cms.bool(False)
-# )
+process.patJetsPuppi = patJets.clone(
+    jetSource = cms.InputTag("ak4PFJetsPuppi"),
+    addBTagInfo         = cms.bool(True),
+    addDiscriminators   = cms.bool(False),
+    addAssociatedTracks = cms.bool(False),
+    addJetCorrFactors   = cms.bool(False),
+    addGenPartonMatch   = cms.bool(False),
+    addGenJetMatch      = cms.bool(False),
+    getJetMCFlavour     = cms.bool(False),
+    addJetFlavourInfo   = cms.bool(False),
+    addJetCharge        = cms.bool(False),
+    JetFlavourInfoSource = cms.InputTag(""), # doesn't seem to exist at this level
+    JetPartonMapSource  = cms.InputTag(""),
+    trackAssociationSource = cms.InputTag(""),
+    embedGenPartonMatch = cms.bool(False),
+    embedGenJetMatch    = cms.bool(False),
+    embedPFCandidates   = cms.bool(False),
+    embedCaloTowers     = cms.bool(False),
+    addTagInfos         = cms.bool(False),
+    # TODO also need to add JECs / JER
+    # jetCorrFactorsSource = cms.VInputTag(
+    #     cms.InputTag('patJetCorrFactorsPuppi')  
+    # )
+)
 
 # ------ Analyzer ------ #
 
@@ -466,7 +469,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     #jets = cms.InputTag("selectedPatJets"),
     # GK PUPPI
     # jets = cms.InputTag("ak4PFJetsPuppi"),
-    # pfjetsAK4Puppi = cms.InputTag("patJetsPuppi"), # selectedUpdatedPatJetsPuppiUpdatedJEC"), # use the second one if updateJetCollection is used
+    pfjetsAK4Puppi = cms.InputTag("patJetsPuppi"), # selectedUpdatedPatJetsPuppiUpdatedJEC"), # use the second one if updateJetCollection is used
     #jetsPuppi = cms.InputTag("ak4PFJets"),
     #jetsAK8 = cms.InputTag("ak8PFJetsCHS"),
     #jetsAK8 = cms.InputTag("selectedPatJetsAK8PFCHS"),
@@ -707,13 +710,13 @@ process.selectedPatCandidatesTask = cms.Task(
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
 # GK PUPPI
-# # --- Puppi PAT task --- #
-# process.selectedPatPuppiTask = cms.Task(
-#     process.patJetCorrFactorsPuppi,
-#     process.patJetsPuppi,
-#     # process.updatedPatJetsPuppiUpdatedJEC (if used)
-# )
-# process.selectedPatPuppi = cms.Sequence(process.selectedPatPuppiTask)
+# --- Puppi PAT task --- #
+process.selectedPatPuppiTask = cms.Task(
+    # process.patJetCorrFactorsPuppi, (unclear if needed)
+    process.patJetsPuppi,
+    # process.updatedPatJetsPuppiUpdatedJEC (if used)
+)
+process.selectedPatPuppi = cms.Sequence(process.selectedPatPuppiTask)
 
 # Now fix patTask to not drag in parton matching
 # for modname in ["patJetPartons",
@@ -736,7 +739,7 @@ process.load('PhysicsTools.PatAlgos.slimming.slimmedPatTrigger_cfi')
 process.patTask = cms.Task(
     process.patCandidatesTask,
     process.selectedPatCandidatesTask,
-    # process.selectedPatPuppiTask, # add Puppi workflow
+    process.selectedPatPuppiTask, # add Puppi workflow
     #process.patTrigger,
     #process.selectedPatTrigger,
     #process.slimmedPatTrigger
