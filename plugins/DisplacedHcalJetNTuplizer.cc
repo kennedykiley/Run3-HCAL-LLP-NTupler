@@ -16,10 +16,6 @@
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "RecoVertex/VertexPrimitives/interface/VertexState.h"
 
-#include "JetMETCorrections/Modules/interface/JetResolution.h"
-#include "CondFormats/DataRecord/interface/JetResolutionRcd.h"
-#include "CondFormats/DataRecord/interface/JetResolutionScaleFactorRcd.h"
-
 // 
 // ************************************************************************************
 // Constructor & Destructor 
@@ -69,11 +65,11 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	LRJetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK8"))),
 	caloLRJetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK8"))),
 	l1jetsToken_(consumes<BXVector<l1t::Jet>>(iConfig.getParameter<edm::InputTag>("l1jets"))), // GK added for L1 jets access
-	// also add JER 
-	jerResToken_CHS_(esConsumes<JME::JetResolution, JetResolutionRcd>(edm::ESInputTag("", "AK4PFchs_pt"))),
-	jerSFToken_CHS_(esConsumes<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd>(edm::ESInputTag("", "AK4PFchs"))),
-	jerResToken_(esConsumes<JME::JetResolution, JetResolutionRcd>(edm::ESInputTag("", "AK4PFPuppi_pt"))),
-	jerSFToken_(esConsumes<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd>(edm::ESInputTag("", "AK4PFPuppi"))),	
+	// // also add JER 
+	// jerResToken_CHS_(esConsumes<JME::JetResolution, JetResolutionRcd>(edm::ESInputTag("", "AK4PFchs_pt"))),
+	// jerSFToken_CHS_(esConsumes<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd>(edm::ESInputTag("", "AK4PFchs"))),
+	// jerResToken_(esConsumes<JME::JetResolution, JetResolutionRcd>(edm::ESInputTag("", "AK4PFPuppi_pt"))),
+	// jerSFToken_(esConsumes<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd>(edm::ESInputTag("", "AK4PFPuppi"))),	
 	// Low-Level Objects
 	//tracksToken_(consumes<edm::View<reco::Track> >(iConfig.getParameter<edm::InputTag>("tracks"))),
 	generalTracksToken_(consumes<std::vector<reco::Track>>(edm::InputTag("generalTracks"))),
@@ -154,8 +150,8 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 		//sumAlphasWeights->Sumw2();
 
 		// GK, JER setup
-		// jerRes_ = JME::JetResolution(iConfig.getParameter<edm::FileInPath>("jer_PtResolution").fullPath());
-		// jerSF_ = JME::JetResolutionScaleFactor(iConfig.getParameter<edm::FileInPath>("jer_ScaleFactor").fullPath());
+		jerRes_ = JME::JetResolution(iConfig.getParameter<edm::FileInPath>("jer_PtResolution").fullPath());
+		jerSF_ = JME::JetResolutionScaleFactor(iConfig.getParameter<edm::FileInPath>("jer_ScaleFactor").fullPath());
 	}
 	else {
 		sumWeights = 0;
@@ -166,9 +162,9 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	// JEC uncertainty, data and MC txt paths are listed in .py file
 	// std::string jecUncPath = iConfig.getParameter<std::string>("jec_Uncertainty"); // for cms.string
 	// jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecUncPath);
-	edm::FileInPath jecUncPath = iConfig.getParameter<edm::FileInPath>("jec_Uncertainty");
-	JetCorrectorParameters jecUncParams(jecUncPath.fullPath());
-    jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecUncParams);
+	// edm::FileInPath jecUncPath = iConfig.getParameter<edm::FileInPath>("jec_Uncertainty"); // no uncertainties for Run 3 yet
+	// JetCorrectorParameters jecUncParams(jecUncPath.fullPath());
+    // jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecUncParams);
 
 	// ----- Get Triggers ----- // 
 
@@ -2409,28 +2405,28 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		jet_Eta.push_back( jet.eta() );
 		jet_Phi.push_back( jet.phi() );
 
-		// JEC, jet energy scale uncertainty
-		jecUnc_->setJetPt(jet.pt());
-		jecUnc_->setJetEta(jet.eta());
-		double unc = jecUnc_->getUncertainty(true);  // true = up variation
-		double factor_jesUp = (1 + unc);
-		double factor_jesDown = (1 - unc);
-		// correct 4 vector instead of each component
-		auto jet_JES_up = jet.p4() * factor_jesUp;
-		auto jet_JES_down = jet.p4() * factor_jesDown;
-		// Save to tree
-		jet_Pt_JES_up.		push_back(jet_JES_up.pt());
-		jet_E_JES_up.		push_back(jet_JES_up.energy());
-		jet_Mass_JES_up.	push_back(jet_JES_up.mass());
-		jet_Pt_JES_down.	push_back(jet_JES_down.pt());
-		jet_E_JES_down.		push_back(jet_JES_down.energy());
-		jet_Mass_JES_down.	push_back(jet_JES_down.mass());
+		// // JEC, jet energy scale uncertainty
+		// jecUnc_->setJetPt(jet.pt());
+		// jecUnc_->setJetEta(jet.eta());
+		// double unc = jecUnc_->getUncertainty(true);  // true = up variation
+		// double factor_jesUp = (1 + unc);
+		// double factor_jesDown = (1 - unc);
+		// // correct 4 vector instead of each component
+		// auto jet_JES_up = jet.p4() * factor_jesUp;
+		// auto jet_JES_down = jet.p4() * factor_jesDown;
+		// // Save to tree
+		// jet_Pt_JES_up.		push_back(jet_JES_up.pt());
+		// jet_E_JES_up.		push_back(jet_JES_up.energy());
+		// jet_Mass_JES_up.	push_back(jet_JES_up.mass());
+		// jet_Pt_JES_down.	push_back(jet_JES_down.pt());
+		// jet_E_JES_down.		push_back(jet_JES_down.energy());
+		// jet_Mass_JES_down.	push_back(jet_JES_down.mass());
 
 		// ----- JEC + JER (only for MC) ----- // GK
 		if (!isData_) {
-			// --- Retrieve JER objects from EventSetup ---
-    		const JME::JetResolution &jerRes = iSetup.getData(jerResToken_CHS_);
-    		const JME::JetResolutionScaleFactor &jerSF = iSetup.getData(jerSFToken_CHS_);
+			// // --- Retrieve JER objects from EventSetup --- (this was for .db approach)
+    		// const JME::JetResolution &jerRes = iSetup.getData(jerResToken_CHS_);
+    		// const JME::JetResolutionScaleFactor &jerSF = iSetup.getData(jerSFToken_CHS_);
 
 			// build parameters for JER
 			JME::JetParameters params;
@@ -2439,11 +2435,11 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 			params.setRho(*rhoFastjetAll);
 			params.setJetArea(jet.jetArea());
 
-			double res = jerRes.getResolution(params); // no up/down variations, uncertainty is on the scale factors
+			double res = jerRes_.getResolution(params); // no up/down variations, uncertainty is on the scale factors
 			// variation in JER from SF (nominal, up, down)
-			double sf_nom = jerSF.getScaleFactor(params, Variation::NOMINAL);
-			double sf_up  = jerSF.getScaleFactor(params, Variation::UP);
-			double sf_down= jerSF.getScaleFactor(params, Variation::DOWN);
+			double sf_nom = jerSF_.getScaleFactor(params, Variation::NOMINAL);
+			double sf_up  = jerSF_.getScaleFactor(params, Variation::UP);
+			double sf_down= jerSF_.getScaleFactor(params, Variation::DOWN);
 
 			auto smearJetFactor = [&](const pat::Jet &jet, double sf) {
 				double smearFactor = 1.0;

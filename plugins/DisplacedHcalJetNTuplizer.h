@@ -331,11 +331,11 @@ protected:
 	edm::EDGetTokenT<reco::CaloJetCollection> caloLRJetsToken_;
 	edm::EDGetTokenT<BXVector<l1t::Jet>> l1jetsToken_;
 
-	// JER
-	edm::ESGetToken<JME::JetResolution, JetResolutionRcd> jerResToken_CHS_;
-	edm::ESGetToken<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd> jerSFToken_CHS_;
-	edm::ESGetToken<JME::JetResolution, JetResolutionRcd> jerResToken_;
-	edm::ESGetToken<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd> jerSFToken_;
+	// // JER
+	// edm::ESGetToken<JME::JetResolution, JetResolutionRcd> jerResToken_CHS_;
+	// edm::ESGetToken<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd> jerSFToken_CHS_;
+	// edm::ESGetToken<JME::JetResolution, JetResolutionRcd> jerResToken_;
+	// edm::ESGetToken<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd> jerSFToken_;
 
 	// Low-Level Objects
 	//edm::EDGetTokenT<edm::View<reco::Track>> tracksToken_;

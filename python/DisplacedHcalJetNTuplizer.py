@@ -322,22 +322,22 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 from CondCore.CondDB.CondDB_cfi import CondDB
 if options.isData:
     mapping = {
-        ("Run2022C", ""):               ("Summer22_22Sep2023_RunCD_V3_DATA", "Summer22_22Sep2023_JRV1_DATA"),
-        ("Run2022D", ""):               ("Summer22_22Sep2023_RunCD_V3_DATA", "Summer22_22Sep2023_JRV1_DATA"),
+        ("Run2022C", ""):               ("Summer22_22Sep2023_RunCD_V3_DATA",  "Summer22_22Sep2023_JRV1_DATA"),
+        ("Run2022D", ""):               ("Summer22_22Sep2023_RunCD_V3_DATA",  "Summer22_22Sep2023_JRV1_DATA"),
         ("Run2022E", ""):               ("Summer22EE_22Sep2023_RunE_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
         ("Run2022F", ""):               ("Summer22EE_22Sep2023_RunF_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
         ("Run2022G", ""):               ("Summer22EE_22Sep2023_RunG_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
         ("Run2023C", "PromptReco-v1"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv123_JRV1_DATA"),
         ("Run2023C", "PromptReco-v2"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv123_JRV1_DATA"),
         ("Run2023C", "PromptReco-v3"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv123_JRV1_DATA"),
-        ("Run2023C", "PromptReco-v4"):  ("Summer23Prompt23_RunCv4_V3_DATA", "Summer23Prompt23_RunCv4_JRV1_DATA"),
+        ("Run2023C", "PromptReco-v4"):  ("Summer23Prompt23_RunCv4_V3_DATA",   "Summer23Prompt23_RunCv4_JRV1_DATA"),
         ("Run2023D", ""):               ("Summer23BPixPrompt23_RunD_V3_DATA", "Summer23BPixPrompt23_RunD_JRV1_DATA"),
     }
 else:
     mapping = { # TODO make sure this agrees with MC naming scheme
         ("HToSSTo4B", "23BPix"):         ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC"),
         # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
-        ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC.db"), # Summer23Prompt23_RunCv123_JRV1_MC and RunCv4_JRV1_MC when have all eras of MC
+        ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC"), # Summer23Prompt23_RunCv123_JRV1_MC and RunCv4_JRV1_MC when have all eras of MC
         ("HToSSTo4B", "2022EE"):         ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC"),
         ("HToSSTo4B", "2022_"):          ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
     }
@@ -378,50 +378,42 @@ process.jec = cms.ESSource('PoolDBESSource',
 )
 process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
 
-# ---------- JER -----------
-from JetMETCorrections.Modules.JetResolutionESProducer_cfi import *
-JER_file_path = 'sqlite:../data/JEC_JER/JRDatabase/SQLiteFiles/' + JER_tag_name + '.db'
-CondDBJERFile = CondDB.clone(connect = cms.string(JER_file_path))
-CollectionName = 'JR_' + JER_tag_name + '_SF_AK4PFchs' 
-PuppiCollectionName = 'JR_' + JER_tag_name + '_SF_AK4PFPuppi'
-CollectionName_Pt = 'JR_' + JER_tag_name + '_PtResolution_AK4PFchs' 
-PuppiCollectionName_Pt = 'JR_' + JER_tag_name + '_PtResolution_AK4PFPuppi'
-process.jer = cms.ESSource('PoolDBESSource',
-    CondDBJERFile,
-    toGet = cms.VPSet(
-        # CHS jets
-        cms.PSet(
-            record = cms.string('JetResolutionRcd'),
-            tag    = cms.string(CollectionName_Pt),
-            label  = cms.untracked.string('AK4PFchs_pt')
-        ),
-        cms.PSet(
-            record = cms.string('JetResolutionScaleFactorRcd'),
-            tag    = cms.string(CollectionName),
-            label  = cms.untracked.string('AK4PFchs')
-        ),
-        # PUPPI jets
-        cms.PSet(
-            record = cms.string('JetResolutionRcd'),
-            tag    = cms.string(PuppiCollectionName_Pt),
-            label  = cms.untracked.string('AK4PFPuppi_pt')
-        ),
-        cms.PSet(
-            record = cms.string('JetResolutionScaleFactorRcd'),
-            tag    = cms.string(PuppiCollectionName),
-            label  = cms.untracked.string('AK4PFPuppi')
-        )
-    )
-)
-process.es_prefer_jer = cms.ESPrefer('PoolDBESSource', 'jer')
-
-# process.ak4PFPuppi = cms.ESProducer("JetResolutionESProducer",
-#     label = cms.string("ak4PFPuppi")
+# # ---------- JER -----------
+# from JetMETCorrections.Modules.JetResolutionESProducer_cfi import *
+# JER_file_path = 'sqlite:../data/JEC_JER/JRDatabase/SQLiteFiles/' + JER_tag_name + '.db'
+# CondDBJERFile = CondDB.clone(connect = cms.string(JER_file_path))
+# CollectionName = 'JR_' + JER_tag_name + '_SF_AK4PFchs' 
+# PuppiCollectionName = 'JR_' + JER_tag_name + '_SF_AK4PFPuppi'
+# CollectionName_Pt = 'JR_' + JER_tag_name + '_PtResolution_AK4PFchs' 
+# PuppiCollectionName_Pt = 'JR_' + JER_tag_name + '_PtResolution_AK4PFPuppi'
+# process.jer = cms.ESSource('PoolDBESSource',
+#     CondDBJERFile,
+#     toGet = cms.VPSet(
+#         # CHS jets
+#         cms.PSet(
+#             record = cms.string('JetResolutionRcd'),
+#             tag    = cms.string(CollectionName_Pt),
+#             label  = cms.untracked.string('AK4PFchs_pt')
+#         ),
+#         cms.PSet(
+#             record = cms.string('JetResolutionScaleFactorRcd'),
+#             tag    = cms.string(CollectionName),
+#             label  = cms.untracked.string('AK4PFchs')
+#         ),
+#         # PUPPI jets
+#         cms.PSet(
+#             record = cms.string('JetResolutionRcd'),
+#             tag    = cms.string(PuppiCollectionName_Pt),
+#             label  = cms.untracked.string('AK4PFPuppi_pt')
+#         ),
+#         cms.PSet(
+#             record = cms.string('JetResolutionScaleFactorRcd'),
+#             tag    = cms.string(PuppiCollectionName),
+#             label  = cms.untracked.string('AK4PFPuppi')
+#         )
+#     )
 # )
-# process.ak4PFPuppiSF = cms.ESProducer("JetResolutionScaleFactorESProducer",
-#     resolution = cms.string("ak4PFPuppi"),
-#     algo = cms.string("AK4PFPuppi")
-# )
+# process.es_prefer_jer = cms.ESPrefer('PoolDBESSource', 'jer')
 
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
@@ -660,27 +652,10 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
 
 # ----- Jet Energy Resolution (only MC), and JEC uncertainties (data and MC) ----- # GK
 if not options.isData: 
-    # process.DisplacedHcalJets.jer_PtResolution = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv1234_JRV1_MC_PtResolution_AK4PFchs.txt")
-    # process.DisplacedHcalJets.jer_ScaleFactor  = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv1234_JRV1_MC_SF_AK4PFchs.txt")
-    # from https://github.com/cms-jet/JRDatabase/blob/master/textFiles/Summer23Prompt23_RunCv1234_JRV1_MC/
-    # TODO need to handle different eras 
+    process.DisplacedHcalJets.jer_PtResolution = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/"+JER_tag_name+"/"+JER_tag_name+"_PtResolution_AK4PFPuppi.txt")
+    process.DisplacedHcalJets.jer_ScaleFactor = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/"+JER_tag_name+"/"+JER_tag_name+"_SF_AK4PFPuppi.txt")
     # based on https://cms-jerc.web.cern.ch/Recommendations/#2023_1
-    process.DisplacedHcalJets.jec_Uncertainty = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_V3_MC_Uncertainty_AK4PFchs.txt")
-    # from https://github.com/cms-jet/JECDatabase/blob/master/textFiles/Summer23Prompt23_V1_MC/Summer23Prompt23_V1_MC_Uncertainty_AK4PFPuppi.txt
-    # V3 -> V2 -> V1 -> Puppi
-if options.isData:
-    process.DisplacedHcalJets.jec_Uncertainty = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/Summer23Prompt23_RunCv4_V3_DATA_Uncertainty_AK4PFchs.txt")
-    # same link as for MC, different folder, and DATA -> MC
-    # Test FileInPath (doesn't like symlinks) and cms.string (still complains "JetCorrectorParameters: No definitions found!!!")
-    # if     "Run2023C" in inputFiles[0] and ("PromptReco-v1" in inputFiles[0] or "PromptReco-v2" in inputFiles[0] or "PromptReco-v3" in inputFiles[0]): 
-    #     process.DisplacedHcalJets.jec_Uncertainty = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/Summer23Prompt23_RunCv123_V3_DATA/Summer23Prompt23_RunCv123_V3_DATA_Uncertainty_AK4PFchs.txt")
-    #     print("using Cv123 JEC files!")
-    # elif   "Run2023C" in inputFiles[0] and "PromptReco-v4" in inputFiles[0]: 
-    #     process.DisplacedHcalJets.jec_Uncertainty = cms.string("cms_lpc_llp/Run3x-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/Summer23Prompt23_RunCv4_V3_DATA/Summer23Prompt23_RunCv4_V3_DATA_Uncertainty_AK4PFchs.txt")
-    #     print("using Cv4 JEC files!")
-    # elif   "Run2023D" in inputFiles[0]: process.DisplacedHcalJets.jec_Uncertainty = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/Summer23BPixPrompt23_RunD_V3_DATA/Summer23BPixPrompt23_RunD_V3_DATA_Uncertainty_AK4PFchs.txt")
-    # elif   "Run2023D" in inputFiles[0]: process.DisplacedHcalJets.jec_Uncertainty = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/Summer23BPixPrompt23_RunD_V2xHFscale_DATA/Summer23BPixPrompt23_RunD_V2xHFscale_DATA_Uncertainty_AK4PFchs.txt")
-    # TODO determine which one of Run D we should use
+# process.DisplacedHcalJets.jec_Uncertainty = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/"+tag_name+"/"+tag_name+"_Uncertainty_AK4PFPuppi.txt")
         
 # Add jettiness for AK8 jets
 process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
