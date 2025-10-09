@@ -606,16 +606,11 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "n_jet", &n_jet );
 	output_tree->Branch( "jetRaw_Pt", &jetRaw_Pt );
 	output_tree->Branch( "jetRaw_E", &jetRaw_E );
-	output_tree->Branch( "jetRaw_Puppi_Pt", &jetRaw_Puppi_Pt );
-	output_tree->Branch( "jetRaw_Puppi_E", &jetRaw_Puppi_E );
-	output_tree->Branch( "jet_Puppi_Pt", &jet_Puppi_Pt );
-	output_tree->Branch( "jet_Puppi_Eta", &jet_Puppi_Eta );
-	output_tree->Branch( "jet_Puppi_Phi", &jet_Puppi_Phi );
-	output_tree->Branch( "jet_Puppi_E", &jet_Puppi_E );
-	output_tree->Branch( "jet_Puppi_Mass", &jet_Puppi_Mass );
-	output_tree->Branch( "jet_Puppi_Pt_noJER", &jet_Puppi_Pt_noJER );
-	output_tree->Branch( "jet_Puppi_E_noJER", &jet_Puppi_E_noJER );
-	output_tree->Branch( "jet_Puppi_Mass_noJER", &jet_Puppi_Mass_noJER );
+	output_tree->Branch( "jet_CHS_Pt", &jet_CHS_Pt );
+	output_tree->Branch( "jet_CHS_Eta", &jet_CHS_Eta );
+	output_tree->Branch( "jet_CHS_Phi", &jet_CHS_Phi );
+	output_tree->Branch( "jet_CHS_E", &jet_CHS_E );
+	output_tree->Branch( "jet_CHS_Mass", &jet_CHS_Mass );
 	output_tree->Branch( "jet_Pt", &jet_Pt );
 	output_tree->Branch( "jet_Eta", &jet_Eta );
 	output_tree->Branch( "jet_Phi", &jet_Phi );
@@ -1189,16 +1184,11 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 
 	// AK4 PF Jets 
 	n_jet = 0;
-	jetRaw_Puppi_Pt.clear();
-	jetRaw_Puppi_E.clear();
-	jet_Puppi_Pt.clear();
-	jet_Puppi_Eta.clear();
-	jet_Puppi_Phi.clear();
-	jet_Puppi_E.clear();
-	jet_Puppi_Mass.clear();
-	jet_Puppi_Pt_noJER.clear();
-	jet_Puppi_E_noJER.clear();
-	jet_Puppi_Mass_noJER.clear();
+	jet_CHS_Pt.clear();
+	jet_CHS_Eta.clear();
+	jet_CHS_Phi.clear();
+	jet_CHS_E.clear();
+	jet_CHS_Mass.clear();
 	jet_Pt.clear();
 	jet_Eta.clear();
 	jet_Phi.clear();
@@ -2348,42 +2338,15 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 	if( debug ) cout<<" -> AK4 PF Jets"<<endl;  
 
-	//for (const pat::Jet &j : *jets) {
-	// GK PUPPI
-	for ( auto &jet : *jetsPuppiCorr ) {
-		if( jet.pt() < 10 || fabs(jet.eta()) > 1.5 ) continue;
-		// ----- uncorrected jet quantities (no JECs!) ----- // GK
-		auto rawP4 = jet.correctedP4("Uncorrected");
-    	jetRaw_Puppi_Pt.push_back( rawP4.pt() );
-    	jetRaw_Puppi_E.push_back( rawP4.energy() );
-		
-		// ----- JEC only ----- // 
-		if (isData) { // for data, no JER needed, so save as _Pt and _E
-			jet_Puppi_E.push_back( jet.energy() );
-			jet_Puppi_Pt.push_back( jet.pt() );
-			jet_Puppi_Mass.push_back( jet.mass() );
-		}
-		if (!isData) { // for MC, specify if JER is applied or not. Save JEC + JER as _Pt and _E
-			jet_Puppi_E_noJER.push_back( jet.energy() );
-			jet_Puppi_Pt_noJER.push_back( jet.pt() );
-			jet_Puppi_Mass_noJER.push_back( jet.mass() );
-		}
-		jet_Puppi_Eta.push_back( jet.eta() );
-		jet_Puppi_Phi.push_back( jet.phi() );
-	}
 	// for( auto &jet : *jets ) { // uncorrected jets
-	for( auto &jet : *jetsCorr ) { // GK, corrected PF ak4 jets
+	// for( auto &jet : *jetsCorr ) { // GK, corrected PF ak4 jets CHS
+	for( auto &jet : *jetsPuppiCorr ) { // GK, corrected PF ak4 jets PUPPI
 
 		if( jet.pt() < 10 || fabs(jet.eta()) > 1.5 ) continue;
 
 		if( debug ) cout<<" ------ jet idx"<<n_jet<<endl;  
 
 		n_jet++;
-		// if (fabs(j.eta()) > 2.4) continue;
-		//NO (KK): only fill more detailed information for jets with pT >= 20
-		//if (j.pt() >= 20) {
-		//TLorentzVector thisJet;
-		//thisJet.SetPtEtaPhiE(jetPt[nJets], jetEta[nJets], jetPhi[nJets], jetE[nJets]);
 
 		// ----- Basics ----- // 
 		// ----- uncorrected jet quantities (no JECs!) ----- // GK
@@ -2424,10 +2387,6 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 		// ----- JEC + JER (only for MC) ----- // GK
 		if (!isData_) {
-			// // --- Retrieve JER objects from EventSetup --- (this was for .db approach)
-    		// const JME::JetResolution &jerRes = iSetup.getData(jerResToken_CHS_);
-    		// const JME::JetResolutionScaleFactor &jerSF = iSetup.getData(jerSFToken_CHS_);
-
 			// build parameters for JER
 			JME::JetParameters params;
 			params.setJetPt(jet.pt());
@@ -2512,44 +2471,77 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		//jet_PileupId.push_back( jet.userFloat("pileupJetId:fullDiscriminant") );
 		//jet_PileupIdFlag.push_back( jet.userInt("pileupJetId:fullId") ); //A bit map for loose, medium, and tight working points
 
-        // ----- BTagging  ----- //
-        //std::vector<std::pair<std::string, float>>& Jet::getPairDiscri()
-        
-        auto jet_pair_discrim = jet.getPairDiscri();
-        jet_DeepCSV_prob_b.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probb") );
-        jet_DeepCSV_prob_c.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probc") );
-        jet_DeepCSV_prob_bb.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probbb") );
-        jet_DeepCSV_prob_udsg.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probudsg") );
+		// match to a CHS jet now
+		const pat::Jet* matchedCHS = nullptr;
+		double minDR = 999.;
 
-        //for( auto jet_pair_discrim: jet.getPairDiscri() ){
-        //    cout<<jet_pair_discrim.first<<"  "<<jet_pair_discrim.second<<endl;
-        //}
-        //cout<<jet.bDiscriminator("trackCountingHighPurBJetTags")<<endl;
+		for( auto &chs_jet : *jetsCorr ) { 
+			double dR = deltaR(jet.eta(), jet.phi(), chs_jet.eta(), chs_jet.phi());
+			if (dR < 0.2 && dR < minDR) {
+				minDR = dR;
+				matchedCHS = &chs_jet;
+			}
+		}
 
-		// ----- Secondary Vertex Features ----- //
+		if (matchedCHS) {
+			// ----- JEC only ----- // 
+			jet_CHS_E.push_back( matchedCHS->energy() );
+			jet_CHS_Pt.push_back( matchedCHS->pt() );
+			jet_CHS_Mass.push_back( matchedCHS->mass() );
+			jet_CHS_Eta.push_back( matchedCHS->eta() );
+			jet_CHS_Phi.push_back( matchedCHS->phi() );
 
-		if( debug ) cout<<" ------ 3"<<endl;  
+			// ----- BTagging  ----- //        
+			auto jet_pair_discrim = matchedCHS->getPairDiscri();
+			jet_DeepCSV_prob_b.push_back( matchedCHS->bDiscriminator("pfDeepCSVJetTags:probb") );
+			jet_DeepCSV_prob_c.push_back( matchedCHS->bDiscriminator("pfDeepCSVJetTags:probc") );
+			jet_DeepCSV_prob_bb.push_back( matchedCHS->bDiscriminator("pfDeepCSVJetTags:probbb") );
+			jet_DeepCSV_prob_udsg.push_back( matchedCHS->bDiscriminator("pfDeepCSVJetTags:probudsg") );
 
-		if( jet.tagInfoLabels().size() > 0 && jet.hasTagInfo("pfSecondaryVertex") ){
+			// ----- Secondary Vertex Features ----- //
 
-			auto jet_SVCandInfo_temp = jet.tagInfoCandSecondaryVertex("pfSecondaryVertex");
+			if( debug ) cout<<" ------ 3"<<endl;  
 
-			jet_NSV.push_back( jet_SVCandInfo_temp->nVertices() );
-			jet_NSVCand.push_back( jet_SVCandInfo_temp->nVertexCandidates() );
-			//jet.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks()
-			//jet.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nSelectedTracks() 
+			if( matchedCHS->tagInfoLabels().size() > 0 && matchedCHS->hasTagInfo("pfSecondaryVertex") ){
 
-			if( jet_SVCandInfo_temp->nVertices() > 0 ){
-				jet_SV_x.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vx() );
-				jet_SV_y.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vy() );
-				jet_SV_z.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vz() );
-				jet_SV_NTracks.push_back( jet_SVCandInfo_temp->nVertexTracks(0) );
-				jet_SV_Mass.push_back( jet_SVCandInfo_temp->secondaryVertex(0).mass() );
-				jet_FlightDist2D.push_back( jet_SVCandInfo_temp->flightDistance(0, true).value() );
-				jet_FlightDist2DErr.push_back( jet_SVCandInfo_temp->flightDistance(0, true).error() );
-				jet_FlightDist3D.push_back( jet_SVCandInfo_temp->flightDistance(0, false).value() );
-				jet_FlightDist3DErr.push_back( jet_SVCandInfo_temp->flightDistance(0, false).error() );
-			} else{
+				auto jet_SVCandInfo_temp = matchedCHS->tagInfoCandSecondaryVertex("pfSecondaryVertex");
+
+				jet_NSV.push_back( jet_SVCandInfo_temp->nVertices() );
+				jet_NSVCand.push_back( jet_SVCandInfo_temp->nVertexCandidates() );
+				//matchedCHS->tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks()
+				//matchedCHS->tagInfoCandSecondaryVertex("pfSecondaryVertex")->nSelectedTracks() 
+
+				if( jet_SVCandInfo_temp->nVertices() > 0 ){
+					jet_SV_x.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vx() );
+					jet_SV_y.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vy() );
+					jet_SV_z.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vz() );
+					jet_SV_NTracks.push_back( jet_SVCandInfo_temp->nVertexTracks(0) );
+					jet_SV_Mass.push_back( jet_SVCandInfo_temp->secondaryVertex(0).mass() );
+					jet_FlightDist2D.push_back( jet_SVCandInfo_temp->flightDistance(0, true).value() );
+					jet_FlightDist2DErr.push_back( jet_SVCandInfo_temp->flightDistance(0, true).error() );
+					jet_FlightDist3D.push_back( jet_SVCandInfo_temp->flightDistance(0, false).value() );
+					jet_FlightDist3DErr.push_back( jet_SVCandInfo_temp->flightDistance(0, false).error() );
+				} else{
+					jet_SV_x.push_back( -9999.9 );
+					jet_SV_y.push_back( -9999.9 );
+					jet_SV_z.push_back( -9999.9 );
+					jet_SV_NTracks.push_back( -9999 );
+					jet_SV_Mass.push_back( -9999.9 );
+					jet_FlightDist2D.push_back( -9999.9 );
+					jet_FlightDist2DErr.push_back( -9999.9 );
+					jet_FlightDist3D.push_back( -9999.9 );
+					jet_FlightDist3DErr.push_back( -9999.9 );
+				}
+
+				if( jet_SVCandInfo_temp->taggingVariables().getList(reco::btau::vertexJetDeltaR,false).size() > 0 ){
+					jet_SV_DRJet.push_back( jet_SVCandInfo_temp->taggingVariables().getList(reco::btau::vertexJetDeltaR,false)[0] );
+				} else {
+					jet_SV_DRJet.push_back( -9999.9 );
+				}
+
+			} else {
+				jet_NSV.push_back( -9999 );
+				jet_NSVCand.push_back( -9999 );
 				jet_SV_x.push_back( -9999.9 );
 				jet_SV_y.push_back( -9999.9 );
 				jet_SV_z.push_back( -9999.9 );
@@ -2559,28 +2551,9 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 				jet_FlightDist2DErr.push_back( -9999.9 );
 				jet_FlightDist3D.push_back( -9999.9 );
 				jet_FlightDist3DErr.push_back( -9999.9 );
-			}
-
-			if( jet_SVCandInfo_temp->taggingVariables().getList(reco::btau::vertexJetDeltaR,false).size() > 0 ){
-				jet_SV_DRJet.push_back( jet_SVCandInfo_temp->taggingVariables().getList(reco::btau::vertexJetDeltaR,false)[0] );
-			} else {
 				jet_SV_DRJet.push_back( -9999.9 );
+
 			}
-
-		} else {
-			jet_NSV.push_back( -9999 );
-			jet_NSVCand.push_back( -9999 );
-			jet_SV_x.push_back( -9999.9 );
-			jet_SV_y.push_back( -9999.9 );
-			jet_SV_z.push_back( -9999.9 );
-			jet_SV_NTracks.push_back( -9999 );
-			jet_SV_Mass.push_back( -9999.9 );
-			jet_FlightDist2D.push_back( -9999.9 );
-			jet_FlightDist2DErr.push_back( -9999.9 );
-			jet_FlightDist3D.push_back( -9999.9 );
-			jet_FlightDist3DErr.push_back( -9999.9 );
-			jet_SV_DRJet.push_back( -9999.9 );
-
 		}
 
 		// ----- Trackless Variables ----- //

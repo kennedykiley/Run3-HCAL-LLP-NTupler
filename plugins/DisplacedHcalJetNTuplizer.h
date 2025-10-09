@@ -673,16 +673,11 @@ protected:
 	// Basics
 	vector<float> jetRaw_Pt;
 	vector<float> jetRaw_E;
-	vector<float> jetRaw_Puppi_Pt;
-	vector<float> jetRaw_Puppi_E;
-	vector<float> jet_Puppi_Pt;
-	vector<float> jet_Puppi_E;
-	vector<float> jet_Puppi_Eta;
-	vector<float> jet_Puppi_Phi;
-	vector<float> jet_Puppi_Mass;
-	vector<float> jet_Puppi_Pt_noJER;
-	vector<float> jet_Puppi_E_noJER;
-	vector<float> jet_Puppi_Mass_noJER;
+	vector<float> jet_CHS_Pt;
+	vector<float> jet_CHS_E;
+	vector<float> jet_CHS_Eta;
+	vector<float> jet_CHS_Phi;
+	vector<float> jet_CHS_Mass;
 	vector<float> jet_Pt;
 	vector<float> jet_E;
 	vector<float> jet_Eta;
