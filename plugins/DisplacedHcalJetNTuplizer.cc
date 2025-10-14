@@ -51,6 +51,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
   	rhoFastjetAllToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoFastjetAll"))),
 	// Event-Level Info
 	metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("met"))),
+	metPuppiToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metPuppi"))), // GK, PUPPI MET access
 	bsTag_(iConfig.getUntrackedParameter<edm::InputTag>("offlineBeamSpot", edm::InputTag("offlineBeamSpot"))),
 	bsToken_(consumes<reco::BeamSpot>(bsTag_)),
 	// Physics Objects
@@ -344,6 +345,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(rhoFastjetAllToken_,rhoFastjetAll);
 
 	iEvent.getByToken(metToken_, met);
+	iEvent.getByToken(metPuppiToken_, metPuppi);
 
 	// Physics objects
 	iEvent.getByToken(electronsToken_, electrons);
@@ -1834,7 +1836,8 @@ bool DisplacedHcalJetNTuplizer::FillMetBranches(const edm::Event& iEvent){
 
 	//const reco::PFMET &Met = mets->front();
 	//const pat::MET &Met = mets->front();
-	auto &met_temp = met->front();
+	//auto &met_temp = met->front(); // CHS MET
+	auto &met_temp = metPuppi->front();
 	met_Pt = met_temp.pt();
 	met_Phi = met_temp.phi();
 	met_SumEt = met_temp.sumEt();

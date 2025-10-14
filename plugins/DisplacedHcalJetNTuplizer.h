@@ -315,6 +315,7 @@ protected:
 
 	// Event Level
 	edm::EDGetTokenT<pat::METCollection> metToken_;
+	edm::EDGetTokenT<reco::PFMETCollection> metPuppiToken_;
 	edm::InputTag bsTag_;
 	edm::EDGetTokenT<reco::BeamSpot> bsToken_;
 
@@ -414,6 +415,7 @@ protected:
 	edm::Handle<pat::PackedTriggerPrescales> triggerPrescales;
 
 	edm::Handle<pat::METCollection> met;
+	edm::Handle<reco::PFMETCollection> metPuppi;
 	edm::Handle<edm::TriggerResults> metFilterBits;
 
 	edm::Handle<reco::VertexCollection> vertices;

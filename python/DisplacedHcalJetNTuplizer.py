@@ -471,7 +471,6 @@ process.patJetsPuppi = patJets.clone(
     embedPFCandidates   = cms.bool(False),
     embedCaloTowers     = cms.bool(False),
     addTagInfos         = cms.bool(True)
-
 )
 
 # ------ Analyzer ------ #
@@ -524,9 +523,10 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     #jetsAK8 = cms.InputTag("ak8PFJetsPuppi"),
 
     #mets = cms.InputTag("slimmedMETs"),
-    met = cms.InputTag("patMETs"),
+    met = cms.InputTag("patMETs"), # this is used in the .cc file as "met"
+    metPuppi = cms.InputTag("pfMetPuppi"), # this is used in the .cc file as "metPuppi"
     #metsNoHF = cms.InputTag("pfMet30"),
-    metsPuppi = cms.InputTag("pfMet"),
+    # metsPuppi = cms.InputTag("pfMet"),
     pfCands = cms.InputTag("particleFlow"), #,"","RECO"),
 
     #packedPfCands = cms.InputTag("packedPFCandidates"),
