@@ -1836,7 +1836,10 @@ bool DisplacedHcalJetNTuplizer::FillMetBranches(const edm::Event& iEvent){
 
 	//const reco::PFMET &Met = mets->front();
 	//const pat::MET &Met = mets->front();
-	//auto &met_temp = met->front(); // CHS MET
+	// auto &met_CHS_temp = met->front(); // CHS MET
+	// met_CHS_Pt = met_CHS_temp.pt();
+	// met_CHS_Phi = met_CHS_temp.phi();
+	// met_CHS_SumEt = met_CHS_temp.sumEt();
 	auto &met_temp = metPuppi->front();
 	met_Pt = met_temp.pt();
 	met_Phi = met_temp.phi();

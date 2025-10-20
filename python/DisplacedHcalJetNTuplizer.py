@@ -327,17 +327,17 @@ if options.isData:
         ("Run2022E", ""):               ("Summer22EE_22Sep2023_RunE_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
         ("Run2022F", ""):               ("Summer22EE_22Sep2023_RunF_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
         ("Run2022G", ""):               ("Summer22EE_22Sep2023_RunG_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
-        ("Run2023C", "PromptReco-v1"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv123_JRV1_DATA"),
-        ("Run2023C", "PromptReco-v2"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv123_JRV1_DATA"),
-        ("Run2023C", "PromptReco-v3"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv123_JRV1_DATA"),
-        ("Run2023C", "PromptReco-v4"):  ("Summer23Prompt23_RunCv4_V3_DATA",   "Summer23Prompt23_RunCv4_JRV1_DATA"),
+        ("Run2023C", "PromptReco-v1"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv1234_JRV1_DATA"),
+        ("Run2023C", "PromptReco-v2"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv1234_JRV1_DATA"),
+        ("Run2023C", "PromptReco-v3"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv1234_JRV1_DATA"),
+        ("Run2023C", "PromptReco-v4"):  ("Summer23Prompt23_RunCv4_V3_DATA",   "Summer23Prompt23_RunCv1234_JRV1_DATA"),
         ("Run2023D", ""):               ("Summer23BPixPrompt23_RunD_V3_DATA", "Summer23BPixPrompt23_RunD_JRV1_DATA"),
     }
 else:
     mapping = { # TODO make sure this agrees with MC naming scheme
         ("HToSSTo4B", "23BPix"):         ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC"),
         # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
-        ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC"), # Summer23Prompt23_RunCv123_JRV1_MC and RunCv4_JRV1_MC when have all eras of MC
+        ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC"), 
         ("HToSSTo4B", "2022EE"):         ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC"),
         ("HToSSTo4B", "2022_"):          ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
     }
