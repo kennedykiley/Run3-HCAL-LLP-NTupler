@@ -2348,7 +2348,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 	// for( auto &jet : *jetsCorr ) { // GK, corrected PF ak4 jets CHS
 	for( auto &jet : *jetsPuppiCorr ) { // GK, corrected PF ak4 jets PUPPI
 
-		if( jet.pt() < 10 || fabs(jet.eta()) > 1.5 ) continue;
+		if( jet.pt() < 20 || fabs(jet.eta()) > 2.0 ) continue;
 
 		if( debug ) cout<<" ------ jet idx"<<n_jet<<endl;  
 
