@@ -477,6 +477,9 @@ void DisplacedHcalJetNTuplizer::EnableMetBranches(){
 	output_tree->Branch( "met_Pt", &met_Pt );
 	output_tree->Branch( "met_Phi", &met_Phi );
 	output_tree->Branch( "met_SumEt", &met_SumEt );
+	output_tree->Branch( "met_PUPPI_Pt", &met_PUPPI_Pt );
+	output_tree->Branch( "met_PUPPI_Phi", &met_PUPPI_Phi );
+	output_tree->Branch( "met_PUPPI_SumEt", &met_PUPPI_SumEt );
 
     output_tree->Branch( "Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter);
     output_tree->Branch( "Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter);
@@ -608,11 +611,6 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "n_jet", &n_jet );
 	output_tree->Branch( "jetRaw_Pt", &jetRaw_Pt );
 	output_tree->Branch( "jetRaw_E", &jetRaw_E );
-	output_tree->Branch( "jet_CHS_Pt", &jet_CHS_Pt );
-	output_tree->Branch( "jet_CHS_Eta", &jet_CHS_Eta );
-	output_tree->Branch( "jet_CHS_Phi", &jet_CHS_Phi );
-	output_tree->Branch( "jet_CHS_E", &jet_CHS_E );
-	output_tree->Branch( "jet_CHS_Mass", &jet_CHS_Mass );
 	output_tree->Branch( "jet_Pt", &jet_Pt );
 	output_tree->Branch( "jet_Eta", &jet_Eta );
 	output_tree->Branch( "jet_Phi", &jet_Phi );
@@ -1058,6 +1056,9 @@ void DisplacedHcalJetNTuplizer::ResetMetBranches(){
 	met_Pt = -9999.9;
 	met_Phi = -9999.9;
 	met_SumEt = -9999.9;
+	met_PUPPI_Pt = -9999.9;
+	met_PUPPI_Phi = -9999.9;
+	met_PUPPI_SumEt = -9999.9;
 
 	Flag_HBHENoiseFilter = false;
 	Flag_HBHENoiseIsoFilter = false;
@@ -1186,11 +1187,6 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 
 	// AK4 PF Jets 
 	n_jet = 0;
-	jet_CHS_Pt.clear();
-	jet_CHS_Eta.clear();
-	jet_CHS_Phi.clear();
-	jet_CHS_E.clear();
-	jet_CHS_Mass.clear();
 	jet_Pt.clear();
 	jet_Eta.clear();
 	jet_Phi.clear();
@@ -1836,14 +1832,14 @@ bool DisplacedHcalJetNTuplizer::FillMetBranches(const edm::Event& iEvent){
 
 	//const reco::PFMET &Met = mets->front();
 	//const pat::MET &Met = mets->front();
-	// auto &met_CHS_temp = met->front(); // CHS MET
-	// met_CHS_Pt = met_CHS_temp.pt();
-	// met_CHS_Phi = met_CHS_temp.phi();
-	// met_CHS_SumEt = met_CHS_temp.sumEt();
+	auto &met_CHS_temp = met->front(); // CHS MET
+	met_Pt = met_CHS_temp.pt();
+	met_Phi = met_CHS_temp.phi();
+	met_SumEt = met_CHS_temp.sumEt();
 	auto &met_temp = metPuppi->front();
-	met_Pt = met_temp.pt();
-	met_Phi = met_temp.phi();
-	met_SumEt = met_temp.sumEt();
+	met_PUPPI_Pt = met_temp.pt();
+	met_PUPPI_Phi = met_temp.phi();
+	met_PUPPI_SumEt = met_temp.sumEt();
 
 	if( metFilterBitsToken_isValid ){ 
 		iEvent.getByToken(metFilterBitsToken_, metFilterBits);
@@ -2345,8 +2341,8 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 	if( debug ) cout<<" -> AK4 PF Jets"<<endl;  
 
 	// for( auto &jet : *jets ) { // uncorrected jets
-	// for( auto &jet : *jetsCorr ) { // GK, corrected PF ak4 jets CHS
-	for( auto &jet : *jetsPuppiCorr ) { // GK, corrected PF ak4 jets PUPPI
+	// for( auto &jet : *jetsPuppiCorr ) { // GK, corrected PF ak4 jets PUPPI
+	for( auto &jet : *jetsCorr ) { // GK, corrected PF ak4 jets CHS
 
 		if( jet.pt() < 20 || fabs(jet.eta()) > 2.0 ) continue;
 
@@ -2477,77 +2473,37 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		//jet_PileupId.push_back( jet.userFloat("pileupJetId:fullDiscriminant") );
 		//jet_PileupIdFlag.push_back( jet.userInt("pileupJetId:fullId") ); //A bit map for loose, medium, and tight working points
 
-		// match to a CHS jet now
-		const pat::Jet* matchedCHS = nullptr;
-		double minDR = 999.;
+		// ----- BTagging  ----- //        
+		auto jet_pair_discrim = jet.getPairDiscri();
+		jet_DeepCSV_prob_b.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probb") );
+		jet_DeepCSV_prob_c.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probc") );
+		jet_DeepCSV_prob_bb.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probbb") );
+		jet_DeepCSV_prob_udsg.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probudsg") );
 
-		for( auto &chs_jet : *jetsCorr ) { 
-			double dR = deltaR(jet.eta(), jet.phi(), chs_jet.eta(), chs_jet.phi());
-			if (dR < 0.2 && dR < minDR) {
-				minDR = dR;
-				matchedCHS = &chs_jet;
-			}
-		}
+		// ----- Secondary Vertex Features ----- //
 
-		if (matchedCHS) {
-			// ----- JEC only ----- // 
-			jet_CHS_E.push_back( matchedCHS->energy() );
-			jet_CHS_Pt.push_back( matchedCHS->pt() );
-			jet_CHS_Mass.push_back( matchedCHS->mass() );
-			jet_CHS_Eta.push_back( matchedCHS->eta() );
-			jet_CHS_Phi.push_back( matchedCHS->phi() );
+		if( debug ) cout<<" ------ 3"<<endl;  
 
-			// ----- BTagging  ----- //        
-			auto jet_pair_discrim = matchedCHS->getPairDiscri();
-			jet_DeepCSV_prob_b.push_back( matchedCHS->bDiscriminator("pfDeepCSVJetTags:probb") );
-			jet_DeepCSV_prob_c.push_back( matchedCHS->bDiscriminator("pfDeepCSVJetTags:probc") );
-			jet_DeepCSV_prob_bb.push_back( matchedCHS->bDiscriminator("pfDeepCSVJetTags:probbb") );
-			jet_DeepCSV_prob_udsg.push_back( matchedCHS->bDiscriminator("pfDeepCSVJetTags:probudsg") );
+		if( jet.tagInfoLabels().size() > 0 && jet.hasTagInfo("pfSecondaryVertex") ){
 
-			// ----- Secondary Vertex Features ----- //
+			auto jet_SVCandInfo_temp = jet.tagInfoCandSecondaryVertex("pfSecondaryVertex");
 
-			if( debug ) cout<<" ------ 3"<<endl;  
+			jet_NSV.push_back( jet_SVCandInfo_temp->nVertices() );
+			jet_NSVCand.push_back( jet_SVCandInfo_temp->nVertexCandidates() );
+			//jet.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks()
+			//jet.tagInfoCandSecondaryVertex("pfSecondaryVertex")->nSelectedTracks() 
 
-			if( matchedCHS->tagInfoLabels().size() > 0 && matchedCHS->hasTagInfo("pfSecondaryVertex") ){
-
-				auto jet_SVCandInfo_temp = matchedCHS->tagInfoCandSecondaryVertex("pfSecondaryVertex");
-
-				jet_NSV.push_back( jet_SVCandInfo_temp->nVertices() );
-				jet_NSVCand.push_back( jet_SVCandInfo_temp->nVertexCandidates() );
-				//matchedCHS->tagInfoCandSecondaryVertex("pfSecondaryVertex")->nVertexTracks()
-				//matchedCHS->tagInfoCandSecondaryVertex("pfSecondaryVertex")->nSelectedTracks() 
-
-				if( jet_SVCandInfo_temp->nVertices() > 0 ){
-					jet_SV_x.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vx() );
-					jet_SV_y.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vy() );
-					jet_SV_z.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vz() );
-					jet_SV_NTracks.push_back( jet_SVCandInfo_temp->nVertexTracks(0) );
-					jet_SV_Mass.push_back( jet_SVCandInfo_temp->secondaryVertex(0).mass() );
-					jet_FlightDist2D.push_back( jet_SVCandInfo_temp->flightDistance(0, true).value() );
-					jet_FlightDist2DErr.push_back( jet_SVCandInfo_temp->flightDistance(0, true).error() );
-					jet_FlightDist3D.push_back( jet_SVCandInfo_temp->flightDistance(0, false).value() );
-					jet_FlightDist3DErr.push_back( jet_SVCandInfo_temp->flightDistance(0, false).error() );
-				} else{
-					jet_SV_x.push_back( -9999.9 );
-					jet_SV_y.push_back( -9999.9 );
-					jet_SV_z.push_back( -9999.9 );
-					jet_SV_NTracks.push_back( -9999 );
-					jet_SV_Mass.push_back( -9999.9 );
-					jet_FlightDist2D.push_back( -9999.9 );
-					jet_FlightDist2DErr.push_back( -9999.9 );
-					jet_FlightDist3D.push_back( -9999.9 );
-					jet_FlightDist3DErr.push_back( -9999.9 );
-				}
-
-				if( jet_SVCandInfo_temp->taggingVariables().getList(reco::btau::vertexJetDeltaR,false).size() > 0 ){
-					jet_SV_DRJet.push_back( jet_SVCandInfo_temp->taggingVariables().getList(reco::btau::vertexJetDeltaR,false)[0] );
-				} else {
-					jet_SV_DRJet.push_back( -9999.9 );
-				}
-
-			} else {
-				jet_NSV.push_back( -9999 );
-				jet_NSVCand.push_back( -9999 );
+			if( jet_SVCandInfo_temp->nVertices() > 0 ){
+				jet_SV_x.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vx() );
+				jet_SV_y.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vy() );
+				jet_SV_z.push_back( jet_SVCandInfo_temp->secondaryVertex(0).vz() );
+				jet_SV_NTracks.push_back( jet_SVCandInfo_temp->nVertexTracks(0) );
+				jet_SV_Mass.push_back( jet_SVCandInfo_temp->secondaryVertex(0).mass() );
+				jet_FlightDist2D.push_back( jet_SVCandInfo_temp->flightDistance(0, true).value() );
+				jet_FlightDist2DErr.push_back( jet_SVCandInfo_temp->flightDistance(0, true).error() );
+				jet_FlightDist3D.push_back( jet_SVCandInfo_temp->flightDistance(0, false).value() );
+				jet_FlightDist3DErr.push_back( jet_SVCandInfo_temp->flightDistance(0, false).error() );
+			} else{
 				jet_SV_x.push_back( -9999.9 );
 				jet_SV_y.push_back( -9999.9 );
 				jet_SV_z.push_back( -9999.9 );
@@ -2557,9 +2513,28 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 				jet_FlightDist2DErr.push_back( -9999.9 );
 				jet_FlightDist3D.push_back( -9999.9 );
 				jet_FlightDist3DErr.push_back( -9999.9 );
-				jet_SV_DRJet.push_back( -9999.9 );
-
 			}
+
+			if( jet_SVCandInfo_temp->taggingVariables().getList(reco::btau::vertexJetDeltaR,false).size() > 0 ){
+				jet_SV_DRJet.push_back( jet_SVCandInfo_temp->taggingVariables().getList(reco::btau::vertexJetDeltaR,false)[0] );
+			} else {
+				jet_SV_DRJet.push_back( -9999.9 );
+			}
+
+		} else {
+			jet_NSV.push_back( -9999 );
+			jet_NSVCand.push_back( -9999 );
+			jet_SV_x.push_back( -9999.9 );
+			jet_SV_y.push_back( -9999.9 );
+			jet_SV_z.push_back( -9999.9 );
+			jet_SV_NTracks.push_back( -9999 );
+			jet_SV_Mass.push_back( -9999.9 );
+			jet_FlightDist2D.push_back( -9999.9 );
+			jet_FlightDist2DErr.push_back( -9999.9 );
+			jet_FlightDist3D.push_back( -9999.9 );
+			jet_FlightDist3DErr.push_back( -9999.9 );
+			jet_SV_DRJet.push_back( -9999.9 );
+
 		}
 
 		// ----- Trackless Variables ----- //

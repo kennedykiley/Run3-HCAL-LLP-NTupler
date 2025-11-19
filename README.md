@@ -11,6 +11,25 @@ cd Run3-HCAL-LLP-NTupler
 git checkout -b <your-branch>
 ```
 
+## Get JEC and JER files
+[JER twiki](https://cms-jerc.web.cern.ch/Recommendations/#jet-energy-resolution)
+
+Get textfiles from the JRDatabase from github and put them in `Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/`. 
+
+[JEC twiki](https://cms-jerc.web.cern.ch/Recommendations/#jet-energy-scale)
+
+Get the database files from the JECDatabase github, and put them in `Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/SQLiteFiles/`.
+
+At the time of v5 ntuple preparation, v3 is the recommended JES version and v1 is the recommended JER version. 
+
+Make sure the `mapping` in L324 of DisplacedHcalJetsTuplizer.py is correct for all the data and MC processed, otherwise the JEC and JER tags will not be found (this will cause a runtime error). 
+
+The saved branches are:
+- jetRaw: no JEC applied, this is the uncorrected jet
+- jet_*_noJER: no smearing applied (MC only)
+- jet_*_JER_up/down: smeared up / down variation with JER
+- jet_E, jet_Pt: corrected and (MC only) smeared jet. This should be used for analysis
+
 # Run the ntuples
 Setup grid proxy
 ```

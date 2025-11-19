@@ -336,10 +336,11 @@ if options.isData:
 else:
     mapping = { # TODO make sure this agrees with MC naming scheme
         ("HToSSTo4B", "23BPix"):         ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC"),
-        # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
         ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC"), 
         ("HToSSTo4B", "2022EE"):         ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC"),
         ("HToSSTo4B", "2022_"):          ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
+        # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
+        # ("WJetsToLNu", "preEE"):         ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
     }
 
 tag_name = None
@@ -654,6 +655,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
 if not options.isData: 
     process.DisplacedHcalJets.jer_PtResolution = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/"+JER_tag_name+"/"+JER_tag_name+"_PtResolution_AK4PFPuppi.txt")
     process.DisplacedHcalJets.jer_ScaleFactor = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/"+JER_tag_name+"/"+JER_tag_name+"_SF_AK4PFPuppi.txt")
+    # note that _AK4PFchs.txt is a symlink back to _AK4PFPuppi.txt, and there are issues when the symlinked version is used. So the puppi version is listed. 
     # based on https://cms-jerc.web.cern.ch/Recommendations/#2023_1
 # process.DisplacedHcalJets.jec_Uncertainty = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/"+tag_name+"/"+tag_name+"_Uncertainty_AK4PFPuppi.txt")
         
