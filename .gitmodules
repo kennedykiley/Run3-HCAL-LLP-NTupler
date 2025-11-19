@@ -1,0 +1,6 @@
+[submodule "data/JEC_JER/JECDatabase"]
+	path = data/JEC_JER/JECDatabase
+	url = https://github.com/cms-jet/JECDatabase.git
+[submodule "data/JEC_JER/JRDatabase"]
+	path = data/JEC_JER/JRDatabase
+	url = https://github.com/cms-jet/JRDatabase.git

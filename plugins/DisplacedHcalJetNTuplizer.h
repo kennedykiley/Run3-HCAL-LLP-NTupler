@@ -43,6 +43,9 @@ using namespace std;
 
 #include "CondFormats/GeometryObjects/interface/PCaloGeometry.h" // GK
 #include "CondFormats/GeometryObjects/interface/RecoIdealGeometry.h" // GK
+#include "JetMETCorrections/Modules/interface/JetResolution.h" // GK
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h" // GK
+#include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h" // GK
 
 #include "DataFormats/CSCDigi/interface/CSCComparatorDigi.h"
 #include "DataFormats/CSCDigi/interface/CSCComparatorDigiCollection.h"
@@ -285,6 +288,13 @@ protected:
 	// ====================================================================================
 	// EDM Tokens (miniAOD Inputs)
 	// ====================================================================================
+	// Random engine for smearing // GK
+	TRandom3 rand_;
+	// JER tools // GK
+	JME::JetResolution jerRes_;
+	JME::JetResolutionScaleFactor jerSF_;
+	// JEC uncertainty
+	std::unique_ptr<JetCorrectionUncertainty> jecUnc_;
 
 	edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken_;
 	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
@@ -297,6 +307,7 @@ protected:
 	//string jetHLTFilterNamesFile_;
 
 	// General Info
+	edm::EDGetTokenT<edm::TriggerResults> metFilterBitsToken_;
 	edm::EDGetTokenT<reco::VertexCollection> verticesToken_;
   	edm::EDGetTokenT<edm::Association<vector<reco::Vertex> > > primaryVertexAssociationToken_;
   	edm::EDGetTokenT<edm::ValueMap<int> > primaryVertexAssociationValueMapToken_;
@@ -304,6 +315,7 @@ protected:
 
 	// Event Level
 	edm::EDGetTokenT<pat::METCollection> metToken_;
+	edm::EDGetTokenT<reco::PFMETCollection> metPuppiToken_;
 	edm::InputTag bsTag_;
 	edm::EDGetTokenT<reco::BeamSpot> bsToken_;
 
@@ -313,10 +325,18 @@ protected:
 	edm::EDGetTokenT<pat::TauCollection> tausToken_;
 	edm::EDGetTokenT<reco::PhotonCollection> photonsToken_;
 	edm::EDGetTokenT<pat::JetCollection> jetsToken_;
+	edm::EDGetTokenT<pat::JetCollection> jetsCorrToken_; // GK, adding JECs
+	edm::EDGetTokenT<pat::JetCollection> jetsPuppiCorrToken_; // GK, adding JECs, PUPPI
 	edm::EDGetTokenT<reco::CaloJetCollection> calojetsToken_;
 	edm::EDGetTokenT<pat::JetCollection> LRJetsToken_;
 	edm::EDGetTokenT<reco::CaloJetCollection> caloLRJetsToken_;
 	edm::EDGetTokenT<BXVector<l1t::Jet>> l1jetsToken_;
+
+	// // JER
+	// edm::ESGetToken<JME::JetResolution, JetResolutionRcd> jerResToken_CHS_;
+	// edm::ESGetToken<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd> jerSFToken_CHS_;
+	// edm::ESGetToken<JME::JetResolution, JetResolutionRcd> jerResToken_;
+	// edm::ESGetToken<JME::JetResolutionScaleFactor, JetResolutionScaleFactorRcd> jerSFToken_;
 
 	// Low-Level Objects
 	//edm::EDGetTokenT<edm::View<reco::Track>> tracksToken_;
@@ -338,7 +358,7 @@ protected:
 
 	// MC
 	edm::EDGetTokenT<reco::GenParticleCollection> genParticlesToken_;
-        edm::EDGetTokenT<std::vector<PileupSummaryInfo> > puInfoToken_;
+    edm::EDGetTokenT<std::vector<PileupSummaryInfo> > puInfoToken_;
 
 	// Calo Geometry
 	const edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_; // GK
@@ -346,6 +366,36 @@ protected:
 	// const edm::ESGetToken<RecoIdealGeometry, GEMRecoGeometryRcd> gemGeoToken_;	// commenting out to test 350 GeV MC
 	const edm::ESGetToken<MagneticField, IdealMagneticFieldRecord> magneticFieldToken_; // GK
 	const edm::ESGetToken<Propagator, TrackingComponentsRecord> propagatorToken_; // GK
+
+	// Noise Filters
+	
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_HBHENoiseFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_HBHENoiseIsoFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_CSCTightHaloFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_CSCTightHaloTrkMuUnvetoFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_CSCTightHalo2015FilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_globalTightHalo2016FilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_globalSuperTightHalo2016FilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_HcalStripHaloFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_hcalLaserEventFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_EcalDeadCellTriggerPrimitiveFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_EcalDeadCellBoundaryEnergyFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_ecalBadCalibFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_goodVerticesToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_eeBadScFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_ecalLaserCorrFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_trkPOGFiltersToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_chargedHadronTrackResolutionFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_muonBadTrackFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_BadChargedCandidateFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_BadPFMuonFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_BadChargedCandidateSummer16FilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_BadPFMuonSummer16FilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_BadPFMuonDzFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_hfNoisyHitsFilterToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_trkPOG_manystripclus53XToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_trkPOG_toomanystripclus53XToken_;
+	edm::EDGetTokenT<edm::HLTPathStatus> Flag_trkPOG_logErrorTooManyClustersToken_;
 
 	// ====================================================================================
 	// EDM Handles & Globals (miniAOD Inputs)
@@ -365,6 +415,7 @@ protected:
 	edm::Handle<pat::PackedTriggerPrescales> triggerPrescales;
 
 	edm::Handle<pat::METCollection> met;
+	edm::Handle<reco::PFMETCollection> metPuppi;
 	edm::Handle<edm::TriggerResults> metFilterBits;
 
 	edm::Handle<reco::VertexCollection> vertices;
@@ -378,6 +429,8 @@ protected:
 	edm::Handle<pat::TauCollection> taus;
 	edm::Handle<reco::PhotonCollection> photons;
 	edm::Handle<pat::JetCollection> jets;
+	edm::Handle<pat::JetCollection> jetsCorr; // GK, for JECs
+	edm::Handle<pat::JetCollection> jetsPuppiCorr; // GK, for JECs, PUPPI
 	edm::Handle<reco::CaloJetCollection> calojets;
 	edm::Handle<pat::JetCollection> LRJets;
 	edm::Handle<reco::CaloJetCollection> caloLRJets;
@@ -496,10 +549,15 @@ protected:
 
 	// ----- MET ----- //
 
+    bool metFilterBitsToken_isValid;
+
 	float met_Pt;
 	float met_Phi;
 	float met_SumEt;
- 
+ 	float met_PUPPI_Pt;
+	float met_PUPPI_Phi;
+	float met_PUPPI_SumEt;
+
 	/*float metUncorrectedPt;
 	float metUncorrectedPhi;
 	float metType1Pt;
@@ -618,11 +676,22 @@ protected:
 
 	int n_jet;
 	// Basics
+	vector<float> jetRaw_Pt;
+	vector<float> jetRaw_E;
 	vector<float> jet_Pt;
+	vector<float> jet_E;
 	vector<float> jet_Eta;
 	vector<float> jet_Phi;
-	vector<float> jet_E;
 	vector<float> jet_Mass;
+	vector<float> jet_Pt_noJER;
+	vector<float> jet_E_noJER;
+	vector<float> jet_Mass_noJER;
+	vector<float> jet_Pt_JER_up;
+	vector<float> jet_E_JER_up;
+	vector<float> jet_Mass_JER_up;
+	vector<float> jet_Pt_JER_down;
+	vector<float> jet_E_JER_down;
+	vector<float> jet_Mass_JER_down;
 	// Features 
 	vector<float> jet_JetArea;  
 	vector<float> jet_ChargedHadEFrac;
@@ -661,6 +730,10 @@ protected:
 	vector<float> jet_MedianIP_wp;
 	vector<float> jet_MinDeltaRAllTracks_wp;
 	vector<float> jet_MinDeltaRPVTracks_wp;
+    vector<float> jet_DeepCSV_prob_b;
+    vector<float> jet_DeepCSV_prob_c;
+    vector<float> jet_DeepCSV_prob_bb;
+    vector<float> jet_DeepCSV_prob_udsg;
 	// Rechits Association 
 	vector<uint> jet_NTracks;
 	vector<vector<uint>> jet_TrackIndices;
@@ -897,8 +970,39 @@ protected:
 	vector<float> hoRechit_Z;
 
 	// ------------------------------------------------------------------------------------
-	// Flags...????
- 
+	// Flags from MET/Noise Filters (some of these applied as vetos upstream but not all)
+	// Run 3 list from: https://github.com/cms-sw/cmssw/blob/a31424ec6d9989e1390981466d09b137ad068318/PhysicsTools/PatAlgos/python/slimming/metFilterPaths_cff.py
+
+    bool Flag_HBHENoiseFilter;
+    bool Flag_HBHENoiseIsoFilter;
+    bool Flag_CSCTightHaloFilter;
+    bool Flag_CSCTightHaloTrkMuUnvetoFilter;
+    bool Flag_CSCTightHalo2015Filter;
+    bool Flag_globalTightHalo2016Filter;
+    bool Flag_globalSuperTightHalo2016Filter;
+    bool Flag_HcalStripHaloFilter;
+    bool Flag_hcalLaserEventFilter;
+    bool Flag_EcalDeadCellTriggerPrimitiveFilter;
+    bool Flag_EcalDeadCellBoundaryEnergyFilter;
+    bool Flag_ecalBadCalibFilter;
+    bool Flag_goodVertices;
+    //bool Flag_trackingFailureFilter;
+    bool Flag_eeBadScFilter;
+    bool Flag_ecalLaserCorrFilter;
+    bool Flag_trkPOGFilters;
+    bool Flag_chargedHadronTrackResolutionFilter;
+    bool Flag_muonBadTrackFilter;
+    bool Flag_BadChargedCandidateFilter;
+    bool Flag_BadPFMuonFilter;
+    bool Flag_BadChargedCandidateSummer16Filter;
+    bool Flag_BadPFMuonSummer16Filter;
+    bool Flag_BadPFMuonDzFilter;
+    bool Flag_hfNoisyHitsFilter;
+    bool Flag_trkPOG_manystripclus53X;
+    bool Flag_trkPOG_toomanystripclus53X;
+    bool Flag_trkPOG_logErrorTooManyClusters;
+    bool Flag_METFilters_2022_2023_PromptReco;
+
 	/*bool Flag_HBHENoiseFilter;
 	bool Flag_HBHETightNoiseFilter;
 	bool Flag_HBHEIsoNoiseFilter;

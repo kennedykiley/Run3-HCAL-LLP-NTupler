@@ -3,13 +3,32 @@ Long-Lived Particle Ntupler based on AOD, adapted for use with HBHE rechits for 
 
 # Setup Ntupler
 ```
-cmsrel CMSSW_<>
+cmsrel <CMSSW version> # Use CMSSW_13_2_0 for NTuples v4
 mkdir cms_lpc_llp
 cd cms_lpc_llp
 git clone git@github.com:kennedykiley/Run3-HCAL-LLP-NTupler.git
 cd Run3-HCAL-LLP-NTupler
 git checkout -b <your-branch>
 ```
+
+## Get JEC and JER files
+[JER twiki](https://cms-jerc.web.cern.ch/Recommendations/#jet-energy-resolution)
+
+Get textfiles from the JRDatabase from github and put them in `Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/`. 
+
+[JEC twiki](https://cms-jerc.web.cern.ch/Recommendations/#jet-energy-scale)
+
+Get the database files from the JECDatabase github, and put them in `Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/SQLiteFiles/`.
+
+At the time of v5 ntuple preparation, v3 is the recommended JES version and v1 is the recommended JER version. 
+
+Make sure the `mapping` in L324 of DisplacedHcalJetsTuplizer.py is correct for all the data and MC processed, otherwise the JEC and JER tags will not be found (this will cause a runtime error). 
+
+The saved branches are:
+- jetRaw: no JEC applied, this is the uncorrected jet
+- jet_*_noJER: no smearing applied (MC only)
+- jet_*_JER_up/down: smeared up / down variation with JER
+- jet_E, jet_Pt: corrected and (MC only) smeared jet. This should be used for analysis
 
 # Run the ntuples
 Setup grid proxy
@@ -101,7 +120,7 @@ Check event content with
 edmDumpEventContent root://cmsxrootd.fnal.gov/</store/path/to/file.root> > EDM_content.txt
 ```
 
-### CRAB Wrapper for Automating Submissions
+### CRAB Wrapper 1 for Automating Submissions
 First check that the dataset is on disk:
 ```
 python3 checkDatasetAvailability.py <txt file of datasets to check>
@@ -113,6 +132,28 @@ crab_setup
 python3 CrabSubmitWrapper.py
 ```
 This handles changing the variables (isData and isSignal) in DisplacedHcalJetNTuplizer.py, as well as doing one crab submission per dataset listed. 
+
+### CRAB Wrapper 2 for Automating Submissions
+
+From src/
+```
+cmsenv
+voms-proxy-init -voms cms
+source /cvmfs/cms.cern.ch/crab3/crab.sh
+# scram b -j 10 # if needed
+cd cms_lpc_llp/Run3-HCAL-LLP-NTupler/python
+```
+Edit `makeBulkCrabSubmission.py`:
+* Update line 15 to point to your crab output directory (should be outside of your CMSSW area). Make this directory if it does not exist
+
+Run: 
+```
+# Setup crab jobs (setup to signal by default, but need to edit line 147 of `makeBulkCrabSubmission.py` to run over other datasets):
+python3 makeBulkCrabSubmission.py Signal
+
+# Submit crab jobs
+source Signal/submit.sh
+```
 
 ### Variables to check before running ntupler:
 * isData: False if running signals, True if running data
