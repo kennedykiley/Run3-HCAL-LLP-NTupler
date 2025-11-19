@@ -683,12 +683,6 @@ protected:
 	vector<float> jet_Eta;
 	vector<float> jet_Phi;
 	vector<float> jet_Mass;
-	vector<float> jet_Pt_JES_up;
-	vector<float> jet_E_JES_up;
-	vector<float> jet_Mass_JES_up;
-	vector<float> jet_Pt_JES_down;
-	vector<float> jet_E_JES_down;
-	vector<float> jet_Mass_JES_down;
 	vector<float> jet_Pt_noJER;
 	vector<float> jet_E_noJER;
 	vector<float> jet_Mass_noJER;

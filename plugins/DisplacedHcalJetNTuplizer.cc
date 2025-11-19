@@ -617,12 +617,6 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "jet_E", &jet_E );
 	output_tree->Branch( "jet_Mass", &jet_Mass );
 	output_tree->Branch( "jet_JetArea", &jet_JetArea );
-	output_tree->Branch( "jet_Pt_JES_up", &jet_Pt_JES_up );	
-	output_tree->Branch( "jet_E_JES_up", &jet_E_JES_up );	
-	output_tree->Branch( "jet_Mass_JES_up", &jet_Mass_JES_up );
-	output_tree->Branch( "jet_Pt_JES_down", &jet_Pt_JES_down );	
-	output_tree->Branch( "jet_E_JES_down", &jet_E_JES_down );	
-	output_tree->Branch( "jet_Mass_JES_down", &jet_Mass_JES_down );
 	output_tree->Branch( "jet_Pt_noJER", &jet_Pt_noJER );
 	output_tree->Branch( "jet_E_noJER", &jet_E_noJER );
 	output_tree->Branch( "jet_Mass_noJER", &jet_Mass_noJER );
@@ -1195,12 +1189,6 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jet_JetArea.clear();
 	jetRaw_Pt.clear();
 	jetRaw_E.clear();
-	jet_Pt_JES_up.clear();
-	jet_E_JES_up.clear();
-	jet_Mass_JES_up.clear();
-	jet_Pt_JES_down.clear();
-	jet_E_JES_down.clear();
-	jet_Mass_JES_down.clear();
 	jet_Pt_noJER.clear();
 	jet_E_noJER.clear();
 	jet_Mass_noJER.clear();
