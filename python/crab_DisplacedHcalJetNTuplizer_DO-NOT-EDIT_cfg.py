@@ -69,7 +69,8 @@ config = config()
 config.JobType.pyCfgParams = [
     'isData=MYVAR_ISDATA',
     'isSignal=MYVAR_ISSIGNAL',
-    'recoFromRAW=MYVAR_RECO_FROM_RAW'
+    'recoFromRAW=MYVAR_RECO_FROM_RAW',
+    'tagJEC=MYVAR_DATASET_NAME'
 ]
 
 # General

@@ -12,7 +12,7 @@ pwd = os.getcwd()
 crab_filepath = os.path.join(pwd, "../python/crab_DisplacedHcalJetNTuplizer_DO-NOT-EDIT_cfg.py")
 
 # Edit me:
-crab_output_dir = '/afs/cern.ch/work/k/kikenned/Run3-HCAL-LLP-NTupler/CRAB_Workarea/NTuples_v4/'
+crab_output_dir = '/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CRAB_Workarea/NTuples_v4/'
 
 datasets = {}
 
@@ -144,7 +144,8 @@ def main():
     crab_script_list = [] 
 
     signal_tags = [ "Signal_HToSSTo4B_MH125_MS50_CTau3000", "Signal_HToSSTo4B_MH250_MS120_CTau10000", "Signal_HToSSTo4B_MH350_MS80_CTau500", "Signal_HToSSTo4B_MH350_MS160_CTau10000" ]
-    for dataset_tag in signal_tags: #["Data_DisplacedJet_Run2022"]: #"Data_DisplacedJet_Run2022"]: #signal_tags: #["Background_QCD"]: #"Background_ZPlusJets"]: #signal_tags: 
+    data_tags = [ "Data_EXOLLPJetHCAL_Run2023" ]
+    for dataset_tag in data_tags: #["Data_DisplacedJet_Run2022"]: #"Data_DisplacedJet_Run2022"]: #signal_tags: #["Background_QCD"]: #"Background_ZPlusJets"]: #signal_tags: 
 
         i = 0
         for dataset_name in datasets[dataset_tag]:

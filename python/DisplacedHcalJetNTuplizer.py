@@ -77,6 +77,13 @@ options.register('debug',
     "debug mode"
 )
 
+options.register('tagJEC',
+    "",
+    VarParsing.VarParsing.multiplicity.singleton,
+    VarParsing.VarParsing.varType.string,
+    "String to help select JEC and JER tags"
+)
+
 options.parseArguments()
 
 print(" ")
@@ -88,6 +95,7 @@ print(f" processEvents ={options.processEvents}")
 print(f" inputFiles    ={options.inputFiles}")
 print(f" outputFile    ={options.outputFile}")
 print(f" debug         ={options.debug}")
+print(f" tagJEC        ={options.tagJEC}")
 print(" ")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.processEvents) )
@@ -346,7 +354,11 @@ else:
 tag_name = None
 JER_tag_name = None
 for (run, reco), (name, JERname) in mapping.items():
-    if run in inputFiles[0] and reco in inputFiles[0]:
+    if run in options.tagJEC and reco in options.tagJEC:
+        tag_name = name
+        JER_tag_name = JERname
+        break
+    elif options.tagJEC == "" and run in inputFiles[0] and reco in inputFiles[0]:
         tag_name = name
         JER_tag_name = JERname
         break
