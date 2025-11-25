@@ -83,6 +83,7 @@ config.General.transferLogs    = True
 # JobType
 config.JobType.pluginName  = 'Analysis'
 config.JobType.psetName    = psetname
+config.JobType.inputFiles  = ["../data/JEC_JER"]
 #config.JobType.outputFiles = [OutputFilename]
 #config.JobType.pyCfgParams = ['outputFile='+OutputFilename]
 
