@@ -369,7 +369,6 @@ if JER_tag_name is None:
     raise RuntimeError("No matching JER tag found for input file " + inputFiles[0])
 
 # ---------- JEC -----------
-# JEC_file_path = 'sqlite_file:cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/SQLiteFiles/' + tag_name + '.db'
 JEC_file_path = 'sqlite_file:JEC_JER/JECDatabase/SQLiteFiles/' + tag_name + '.db'
 if options.tagJEC == "": # this is if processing locally, since with CRAB tagJEC is filled
     JEC_file_path = 'sqlite_file:../data/JEC_JER/JECDatabase/SQLiteFiles/' + tag_name + '.db'
@@ -395,7 +394,7 @@ process.jec = cms.ESSource('PoolDBESSource',
 )
 process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
 
-# # ---------- JER -----------
+# # ---------- JER ----------- # actually read in from .txt files below 
 # from JetMETCorrections.Modules.JetResolutionESProducer_cfi import *
 # JER_file_path = 'sqlite:../data/JEC_JER/JRDatabase/SQLiteFiles/' + JER_tag_name + '.db'
 # CondDBJERFile = CondDB.clone(connect = cms.string(JER_file_path))
