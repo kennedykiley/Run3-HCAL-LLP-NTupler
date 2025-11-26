@@ -69,7 +69,8 @@ config = config()
 config.JobType.pyCfgParams = [
     'isData=MYVAR_ISDATA',
     'isSignal=MYVAR_ISSIGNAL',
-    'recoFromRAW=MYVAR_RECO_FROM_RAW'
+    'recoFromRAW=MYVAR_RECO_FROM_RAW',
+    'tagJEC=MYVAR_DATASET_NAME'
 ]
 
 # General
@@ -82,6 +83,7 @@ config.General.transferLogs    = True
 # JobType
 config.JobType.pluginName  = 'Analysis'
 config.JobType.psetName    = psetname
+config.JobType.inputFiles  = ["../data/JEC_JER"]
 #config.JobType.outputFiles = [OutputFilename]
 #config.JobType.pyCfgParams = ['outputFile='+OutputFilename]
 

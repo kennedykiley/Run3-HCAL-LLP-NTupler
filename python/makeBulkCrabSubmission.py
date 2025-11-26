@@ -12,7 +12,7 @@ pwd = os.getcwd()
 crab_filepath = os.path.join(pwd, "../python/crab_DisplacedHcalJetNTuplizer_DO-NOT-EDIT_cfg.py")
 
 # Edit me:
-crab_output_dir = '/afs/cern.ch/work/k/kikenned/Run3-HCAL-LLP-NTupler/CRAB_Workarea/NTuples_v4/'
+crab_output_dir = '/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CRAB_Workarea/NTuples_v5/'
 
 datasets = {}
 
@@ -144,7 +144,8 @@ def main():
     crab_script_list = [] 
 
     signal_tags = [ "Signal_HToSSTo4B_MH125_MS50_CTau3000", "Signal_HToSSTo4B_MH250_MS120_CTau10000", "Signal_HToSSTo4B_MH350_MS80_CTau500", "Signal_HToSSTo4B_MH350_MS160_CTau10000" ]
-    for dataset_tag in signal_tags: #["Data_DisplacedJet_Run2022"]: #"Data_DisplacedJet_Run2022"]: #signal_tags: #["Background_QCD"]: #"Background_ZPlusJets"]: #signal_tags: 
+    data_tags = [ "Data_EXOLLPJetHCAL_Run2023" ]
+    for dataset_tag in data_tags: #["Data_DisplacedJet_Run2022"]: #"Data_DisplacedJet_Run2022"]: #signal_tags: #["Background_QCD"]: #"Background_ZPlusJets"]: #signal_tags: 
 
         i = 0
         for dataset_name in datasets[dataset_tag]:
@@ -156,8 +157,8 @@ def main():
                 "MYVAR_ISDATA": "False",
                 "MYVAR_ISSIGNAL": "False",
                 "MYVAR_RECO_FROM_RAW": "False", 
-                "MYVAR_REQUEST_NAME": dataset_name.replace("/","_")[1:]+"_v4",
-                "MYVAR_DATASET_TAG": dataset_name.replace("/","_")[1:]+"_v4",
+                "MYVAR_REQUEST_NAME": dataset_name.replace("/","_")[1:]+"_v5",
+                "MYVAR_DATASET_TAG": dataset_name.replace("/","_")[1:]+"_v5",
                 "MY_VAR_INPUTDBS": "global",
             }
 
@@ -174,14 +175,14 @@ def main():
             if "Signal_" in dataset_tag: 
                 replacements["MYVAR_ISSIGNAL"] = "True"
                 replacements["MY_VAR_INPUTDBS"] = "phys03"  #private mc
-                replacements["MYVAR_REQUEST_NAME"] = dataset_tag.replace("Signal_","") + "_batch" + str(i+1) + "_v4"
-                replacements["MYVAR_DATASET_TAG"]  = dataset_tag.replace("Signal_","") + "_batch" + str(i+1) + "_v4"
+                replacements["MYVAR_REQUEST_NAME"] = dataset_tag.replace("Signal_","") + "_batch" + str(i+1) + "_v5"
+                replacements["MYVAR_DATASET_TAG"]  = dataset_tag.replace("Signal_","") + "_batch" + str(i+1) + "_v5"
                 replacements["MYVAR_EXTRACONFIG"]  = "\nconfig.Data.splitting         = 'FileBased'"
                 replacements["MYVAR_EXTRACONFIG"] += "\nconfig.Data.unitsPerJob       = 200"
             if "Background_" in dataset_tag:
                 replacements["MYVAR_EXTRACONFIG"]  = "\nconfig.Data.partialDataset = True" # Just run over what is available
-                replacements["MYVAR_REQUEST_NAME"] = dataset_name_to_request_name[dataset_name] + "_v4"
-                replacements["MYVAR_DATASET_TAG"]  = dataset_name_to_request_name[dataset_name] + "_v4"
+                replacements["MYVAR_REQUEST_NAME"] = dataset_name_to_request_name[dataset_name] + "_v5"
+                replacements["MYVAR_DATASET_TAG"]  = dataset_name_to_request_name[dataset_name] + "_v5"
                 #replacements["MYVAR_EVENTS_PER_FILE"] = "100000" # check
             #if "Data_ZMu_" in dataset_tag:
             #    replacements["MYVAR_EVENTS_PER_FILE"] = 10000 

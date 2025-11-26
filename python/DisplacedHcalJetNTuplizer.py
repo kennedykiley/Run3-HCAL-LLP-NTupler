@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
+import os
 
 # ------ Setup ------ #
 
@@ -77,6 +78,13 @@ options.register('debug',
     "debug mode"
 )
 
+options.register('tagJEC',
+    "",
+    VarParsing.VarParsing.multiplicity.singleton,
+    VarParsing.VarParsing.varType.string,
+    "String to help select JEC and JER tags"
+)
+
 options.parseArguments()
 
 print(" ")
@@ -88,6 +96,7 @@ print(f" processEvents ={options.processEvents}")
 print(f" inputFiles    ={options.inputFiles}")
 print(f" outputFile    ={options.outputFile}")
 print(f" debug         ={options.debug}")
+print(f" tagJEC        ={options.tagJEC}")
 print(" ")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.processEvents) )
@@ -137,7 +146,7 @@ process.TFileService = cms.Service( "TFileService",
 from FWCore.PythonUtilities.LumiList import LumiList
 #import os
 
-if False: #options.isData and 'CRAB_JOB_ID' not in os.environ::
+if False: #options.isData and 'CRAB_JOB_ID' not in os.environ:: # Golden JSON passed in crab script instead, this is not used! 
     goldenjson = None
     if   "Run2022" in inputFiles[0]: goldenjson = LumiList(filename="../data/certification/Cert_Collisions2022_355100_362760_Golden.json")
     elif "Run2023" in inputFiles[0]: goldenjson = LumiList(filename="../data/certification/Cert_Collisions2023_366442_370790_Golden.json")
@@ -346,7 +355,11 @@ else:
 tag_name = None
 JER_tag_name = None
 for (run, reco), (name, JERname) in mapping.items():
-    if run in inputFiles[0] and reco in inputFiles[0]:
+    if run in options.tagJEC and reco in options.tagJEC:
+        tag_name = name
+        JER_tag_name = JERname
+        break
+    elif options.tagJEC == "" and run in inputFiles[0] and reco in inputFiles[0]:
         tag_name = name
         JER_tag_name = JERname
         break
@@ -356,7 +369,9 @@ if JER_tag_name is None:
     raise RuntimeError("No matching JER tag found for input file " + inputFiles[0])
 
 # ---------- JEC -----------
-JEC_file_path = 'sqlite:../data/JEC_JER/JECDatabase/SQLiteFiles/' + tag_name + '.db'
+JEC_file_path = 'sqlite_file:JEC_JER/JECDatabase/SQLiteFiles/' + tag_name + '.db'
+if options.tagJEC == "": # this is if processing locally, since with CRAB tagJEC is filled
+    JEC_file_path = 'sqlite_file:../data/JEC_JER/JECDatabase/SQLiteFiles/' + tag_name + '.db'
 CondDBJECFile = CondDB.clone(connect = cms.string(JEC_file_path))
 CollectionName = 'JetCorrectorParametersCollection_' + tag_name + '_AK4PFchs'
 PuppiCollectionName = 'JetCorrectorParametersCollection_' + tag_name + '_AK4PFPuppi'
@@ -379,7 +394,7 @@ process.jec = cms.ESSource('PoolDBESSource',
 )
 process.es_prefer_jec = cms.ESPrefer('PoolDBESSource', 'jec')
 
-# # ---------- JER -----------
+# # ---------- JER ----------- # actually read in from .txt files below 
 # from JetMETCorrections.Modules.JetResolutionESProducer_cfi import *
 # JER_file_path = 'sqlite:../data/JEC_JER/JRDatabase/SQLiteFiles/' + JER_tag_name + '.db'
 # CondDBJERFile = CondDB.clone(connect = cms.string(JER_file_path))
@@ -492,7 +507,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     enableGenLLPInfo = cms.bool(True),
     readGenVertexTime = cms.bool(False),#need to be false for displaced samples
     genParticles_t0 = cms.InputTag("genParticles", "t0", ""),
-    triggerPathNamesFile = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/HLTPathsLLPJetsHCAL.dat"),
+    triggerPathNamesFile = cms.string("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/HLTPathsLLPJetsHCAL.dat"), # note this is not used! hard-coded in .cc file instead
     #triggerPathNamesFile = cms.FileInPath("/afs/cern.ch/work/k/kikenned/LLPNTupler/Run3-HCAL-LLP-NTupler/data/HLTPathsLLPJetsHCAL.dat"), #"../data/HLTPathsLLPJetsHCAL.dat"),
     #eleHLTFilterNamesFile = cms.string("SUSYBSMAnalysis/RazorTuplizer/data/RazorElectronHLTFilterNames.dat"),
     #muonHLTFilterNamesFile = cms.string("cms_lpc_llp/llp_ntupler/data/MuonHLTFilterNames.dat"),

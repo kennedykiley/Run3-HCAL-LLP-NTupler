@@ -1,7 +1,7 @@
 # LLP Ntupler
 Long-Lived Particle Ntupler based on AOD, adapted for use with HBHE rechits for Run 3 LLP analysis.
 
-# Setup Ntupler
+# Setup Ntupler Code
 ```
 cmsrel <CMSSW version> # Use CMSSW_13_2_0 for NTuples v4
 mkdir cms_lpc_llp
@@ -12,23 +12,19 @@ git checkout -b <your-branch>
 ```
 
 ## Get JEC and JER files
-[JER twiki](https://cms-jerc.web.cern.ch/Recommendations/#jet-energy-resolution)
+[JER twiki](https://cms-jerc.web.cern.ch/Recommendations/#jet-energy-resolution): Get textfiles from the JRDatabase from github and put them in `Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/`. 
 
-Get textfiles from the JRDatabase from github and put them in `Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/`. 
-
-[JEC twiki](https://cms-jerc.web.cern.ch/Recommendations/#jet-energy-scale)
-
-Get the database files from the JECDatabase github, and put them in `Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/SQLiteFiles/`.
+[JEC twiki](https://cms-jerc.web.cern.ch/Recommendations/#jet-energy-scale): Get the database files from the JECDatabase github, and put them in `Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/SQLiteFiles/`.
 
 At the time of v5 ntuple preparation, v3 is the recommended JES version and v1 is the recommended JER version. 
 
-Make sure the `mapping` in L324 of DisplacedHcalJetsTuplizer.py is correct for all the data and MC processed, otherwise the JEC and JER tags will not be found (this will cause a runtime error). 
+Make sure the `mapping` in L324 of `DisplacedHcalJetsTuplizer.py` is correct for all the data and MC processed, otherwise the JEC and JER tags will not be found (this will cause a runtime error). 
 
 The saved branches are:
-- jetRaw: no JEC applied, this is the uncorrected jet
-- jet_*_noJER: no smearing applied (MC only)
-- jet_*_JER_up/down: smeared up / down variation with JER
-- jet_E, jet_Pt: corrected and (MC only) smeared jet. This should be used for analysis
+- `jetRaw`: no JEC applied, this is the uncorrected jet
+- `jet_*_noJER`: no smearing applied (MC only)
+- `jet_*_JER_up/down`: smeared up / down variation with JER
+- `jet_E`, `jet_Pt`: corrected and (MC only) smeared jet. This should be used for analysis
 
 # Run the ntuples
 Setup grid proxy
@@ -50,42 +46,7 @@ scram b -j 8
 ```
 If there is an error of the form `edmWriteConfigs: error while loading shared libraries: libssl.so.10: cannot open shared object file: No such file or directory`, try moving to lxplus8 and recompiling with `scram b clean; scram b -j 8`.
 
-### Location of data and MC
-Ntupler runs on data and MC, specifying which as an argument to `cmsRun`. The HCAL LLP skim is EXOLLPJetHCAL, in the dataset DisplacedJet. This can be found on [DAS](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FDisplacedJet%2FRun2023*EXOLLPJetHCAL*%2FAOD) with the query `dataset=/DisplacedJet/Run2023*EXOLLPJetHCAL*/AOD`. The input file list can be made by running 
-```
-dasgoclient --query="file dataset=/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD" > InputData_Run2023C-EXOLLPJetHCAL-PromptReco-v4.txt
-```
-Can also add specifications to ensure files are on DISK, such as `site=T1_US_FNAL_Disk`. CRAB job submission will cause a TAPE recall if the entire dataset is on TAPE, otherwise need to create a Rucio rule.
-
-Data:
-```
-dataset=/DisplacedJet/Run2023*-EXOLLPJetHCAL-PromptReco*/AOD
-dataset=/JetMET*/Run*EXOHighMET-PromptReco*/RAW-RECO
-```
-which is the displaced jet skim (implemented for 2023 onwards) and the EXO high MET skim, for the background estimation. 
-
-The H->XX->4b MC for 2022 are on DAS for [125 GeV, mX = 15](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV%2Flpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883%2FUSER+instance%3Dprod%2Fphys03) (2M total events) and [350 GeV, mX = 80](https://cmsweb.cern.ch/das/request?input=dataset%3D%2FHToSSTo4B_MH350_MS80_CTau500%2Flpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76%2FUSER&instance=prod/phys03) (0.5M total events)
-```
-dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER instance=prod/phys03
-
-dataset=/HToSSTo4B_MH350_MS80_CTau500/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER/
-```
-The samples produced in 2024 have higher LLP masses, with 125 GeV (mX = 50), 250 GeV (mX = 120), and 350 GeV (mX = 160). Batch 1 has 1M events and 10k files per sample (100 events per file). Batch 2 has higher stats, with 3M events total and 10k files per sample (300 events per sample). In the crab config, set: `units per job = 50`, `n jobs = 200`, which will work for both batch 1 and batch 2.
-```
-dataset=/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
-dataset=/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
-
-dataset=/HToSSTo4B_MH250_MS120_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH250_MS120_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
-dataset=/HToSSTo4B_MH250_MS120_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH250_MS120_CTau10000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
-
-dataset=/HToSSTo4B_MH350_MS160_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS160_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
-dataset=/HToSSTo4B_MH350_MS160_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS160_CTau10000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
-```
-On command line, can be found via:
-```
-dasgoclient --limit=100 --query="file dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER instance=prod/phys03" >> output_file_name.txt
-```
-### Running the ntupler
+## Running the ntupler
 Test by running small numbers of events for testing:
 ```
 cd run
@@ -162,6 +123,42 @@ source Signal/submit.sh
   * TODO: determine how to pass via config
 * readGenVertexTime: False for LLP samples
 
+### Location of data and MC
+Ntupler runs on data and MC, specifying which as an argument to `cmsRun`. The HCAL LLP skim is EXOLLPJetHCAL, in the dataset DisplacedJet. This can be found on [DAS](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FDisplacedJet%2FRun2023*EXOLLPJetHCAL*%2FAOD) with the query `dataset=/DisplacedJet/Run2023*EXOLLPJetHCAL*/AOD`. The input file list can be made by running 
+```
+dasgoclient --query="file dataset=/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD" > InputData_Run2023C-EXOLLPJetHCAL-PromptReco-v4.txt
+```
+Can also add specifications to ensure files are on DISK, such as `site=T1_US_FNAL_Disk`. CRAB job submission will cause a TAPE recall if the entire dataset is on TAPE, otherwise need to create a Rucio rule.
+
+Data:
+```
+dataset=/DisplacedJet/Run2023*-EXOLLPJetHCAL-PromptReco*/AOD
+dataset=/JetMET*/Run*EXOHighMET-PromptReco*/RAW-RECO
+```
+which is the displaced jet skim (implemented for 2023 onwards) and the EXO high MET skim, for the background estimation. 
+
+The H->XX->4b MC for 2022 are on DAS for [125 GeV, mX = 15](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV%2Flpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883%2FUSER+instance%3Dprod%2Fphys03) (2M total events) and [350 GeV, mX = 80](https://cmsweb.cern.ch/das/request?input=dataset%3D%2FHToSSTo4B_MH350_MS80_CTau500%2Flpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76%2FUSER&instance=prod/phys03) (0.5M total events)
+```
+dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER instance=prod/phys03
+
+dataset=/HToSSTo4B_MH350_MS80_CTau500/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS80_CTau500_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER/
+```
+The samples produced in 2024 have higher LLP masses, with 125 GeV (mX = 50), 250 GeV (mX = 120), and 350 GeV (mX = 160). Batch 1 has 1M events and 10k files per sample (100 events per file). Batch 2 has higher stats, with 3M events total and 10k files per sample (300 events per sample). In the crab config, set: `units per job = 50`, `n jobs = 200`, which will work for both batch 1 and batch 2.
+```
+dataset=/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+dataset=/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+
+dataset=/HToSSTo4B_MH250_MS120_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH250_MS120_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+dataset=/HToSSTo4B_MH250_MS120_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH250_MS120_CTau10000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+
+dataset=/HToSSTo4B_MH350_MS160_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS160_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+dataset=/HToSSTo4B_MH350_MS160_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS160_CTau10000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER
+```
+On command line, can be found via:
+```
+dasgoclient --limit=100 --query="file dataset=/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER instance=prod/phys03" >> output_file_name.txt
+```
+
 ## Ntuple use
 After ntuples are made, they are used in the LLP_NuplerAnalyzer, from [here](https://github.com/gk199/Run3-HCAL-LLP-Analysis/tree/main)
 
@@ -169,16 +166,16 @@ After ntuples are made, they are used in the LLP_NuplerAnalyzer, from [here](htt
 
 lxplus location (Gillian):
 ```
-/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_13_1_0/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler
+/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_13_2_0/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler
 ```
 
-## Archive
+# Archive
 
 Many earlier files have been moved to `python/Archive`. 
 
 The High MET skim we start with from 2022 data are here on [DAS](https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FJetMET%2FRun2022G-EXOHighMET-PromptReco-v1%2FRAW-RECO). 
 
-### Initial setup of CMSSW & clone the ntupler from CMS LPC area:
+## Initial setup of CMSSW & clone the ntupler from CMS LPC area:
 ```bash
 # Done once to setup environment
 cmsrel CMSSW_12_4_6
