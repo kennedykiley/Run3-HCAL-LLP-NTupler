@@ -22,41 +22,7 @@ from CRABClient.UserUtilities import config
 number = 0 # starting at 0 -> refers to datasetnames # number wrapper
 
 # List of possible datasets
-datasetnames = ['/DisplacedJet/Run2023D-EXOLLPJetHCAL-PromptReco-v1/AOD']# dataset wrapper
-"""
-'/DisplacedJet/Run2023B-EXOLLPJetHCAL-PromptReco-v1/AOD', # 0
-'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v1/AOD',
-'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v2/AOD',
-'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v3/AOD',
-'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD',
-'/DisplacedJet/Run2023D-EXOLLPJetHCAL-PromptReco-v1/AOD',
-'/DisplacedJet/Run2023D-EXOLLPJetHCAL-PromptReco-v2/AOD',
-'/JetMET1/Run2023A-EXOHighMET-PromptReco-v2/RAW-RECO',    # 7
-'/JetMET1/Run2023B-EXOHighMET-PromptReco-v1/RAW-RECO',
-'/JetMET1/Run2023C-EXOHighMET-PromptReco-v1/RAW-RECO',
-'/JetMET1/Run2023C-EXOHighMET-PromptReco-v2/RAW-RECO',
-'/JetMET1/Run2023C-EXOHighMET-PromptReco-v3/RAW-RECO',
-'/JetMET1/Run2023C-EXOHighMET-PromptReco-v4/RAW-RECO',
-'/JetMET1/Run2023D-EXOHighMET-PromptReco-v1/RAW-RECO',
-'/JetMET1/Run2023D-EXOHighMET-PromptReco-v2/RAW-RECO', # 14
-'/Muon0/Run2023A-ZMu-PromptReco-v2/RAW-RECO', # no events, do not submit! 
-'/Muon0/Run2023B-ZMu-PromptReco-v1/RAW-RECO',
-'/Muon0/Run2023C-ZMu-PromptReco-v1/RAW-RECO',
-'/Muon0/Run2023C-ZMu-PromptReco-v2/RAW-RECO',
-'/Muon0/Run2023C-ZMu-PromptReco-v3/RAW-RECO',
-'/Muon0/Run2023C-ZMu-PromptReco-v4/RAW-RECO',
-'/Muon0/Run2023D-ZMu-PromptReco-v1/RAW-RECO', # 21
-'/Muon0/Run2023D-ZMu-PromptReco-v2/RAW-RECO',
-'/Muon1/Run2023A-ZMu-PromptReco-v2/RAW-RECO',
-'/Muon1/Run2023B-ZMu-PromptReco-v1/RAW-RECO',
-'/Muon1/Run2023C-ZMu-PromptReco-v1/RAW-RECO',
-'/Muon1/Run2023C-ZMu-PromptReco-v2/RAW-RECO',
-'/Muon1/Run2023C-ZMu-PromptReco-v3/RAW-RECO',
-'/Muon1/Run2023C-ZMu-PromptReco-v4/RAW-RECO', # 28
-'/Muon1/Run2023D-ZMu-PromptReco-v1/RAW-RECO',
-'/Muon1/Run2023D-ZMu-PromptReco-v2/RAW-RECO'
-]
-"""
+datasetnames = ['MYVAR_DATASET_NAME'] # dataset wrapper
 
 datasetblock = [
 #'/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v4/AOD#0882cc9a-f2ab-4626-992e-c787a9d5017c' # in 2023C v4
@@ -66,7 +32,7 @@ datasetblock = [
 runrange = ''
 
 # JSON files for lumiMask are available at: /afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/
-lumimask = ''
+lumimask = 'MYVAR_GOLDEN_JSON'
 
 # Storage path for output files - EOS specific
 #storagepath = '/store/user/'+getUsernameFromSiteDB()+'/HCALnoise2016'
@@ -85,7 +51,7 @@ whiteList = ['T2_CH_CERN','T2_US_Caltech','T2_US_Florida', 'T2_US_MIT', 'T2_US_N
 # ['T2_US_UCSD']
 
 # Black list sites
-blackList = ['']
+blackList = ['T2_BE_UCL']
 
 # -----------------------------------------------------------------------------------------------------------------------------
 # No modifications below this line are necessary
@@ -99,16 +65,25 @@ dataset = list(dataset)
 
 config = config()
 
+# Arguments
+config.JobType.pyCfgParams = [
+    'isData=MYVAR_ISDATA',
+    'isSignal=MYVAR_ISSIGNAL',
+    'recoFromRAW=MYVAR_RECO_FROM_RAW',
+    'tagJEC=MYVAR_DATASET_NAME'
+]
+
 # General
-config.General.workArea        = '/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_14_0_0/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/../../../../../crab_ZMu_20240905' # workArea wrapper
+config.General.workArea        = 'MYVAR_CRAB_OUTPUT_NAME' #'/afs/cern.ch/work/k/kikenned/Run3-HCAL-LLP-NTupler/CRAB_Workarea/NTuples_v4/'
 config.General.instance        = 'prod'
-config.General.requestName     = 'Muon0_Run2023C-ZMu-PromptReco-v4_RAW-RECO_20240905_204857_version3' # requestName wrapper
+config.General.requestName     = "MYVAR_REQUEST_NAME"
 config.General.transferOutputs = True
 config.General.transferLogs    = True
 
 # JobType
 config.JobType.pluginName  = 'Analysis'
 config.JobType.psetName    = psetname
+config.JobType.inputFiles  = ["../data/JEC_JER"]
 #config.JobType.outputFiles = [OutputFilename]
 #config.JobType.pyCfgParams = ['outputFile='+OutputFilename]
 
@@ -116,16 +91,18 @@ config.JobType.psetName    = psetname
 # four below lines for standard dataset input
 config.Data.inputDataset     = datasetnames[number]
 config.Data.inputBlocks      = datasetblock
-config.Data.inputDBS         = 'global'
+config.Data.inputDBS         = 'MY_VAR_INPUTDBS'
 config.Data.splitting        = 'Automatic' #'LumiBased'
 # for single file test (3 below lines)
 #config.Data.userInputFiles    = ['/store/data/Run2023C/DisplacedJet/AOD/EXOLLPJetHCAL-PromptReco-v4/000/367/881/00000/36ade28b-f320-4680-9dab-57ce2b536531.root']
-#config.Data.splitting         = 'FileBased'
-#config.Data.unitsPerJob       = 1
+#config.Data.splitting         = 'FileBased' #'EventAwareLumiBased' #'FileBased'
+#config.Data.unitsPerJob       = 400 #MYVAR_EVENTS_PER_FILE
 #config.Data.totalUnits       = 1
 config.Data.ignoreLocality   = True
 config.Data.publication      = False
-config.Data.outputDatasetTag = 'Run2023C-ZMu-PromptReco-v4_RAW-RECO_20240905_204857_version3' # outputDatasetTag wrapper
+config.Data.outputDatasetTag = "MYVAR_DATASET_TAG"
+
+# MYVAR_EXTRACONFIG
 
 config.Data.runRange        =  runrange
 if lumimask != '':
