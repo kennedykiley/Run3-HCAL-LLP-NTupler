@@ -1799,6 +1799,16 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
                         // if (isData_) HLT_Prescale.push_back( triggerPrescales->getPrescaleForIndex(i) ); // FIX
                         // else HLT_Prescale.push_back( 1 ); // TODO Need to figure out yields
 
+
+			if( triggerBits->accept(i) ) NEvents_HLT->Fill(triggerPathNamesIndices[triggerPathName]); // FIX WEIGHTS
+
+			found_trigger = true;
+
+			break;
+	
+		}
+
+		if( found_trigger ){
 			float pT_0, pT_1;
 			if (jets->size() > 0) {pT_0 = (*jets)[0].pt();}
 			else {pT_0 = -9999;}
@@ -1811,8 +1821,7 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
 				if (debug) std::cout << "[Warning] jet_NPromptTracks is empty!" << std::endl;
 				nPromptTracksLead = -1;
 			}
-
-
+		
 			
 			if( debug ) cout<<"pT : "<< pT_0 << ", "<< pT_1 <<endl; 
 
@@ -1825,15 +1834,8 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
 			else {HLT_SF_L1.push_back(1.0);}
 			if (!isData_) {HLT_SF_Tot.push_back(SF_L1*SF_HLT_1*SF_HLT_2*SF_HLT_3);}
 			else {HLT_SF_Tot.push_back(1.0);}
-
-			if( triggerBits->accept(i) ) NEvents_HLT->Fill(triggerPathNamesIndices[triggerPathName]); // FIX WEIGHTS
-
-			found_trigger = true;
-
-			break;
-	
 		}
-		
+
 		if( !found_trigger ){
 			if( debug ) cout<<"    --> trig not found in triggerBits"<<endl;
 			HLT_Decision.push_back( false );
