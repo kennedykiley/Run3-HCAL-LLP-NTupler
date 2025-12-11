@@ -1829,10 +1829,11 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
 			float SF_HLT_1 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_PtrkShortSig5.txt");
 			float SF_HLT_2 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_Inclusive.txt");
 			float SF_HLT_3 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_DisplacedTrack.txt");
-			
+			float HLT_SF = SF_L1*SF_HLT_1*SF_HLT_2*SF_HLT_3;
+
 			if (!isData_) {HLT_SF_L1.push_back(SF_L1);}
 			else {HLT_SF_L1.push_back(1.0);}
-			if (!isData_) {HLT_SF_Tot.push_back(SF_L1*SF_HLT_1*SF_HLT_2*SF_HLT_3);}
+			if (!isData_ && HLT_SF < 2.0) {HLT_SF_Tot.push_back(HLT_SF);}
 			else {HLT_SF_Tot.push_back(1.0);}
 		}
 
