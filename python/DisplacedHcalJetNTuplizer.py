@@ -1,36 +1,32 @@
+# Auto generated configuration file
+# using: 
+# Revision: 1.19 
+# Source: /local/reps/CMSSW/CMSSW/Configuration/Applications/python/ConfigBuilder.py,v 
+# with command line options: AOD_2023D --data --eventcontent AOD --datatier AOD --conditions 124X_dataRun3_Prompt_v4 --step RAW2DIGI,L1Reco,RECO --era Run3_2023 --geometry DB:Extended --customise Configuration/DataProcessing/RecoTLR.customisePrompt --filein file:/afs/cern.ch/work/k/kikenned/Run3-HCAL-LLP-NTupler/Run3-HCAL-LLP-NTupler/run/StudyFilesRAW/DisplacedJet_Run2023D-v1_RAW_369927_files/8b60c1c5-1a0e-4d7a-b9b3-9d197b9eac81.root --fileout file:AOD_2023D.root -n 5 --no_exec --python_filename=AOD_2023D_cfg.py --outputCommands keep HBHERecHitsSorted_hbhereco__RECO
 import FWCore.ParameterSet.Config as cms
-import FWCore.ParameterSet.VarParsing as VarParsing
-import os
 
-# ------ Setup ------ #
-
-#initialize the process
+#from Configuration.Eras.Era_Run3_2023_cff import Run3_2023
 from Configuration.Eras.Era_Run3_cff import Run3
 
-process = cms.Process("DisplacedHcalJetNTuplizer", Run3) # line added to fix PCastorRcd error
-process.load("FWCore.MessageService.MessageLogger_cfi")
-process.load("Configuration.EventContent.EventContent_cff")
+#TODO: Other ERAS
 
-# MET Filter Recommendations: https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2#Run_3_2022_and_2023_data_and_MC
-process.load('cms_lpc_llp.Run3-HCAL-LLP-NTupler.metFilters_Run3_cff')
+# ---------------------------------------------------------------------------------------
+# PARSE INPUTS 
+# ---------------------------------------------------------------------------------------
 
-# Fix GEM Error
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-from Configuration.AlCa.GlobalTag import GlobalTag
-
-# ----- Parse Arguments ----- #
+import FWCore.ParameterSet.VarParsing as VarParsing
 
 options = VarParsing.VarParsing()
 
 options.register('isData',
-    False, # default value # isData wrapper
+    True, # default value # isData wrapper
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.bool,
     "is Data"
 )
 
 options.register('isSignal',
-    True, # default value # isSignal wrapper
+    False, # default value # isSignal wrapper
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.bool,
     "is Signal"
@@ -71,18 +67,18 @@ options.register('outputFile',
     "Output file"
 )
 
-options.register('debug',
-    False, # default value
-    VarParsing.VarParsing.multiplicity.singleton,
-    VarParsing.VarParsing.varType.bool,
-    "debug mode"
-)
-
 options.register('tagJEC',
     "",
     VarParsing.VarParsing.multiplicity.singleton,
     VarParsing.VarParsing.varType.string,
     "String to help select JEC and JER tags"
+)
+
+options.register('debug',
+    False, # default value
+    VarParsing.VarParsing.multiplicity.singleton,
+    VarParsing.VarParsing.varType.bool,
+    "debug mode"
 )
 
 options.parseArguments()
@@ -91,23 +87,18 @@ print(" ")
 print("Using options:")
 print(f" isData        ={options.isData}")
 print(f" isSignal      ={options.isSignal}")
+print(f" recoFromRAW   ={options.recoFromRAW}")
 print(f" skipEvents    ={options.skipEvents}")
 print(f" processEvents ={options.processEvents}")
 print(f" inputFiles    ={options.inputFiles}")
 print(f" outputFile    ={options.outputFile}")
 print(f" debug         ={options.debug}")
-print(f" tagJEC        ={options.tagJEC}")
 print(" ")
-
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.processEvents) )
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
-
-process.options = cms.untracked.PSet(
-)
 
 # ----- Load Input Files ----- #
 
 inputFiles = options.inputFiles
+i = 0
 if len(options.inputFiles) == 1 and options.inputFiles[0][-4:] == ".txt": 
     print( "Reading input files from", options.inputFiles, ":" )
 
@@ -119,61 +110,221 @@ if len(options.inputFiles) == 1 and options.inputFiles[0][-4:] == ".txt":
         line_temp = line.replace(" ","")
         if line_temp[0] == "#": continue
         unpackedFilelist.append( line.strip() )
-        print( "   ->", line.strip() )
+        if i < 10: print( "   ->", line.strip() )
+        i += 1
 
     inputFiles = unpackedFilelist
 
-process.source = cms.Source( "PoolSource",
-    fileNames  = cms.untracked.vstring( inputFiles ),
-    skipEvents = cms.untracked.uint32(options.skipEvents),
-    inputCommands = cms.untracked.vstring(
-        "keep *",
-        "drop *_gtStage2Digis_CICADAScore_*" # Run over 2024 data
-    )
+if i >= 10: print( "Loaded", i, "files...")
+
+# ----- Parse Inputs ----- #
+
+if options.isData:
+    mapping = {
+        ("Run2022C", ""):               ("Summer22_22Sep2023_RunCD_V3_DATA",  "Summer22_22Sep2023_JRV1_DATA", ""),
+        ("Run2022D", ""):               ("Summer22_22Sep2023_RunCD_V3_DATA",  "Summer22_22Sep2023_JRV1_DATA", ""),
+        ("Run2022E", ""):               ("Summer22EE_22Sep2023_RunE_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA", ""),
+        ("Run2022F", ""):               ("Summer22EE_22Sep2023_RunF_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA", ""),
+        ("Run2022G", ""):               ("Summer22EE_22Sep2023_RunG_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA", ""),
+        ("Run2023C", "PromptReco-v1"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv1234_JRV1_DATA", ""),
+        ("Run2023C", "PromptReco-v2"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv1234_JRV1_DATA", ""),
+        ("Run2023C", "PromptReco-v3"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv1234_JRV1_DATA", ""),
+        ("Run2023C", "PromptReco-v4"):  ("Summer23Prompt23_RunCv4_V3_DATA",   "Summer23Prompt23_RunCv1234_JRV1_DATA", ""),
+        ("Run2023D", ""):               ("Summer23BPixPrompt23_RunD_V3_DATA", "Summer23BPixPrompt23_RunD_JRV1_DATA", ""),
+    }
+else:
+    mapping = { # TODO make sure this agrees with MC naming scheme
+        ("HToSSTo4B", "23BPix"):         ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
+        ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC", "2023_Summer23"), 
+        ("HToSSTo4B", "2022EE"):         ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
+        ("HToSSTo4B", "2022_"):          ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
+        # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
+        # ("WJetsToLNu", "preEE"):         ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
+    }
+
+tag_name         = None
+JER_tag_name     = None
+BTag_SF_tag_name = None
+era_name         = None
+
+for (run, reco), (name, JERname, BTAGname) in mapping.items():
+    if run in options.tagJEC and reco in options.tagJEC:
+        tag_name         = name
+        JER_tag_name     = JERname
+        BTag_SF_tag_name = BTAGname
+        era_name         = run + "_" + reco
+        break
+    elif options.tagJEC == "" and run in inputFiles[0] and reco in inputFiles[0]:
+        tag_name         = name
+        JER_tag_name     = JERname
+        BTag_SF_tag_name = BTAGname
+        era_name         = run + "_" + reco
+        break
+if tag_name is None:
+    raise RuntimeError("No matching JEC tag found for input file " + inputFiles[0])
+if JER_tag_name is None:
+    raise RuntimeError("No matching JER tag found for input file " + inputFiles[0])
+if BTag_SF_tag_name is None:
+    raise RuntimeError("No matching BTAG tag found for input file " + inputFiles[0])
+
+if options.isData: 
+    era_name = era_name.split("_")[0]
+else:
+    if "23BPix" in era_name:        era_name = "2023postBPix"
+    elif "2023Prompt_" in era_name: era_name = "2023preBPix"
+    elif "2022EE" in era_name:      era_name = "2022postEE"
+    elif "2022_" in era_name:       era_name = "2022preEE"
+
+# ---------------------------------------------------------------------------------------
+# SET UP PROCESS
+# ---------------------------------------------------------------------------------------
+
+#process = cms.Process('RECO',Run3_2023) #TODOFIX
+
+process = cms.Process('DisplacedHcalJetNTuplizer',Run3) #TODOFIX
+
+#if recoFromRAW:
+
+# import of standard configurations
+process.load('Configuration.StandardSequences.Services_cff')
+process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
+process.load('FWCore.MessageService.MessageLogger_cfi')
+process.load('Configuration.EventContent.EventContent_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
+process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
+process.load('Configuration.StandardSequences.L1Reco_cff')
+process.load('Configuration.StandardSequences.Reconstruction_Data_cff')
+process.load('Configuration.StandardSequences.EndOfProcess_cff')
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+
+process.maxEvents = cms.untracked.PSet(
+    input = cms.untracked.int32(options.processEvents),
+    output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
-# TFileService for output
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+
+# ----- Input Source ----- #
+
+#print( inputFiles )
+
+process.source = cms.Source("PoolSource",
+    #fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/kikenned/Run3-HCAL-LLP-NTupler/Run3-HCAL-LLP-NTupler/run/StudyFilesRAW/DisplacedJet_Run2023D-v1_RAW_369927_files/8b60c1c5-1a0e-4d7a-b9b3-9d197b9eac81.root'),
+    fileNames = cms.untracked.vstring(inputFiles),
+    skipEvents = cms.untracked.uint32(options.skipEvents),
+    secondaryFileNames = cms.untracked.vstring()
+    #inputCommands = cms.untracked.vstring(
+    #    "keep *",
+    #    "drop *_gtStage2Digis_CICADAScore_*" # Run over 2024 data
+    #),
+)
+
+if options.isData and True:  #and 'CRAB_JOB_ID' not in os.environ:: # Golden JSON passed in crab script instead, this is not used! 
+    from FWCore.PythonUtilities.LumiList import LumiList
+    goldenjson = None
+    if   "Run2022" in era_name: goldenjson = LumiList(filename="/eos/user/c/cmsdqm/www/CAF/certification/Collisions22/Cert_Collisions2022_355100_362760_Golden.json")
+    elif "Run2023" in era_name: goldenjson = LumiList(filename="/eos/user/c/cmsdqm/www/CAF/certification/Collisions23/Cert_Collisions2023_366442_370790_Golden.json")
+    elif "Run2024" in era_name: goldenjson = LumiList(filename="/eos/user/c/cmsdqm/www/CAF/certification/Collisions24/Cert_Collisions2024_378981_386951_Golden.json")
+    process.source.lumisToProcess = goldenjson.getVLuminosityBlockRange()
+
+# ----- TFileService for output ----- #
+
 process.TFileService = cms.Service( "TFileService",
     fileName = cms.string(options.outputFile),
     closeFileFast = cms.untracked.bool(True)
 )
 
-# ----- Apply Golden Json ----- #
+# ----- Process Options ----- #
 
-# Actually do this in CRAB job...
-# from /eos/user/c/cmsdqm/www/CAF/certification/Collisions*
+process.options = cms.untracked.PSet(
+    FailPath = cms.untracked.vstring(),
+    IgnoreCompletely = cms.untracked.vstring(),
+    Rethrow = cms.untracked.vstring(),
+    SkipEvent = cms.untracked.vstring(),
+    accelerators = cms.untracked.vstring('*'),
+    allowUnscheduled = cms.obsolete.untracked.bool,
+    canDeleteEarly = cms.untracked.vstring(),
+    deleteNonConsumedUnscheduledModules = cms.untracked.bool(True),
+    dumpOptions = cms.untracked.bool(False),
+    emptyRunLumiMode = cms.obsolete.untracked.string,
+    eventSetup = cms.untracked.PSet(
+        forceNumberOfConcurrentIOVs = cms.untracked.PSet(
+            allowAnyLabel_=cms.required.untracked.uint32
+        ),
+        numberOfConcurrentIOVs = cms.untracked.uint32(0)
+    ),
+    fileMode = cms.untracked.string('FULLMERGE'),
+    forceEventSetupCacheClearOnNewRun = cms.untracked.bool(False),
+    holdsReferencesToDeleteEarly = cms.untracked.VPSet(),
+    makeTriggerResults = cms.obsolete.untracked.bool,
+    modulesToIgnoreForDeleteEarly = cms.untracked.vstring(),
+    numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(0),
+    numberOfConcurrentRuns = cms.untracked.uint32(1),
+    numberOfStreams = cms.untracked.uint32(0),
+    numberOfThreads = cms.untracked.uint32(1),
+    printDependencies = cms.untracked.bool(False),
+    sizeOfStackForThreadsInKB = cms.optional.untracked.uint32,
+    throwIfIllegalParameter = cms.untracked.bool(True),
+    wantSummary = cms.untracked.bool(False)
+)
 
-from FWCore.PythonUtilities.LumiList import LumiList
-#import os
+# Meta Data
+#process.configurationMetadata = cms.untracked.PSet(
+#    annotation = cms.untracked.string('AOD_2023D nevts:5'),
+#    name = cms.untracked.string('Applications'),
+#    version = cms.untracked.string('$Revision: 1.19 $')
+#)
 
-if False: #options.isData and 'CRAB_JOB_ID' not in os.environ:: # Golden JSON passed in crab script instead, this is not used! 
-    goldenjson = None
-    if   "Run2022" in inputFiles[0]: goldenjson = LumiList(filename="../data/certification/Cert_Collisions2022_355100_362760_Golden.json")
-    elif "Run2023" in inputFiles[0]: goldenjson = LumiList(filename="../data/certification/Cert_Collisions2023_366442_370790_Golden.json")
-    elif "Run2024" in inputFiles[0]: goldenjson = LumiList(filename="../data/certification/Cert_Collisions2024_378981_386951_Golden.json")
-    process.source.lumisToProcess = goldenjson.getVLuminosityBlockRange()
+# ---------------------------------------------------------------------------------------
+# RECO COMPONENT
+# ---------------------------------------------------------------------------------------
 
-# ----- Load Run Conditions ----- #
+# ----- Global Tag ----- #
+# MC: https://twiki.cern.ch/twiki/bin/view/CMSPublic/GTsRun3#Global_Tags_used_in_official_MC
+# Data: https://twiki.cern.ch/twiki/bin/view/CMSPublic/GTsRun3#Global_Tags_used_in_official_AN1
 
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-#process.load('Configuration.Geometry.GeometryIdeal_cff')
-#process.load('Configuration.StandardSequences.MagneticField_38T_cff')
-process.load('Configuration.StandardSequences.GeometryDB_cff')
-process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-process.load('Configuration.StandardSequences.GeometrySimDB_cff')
-process.load('Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff')
-# for accessing factors froom the DB for JEC (https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyResolution#Accessing_factors_from_Global_Ta)
-process.load('Configuration.StandardSequences.Services_cff')
-process.load('JetMETCorrections.Modules.JetResolutionESProducer_cfi')
+from Configuration.AlCa.GlobalTag import GlobalTag
 
-# ------ Declare the correct global tag ------ #
+global_tags_MC = {
+    "2022preEE":    "124X_mcRun3_2022_realistic_v12",
+    "2022postEE":   "124X_mcRun3_2022_realistic_postEE_v1",
+    "2023preBPix":  "130X_mcRun3_2023_realistic_v14",
+    "2023postBPix": "130X_mcRun3_2023_realistic_v14",
+}
+# 140X_dataRun3_v17
 
-if options.isData: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '') 
-else:              process.GlobalTag = GlobalTag(process.GlobalTag,'130X_mcRun3_2023_realistic_v14','')
-# referenced from here: https://twiki.cern.ch/twiki/bin/view/CMSPublic/GTsRun3 
-# else:              process.GlobalTag = GlobalTag(process.GlobalTag,'auto:run3_mc_FULL','')
+if options.isData: 
+    if "2022" in era_name: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4', '') 
+    else:                  process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '') 
+else:                      process.GlobalTag = GlobalTag(process.GlobalTag, global_tags_MC[era_name], '') 
+
+# ----- HLT Filter ----- #
+
+process.hltFilter = cms.EDFilter("HLTHighLevel",
+    TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),  # "HLT" = process name
+    HLTPaths = cms.vstring("HLT_*L1SingleLLPJet*"),
+    andOr = cms.bool(True),
+    throw = cms.bool(False)
+)
+
+# ----- Actual Reconstruction!!!! ----- #
+
+process.raw2digi_step = cms.Path( process.hltFilter * process.RawToDigi)
+process.L1Reco_step = cms.Path( process.hltFilter * process.L1Reco)
+process.reconstruction_step = cms.Path(process.hltFilter * process.reconstruction)
+
+# ---------------------------------------------------------------------------------------
+# PAT Stuff
+# ---------------------------------------------------------------------------------------
 
 # ------ Declare Output ------ #
+
+# TFileService for output
+#process.TFileService = cms.Service( "TFileService",
+#    fileName = cms.string(options.outputFile), #"file:ntuple_2023D_passRECO_fromRAW.root"),
+#    closeFileFast = cms.untracked.bool(True)
+#)
 
 process.output = cms.OutputModule("PoolOutputModule",
     compressionAlgorithm = cms.untracked.string('LZMA'),
@@ -188,138 +339,210 @@ process.output = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('miniAOD-prod_PAT.root'),
     outputCommands = cms.untracked.vstring('keep *'),
 )
- 
-# ------ Reco things from RAW (needed for 2022) ------ #
 
-from FWCore.ParameterSet.Modules import _Module
-class ModuleCollector:
-    def __init__(self, exclude_names=None):
-        self.modules = []
-        self.exclude_names = set(exclude_names) if exclude_names else set()
-    def enter(self, obj):
-        if isinstance(obj, _Module) and obj.label() not in self.exclude_names:
-            self.modules.append(obj)
-        return True
-    def leave(self, obj):
-        return True
+# ----- PAT Candidates Task ----- #
 
-def flattenSequence(seq, exclude_names=None):
-    collector = ModuleCollector(exclude_names)
-    seq.visit(collector)
-    return collector.modules
+process.load('PhysicsTools.PatAlgos.producersLayer1.tauProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.jetProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.electronProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.photonProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.ootPhotonProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.metProducer_cff')
+process.load('PhysicsTools.PatAlgos.producersLayer1.muonProducer_cff')
+process.makePatJetsTask.add(process.pfImpactParameterTagInfos, 
+                            process.pfSecondaryVertexTagInfos,
+                            process.pfInclusiveSecondaryVertexFinderTagInfos)
 
-if options.recoFromRAW: # Works for 13_2_0
+process.patCandidatesTask = cms.Task(
+    process.makePatElectronsTask,
+    process.makePatMuonsTask,
+    #process.makePatTausTask,
+    process.makePatPhotonsTask,
+    process.makePatOOTPhotonsTask,
+    process.makePatJetsTask,
+    process.makePatMETsTask
+)
+process.patCandidates = cms.Sequence(process.patCandidatesTask)
 
-    # import of standard configurations
-    process.load('Configuration.StandardSequences.Services_cff')
-    process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
-    process.load('FWCore.MessageService.MessageLogger_cfi')
-    process.load('Configuration.EventContent.EventContent_cff')
-    process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
-    process.load('Configuration.StandardSequences.MagneticField_cff')
-    process.load('Configuration.StandardSequences.RawToDigi_Data_cff')
-    process.load('Configuration.StandardSequences.L1Reco_cff')
-    process.load('Configuration.StandardSequences.Reconstruction_Data_cff')
-    process.load('Configuration.StandardSequences.EndOfProcess_cff')
-    process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+# ----- Selected PAT Candidates Task ----- #
 
-    # additional
-    process.load('RecoMET.METFilters.metFilters_cff')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.tauSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.electronSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.muonSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.photonSelector_cfi')
+process.load('PhysicsTools.PatAlgos.selectionLayer1.ootPhotonSelector_cff')
+process.selectedPatCandidatesTask = cms.Task(
+    process.selectedPatElectrons,
+    process.selectedPatMuons,
+    #process.selectedPatTaus,
+    process.selectedPatPhotons,
+    process.selectedPatOOTPhotons,
+    process.selectedPatJets,
+ )
+process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
-    process.options = cms.untracked.PSet(
-        FailPath = cms.untracked.vstring(),
-        IgnoreCompletely = cms.untracked.vstring(),
-        Rethrow = cms.untracked.vstring(),
-        SkipEvent = cms.untracked.vstring(),
-        accelerators = cms.untracked.vstring('*'),
-        allowUnscheduled = cms.obsolete.untracked.bool,
-        canDeleteEarly = cms.untracked.vstring(),
-        deleteNonConsumedUnscheduledModules = cms.untracked.bool(True),
-        dumpOptions = cms.untracked.bool(False),
-        emptyRunLumiMode = cms.obsolete.untracked.string,
-        eventSetup = cms.untracked.PSet(
-            forceNumberOfConcurrentIOVs = cms.untracked.PSet(
-                allowAnyLabel_=cms.required.untracked.uint32
-            ),
-            numberOfConcurrentIOVs = cms.untracked.uint32(0)
-        ),
-        fileMode = cms.untracked.string('FULLMERGE'),
-        forceEventSetupCacheClearOnNewRun = cms.untracked.bool(False),
-        holdsReferencesToDeleteEarly = cms.untracked.VPSet(),
-        #makeTriggerResults = cms.obsolete.untracked.bool,
-        modulesToIgnoreForDeleteEarly = cms.untracked.vstring(),
-        numberOfConcurrentLuminosityBlocks = cms.untracked.uint32(0),
-        numberOfConcurrentRuns = cms.untracked.uint32(1),
-        numberOfStreams = cms.untracked.uint32(0),
-        numberOfThreads = cms.untracked.uint32(1),
-        printDependencies = cms.untracked.bool(False),
-        sizeOfStackForThreadsInKB = cms.optional.untracked.uint32,
-        throwIfIllegalParameter = cms.untracked.bool(True),
-        wantSummary = cms.untracked.bool(False)
-    )    
+# ----- PAT Trigger ----- #
 
-    # Production Info
-    process.configurationMetadata = cms.untracked.PSet(
-        annotation = cms.untracked.string('reco_from_raw_temp nevts:100'),
-        name = cms.untracked.string('Applications'),
-        version = cms.untracked.string('$Revision: 1.19 $')
-    )
+process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
+process.patTrigger.onlyStandAlone = cms.bool(False)
+process.patTrigger.packTriggerLabels = cms.bool(False)
+process.patTrigger.packTriggerPathNames = cms.bool(False)
+process.patTrigger.packTriggerPrescales = cms.bool(False) #True)
 
-    process.hltFilter = cms.EDFilter("HLTHighLevel",
-        TriggerResultsTag = cms.InputTag("TriggerResults","","HLT"),  # "HLT" = process name
-        HLTPaths = cms.vstring("HLT_*L1SingleLLPJet*"),
-        andOr = cms.bool(True),
-        throw = cms.bool(False)
-    )
+process.load('PhysicsTools.PatAlgos.slimming.selectedPatTrigger_cfi')
+process.load('PhysicsTools.PatAlgos.slimming.slimmedPatTrigger_cfi')
 
-    process.Flag_BadChargedCandidateFilter = cms.Path( process.hltFilter * process.BadChargedCandidateFilter )
-    process.Flag_BadChargedCandidateSummer16Filter = cms.Path( process.hltFilter * process.BadChargedCandidateSummer16Filter )
-    process.Flag_BadPFMuonDzFilter = cms.Path( process.hltFilter * process.BadPFMuonDzFilter )
-    process.Flag_BadPFMuonFilter = cms.Path( process.hltFilter * process.BadPFMuonFilter )
-    process.Flag_BadPFMuonSummer16Filter = cms.Path( process.hltFilter * process.BadPFMuonSummer16Filter )
-    process.Flag_CSCTightHalo2015Filter = cms.Path( process.hltFilter * process.CSCTightHalo2015Filter )
-    process.Flag_CSCTightHaloFilter = cms.Path( process.hltFilter * process.CSCTightHaloFilter )
-    process.Flag_CSCTightHaloTrkMuUnvetoFilter = cms.Path( process.hltFilter * process.CSCTightHaloTrkMuUnvetoFilter )
-    process.Flag_EcalDeadCellBoundaryEnergyFilter = cms.Path( process.hltFilter * process.EcalDeadCellBoundaryEnergyFilter )
-    process.Flag_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.hltFilter * process.EcalDeadCellTriggerPrimitiveFilter )
-    process.Flag_HBHENoiseFilter = cms.Path( process.hltFilter * process.HBHENoiseFilterResultProducer+process.HBHENoiseFilter )
-    process.Flag_HBHENoiseIsoFilter = cms.Path( process.hltFilter * process.HBHENoiseFilterResultProducer+process.HBHENoiseIsoFilter )
-    process.Flag_HcalStripHaloFilter = cms.Path( process.hltFilter * process.HcalStripHaloFilter )
-    process.Flag_chargedHadronTrackResolutionFilter = cms.Path( process.hltFilter * process.chargedHadronTrackResolutionFilter )
-    process.Flag_ecalBadCalibFilter = cms.Path()
-    process.Flag_ecalLaserCorrFilter = cms.Path( process.hltFilter * process.ecalLaserCorrFilter )
-    process.Flag_eeBadScFilter = cms.Path( process.hltFilter * process.eeBadScFilter )
-    process.Flag_globalSuperTightHalo2016Filter = cms.Path( process.hltFilter * process.globalSuperTightHalo2016Filter )
-    process.Flag_globalTightHalo2016Filter = cms.Path( process.hltFilter * process.globalTightHalo2016Filter )
-    process.Flag_goodVertices = cms.Path(process.hltFilter * process.primaryVertexFilter )
-    process.Flag_hcalLaserEventFilter = cms.Path(process.hltFilter * process.hcalLaserEventFilter )
-    process.Flag_hfNoisyHitsFilter = cms.Path(process.hltFilter * process.hfNoisyHitsFilter )
-    process.Flag_muonBadTrackFilter = cms.Path(process.hltFilter * process.muonBadTrackFilter )
-    process.Flag_trackingFailureFilter = cms.Path(process.hltFilter * process.goodVertices+process.trackingFailureFilter )
-    process.Flag_trkPOGFilters = cms.Path(process.hltFilter * process.trkPOGFilters )
-    process.Flag_trkPOG_logErrorTooManyClusters = cms.Path(process.hltFilter * ~process.logErrorTooManyClusters )
-    process.Flag_trkPOG_manystripclus53X = cms.Path(process.hltFilter * ~process.manystripclus53X )
-    process.Flag_trkPOG_toomanystripclus53X = cms.Path(process.hltFilter * ~process.toomanystripclus53X )
+# ----- PAT Task ----- #
 
-# ------ Custom Additions ------ #
-
-# For AOD Track variables
-"""
-process.load("RecoTracker.TkNavigation.NavigationSchoolESProducer_cfi")
-process.MaterialPropagator = cms.ESProducer('PropagatorWithMaterialESProducer',
-    ComponentName = cms.string('PropagatorWithMaterial'),
-    Mass = cms.double(0.105),
-    MaxDPhi = cms.double(1.6),
-    PropagationDirection = cms.string('alongMomentum'),
-    SimpleMagneticField = cms.string(''),
-    ptMin = cms.double(-1.0),
-    useRungeKutta = cms.bool(False)
+process.patTask = cms.Task(
+    process.patCandidatesTask,
+    process.selectedPatCandidatesTask,
+    #process.patTrigger,
+    #process.selectedPatTrigger,
+    #process.slimmedPatTrigger
 )
 
-process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderESProducer',
-    ComponentName = cms.string('TransientTrackBuilder')
+# ----- AK8 Jets ----- #
+
+# Add jettiness for AK8 jets
+
+process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
+process.NjettinessAK8CHS = process.Njettiness.clone()
+
+# ----- E/Gamma Object IDs ----- #
+
+# Add object ids
+
+from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
+electron_id_config = cms.PSet(electron_ids = cms.vstring([                   
+                    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Summer16_80X_V1_cff',
+                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring16_GeneralPurpose_V1_cff',
+                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring16_HZZ_V1_cff',
+                    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Fall17_94X_V2_cff',
+                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_noIso_V2_cff', 
+                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_iso_V2_cff',
+                    ]))  
+photon_id_config = cms.PSet(photon_ids = cms.vstring([                   
+            'RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring16_V2p2_cff',
+            'RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring16_nonTrig_V1_cff',
+            "RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Fall17_94X_V2_cff",
+            "RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Fall17_94X_V2_cff"            
+                    ]))  
+
+switchOnVIDElectronIdProducer(process,DataFormat.AOD)
+switchOnVIDPhotonIdProducer(process,DataFormat.AOD) 
+process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag("gedGsfElectrons")
+process.electronMVAValueMapProducer.src = cms.InputTag("gedGsfElectrons")
+process.photonMVAValueMapProducer.src = cms.InputTag("gedPhotons")
+#process.electronRegressionValueMapProducer.src = cms.InputTag('reducedEgamma','gedGsfElectrons')
+for idmod in electron_id_config.electron_ids.value():
+    setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
+for idmod in photon_id_config.photon_ids.value():
+    setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
+
+process.load("CommonTools.RecoAlgos.sortedPFPrimaryVertices_cfi")
+process.primaryVertexAssociationLocal = process.sortedPFPrimaryVertices.clone(
+    qualityForPrimary = cms.int32(2),
+    produceSortedVertices = cms.bool(False),
+    producePileUpCollection  = cms.bool(False),  
+    produceNoPileUpCollection = cms.bool(False)
 )
-"""
+
+# ----- PAT Jets (More) ----- #
+
+#Define Jet Tool Box Stuff
+#listBtagDiscriminatorsAK4 = [ 
+#                'pfJetProbabilityBJetTags',
+#                'pfCombinedInclusiveSecondaryVertexV2BJetTags',
+#                'pfCombinedMVAV2BJetTags',
+#                'pfCombinedCvsLJetTags',
+#                'pfCombinedCvsBJetTags',
+#                ]
+#from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
+#jetToolbox( process, 'ak8', 'ak8JetSubs', "out", PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addSoftDrop=True, addNsub=True, addNsubSubjets=True, miniAOD=False )   ### For example
+
+# process.patTaus.isoDeposits = cms.PSet()
+# process.patTaus.addGenMatch = cms.bool(False)
+# process.patTaus.embedGenMatch = cms.bool(False)
+# process.patTaus.addGenJetMatch   = cms.bool(False)
+# process.patTaus.embedGenJetMatch = cms.bool(False)
+# process.patTaus.genParticleMatch = ''
+# process.patTaus.genJetMatch      = ''
+# process.selectedPatTaus.cut = cms.string("pt > 18. && tauID('decayModeFindingNewDMs')> 0.5")
+# process.selectedPatJets.cut = cms.string("pt > 10")
+
+## PU JetID
+process.load("RecoJets.JetProducers.PileupJetID_cfi")
+process.patTask.add(process.pileUpJetIDTask)
+process.pileupJetId.jets = cms.InputTag("ak4PFJetsCHS") # Point pileupJetId to the initial jets 
+process.patJets.userData.userFloats.src = [ cms.InputTag("pileupJetId:fullDiscriminant"), ]
+process.patJets.userData.userInts.src = [ cms.InputTag("pileupJetId:fullId"), ]
+
+
+#from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+#updateJetCollection(
+#    process,
+#    jetSource = cms.InputTag('updatedPatJetsTransientCorrected'), #slimmedJets'),
+#    pvSource = cms.InputTag('offlinePrimaryVertices'),
+#    svSource = cms.InputTag('slimmedSecondaryVertices'),
+#    jetCorrections = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None'),
+#    btagDiscriminators = [
+#        'pfParticleTransformerAK4JetTags:probb',
+#    ],
+#    postfix = 'SlimmedDeepFlavour',
+#)
+
+process.load('PhysicsTools.PatAlgos.recoLayer0.bTagging_cff')
+process.patJets.discriminatorSources = cms.VInputTag(
+    #cms.InputTag('pfParticleTransformerAK4JetTags:probb'),# 'probb'),
+    cms.InputTag("pfDeepCSVJetTags:probb"),
+    cms.InputTag("pfDeepCSVJetTags:probc"),
+    cms.InputTag("pfDeepCSVJetTags:probudsg"),
+    cms.InputTag("pfDeepCSVJetTags:probbb"),
+    #cms.InputTag("pfParticleTransformerAK4JetTags:probb"),
+    #cms.InputTag("pfJetBProbabilityBJetTags"),
+    #cms.InputTag("pfJetProbabilityBJetTags"),
+    #cms.InputTag("pfTrackCountingHighEffBJetTags"),
+    # cms.InputTag("pfSimpleSecondaryVertexHighEffBJetTags"), # GK, errors with HCAL LLP skim, as with below 7
+    # cms.InputTag("pfSimpleInclusiveSecondaryVertexHighEffBJetTags"),
+    # cms.InputTag("pfCombinedSecondaryVertexV2BJetTags"),
+    # cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
+    # cms.InputTag("softPFMuonBJetTags"),
+    # cms.InputTag("softPFElectronBJetTags"),
+    # cms.InputTag("pfCombinedMVAV2BJetTags"),   
+    )
+process.patJets.addTagInfos     = cms.bool(True)
+process.patJets.tagInfoSources  = cms.VInputTag( 'pfImpactParameterTagInfos'
+                                                 ,'pfSecondaryVertexTagInfos'
+                                                 ,'pfInclusiveSecondaryVertexFinderTagInfos')
+process.patJets.addGenPartonMatch   = cms.bool(False)
+process.patJets.embedGenPartonMatch = cms.bool(False)
+process.patJets.genPartonMatch      = ''
+process.patJets.addGenJetMatch      = cms.bool(False)
+process.patJets.embedGenJetMatch    = cms.bool(False)
+process.patJets.genJetMatch         = ''
+process.patJets.getJetMCFlavour    = cms.bool(False)
+process.patJets.addJetFlavourInfo  = cms.bool(False)
+process.patJets.JetPartonMapSource = ''
+process.patJets.JetFlavourInfoSource = ''
+
+# process.patJetsAK8PFCHS.addGenPartonMatch   = cms.bool(False)
+# process.patJetsAK8PFCHS.embedGenPartonMatch = cms.bool(False)
+# process.patJetsAK8PFCHS.genPartonMatch      = ''
+# process.patJetsAK8PFCHS.addGenJetMatch      = cms.bool(False)
+# process.patJetsAK8PFCHS.embedGenJetMatch    = cms.bool(False)
+# process.patJetsAK8PFCHS.genJetMatch         = ''
+# process.patJetsAK8PFCHS.getJetMCFlavour    = cms.bool(False)
+# process.patJetsAK8PFCHS.addJetFlavourInfo  = cms.bool(False)
+# process.patJetsAK8PFCHS.JetPartonMapSource = ''
+# process.patJetsAK8PFCHS.JetFlavourInfoSource = ''
+process.patMETs.addGenMET           = False
+process.patMETs.genMETSource        = ''
+
+# ---------------------------------------------------------------------------------------
+# JEC and JER Stuff
+# ---------------------------------------------------------------------------------------
 
 # ----- Jet Energy Corrections and Jet Energy Resolution for MC ----- # GK
 # JEC from sqlite file # following here: 
@@ -328,45 +551,8 @@ process.TransientTrackBuilderESProducer = cms.ESProducer('TransientTrackBuilderE
 # Tag from https://cms-conddb.cern.ch/cmsDbBrowser/list/Prod/gts/140X_dataRun3_v17, and use "conddb --db <.db file> listTags" to confirm name from .db file
 # This is to use a .db file to over-ride the conditions from the GT 
 # https://cms-jerc.web.cern.ch/Recommendations/#2022
-from CondCore.CondDB.CondDB_cfi import CondDB
-if options.isData:
-    mapping = {
-        ("Run2022C", ""):               ("Summer22_22Sep2023_RunCD_V3_DATA",  "Summer22_22Sep2023_JRV1_DATA"),
-        ("Run2022D", ""):               ("Summer22_22Sep2023_RunCD_V3_DATA",  "Summer22_22Sep2023_JRV1_DATA"),
-        ("Run2022E", ""):               ("Summer22EE_22Sep2023_RunE_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
-        ("Run2022F", ""):               ("Summer22EE_22Sep2023_RunF_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
-        ("Run2022G", ""):               ("Summer22EE_22Sep2023_RunG_V3_DATA", "Summer22EE_22Sep2023_JRV1_DATA"),
-        ("Run2023C", "PromptReco-v1"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv1234_JRV1_DATA"),
-        ("Run2023C", "PromptReco-v2"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv1234_JRV1_DATA"),
-        ("Run2023C", "PromptReco-v3"):  ("Summer23Prompt23_RunCv123_V3_DATA", "Summer23Prompt23_RunCv1234_JRV1_DATA"),
-        ("Run2023C", "PromptReco-v4"):  ("Summer23Prompt23_RunCv4_V3_DATA",   "Summer23Prompt23_RunCv1234_JRV1_DATA"),
-        ("Run2023D", ""):               ("Summer23BPixPrompt23_RunD_V3_DATA", "Summer23BPixPrompt23_RunD_JRV1_DATA"),
-    }
-else:
-    mapping = { # TODO make sure this agrees with MC naming scheme
-        ("HToSSTo4B", "23BPix"):         ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC"),
-        ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC"), 
-        ("HToSSTo4B", "2022EE"):         ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC"),
-        ("HToSSTo4B", "2022_"):          ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
-        # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
-        # ("WJetsToLNu", "preEE"):         ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
-    }
 
-tag_name = None
-JER_tag_name = None
-for (run, reco), (name, JERname) in mapping.items():
-    if run in options.tagJEC and reco in options.tagJEC:
-        tag_name = name
-        JER_tag_name = JERname
-        break
-    elif options.tagJEC == "" and run in inputFiles[0] and reco in inputFiles[0]:
-        tag_name = name
-        JER_tag_name = JERname
-        break
-if tag_name is None:
-    raise RuntimeError("No matching JEC tag found for input file " + inputFiles[0])
-if JER_tag_name is None:
-    raise RuntimeError("No matching JER tag found for input file " + inputFiles[0])
+from CondCore.CondDB.CondDB_cfi import CondDB
 
 # ---------- JEC -----------
 JEC_file_path = 'sqlite_file:JEC_JER/JECDatabase/SQLiteFiles/' + tag_name + '.db'
@@ -489,13 +675,25 @@ process.patJetsPuppi = patJets.clone(
     addTagInfos         = cms.bool(True)
 )
 
+
+# ------ BTAG Scale Factors and Uncertainties ------ #
+
+
+# ---------------------------------------------------------------------------------------
+# Attach the NTupler
+# ---------------------------------------------------------------------------------------
+
+# ------ Import MET Filter ------ #
+
+process.load('cms_lpc_llp.Run3-HCAL-LLP-NTupler.metFilters_Run3_cff')
+
 # ------ Analyzer ------ #
 
 process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     debug =  cms.bool( options.debug ),
     isData = cms.bool( options.isData ),
     isSignal = cms.bool( options.isSignal ),
-    era = cms.string( "" ), 
+    era    = cms.string( era_name ),
     useGen = cms.bool(False),
     isRECO = cms.bool(True),                                
     isRAW = cms.bool(False),                                
@@ -665,271 +863,91 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     Flag_trkPOG_logErrorTooManyClusters = cms.InputTag("Flag_trkPOG_logErrorTooManyClusters"),
 )
 
-# ----- Add Additional Info ----- #
-
 # ----- Jet Energy Resolution (only MC), and JEC uncertainties (data and MC) ----- # GK
+
 if not options.isData: 
     process.DisplacedHcalJets.jer_PtResolution = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/"+JER_tag_name+"/"+JER_tag_name+"_PtResolution_AK4PFPuppi.txt")
     process.DisplacedHcalJets.jer_ScaleFactor = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/"+JER_tag_name+"/"+JER_tag_name+"_SF_AK4PFPuppi.txt")
+    process.DisplacedHcalJets.btagSysSF = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/BTag/btv-scale-factors/"+BTag_SF_tag_name+"/json/btagging_v2.json")
     # note that _AK4PFchs.txt is a symlink back to _AK4PFPuppi.txt, and there are issues when the symlinked version is used. So the puppi version is listed. 
     # based on https://cms-jerc.web.cern.ch/Recommendations/#2023_1
 # process.DisplacedHcalJets.jec_Uncertainty = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/"+tag_name+"/"+tag_name+"_Uncertainty_AK4PFPuppi.txt")
-        
-# Add jettiness for AK8 jets
-process.load('RecoJets.JetProducers.nJettinessAdder_cfi')
-process.NjettinessAK8CHS = process.Njettiness.clone()
 
-# Add object ids
 
-from PhysicsTools.SelectorUtils.tools.vid_id_tools import *
-electron_id_config = cms.PSet(electron_ids = cms.vstring([                   
-                    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Summer16_80X_V1_cff',
-                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring16_GeneralPurpose_V1_cff',
-                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Spring16_HZZ_V1_cff',
-                    'RecoEgamma.ElectronIdentification.Identification.cutBasedElectronID_Fall17_94X_V2_cff',
-                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_noIso_V2_cff', 
-                    'RecoEgamma.ElectronIdentification.Identification.mvaElectronID_Fall17_iso_V2_cff',
-                    ]))  
-photon_id_config = cms.PSet(photon_ids = cms.vstring([                   
-            'RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Spring16_V2p2_cff',
-            'RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Spring16_nonTrig_V1_cff',
-            "RecoEgamma.PhotonIdentification.Identification.mvaPhotonID_Fall17_94X_V2_cff",
-            "RecoEgamma.PhotonIdentification.Identification.cutBasedPhotonID_Fall17_94X_V2_cff"            
-                    ]))  
-
-switchOnVIDElectronIdProducer(process,DataFormat.AOD)
-switchOnVIDPhotonIdProducer(process,DataFormat.AOD) 
-process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag("gedGsfElectrons")
-process.electronMVAValueMapProducer.src = cms.InputTag("gedGsfElectrons")
-process.photonMVAValueMapProducer.src = cms.InputTag("gedPhotons")
-#process.electronRegressionValueMapProducer.src = cms.InputTag('reducedEgamma','gedGsfElectrons')
-for idmod in electron_id_config.electron_ids.value():
-    setupAllVIDIdsInModule(process,idmod,setupVIDElectronSelection)
-for idmod in photon_id_config.photon_ids.value():
-    setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
-
-process.load("CommonTools.RecoAlgos.sortedPFPrimaryVertices_cfi")
-process.primaryVertexAssociationLocal = process.sortedPFPrimaryVertices.clone(
-    qualityForPrimary = cms.int32(2),
-    produceSortedVertices = cms.bool(False),
-    producePileUpCollection  = cms.bool(False),  
-    produceNoPileUpCollection = cms.bool(False)
-)
-
-# ----- PAT Stuff ----- #
-
-process.load('PhysicsTools.PatAlgos.producersLayer1.tauProducer_cff')
-process.load('PhysicsTools.PatAlgos.producersLayer1.jetProducer_cff')
-process.load('PhysicsTools.PatAlgos.producersLayer1.electronProducer_cff')
-process.load('PhysicsTools.PatAlgos.producersLayer1.photonProducer_cff')
-process.load('PhysicsTools.PatAlgos.producersLayer1.ootPhotonProducer_cff')
-process.load('PhysicsTools.PatAlgos.producersLayer1.metProducer_cff')
-process.load('PhysicsTools.PatAlgos.producersLayer1.muonProducer_cff')
-process.makePatJetsTask.add(process.pfImpactParameterTagInfos, 
-                            process.pfSecondaryVertexTagInfos,
-                            process.pfInclusiveSecondaryVertexFinderTagInfos)
-
-process.patCandidatesTask = cms.Task(
-    process.makePatElectronsTask,
-    process.makePatMuonsTask,
-    #process.makePatTausTask,
-    process.makePatPhotonsTask,
-    process.makePatOOTPhotonsTask,
-    process.makePatJetsTask,
-    process.makePatMETsTask
-)
-process.patCandidates = cms.Sequence(process.patCandidatesTask)
-
-process.load('PhysicsTools.PatAlgos.selectionLayer1.tauSelector_cfi')
-process.load('PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi')
-process.load('PhysicsTools.PatAlgos.selectionLayer1.electronSelector_cfi')
-process.load('PhysicsTools.PatAlgos.selectionLayer1.muonSelector_cfi')
-process.load('PhysicsTools.PatAlgos.selectionLayer1.photonSelector_cfi')
-process.load('PhysicsTools.PatAlgos.selectionLayer1.ootPhotonSelector_cff')
-# --- CHS PAT candidates task --- #
-process.selectedPatCandidatesTask = cms.Task(
-    process.selectedPatElectrons,
-    process.selectedPatMuons,
-    #process.selectedPatTaus,
-    process.selectedPatPhotons,
-    process.selectedPatOOTPhotons,
-    process.selectedPatJets,
- )
-process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
-
-# GK PUPPI
-# --- Puppi PAT task --- #
-process.selectedPatPuppiTask = cms.Task(
-    process.patJetCorrFactorsPuppi, # (unclear if needed)
-    process.patJetsPuppi,
-    # process.updatedPatJetsPuppiUpdatedJEC (if used)
-)
-process.selectedPatPuppi = cms.Sequence(process.selectedPatPuppiTask)
-
-# Now fix patTask to not drag in parton matching
-# for modname in ["patJetPartons",
-#                 "patJetFlavourAssociation",
-#                 "patJetFlavourAssociationLegacy",
-#                 "patJetPartonMatch",
-#                 "patJetGenJetMatch"]:
-#     if hasattr(process, modname):
-#         process.patTask.remove(getattr(process, modname))
-
-process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
-process.patTrigger.onlyStandAlone = cms.bool(False)
-process.patTrigger.packTriggerLabels = cms.bool(False)
-process.patTrigger.packTriggerPathNames = cms.bool(False)
-process.patTrigger.packTriggerPrescales = cms.bool(False) #True)
-
-process.load('PhysicsTools.PatAlgos.slimming.selectedPatTrigger_cfi')
-process.load('PhysicsTools.PatAlgos.slimming.slimmedPatTrigger_cfi')
-
-process.patTask = cms.Task(
-    process.patCandidatesTask,
-    process.selectedPatCandidatesTask,
-    process.selectedPatPuppiTask, # add Puppi workflow
-    #process.patTrigger,
-    #process.selectedPatTrigger,
-    #process.slimmedPatTrigger
-)
-
-# ----- miniAOD_customize stuff ----- #
-
-#Define Jet Tool Box Stuff
-#listBtagDiscriminatorsAK4 = [ 
-#                'pfJetProbabilityBJetTags',
-#                'pfCombinedInclusiveSecondaryVertexV2BJetTags',
-#                'pfCombinedMVAV2BJetTags',
-#                'pfCombinedCvsLJetTags',
-#                'pfCombinedCvsBJetTags',
-#                ]
-#from JMEAnalysis.JetToolbox.jetToolbox_cff import jetToolbox
-#jetToolbox( process, 'ak8', 'ak8JetSubs', "out", PUMethod='CHS', bTagDiscriminators=listBtagDiscriminatorsAK4, addSoftDrop=True, addNsub=True, addNsubSubjets=True, miniAOD=False )   ### For example
-
-# process.patTaus.isoDeposits = cms.PSet()
-# process.patTaus.addGenMatch = cms.bool(False)
-# process.patTaus.embedGenMatch = cms.bool(False)
-# process.patTaus.addGenJetMatch   = cms.bool(False)
-# process.patTaus.embedGenJetMatch = cms.bool(False)
-# process.patTaus.genParticleMatch = ''
-# process.patTaus.genJetMatch      = ''
-# process.selectedPatTaus.cut = cms.string("pt > 18. && tauID('decayModeFindingNewDMs')> 0.5")
-# process.selectedPatJets.cut = cms.string("pt > 10")
-
-## PU JetID
-process.load("RecoJets.JetProducers.PileupJetID_cfi")
-process.patTask.add(process.pileUpJetIDTask)
-# process.pileupJetId.jets = cms.InputTag("ak4PFJetsCHS") # Point pileupJetId to the initial jets 
-process.patJets.userData.userFloats.src = [ cms.InputTag("pileupJetId:fullDiscriminant"), ]
-process.patJets.userData.userInts.src = [ cms.InputTag("pileupJetId:fullId"), ]
-
-#from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-#updateJetCollection(
-#    process,
-#    jetSource = cms.InputTag('updatedPatJetsTransientCorrected'), #slimmedJets'),
-#    pvSource = cms.InputTag('offlinePrimaryVertices'),
-#    svSource = cms.InputTag('slimmedSecondaryVertices'),
-#    jetCorrections = ('AK4PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'], 'None'),
-#    btagDiscriminators = [
-#        'pfParticleTransformerAK4JetTags:probb',
-#    ],
-#    postfix = 'SlimmedDeepFlavour',
-#)
-
-process.load('PhysicsTools.PatAlgos.recoLayer0.bTagging_cff')
-process.patJets.discriminatorSources = cms.VInputTag(
-    #cms.InputTag('pfParticleTransformerAK4JetTags:probb'),# 'probb'),
-    cms.InputTag("pfDeepCSVJetTags:probb"),
-    cms.InputTag("pfDeepCSVJetTags:probc"),
-    cms.InputTag("pfDeepCSVJetTags:probudsg"),
-    cms.InputTag("pfDeepCSVJetTags:probbb"),
-    #cms.InputTag("pfParticleTransformerAK4JetTags:probb"),
-    #cms.InputTag("pfJetBProbabilityBJetTags"),
-    #cms.InputTag("pfJetProbabilityBJetTags"),
-    #cms.InputTag("pfTrackCountingHighEffBJetTags"),
-    # cms.InputTag("pfSimpleSecondaryVertexHighEffBJetTags"), # GK, errors with HCAL LLP skim, as with below 7
-    # cms.InputTag("pfSimpleInclusiveSecondaryVertexHighEffBJetTags"),
-    # cms.InputTag("pfCombinedSecondaryVertexV2BJetTags"),
-    # cms.InputTag("pfCombinedInclusiveSecondaryVertexV2BJetTags"),
-    # cms.InputTag("softPFMuonBJetTags"),
-    # cms.InputTag("softPFElectronBJetTags"),
-    # cms.InputTag("pfCombinedMVAV2BJetTags"),   
-    )
-process.patJets.addTagInfos     = cms.bool(True)
-process.patJets.tagInfoSources  = cms.VInputTag( 'pfImpactParameterTagInfos'
-                                                 ,'pfSecondaryVertexTagInfos'
-                                                 ,'pfInclusiveSecondaryVertexFinderTagInfos')
-process.patJets.addGenPartonMatch   = cms.bool(False)
-process.patJets.embedGenPartonMatch = cms.bool(False)
-process.patJets.genPartonMatch      = ''
-process.patJets.addGenJetMatch      = cms.bool(False)
-process.patJets.embedGenJetMatch    = cms.bool(False)
-process.patJets.genJetMatch         = ''
-process.patJets.getJetMCFlavour    = cms.bool(False)
-process.patJets.addJetFlavourInfo  = cms.bool(False)
-process.patJets.JetPartonMapSource = ''
-process.patJets.JetFlavourInfoSource = ''
-
-# process.patJetsAK8PFCHS.addGenPartonMatch   = cms.bool(False)
-# process.patJetsAK8PFCHS.embedGenPartonMatch = cms.bool(False)
-# process.patJetsAK8PFCHS.genPartonMatch      = ''
-# process.patJetsAK8PFCHS.addGenJetMatch      = cms.bool(False)
-# process.patJetsAK8PFCHS.embedGenJetMatch    = cms.bool(False)
-# process.patJetsAK8PFCHS.genJetMatch         = ''
-# process.patJetsAK8PFCHS.getJetMCFlavour    = cms.bool(False)
-# process.patJetsAK8PFCHS.addJetFlavourInfo  = cms.bool(False)
-# process.patJetsAK8PFCHS.JetPartonMapSource = ''
-# process.patJetsAK8PFCHS.JetFlavourInfoSource = ''
-process.patMETs.addGenMET           = False
-process.patMETs.genMETSource        = ''
-
-# ----- Define Execution Paths ----- #
-
-process.outputPath = cms.EndPath(process.output)
+# ------ MET Filter Handling for RECO From RAW ------ #
 
 if options.recoFromRAW:
-    # Update metFilterBits, which are passed via the trigger object
+
+    process.Flag_BadChargedCandidateFilter = cms.Path( process.hltFilter * process.BadChargedCandidateFilter )
+    process.Flag_BadChargedCandidateSummer16Filter = cms.Path( process.hltFilter * process.BadChargedCandidateSummer16Filter )
+    process.Flag_BadPFMuonDzFilter = cms.Path( process.hltFilter * process.BadPFMuonDzFilter )
+    process.Flag_BadPFMuonFilter = cms.Path( process.hltFilter * process.BadPFMuonFilter )
+    process.Flag_BadPFMuonSummer16Filter = cms.Path( process.hltFilter * process.BadPFMuonSummer16Filter )
+    process.Flag_CSCTightHalo2015Filter = cms.Path( process.hltFilter * process.CSCTightHalo2015Filter )
+    process.Flag_CSCTightHaloFilter = cms.Path( process.hltFilter * process.CSCTightHaloFilter )
+    process.Flag_CSCTightHaloTrkMuUnvetoFilter = cms.Path( process.hltFilter * process.CSCTightHaloTrkMuUnvetoFilter )
+    process.Flag_EcalDeadCellBoundaryEnergyFilter = cms.Path( process.hltFilter * process.EcalDeadCellBoundaryEnergyFilter )
+    process.Flag_EcalDeadCellTriggerPrimitiveFilter = cms.Path( process.hltFilter * process.EcalDeadCellTriggerPrimitiveFilter )
+    process.Flag_HBHENoiseFilter = cms.Path( process.hltFilter * process.HBHENoiseFilterResultProducer+process.HBHENoiseFilter )
+    process.Flag_HBHENoiseIsoFilter = cms.Path( process.hltFilter * process.HBHENoiseFilterResultProducer+process.HBHENoiseIsoFilter )
+    process.Flag_HcalStripHaloFilter = cms.Path( process.hltFilter * process.HcalStripHaloFilter )
+    process.Flag_chargedHadronTrackResolutionFilter = cms.Path( process.hltFilter * process.chargedHadronTrackResolutionFilter )
+    process.Flag_ecalBadCalibFilter = cms.Path()
+    process.Flag_ecalLaserCorrFilter = cms.Path( process.hltFilter * process.ecalLaserCorrFilter )
+    process.Flag_eeBadScFilter = cms.Path( process.hltFilter * process.eeBadScFilter )
+    process.Flag_globalSuperTightHalo2016Filter = cms.Path( process.hltFilter * process.globalSuperTightHalo2016Filter )
+    process.Flag_globalTightHalo2016Filter = cms.Path( process.hltFilter * process.globalTightHalo2016Filter )
+    process.Flag_goodVertices = cms.Path(process.hltFilter * process.primaryVertexFilter )
+    process.Flag_hcalLaserEventFilter = cms.Path(process.hltFilter * process.hcalLaserEventFilter )
+    process.Flag_hfNoisyHitsFilter = cms.Path(process.hltFilter * process.hfNoisyHitsFilter )
+    process.Flag_muonBadTrackFilter = cms.Path(process.hltFilter * process.muonBadTrackFilter )
+    process.Flag_trackingFailureFilter = cms.Path(process.hltFilter * process.goodVertices+process.trackingFailureFilter )
+    process.Flag_trkPOGFilters = cms.Path(process.hltFilter * process.trkPOGFilters )
+    process.Flag_trkPOG_logErrorTooManyClusters = cms.Path(process.hltFilter * ~process.logErrorTooManyClusters )
+    process.Flag_trkPOG_manystripclus53X = cms.Path(process.hltFilter * ~process.manystripclus53X )
+    process.Flag_trkPOG_toomanystripclus53X = cms.Path(process.hltFilter * ~process.toomanystripclus53X )
+
     process.DisplacedHcalJets.metFilterBits = cms.InputTag("")
 
-    # Schedule noise filters
-    process.schedule = cms.Schedule(process.Flag_HBHENoiseFilter,process.Flag_HBHENoiseIsoFilter,process.Flag_CSCTightHaloFilter,process.Flag_CSCTightHaloTrkMuUnvetoFilter,process.Flag_CSCTightHalo2015Filter,process.Flag_globalTightHalo2016Filter,process.Flag_globalSuperTightHalo2016Filter,process.Flag_HcalStripHaloFilter,process.Flag_hcalLaserEventFilter,process.Flag_EcalDeadCellTriggerPrimitiveFilter,process.Flag_EcalDeadCellBoundaryEnergyFilter,process.Flag_ecalBadCalibFilter,process.Flag_goodVertices,process.Flag_eeBadScFilter,process.Flag_ecalLaserCorrFilter,process.Flag_trkPOGFilters,process.Flag_chargedHadronTrackResolutionFilter,process.Flag_muonBadTrackFilter,process.Flag_BadChargedCandidateFilter,process.Flag_BadPFMuonFilter,process.Flag_BadPFMuonDzFilter,process.Flag_hfNoisyHitsFilter,process.Flag_BadChargedCandidateSummer16Filter,process.Flag_BadPFMuonSummer16Filter,process.Flag_trkPOG_manystripclus53X,process.Flag_trkPOG_toomanystripclus53X,process.Flag_trkPOG_logErrorTooManyClusters)
-    process.RECO     = cms.Path( process.hltFilter * process.RawToDigi * process.gtStage2Digis  * process.reconstruction ) #* process.metFiltersAll )
-    process.p        = cms.Path( process.hltFilter * process.primaryVertexAssociationLocal * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFiltersRecommended * process.DisplacedHcalJets )
 
-    if False: # set to true when you want to dump all reco objects
-        process.dumpEverything = cms.EDAnalyzer("EventContentAnalyzer")
-        process.p = cms.Path(process.dumpEverything)
+# ---------------------------------------------------------------------------------------
+# Final Processing: Path, EndPath, Schedule, Associate
+# ---------------------------------------------------------------------------------------
 
-    process.schedule.insert(0, process.RECO)
-    process.schedule.append(process.p)
+# ------ Standard NTupler Processing ------ #
 
-elif False:
-    process.DisplacedHcalJets.hbRecHits = cms.InputTag("")
-    process.DisplacedHcalJets.pfCands   = cms.InputTag("") #patPackedCandidates") #packedPFCandidates")
-    process.DisplacedHcalJets.vertices  = cms.InputTag("offlineSlimmedPrimaryVertices")
-    process.DisplacedHcalJets.met       = cms.InputTag("slimmedMETs")
-    process.DisplacedHcalJets.electrons = cms.InputTag("slimmedElectrons")
-    process.DisplacedHcalJets.muons     = cms.InputTag("slimmedMuons")
-    process.DisplacedHcalJets.photons   = cms.InputTag("slimmedPhotons")
-    process.DisplacedHcalJets.pfjetsAK4 = cms.InputTag("slimmedJets")
-    process.DisplacedHcalJets.l1jet     = cms.InputTag("caloStage2Digis")
+# Output
+process.outputPath = cms.EndPath(process.output)
 
-    #process.metFiltersRecommended.primaryVertexFilter.src = cms.InputTag("offlineSlimmedPrimaryVertices")
+# NTuplization Process
+process.p = cms.Path( process.primaryVertexAssociationLocal * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFiltersRecommended * process.DisplacedHcalJets )
 
-    process.p = cms.Path( process.metFiltersRecommended_MINIAOD * process.DisplacedHcalJets )
-    process.schedule = cms.Schedule( process.p )
+# Schedule
+process.schedule = cms.Schedule( process.p )
 
-else:
-    process.p = cms.Path( process.primaryVertexAssociationLocal * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFiltersRecommended * process.DisplacedHcalJets )
-    process.schedule = cms.Schedule( process.p )
+if options.recoFromRAW:
 
-#Add PAT tasks for jet Toolbox to execution schedule
-#if True:
+    # Include HLT Filter to NTuplization Process
+    process.p = cms.Path( process.hltFilter * process.primaryVertexAssociationLocal * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFiltersRecommended * process.DisplacedHcalJets )
+
+    # Schedule definition
+    process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,
+        process.Flag_HBHENoiseFilter,process.Flag_HBHENoiseIsoFilter,process.Flag_CSCTightHaloFilter,process.Flag_CSCTightHaloTrkMuUnvetoFilter,process.Flag_CSCTightHalo2015Filter,process.Flag_globalTightHalo2016Filter,process.Flag_globalSuperTightHalo2016Filter,process.Flag_HcalStripHaloFilter,process.Flag_hcalLaserEventFilter,process.Flag_EcalDeadCellTriggerPrimitiveFilter,process.Flag_EcalDeadCellBoundaryEnergyFilter,process.Flag_ecalBadCalibFilter,process.Flag_goodVertices,process.Flag_eeBadScFilter,process.Flag_ecalLaserCorrFilter,process.Flag_trkPOGFilters,process.Flag_chargedHadronTrackResolutionFilter,process.Flag_muonBadTrackFilter,process.Flag_BadChargedCandidateFilter,process.Flag_BadPFMuonFilter,process.Flag_BadPFMuonDzFilter,process.Flag_hfNoisyHitsFilter,process.Flag_BadChargedCandidateSummer16Filter,process.Flag_BadPFMuonSummer16Filter,process.Flag_trkPOG_manystripclus53X,process.Flag_trkPOG_toomanystripclus53X,process.Flag_trkPOG_logErrorTooManyClusters,
+        process.p) #, #process.endjob_step,process.AODoutput_step)
+
+# ------ Associate PAT Task ------ #
+
 process.schedule.associate(process.patTask)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
-# Customisation from command line
+# ------ Customization ------ #
+
+# Automatic addition of the customisation function from Configuration.DataProcessing.RecoTLR
+from Configuration.DataProcessing.RecoTLR import customisePrompt 
+
+#call to customisation function customisePrompt imported from Configuration.DataProcessing.RecoTLR
+process = customisePrompt(process)
 
 #Have logErrorHarvester wait for the same EDProducers to finish as those providing data for the OutputModule
 from FWCore.Modules.logErrorHarvester_cff import customiseLogErrorHarvesterUsingOutputCommands
@@ -938,8 +956,3 @@ process = customiseLogErrorHarvesterUsingOutputCommands(process)
 # Add early deletion of temporary data products to reduce peak memory need
 from Configuration.StandardSequences.earlyDeleteSettings_cff import customiseEarlyDelete
 process = customiseEarlyDelete(process)
-# End adding early deletion
-
-# Write full configuration to a file for debugging
-with open("configDump.py", "w") as f:
-    f.write(process.dumpPython())
