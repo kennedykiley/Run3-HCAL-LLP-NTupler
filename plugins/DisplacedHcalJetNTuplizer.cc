@@ -3,7 +3,7 @@
 /*
 	Description: Base class for miniAOD analysis with CRAB
 */
-//   Author:  Cristián Peña and Si Xie.
+//   Author:  Cristián Peña and Si Xie; adapted for HCAL LLP Analysis by Kiley Kennedy and Gillian Kopp
 //   Created:  Thu, 26 March 2019 15:00:06 GMT
 
 #include "DisplacedHcalJetNTuplizer.h"
@@ -29,6 +29,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	debug(iConfig.getParameter<bool>( "debug" )),
 	isData_(iConfig.getParameter<bool>( "isData" )),
 	isSignal_(iConfig.getParameter<bool>( "isSignal" )),
+	era_(iConfig.getParameter<string>( "era" )),
 	rand_(0), // random seed // GK for JER
 	// Trigger
 	theTTBToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
@@ -42,15 +43,15 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	//jetHLTFilterNamesFile_(iConfig.getParameter<string>( "jetHLTFilterNamesFile" )),
 	// General 
 	//metFilterBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"))),
-    metFilterBitsToken_(
-        iConfig.getParameter<edm::InputTag>("metFilterBits").label().empty() ?
-        edm::EDGetTokenT<edm::TriggerResults>() :  // default-initialized token
-        mayConsume<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"))
-    ),
+	metFilterBitsToken_(
+		iConfig.getParameter<edm::InputTag>("metFilterBits").label().empty() ?
+		edm::EDGetTokenT<edm::TriggerResults>() :  // default-initialized token
+		mayConsume<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"))
+	),
 	verticesToken_(consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertices"))),
 	primaryVertexAssociationToken_(consumes<edm::Association<vector<reco::Vertex> > >(edm::InputTag("primaryVertexAssociation","original"))),
 	primaryVertexAssociationValueMapToken_(consumes<edm::ValueMap<int> >(edm::InputTag("primaryVertexAssociation","original"))),
-  	rhoFastjetAllToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoFastjetAll"))),
+	rhoFastjetAllToken_(consumes<double>(iConfig.getParameter<edm::InputTag>("rhoFastjetAll"))),
 	// Event-Level Info
 	metToken_(consumes<pat::METCollection>(iConfig.getParameter<edm::InputTag>("met"))),
 	metPuppiToken_(consumes<reco::PFMETCollection>(iConfig.getParameter<edm::InputTag>("metPuppi"))), // GK, PUPPI MET access
@@ -91,7 +92,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	photon_cutbasedID_decisions_tight_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_tight"))),
 	// MC
 	genParticlesToken_(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"))),
-    puInfoToken_(consumes<std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puInfo"))),
+	puInfoToken_(consumes<std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puInfo"))),
 	// Geometry
 	caloGeometryToken_(esConsumes<CaloGeometry, CaloGeometryRecord>()), // GK
 	castorGeometryToken_(esConsumes<PCaloGeometry, PCastorRcd>()), // GK
@@ -155,6 +156,44 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 		// GK, JER setup
 		jerRes_ = JME::JetResolution(iConfig.getParameter<edm::FileInPath>("jer_PtResolution").fullPath());
 		jerSF_ = JME::JetResolutionScaleFactor(iConfig.getParameter<edm::FileInPath>("jer_ScaleFactor").fullPath());
+
+		// KK, BTAG SF setup
+		//btagCalib_ = BTagCalibration("deepJet", iConfig.getParameter<edm::FileInPath>("btagSysSF").fullPath() );
+
+		//btagReader_ = JME::JetResolution(iConfig.getParameter<edm::FileInPath>("btagSysSF").fullPath());
+
+		// -------------------------
+
+		std::filesystem::path fname = iConfig.getParameter<edm::FileInPath>("btagSysSF").fullPath(); 
+		cout << "Loading BTAG SF JSON file: " << fname << endl;
+		assert(std::filesystem::exists(fname));
+		btag_cset_ = correction::CorrectionSet::from_file(fname.string());
+
+		//BTagCalibration calib;
+		//string btag_algo = "deepJet";
+		//string btag_infile = iConfig.getParameter<edm::FileInPath>("btagSysSF").fullPath();
+		//btagCalib_ = BTagCalibration(btag_algo, iConfig.getParameter<edm::FileInPath>("btagSysSF").fullPath()); //, validate);
+
+			// Get file path from python config
+		//const std::string csv = iConfig.getParameter<edm::FileInPath>("btagSysSF").fullPath();
+
+		// Load SF CSV
+		//btagCalib_.readCSV(csv);
+		/*
+		btagCalib_ = BTagCalibration("deepJet", iConfig.getParameter<edm::FileInPath>("btagSysSF").fullPath(), false);
+
+		btagReader_Medium_ = BTagCalibrationReader(BTagEntry::OP_MEDIUM, {"up", "down"});
+		btagReader_Medium_.load(btagCalib_, BTagEntry::FLAV_B, "comb");
+
+		btagReader_Tight_ = BTagCalibrationReader(BTagEntry::OP_MEDIUM, {"up", "down"});
+		btagReader_Medium_.load(btagCalib_, BTagEntry::FLAV_B, "comb");    	
+		*/
+		//BTagCalibrationReader btagReader_;
+		//btagReader_ = BTagCalibrationReader(op, sysTypes_[iDisc]);
+		//btagReader_.load(calib, BTagEntry::FLAV_B, measurementTypesB_[iDisc]);
+		//btagReader_.load(calib, BTagEntry::FLAV_C, measurementTypesC_[iDisc]);
+		//btagReader_.load(calib, BTagEntry::FLAV_UDSG, measurementTypesUDSG_[iDisc]);
+
 	}
 	else {
 		sumWeights = 0;
@@ -167,7 +206,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	// jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecUncPath);
 	// edm::FileInPath jecUncPath = iConfig.getParameter<edm::FileInPath>("jec_Uncertainty"); // no uncertainties for Run 3 yet
 	// JetCorrectorParameters jecUncParams(jecUncPath.fullPath());
-    // jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecUncParams);
+	// jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecUncParams);
 
 	// ----- Get Triggers ----- // 
 
@@ -209,77 +248,77 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 
 	// Dec 2023 from https://github.com/cms-sw/cmssw/blob/master/HLTrigger/Configuration/python/HLTrigger_Datasets_GRun_cff.py#L1287
 	triggerPathNames.push_back("HLT_CaloMET60_DTCluster50");
-    triggerPathNames.push_back("HLT_CaloMET60_DTClusterNoMB1S50");
-    triggerPathNames.push_back("HLT_HT170_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
-    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay0p5nsTrackless");
-    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay1nsInclusive");
-    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay1nsTrackless");
-    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay2nsInclusive");
-    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5");
-    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
-    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
-    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet60_DisplacedTrack");
-    triggerPathNames.push_back("HLT_HT240_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
-    triggerPathNames.push_back("HLT_HT270_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
-    triggerPathNames.push_back("HLT_HT280_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
-    triggerPathNames.push_back("HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive");
-    triggerPathNames.push_back("HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive");
-    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_PFJet60_NeutralHadronFrac0p7");
-    triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_PFJet60_NeutralHadronFrac0p8");
-    triggerPathNames.push_back("HLT_HT350_DelayedJet40_SingleDelay3nsInclusive");
-    triggerPathNames.push_back("HLT_HT350_DelayedJet40_SingleDelay3p25nsInclusive");
-    triggerPathNames.push_back("HLT_HT350_DelayedJet40_SingleDelay3p5nsInclusive");
-    triggerPathNames.push_back("HLT_HT350");
-    triggerPathNames.push_back("HLT_HT400_DisplacedDijet40_DisplacedTrack");
-    triggerPathNames.push_back("HLT_HT420_L1SingleLLPJet_DisplacedDijet60_Inclusive");
-    triggerPathNames.push_back("HLT_HT425");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay0p5nsInclusive");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay0p5nsTrackless");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay0p75nsTrackless");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay1nsInclusive");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay1nsTrackless");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay1p25nsInclusive");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay1p5nsInclusive");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay0p5nsInclusive");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay0p5nsTrackless");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay1nsInclusive");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay1nsTrackless");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay1p25nsTrackless");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay1p5nsInclusive");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay1p5nsTrackless");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay2nsInclusive");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay2p25nsInclusive");
-    triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay2p5nsInclusive");
-    triggerPathNames.push_back("HLT_HT550_DisplacedDijet60_Inclusive");
-    triggerPathNames.push_back("HLT_L1MET_DTCluster50");
+	triggerPathNames.push_back("HLT_CaloMET60_DTClusterNoMB1S50");
+	triggerPathNames.push_back("HLT_HT170_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay0p5nsTrackless");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_DoubleDelay1nsInclusive");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay1nsTrackless");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DelayedJet40_SingleDelay2nsInclusive");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_DisplacedDijet60_DisplacedTrack");
+	triggerPathNames.push_back("HLT_HT240_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
+	triggerPathNames.push_back("HLT_HT270_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack");
+	triggerPathNames.push_back("HLT_HT280_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5");
+	triggerPathNames.push_back("HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive");
+	triggerPathNames.push_back("HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_PFJet60_NeutralHadronFrac0p7");
+	triggerPathNames.push_back("HLT_HT200_L1SingleLLPJet_PFJet60_NeutralHadronFrac0p8");
+	triggerPathNames.push_back("HLT_HT350_DelayedJet40_SingleDelay3nsInclusive");
+	triggerPathNames.push_back("HLT_HT350_DelayedJet40_SingleDelay3p25nsInclusive");
+	triggerPathNames.push_back("HLT_HT350_DelayedJet40_SingleDelay3p5nsInclusive");
+	triggerPathNames.push_back("HLT_HT350");
+	triggerPathNames.push_back("HLT_HT400_DisplacedDijet40_DisplacedTrack");
+	triggerPathNames.push_back("HLT_HT420_L1SingleLLPJet_DisplacedDijet60_Inclusive");
+	triggerPathNames.push_back("HLT_HT425");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay0p5nsInclusive");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay0p5nsTrackless");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay0p75nsTrackless");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay1nsInclusive");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay1nsTrackless");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay1p25nsInclusive");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_DoubleDelay1p5nsInclusive");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay0p5nsInclusive");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay0p5nsTrackless");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay1nsInclusive");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay1nsTrackless");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay1p25nsTrackless");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay1p5nsInclusive");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay1p5nsTrackless");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay2nsInclusive");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay2p25nsInclusive");
+	triggerPathNames.push_back("HLT_HT430_DelayedJet40_SingleDelay2p5nsInclusive");
+	triggerPathNames.push_back("HLT_HT550_DisplacedDijet60_Inclusive");
+	triggerPathNames.push_back("HLT_L1MET_DTCluster50");
 	triggerPathNames.push_back("HLT_L1MET_DTClusterNoMB1S50");
-    triggerPathNames.push_back("HLT_L1Mu6HT240");
-    triggerPathNames.push_back("HLT_L1SingleLLPJet");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay0p5nsTrackless");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay0p75nsInclusive");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1nsTrackless");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1p25nsInclusive");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1p25nsTrackless");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1p5nsInclusive");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1p5nsTrackless");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1p75nsInclusive");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay2p5nsTrackless");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay2p75nsTrackless");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay3nsTrackless");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay3p5nsInclusive");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay3p75nsInclusive");
-    triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay4nsInclusive");
-    triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet30_Inclusive1PtrkShortSig5_DisplacedLoose");
-    triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet35_Inclusive0PtrkShortSig5");
-    triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet35_Inclusive1PtrkShortSig5_DisplacedLoose");
-    triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet40_Inclusive0PtrkShortSig5");
-    triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet40_Inclusive1PtrkShortSig5_DisplacedLoose");
-    triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet45_Inclusive0PtrkShortSig5");
-    triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet50_Inclusive0PtrkShortSig5");
-    triggerPathNames.push_back("HLT_PFJet200_TimeGt2p5ns");
-    triggerPathNames.push_back("HLT_PFJet200_TimeLtNeg2p5ns");
+	triggerPathNames.push_back("HLT_L1Mu6HT240");
+	triggerPathNames.push_back("HLT_L1SingleLLPJet");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay0p5nsTrackless");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay0p75nsInclusive");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1nsTrackless");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1p25nsInclusive");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1p25nsTrackless");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1p5nsInclusive");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1p5nsTrackless");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_DoubleDelay1p75nsInclusive");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay2p5nsTrackless");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay2p75nsTrackless");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay3nsTrackless");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay3p5nsInclusive");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay3p75nsInclusive");
+	triggerPathNames.push_back("HLT_L1Tau_DelayedJet40_SingleDelay4nsInclusive");
+	triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet30_Inclusive1PtrkShortSig5_DisplacedLoose");
+	triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet35_Inclusive0PtrkShortSig5");
+	triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet35_Inclusive1PtrkShortSig5_DisplacedLoose");
+	triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet40_Inclusive0PtrkShortSig5");
+	triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet40_Inclusive1PtrkShortSig5_DisplacedLoose");
+	triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet45_Inclusive0PtrkShortSig5");
+	triggerPathNames.push_back("HLT_Mu6HT240_DisplacedDijet50_Inclusive0PtrkShortSig5");
+	triggerPathNames.push_back("HLT_PFJet200_TimeGt2p5ns");
+	triggerPathNames.push_back("HLT_PFJet200_TimeLtNeg2p5ns");
 
-        /*
+		/*
 	ifstream myfile (edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str()) ;
 
 	if( myfile.is_open() ){
@@ -289,13 +328,13 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 
 		while( myfile>>index>>hltpathname ){
 			triggerPathNames.push_back( hltpathname );
-                        cout<<hltpathname<<endl;
+						cout<<hltpathname<<endl;
 		}
 		myfile.close();
 	} else {
 		std::cout << "ERROR!!! Could not open trigger path name file : " << edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str() << "\n";
 	}	
-        */
+		*/
 
 	if( debug ) cout<<"Defining trigger hists..."<<endl;
 
@@ -310,12 +349,12 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 		triggerPathNamesIndices[triggerPathNames.at(i)] = i;
 	}
 
-    // Check metFilterBitsToken initialization:
-    metFilterBitsToken_isValid = false;
-    if (!iConfig.getParameter<edm::InputTag>("metFilterBits").label().empty()) {
-        metFilterBitsToken_ = mayConsume<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"));
-        metFilterBitsToken_isValid = true;
-    }
+	// Check metFilterBitsToken initialization:
+	metFilterBitsToken_isValid = false;
+	if (!iConfig.getParameter<edm::InputTag>("metFilterBits").label().empty()) {
+		metFilterBitsToken_ = mayConsume<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("metFilterBits"));
+		metFilterBitsToken_isValid = true;
+	}
 
 	cout<<"DisplacedHcalJetNTuplizer DONE"<<endl;
 
@@ -428,6 +467,7 @@ void DisplacedHcalJetNTuplizer::EnableBranches(){
 void DisplacedHcalJetNTuplizer::EnableEventInfoBranches(){
 
 	output_tree->Branch( "isData", &isData );
+	output_tree->Branch( "era", &era );
 	output_tree->Branch( "runNum", &runNumber );
 	output_tree->Branch( "lumiNum", &lumiNumber );
 	output_tree->Branch( "eventNum", &eventNumber );
@@ -485,34 +525,34 @@ void DisplacedHcalJetNTuplizer::EnableMetBranches(){
 	output_tree->Branch( "met_PUPPI_Phi", &met_PUPPI_Phi );
 	output_tree->Branch( "met_PUPPI_SumEt", &met_PUPPI_SumEt );
 
-    output_tree->Branch( "Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter);
-    output_tree->Branch( "Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter);
-    output_tree->Branch( "Flag_CSCTightHaloFilter", &Flag_CSCTightHaloFilter);
-    output_tree->Branch( "Flag_CSCTightHaloTrkMuUnvetoFilter", &Flag_CSCTightHaloTrkMuUnvetoFilter);
-    output_tree->Branch( "Flag_CSCTightHalo2015Filter", &Flag_CSCTightHalo2015Filter);
-    output_tree->Branch( "Flag_globalTightHalo2016Filter", &Flag_globalTightHalo2016Filter);
-    output_tree->Branch( "Flag_globalSuperTightHalo2016Filter", &Flag_globalSuperTightHalo2016Filter);
-    output_tree->Branch( "Flag_HcalStripHaloFilter", &Flag_HcalStripHaloFilter);
-    output_tree->Branch( "Flag_hcalLaserEventFilter", &Flag_hcalLaserEventFilter);
-    output_tree->Branch( "Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter);
-    output_tree->Branch( "Flag_EcalDeadCellBoundaryEnergyFilter", &Flag_EcalDeadCellBoundaryEnergyFilter);
-    output_tree->Branch( "Flag_ecalBadCalibFilter", &Flag_ecalBadCalibFilter);
-    output_tree->Branch( "Flag_goodVertices", &Flag_goodVertices);
-    output_tree->Branch( "Flag_eeBadScFilter", &Flag_eeBadScFilter);
-    output_tree->Branch( "Flag_ecalLaserCorrFilter", &Flag_ecalLaserCorrFilter);
-    output_tree->Branch( "Flag_trkPOGFilters", &Flag_trkPOGFilters);
-    output_tree->Branch( "Flag_chargedHadronTrackResolutionFilter", &Flag_chargedHadronTrackResolutionFilter);
-    output_tree->Branch( "Flag_muonBadTrackFilter", &Flag_muonBadTrackFilter);
-    output_tree->Branch( "Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter);
-    output_tree->Branch( "Flag_BadPFMuonFilter", &Flag_BadPFMuonFilter);
-    output_tree->Branch( "Flag_BadPFMuonDzFilter", &Flag_BadPFMuonDzFilter);
-    output_tree->Branch( "Flag_hfNoisyHitsFilter", &Flag_hfNoisyHitsFilter);
-    output_tree->Branch( "Flag_BadChargedCandidateSummer16Filter", &Flag_BadChargedCandidateSummer16Filter);
-    output_tree->Branch( "Flag_BadPFMuonSummer16Filter", &Flag_BadPFMuonSummer16Filter);
-    output_tree->Branch( "Flag_trkPOG_manystripclus53X", &Flag_trkPOG_manystripclus53X);
-    output_tree->Branch( "Flag_trkPOG_toomanystripclus53X", &Flag_trkPOG_toomanystripclus53X);
-    output_tree->Branch( "Flag_trkPOG_logErrorTooManyClusters", &Flag_trkPOG_logErrorTooManyClusters);
-    output_tree->Branch( "Flag_METFilters_2022_2023_PromptReco", &Flag_METFilters_2022_2023_PromptReco);
+	output_tree->Branch( "Flag_HBHENoiseFilter", &Flag_HBHENoiseFilter);
+	output_tree->Branch( "Flag_HBHENoiseIsoFilter", &Flag_HBHENoiseIsoFilter);
+	output_tree->Branch( "Flag_CSCTightHaloFilter", &Flag_CSCTightHaloFilter);
+	output_tree->Branch( "Flag_CSCTightHaloTrkMuUnvetoFilter", &Flag_CSCTightHaloTrkMuUnvetoFilter);
+	output_tree->Branch( "Flag_CSCTightHalo2015Filter", &Flag_CSCTightHalo2015Filter);
+	output_tree->Branch( "Flag_globalTightHalo2016Filter", &Flag_globalTightHalo2016Filter);
+	output_tree->Branch( "Flag_globalSuperTightHalo2016Filter", &Flag_globalSuperTightHalo2016Filter);
+	output_tree->Branch( "Flag_HcalStripHaloFilter", &Flag_HcalStripHaloFilter);
+	output_tree->Branch( "Flag_hcalLaserEventFilter", &Flag_hcalLaserEventFilter);
+	output_tree->Branch( "Flag_EcalDeadCellTriggerPrimitiveFilter", &Flag_EcalDeadCellTriggerPrimitiveFilter);
+	output_tree->Branch( "Flag_EcalDeadCellBoundaryEnergyFilter", &Flag_EcalDeadCellBoundaryEnergyFilter);
+	output_tree->Branch( "Flag_ecalBadCalibFilter", &Flag_ecalBadCalibFilter);
+	output_tree->Branch( "Flag_goodVertices", &Flag_goodVertices);
+	output_tree->Branch( "Flag_eeBadScFilter", &Flag_eeBadScFilter);
+	output_tree->Branch( "Flag_ecalLaserCorrFilter", &Flag_ecalLaserCorrFilter);
+	output_tree->Branch( "Flag_trkPOGFilters", &Flag_trkPOGFilters);
+	output_tree->Branch( "Flag_chargedHadronTrackResolutionFilter", &Flag_chargedHadronTrackResolutionFilter);
+	output_tree->Branch( "Flag_muonBadTrackFilter", &Flag_muonBadTrackFilter);
+	output_tree->Branch( "Flag_BadChargedCandidateFilter", &Flag_BadChargedCandidateFilter);
+	output_tree->Branch( "Flag_BadPFMuonFilter", &Flag_BadPFMuonFilter);
+	output_tree->Branch( "Flag_BadPFMuonDzFilter", &Flag_BadPFMuonDzFilter);
+	output_tree->Branch( "Flag_hfNoisyHitsFilter", &Flag_hfNoisyHitsFilter);
+	output_tree->Branch( "Flag_BadChargedCandidateSummer16Filter", &Flag_BadChargedCandidateSummer16Filter);
+	output_tree->Branch( "Flag_BadPFMuonSummer16Filter", &Flag_BadPFMuonSummer16Filter);
+	output_tree->Branch( "Flag_trkPOG_manystripclus53X", &Flag_trkPOG_manystripclus53X);
+	output_tree->Branch( "Flag_trkPOG_toomanystripclus53X", &Flag_trkPOG_toomanystripclus53X);
+	output_tree->Branch( "Flag_trkPOG_logErrorTooManyClusters", &Flag_trkPOG_logErrorTooManyClusters);
+	output_tree->Branch( "Flag_METFilters_2022_2023_PromptReco", &Flag_METFilters_2022_2023_PromptReco);
 
 };
 
@@ -665,10 +705,22 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "jet_MedianIP_wp", &jet_MedianIP_wp );
 	output_tree->Branch( "jet_MinDeltaRAllTracks_wp", &jet_MinDeltaRAllTracks_wp );
 	output_tree->Branch( "jet_MinDeltaRPVTracks_wp", &jet_MinDeltaRPVTracks_wp );
-    output_tree->Branch( "jet_DeepCSV_prob_b", &jet_DeepCSV_prob_b ); 
-    output_tree->Branch( "jet_DeepCSV_prob_c", &jet_DeepCSV_prob_c ); 
-    output_tree->Branch( "jet_DeepCSV_prob_bb", &jet_DeepCSV_prob_bb ); 
-    output_tree->Branch( "jet_DeepCSV_prob_udsg", &jet_DeepCSV_prob_udsg ); 
+	output_tree->Branch( "jet_DeepCSV_prob_b", &jet_DeepCSV_prob_b ); 
+	output_tree->Branch( "jet_DeepCSV_prob_c", &jet_DeepCSV_prob_c ); 
+	output_tree->Branch( "jet_DeepCSV_prob_bb", &jet_DeepCSV_prob_bb ); 
+	output_tree->Branch( "jet_DeepCSV_prob_udsg", &jet_DeepCSV_prob_udsg ); 
+
+	output_tree->Branch( "jet_DeepJet_b_Medium__SF", &jet_DeepJet_b_Medium__SF ); 
+	output_tree->Branch( "jet_DeepJet_b_Medium__up_uncorr", &jet_DeepJet_b_Medium__up_uncorr ); 
+	output_tree->Branch( "jet_DeepJet_b_Medium__down_uncorr", &jet_DeepJet_b_Medium__down_uncorr ); 
+	output_tree->Branch( "jet_DeepJet_b_Medium__up_corr", &jet_DeepJet_b_Medium__up_corr ); 
+	output_tree->Branch( "jet_DeepJet_b_Medium__down_corr", &jet_DeepJet_b_Medium__down_corr ); 
+	output_tree->Branch( "jet_DeepJet_b_Tight__SF", &jet_DeepJet_b_Tight__SF ); 
+	output_tree->Branch( "jet_DeepJet_b_Tight__up_uncorr", &jet_DeepJet_b_Tight__up_uncorr ); 
+	output_tree->Branch( "jet_DeepJet_b_Tight__down_uncorr", &jet_DeepJet_b_Tight__down_uncorr ); 
+	output_tree->Branch( "jet_DeepJet_b_Tight__up_corr", &jet_DeepJet_b_Tight__up_corr ); 
+	output_tree->Branch( "jet_DeepJet_b_Tight__down_corr", &jet_DeepJet_b_Tight__down_corr ); 
+
 	output_tree->Branch( "jet_NTracks", &jet_NTracks );
 	output_tree->Branch( "jet_NPromptTracks", &jet_NPromptTracks );
 	output_tree->Branch( "jet_TrackIndices", &jet_TrackIndices );
@@ -886,8 +938,8 @@ void DisplacedHcalJetNTuplizer::EnableHcalRechitBranches(){
 // ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::EnablePileupBranches(){
 
-        output_tree->Branch( "n_BunchXing", &n_BunchXing );
-        output_tree->Branch( "BunchXing", &BunchXing );
+		output_tree->Branch( "n_BunchXing", &n_BunchXing );
+		output_tree->Branch( "BunchXing", &BunchXing );
 	output_tree->Branch( "nPU", &nPU );
 	output_tree->Branch( "nPUmean", &nPUmean );
 
@@ -1007,7 +1059,8 @@ void DisplacedHcalJetNTuplizer::ResetBranches(){
 // ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::ResetEventInfoBranches(){
 
-	isData 			= false;
+	isData 		= false;
+	era         = "";
 	runNumber 	= 0;
 	lumiNumber 	= 0;
 	eventNumber = 0;
@@ -1240,10 +1293,20 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jet_MedianIP_wp.clear();
 	jet_MinDeltaRAllTracks_wp.clear();
 	jet_MinDeltaRPVTracks_wp.clear();
-    jet_DeepCSV_prob_b.clear();
-    jet_DeepCSV_prob_c.clear();
-    jet_DeepCSV_prob_bb.clear();
-    jet_DeepCSV_prob_udsg.clear();
+	jet_DeepCSV_prob_b.clear();
+	jet_DeepCSV_prob_c.clear();
+	jet_DeepCSV_prob_bb.clear();
+	jet_DeepCSV_prob_udsg.clear();
+	jet_DeepJet_b_Medium__SF.clear();
+	jet_DeepJet_b_Medium__up_uncorr.clear();
+	jet_DeepJet_b_Medium__down_uncorr.clear();
+	jet_DeepJet_b_Medium__up_corr.clear();
+	jet_DeepJet_b_Medium__down_corr.clear();
+	jet_DeepJet_b_Tight__SF.clear();
+	jet_DeepJet_b_Tight__up_uncorr.clear();
+	jet_DeepJet_b_Tight__down_uncorr.clear();
+	jet_DeepJet_b_Tight__up_corr.clear();
+	jet_DeepJet_b_Tight__down_corr.clear();
 	jet_TrackIndices.clear();
 	jet_NPFCands.clear();
 	jet_PFCandIndices.clear();
@@ -1449,8 +1512,8 @@ void DisplacedHcalJetNTuplizer::ResetHcalRechitBranches(){
 // ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::ResetPileupBranches(){
 
-        n_BunchXing = 0;
-        BunchXing.clear();
+		n_BunchXing = 0;
+		BunchXing.clear();
 	nPU.clear();
 	nPUmean.clear();
 
@@ -1700,6 +1763,7 @@ bool DisplacedHcalJetNTuplizer::FillEventInfoBranches(const edm::Event& iEvent){
 	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillEventInfoBranches"<<endl; 
 
 	isData 		= isData_;
+	era 		= era_;
 	runNumber 	= iEvent.id().run();
 	lumiNumber 	= iEvent.luminosityBlock();
 	eventNumber = iEvent.id().event();
@@ -1796,8 +1860,8 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
 
 			HLT_Decision.push_back( triggerBits->accept(i) );
 			HLT_Prescale.push_back( -1 );			
-                        // if (isData_) HLT_Prescale.push_back( triggerPrescales->getPrescaleForIndex(i) ); // FIX
-                        // else HLT_Prescale.push_back( 1 ); // TODO Need to figure out yields
+						// if (isData_) HLT_Prescale.push_back( triggerPrescales->getPrescaleForIndex(i) ); // FIX
+						// else HLT_Prescale.push_back( 1 ); // TODO Need to figure out yields
 
 
 			if( triggerBits->accept(i) ) NEvents_HLT->Fill(triggerPathNamesIndices[triggerPathName]); // FIX WEIGHTS
@@ -2032,39 +2096,39 @@ bool DisplacedHcalJetNTuplizer::FillMetBranches(const edm::Event& iEvent){
 	if( metFilterBitsToken_isValid ){ 
 		iEvent.getByToken(metFilterBitsToken_, metFilterBits);
 	
-    	const edm::TriggerNames &metNames = iEvent.triggerNames(*metFilterBits);
+		const edm::TriggerNames &metNames = iEvent.triggerNames(*metFilterBits);
 
-	    for(unsigned int i = 0, n = metFilterBits->size(); i < n; ++i){
-	        if( debug && metNames.triggerName(i).find("Flag_") != std::string::npos ){ cout<<metNames.triggerName(i).c_str()<<"  "<<metFilterBits->accept(i)<<endl; }
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_HBHENoiseFilter") == 0)                    Flag_HBHENoiseFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_HBHENoiseIsoFilter") == 0)                 Flag_HBHENoiseIsoFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_CSCTightHaloFilter") == 0)                 Flag_CSCTightHaloFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_CSCTightHaloTrkMuUnvetoFilter") == 0)      Flag_CSCTightHaloTrkMuUnvetoFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_CSCTightHalo2015Filter") == 0)             Flag_CSCTightHalo2015Filter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalTightHalo2016Filter") == 0)          Flag_globalTightHalo2016Filter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalSuperTightHalo2016Filter") == 0)     Flag_globalSuperTightHalo2016Filter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_HcalStripHaloFilter") == 0)                Flag_HcalStripHaloFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_hcalLaserEventFilter") == 0)               Flag_hcalLaserEventFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_EcalDeadCellTriggerPrimitiveFilter") == 0) Flag_EcalDeadCellTriggerPrimitiveFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_EcalDeadCellBoundaryEnergyFilter") == 0)   Flag_EcalDeadCellBoundaryEnergyFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_ecalBadCalibFilter") == 0)                 Flag_ecalBadCalibFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_goodVertices") == 0)                       Flag_goodVertices = metFilterBits->accept(i);
-	        //if(strcmp(metNames.triggerName(i).c_str(), "Flag_trackingFailureFilter") == 0) Flag_trackingFailureFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_eeBadScFilter") == 0)                      Flag_eeBadScFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_ecalLaserCorrFilter") == 0)                Flag_ecalLaserCorrFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOGFilters") == 0)                      Flag_trkPOGFilters = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_chargedHadronTrackResolutionFilter") == 0) Flag_chargedHadronTrackResolutionFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_muonBadTrackFilter") == 0)                 Flag_muonBadTrackFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadChargedCandidateFilter") == 0)          Flag_BadChargedCandidateFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonFilter") == 0)                    Flag_BadPFMuonFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadChargedCandidateSummer16Filter") == 0)  Flag_BadChargedCandidateSummer16Filter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonSummer16Filter") == 0)            Flag_BadPFMuonSummer16Filter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonDzFilter") == 0)                  Flag_BadPFMuonDzFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_hfNoisyHitsFilter") == 0)                  Flag_hfNoisyHitsFilter = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_manystripclus53X") == 0)            Flag_trkPOG_manystripclus53X = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_toomanystripclus53X") == 0)         Flag_trkPOG_toomanystripclus53X = metFilterBits->accept(i);
-	        if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_logErrorTooManyClusters") == 0)     Flag_trkPOG_logErrorTooManyClusters = metFilterBits->accept(i);
-	    }
+		for(unsigned int i = 0, n = metFilterBits->size(); i < n; ++i){
+			if( debug && metNames.triggerName(i).find("Flag_") != std::string::npos ){ cout<<metNames.triggerName(i).c_str()<<"  "<<metFilterBits->accept(i)<<endl; }
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_HBHENoiseFilter") == 0)                    Flag_HBHENoiseFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_HBHENoiseIsoFilter") == 0)                 Flag_HBHENoiseIsoFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_CSCTightHaloFilter") == 0)                 Flag_CSCTightHaloFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_CSCTightHaloTrkMuUnvetoFilter") == 0)      Flag_CSCTightHaloTrkMuUnvetoFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_CSCTightHalo2015Filter") == 0)             Flag_CSCTightHalo2015Filter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalTightHalo2016Filter") == 0)          Flag_globalTightHalo2016Filter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_globalSuperTightHalo2016Filter") == 0)     Flag_globalSuperTightHalo2016Filter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_HcalStripHaloFilter") == 0)                Flag_HcalStripHaloFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_hcalLaserEventFilter") == 0)               Flag_hcalLaserEventFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_EcalDeadCellTriggerPrimitiveFilter") == 0) Flag_EcalDeadCellTriggerPrimitiveFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_EcalDeadCellBoundaryEnergyFilter") == 0)   Flag_EcalDeadCellBoundaryEnergyFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_ecalBadCalibFilter") == 0)                 Flag_ecalBadCalibFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_goodVertices") == 0)                       Flag_goodVertices = metFilterBits->accept(i);
+			//if(strcmp(metNames.triggerName(i).c_str(), "Flag_trackingFailureFilter") == 0) Flag_trackingFailureFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_eeBadScFilter") == 0)                      Flag_eeBadScFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_ecalLaserCorrFilter") == 0)                Flag_ecalLaserCorrFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOGFilters") == 0)                      Flag_trkPOGFilters = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_chargedHadronTrackResolutionFilter") == 0) Flag_chargedHadronTrackResolutionFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_muonBadTrackFilter") == 0)                 Flag_muonBadTrackFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadChargedCandidateFilter") == 0)          Flag_BadChargedCandidateFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonFilter") == 0)                    Flag_BadPFMuonFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadChargedCandidateSummer16Filter") == 0)  Flag_BadChargedCandidateSummer16Filter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonSummer16Filter") == 0)            Flag_BadPFMuonSummer16Filter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_BadPFMuonDzFilter") == 0)                  Flag_BadPFMuonDzFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_hfNoisyHitsFilter") == 0)                  Flag_hfNoisyHitsFilter = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_manystripclus53X") == 0)            Flag_trkPOG_manystripclus53X = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_toomanystripclus53X") == 0)         Flag_trkPOG_toomanystripclus53X = metFilterBits->accept(i);
+			if(strcmp(metNames.triggerName(i).c_str(), "Flag_trkPOG_logErrorTooManyClusters") == 0)     Flag_trkPOG_logErrorTooManyClusters = metFilterBits->accept(i);
+		}
 
 	} else {
 		edm::Handle<edm::HLTPathStatus> Flag_HBHENoiseFilterHandle;
@@ -2183,8 +2247,8 @@ bool DisplacedHcalJetNTuplizer::FillMetBranches(const edm::Event& iEvent){
 
 	}
    
-    // Recommendations for Run3 (2022 and 2023 Prompt Reco)
-    Flag_METFilters_2022_2023_PromptReco = Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && Flag_BadPFMuonDzFilter && Flag_hfNoisyHitsFilter && Flag_eeBadScFilter && Flag_ecalBadCalibFilter;
+	// Recommendations for Run3 (2022 and 2023 Prompt Reco)
+	Flag_METFilters_2022_2023_PromptReco = Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && Flag_BadPFMuonDzFilter && Flag_hfNoisyHitsFilter && Flag_eeBadScFilter && Flag_ecalBadCalibFilter;
 
 	// metUncorrectedPt = Met.uncorPt();
 	// metUncorrectedPhi = Met.uncorPhi();
@@ -2324,9 +2388,9 @@ bool DisplacedHcalJetNTuplizer::FillElectronBranches(const edm::Event& iEvent){
 
 		// Isolation //
 		ele_pileupIso.push_back( ele.pfIsolationVariables().sumPUPt );
-    	ele_chargedIso.push_back( ele.pfIsolationVariables().sumChargedHadronPt );
-    	ele_photonIso.push_back( ele.pfIsolationVariables().sumPhotonEt );
-    	ele_neutralHadIso.push_back( ele.pfIsolationVariables().sumNeutralHadronEt );
+		ele_chargedIso.push_back( ele.pfIsolationVariables().sumChargedHadronPt );
+		ele_photonIso.push_back( ele.pfIsolationVariables().sumPhotonEt );
+		ele_neutralHadIso.push_back( ele.pfIsolationVariables().sumNeutralHadronEt );
 
 		// Rechits Association //
 
@@ -2400,9 +2464,9 @@ bool DisplacedHcalJetNTuplizer::FillMuonBranches(const edm::Event& iEvent) {
 
 		// Isolation //
 		muon_pileupIso.push_back( muon.pfIsolationR04().sumPUPt );
-    	muon_chargedIso.push_back( muon.pfIsolationR04().sumChargedHadronPt );
-    	muon_photonIso.push_back( muon.pfIsolationR04().sumPhotonEt );
-    	muon_neutralHadIso.push_back( muon.pfIsolationR04().sumNeutralHadronEt );
+		muon_chargedIso.push_back( muon.pfIsolationR04().sumChargedHadronPt );
+		muon_photonIso.push_back( muon.pfIsolationR04().sumPhotonEt );
+		muon_neutralHadIso.push_back( muon.pfIsolationR04().sumNeutralHadronEt );
 
 		// IP significance
 		muon_ip3dSignificance.push_back( muon.dB(pat::Muon::PV3D)/muon.edB(pat::Muon::PV3D) );
@@ -2542,8 +2606,8 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		// ----- Basics ----- // 
 		// ----- uncorrected jet quantities (no JECs!) ----- // GK
 		auto rawP4 = jet.correctedP4("Uncorrected");
-    	jetRaw_Pt.push_back( rawP4.pt() );
-    	jetRaw_E.push_back( rawP4.energy() );
+		jetRaw_Pt.push_back( rawP4.pt() );
+		jetRaw_E.push_back( rawP4.energy() );
 		
 		// ----- JEC only ----- // 
 		if (isData) { // for data, no JER needed, so save as _Pt and _E
@@ -2668,6 +2732,45 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		jet_DeepCSV_prob_c.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probc") );
 		jet_DeepCSV_prob_bb.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probbb") );
 		jet_DeepCSV_prob_udsg.push_back( jet.bDiscriminator("pfDeepCSVJetTags:probudsg") );
+
+
+		if( !isData_ ) {
+
+			/* jet properties */
+			int idx_temp = jet_Pt.size()-1;
+			map<string, correction::Variable::Type> btag_inputs {
+				{"pt", jet_Pt.at(idx_temp)},                     	// jet transverse momentum
+				{"abseta", fabs(jet_Eta.at(idx_temp))},             // absolute jet pseudorapidity
+				{"flavor", 5},             							// jet flavour
+				{"discriminant", jet_DeepCSV_prob_b.at(idx_temp)}, 	// jet discriminant
+			};
+
+			jet_DeepJet_b_Medium__SF.push_back( getBTagSF( btag_cset_, btag_inputs, "deepJet_comb", "M", "central") ); 
+			jet_DeepJet_b_Medium__up_uncorr.push_back( getBTagSF( btag_cset_, btag_inputs, "deepJet_comb", "M", "up_uncorrelated") ); 
+			jet_DeepJet_b_Medium__down_uncorr.push_back( getBTagSF( btag_cset_, btag_inputs, "deepJet_comb", "M", "down_uncorrelated") ); 
+			jet_DeepJet_b_Medium__up_corr.push_back( getBTagSF( btag_cset_, btag_inputs, "deepJet_comb", "M", "up_correlated") ); 
+			jet_DeepJet_b_Medium__down_corr.push_back( getBTagSF( btag_cset_, btag_inputs, "deepJet_comb", "M", "down_correlated") ); 
+
+			jet_DeepJet_b_Tight__SF.push_back( getBTagSF( btag_cset_, btag_inputs, "deepJet_comb", "T", "central") ); 
+			jet_DeepJet_b_Tight__up_uncorr.push_back( getBTagSF( btag_cset_, btag_inputs, "deepJet_comb", "T", "up_uncorrelated") ); 
+			jet_DeepJet_b_Tight__down_uncorr.push_back( getBTagSF( btag_cset_, btag_inputs, "deepJet_comb", "T", "down_uncorrelated") ); 
+			jet_DeepJet_b_Tight__up_corr.push_back( getBTagSF( btag_cset_, btag_inputs, "deepJet_comb", "T", "up_correlated") ); 
+			jet_DeepJet_b_Tight__down_corr.push_back( getBTagSF( btag_cset_, btag_inputs, "deepJet_comb", "T", "down_correlated") ); 
+
+		} else {
+
+			jet_DeepJet_b_Medium__SF.push_back( -1 );
+			jet_DeepJet_b_Medium__up_uncorr.push_back( -1 );
+			jet_DeepJet_b_Medium__down_uncorr.push_back( -1 );
+			jet_DeepJet_b_Medium__up_corr.push_back( -1 );
+			jet_DeepJet_b_Medium__down_corr.push_back( -1 );
+
+			jet_DeepJet_b_Tight__SF.push_back( -1 );
+			jet_DeepJet_b_Tight__up_uncorr.push_back( -1 );
+			jet_DeepJet_b_Tight__down_uncorr.push_back( -1 );
+			jet_DeepJet_b_Tight__up_corr.push_back( -1 );
+			jet_DeepJet_b_Tight__down_corr.push_back( -1 );
+		}
 
 		// ----- Secondary Vertex Features ----- //
 
@@ -3254,7 +3357,7 @@ bool DisplacedHcalJetNTuplizer::FillHcalRechitBranches(const edm::Event& iEvent,
 		if( recHit->energy() < 0.1 ) continue;
 
 		// Only save hits around a jet
-                bool save_hit = false;
+				bool save_hit = false;
 		for( int ij = 0; ij < n_jet; ij++ ){
 			
 			for( int ijh = 0; ijh < (int)jet_HcalRechitIndices.at(ij).size(); ijh++ ){
@@ -3711,7 +3814,7 @@ bool DisplacedHcalJetNTuplizer::FillPileupBranches(){
 
 	n_BunchXing = puInfo->size();
 	for(const PileupSummaryInfo &pu : *puInfo){
-                BunchXing.push_back( pu.getBunchCrossing() );
+				BunchXing.push_back( pu.getBunchCrossing() );
 		nPU.push_back( pu.getPU_NumInteractions() );
 		nPUmean.push_back( pu.getTrueNumInteractions() );
 	}
@@ -3926,13 +4029,13 @@ bool DisplacedHcalJetNTuplizer::FillGenParticleBranches(){
 		gParticle_ParentId.push_back( prunedV[i]->mother()->pdgId() ); // prunedV[i]->mother() this returns a pointer to mother particle
 		for( unsigned int j=0; j < prunedV.size(); j++ ) {
 		  if (prunedV[j]->pdgId() == prunedV[i]->mother()->pdgId() && prunedV[j]->vx() == prunedV[i]->mother()->vx() && prunedV[j]->vy() == prunedV[i]->mother()->vy() && prunedV[j]->vz() == prunedV[i]->mother()->vz() && prunedV[j]->pt() == prunedV[i]->mother()->pt()) {
-		    gParticle_ParentIndex.push_back(j);
+			gParticle_ParentIndex.push_back(j);
 		  }
 		  else {
-		    gParticle_ParentIndex.push_back( -1 ); // if no mother particle was found to match -- could be the case because not all gen particles are saved in prunedV
+			gParticle_ParentIndex.push_back( -1 ); // if no mother particle was found to match -- could be the case because not all gen particles are saved in prunedV
 		  }
 		}
-		    
+			
 		gParticle_Pt.push_back( prunedV[i]->pt() );
 		gParticle_Px.push_back( prunedV[i]->px() );
 		gParticle_Py.push_back( prunedV[i]->py() );
@@ -4058,6 +4161,22 @@ double DisplacedHcalJetNTuplizer::deltaR(double eta1, double phi1, double eta2, 
 	return sqrt( dphi*dphi + deta*deta);
 };
 
+float DisplacedHcalJetNTuplizer::getBTagSF(const unique_ptr<correction::CorrectionSet> &cset, map<string, correction::Variable::Type> &jet_properties, const string &key, const string &wp, const string &syst ) {
+
+	// Update dynamic inputs
+	jet_properties["systematic"] = syst;
+	jet_properties["working_point"] = wp;
+
+	correction::Correction::Ref sf = cset->at(key);
+
+	vector<correction::Variable::Type> inputs;
+	for (const correction::Variable &input : sf->inputs()) {
+		inputs.push_back(jet_properties.at(input.name()));
+	}
+
+	return sf->evaluate(inputs);
+
+}
 
 
 //define this as a plug-in
