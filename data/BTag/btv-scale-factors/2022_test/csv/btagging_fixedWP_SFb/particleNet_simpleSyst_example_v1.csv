@@ -1,9 +1,0 @@
-wp,type,syst,flav,etaMin,etaMax,ptMin,ptMax,discrMin,discrMax,formula
-L,comb,central,0,0,2.5,20,300,0,1,"1.1"
-L,comb,up,0,0,2.5,20,30,0,1,"1.1+0.1"
-L,comb,down,0,0,2.5,20,30,0,1,"1.1-0.1"
-M,mujets,central,4,0,2.5,100,150,0,1,"1"
-T,light,central,0,0,2.5,20,30,0,1,"1+x/18"
-XT,sys8,up_isr,5,0,2.5,100,150,0,1,"1+0.05x"
-XXT,wc,down_qcdscale,4,0,2.5,80,120,0,1,"1-0.05x"
--,shape,central,5,0,1.2,200,300,0,0.1,"x*x+2"
