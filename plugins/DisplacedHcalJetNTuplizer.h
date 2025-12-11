@@ -17,6 +17,13 @@ Description: Base class for miniAOD analysis with CRAB
 #include <fstream>
 #include <TRandom3.h>
 
+// Stuff for btagging
+#include "correction.h"
+#include <cassert>
+#include <cstdlib>
+#include <filesystem>
+#include <iostream>
+
 using namespace std;
 
 // CMSSW framework includes
@@ -269,7 +276,7 @@ public:
 	double deltaR(double eta1, double phi1, double eta2, double phi2);
 	double GetL1SF(double ptLead, double ptSub, std::string filename);
 	double GetHLTSF(double ptLead, int nTrk, std::string filename);
-
+	float getBTagSF(const unique_ptr<correction::CorrectionSet> &cset, map<string, correction::Variable::Type> &jet_properties, const string &key,  const string &wp, const string &syst );
 
 protected:
         virtual void beginJob() override;
@@ -287,6 +294,7 @@ protected:
 	bool debug;
 	bool isData_;
 	bool isSignal_;
+	string era_;
 
 	// ====================================================================================
 	// EDM Tokens (miniAOD Inputs)
@@ -300,6 +308,10 @@ protected:
 	std::unique_ptr<JetCorrectionUncertainty> jecUnc_;
 
 	const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> theTTBToken_;
+
+	// BTAG
+	unique_ptr<correction::CorrectionSet> btag_cset_;
+
 	edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken_;
 	edm::EDGetTokenT<pat::TriggerObjectStandAloneCollection> triggerObjectsToken_;
 	edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken_;
@@ -497,6 +509,7 @@ protected:
 	// ----- Event Info ----- // 
 
 	bool isData;
+	string era;
 	uint runNumber;
 	uint lumiNumber;
 	ULong64_t eventNumber;
@@ -740,6 +753,17 @@ protected:
     vector<float> jet_DeepCSV_prob_c;
     vector<float> jet_DeepCSV_prob_bb;
     vector<float> jet_DeepCSV_prob_udsg;
+    // BTAG SFs
+    vector<float> jet_DeepJet_b_Medium__SF;
+    vector<float> jet_DeepJet_b_Medium__up_uncorr;
+    vector<float> jet_DeepJet_b_Medium__down_uncorr;
+    vector<float> jet_DeepJet_b_Medium__up_corr;
+    vector<float> jet_DeepJet_b_Medium__down_corr;
+    vector<float> jet_DeepJet_b_Tight__SF;
+    vector<float> jet_DeepJet_b_Tight__up_uncorr;
+    vector<float> jet_DeepJet_b_Tight__down_uncorr;
+    vector<float> jet_DeepJet_b_Tight__up_corr;
+    vector<float> jet_DeepJet_b_Tight__down_corr;
 	// Rechits Association 
 	vector<uint> jet_NTracks;
 	vector<int> jet_NPromptTracks;
