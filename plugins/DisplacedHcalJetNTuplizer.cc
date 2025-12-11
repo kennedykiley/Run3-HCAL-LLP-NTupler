@@ -15,6 +15,7 @@
 #include "fastjet/PseudoJet.hh"
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
 #include "RecoVertex/VertexPrimitives/interface/VertexState.h"
+#include "FWCore/ParameterSet/interface/FileInPath.h"
 
 // 
 // ************************************************************************************
@@ -30,6 +31,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	isSignal_(iConfig.getParameter<bool>( "isSignal" )),
 	rand_(0), // random seed // GK for JER
 	// Trigger
+	theTTBToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
 	triggerBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerBits"))),
 	triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
 	triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
@@ -380,7 +382,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 
 	iEvent.getByToken(genParticlesToken_,genParticles);
 	iEvent.getByToken(puInfoToken_,puInfo);
-	
+
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::loadEvent"<<endl;	
 
 }
@@ -398,7 +400,6 @@ void DisplacedHcalJetNTuplizer::EnableBranches(){
 
 	EnableEventInfoBranches();
 	EnablePVBranches();
-	EnableTriggerBranches();
 	EnableMetBranches();
 	// Standard Objects
 	EnableElectronBranches();
@@ -407,6 +408,7 @@ void DisplacedHcalJetNTuplizer::EnableBranches(){
 	EnablePhotonBranches();
 	EnableJetBranches();
 	// Low-Level Objects
+	EnableTriggerBranches();
 	EnableTrackBranches();
 	EnableSecondaryVerticesBranches();
 	EnablePFCandidateBranches();
@@ -468,6 +470,8 @@ void DisplacedHcalJetNTuplizer::EnableTriggerBranches(){
 	//output_tree->Branch("HLT_Names", &HLT_Names);
 	output_tree->Branch("HLT_Decision", &HLT_Decision);
 	output_tree->Branch("HLT_Prescale", &HLT_Prescale);
+	output_tree->Branch("HLT_SF_L1", &HLT_SF_L1);
+	output_tree->Branch("HLT_SF_Tot", &HLT_SF_Tot);
 
 };
 
@@ -666,6 +670,7 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
     output_tree->Branch( "jet_DeepCSV_prob_bb", &jet_DeepCSV_prob_bb ); 
     output_tree->Branch( "jet_DeepCSV_prob_udsg", &jet_DeepCSV_prob_udsg ); 
 	output_tree->Branch( "jet_NTracks", &jet_NTracks );
+	output_tree->Branch( "jet_NPromptTracks", &jet_NPromptTracks );
 	output_tree->Branch( "jet_TrackIndices", &jet_TrackIndices );
 	output_tree->Branch( "jet_NPFCands", &jet_NPFCands );
 	output_tree->Branch( "jet_PFCandIndices", &jet_PFCandIndices );
@@ -975,7 +980,6 @@ void DisplacedHcalJetNTuplizer::ResetBranches(){
 	// Event Level Info
 	ResetEventInfoBranches();
 	ResetPVBranches();
-	ResetTriggerBranches();
 	ResetMetBranches();
 	// Standard Objects
 	ResetElectronBranches();
@@ -984,6 +988,7 @@ void DisplacedHcalJetNTuplizer::ResetBranches(){
 	ResetPhotonBranches();
 	ResetJetBranches();
 	// Low-Level Objects
+	ResetTriggerBranches();
 	ResetTrackBranches();
 	ResetPFCandidateBranches();
 	ResetSecondaryVerticesBranches();
@@ -1041,6 +1046,8 @@ void DisplacedHcalJetNTuplizer::ResetTriggerBranches(){
 	//HLT_Names.clear();
 	HLT_Decision.clear();
 	HLT_Prescale.clear();
+	HLT_SF_L1.clear();
+	HLT_SF_Tot.clear();
 
 };
 
@@ -1639,7 +1646,6 @@ void DisplacedHcalJetNTuplizer::analyze(const edm::Event& iEvent, const edm::Eve
 	// Event Level Info
 	FillEventInfoBranches( iEvent );
 	FillPVBranches( iEvent );
-	FillTriggerBranches( iEvent );
 	FillMetBranches( iEvent );
 
 	// Standard Objects
@@ -1650,6 +1656,7 @@ void DisplacedHcalJetNTuplizer::analyze(const edm::Event& iEvent, const edm::Eve
 	FillJetBranches( iEvent, iSetup );
 
 	// Low-Level Objects
+	FillTriggerBranches( iEvent );
 	FillTrackBranches( iEvent ); //, iSetup );
 	//FillPFCandidateBranches( iEvent, iSetup );
 	//FillSecondaryVerticesBranches( iEvent, iSetup );
@@ -1792,6 +1799,7 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
                         // if (isData_) HLT_Prescale.push_back( triggerPrescales->getPrescaleForIndex(i) ); // FIX
                         // else HLT_Prescale.push_back( 1 ); // TODO Need to figure out yields
 
+
 			if( triggerBits->accept(i) ) NEvents_HLT->Fill(triggerPathNamesIndices[triggerPathName]); // FIX WEIGHTS
 
 			found_trigger = true;
@@ -1799,11 +1807,42 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
 			break;
 	
 		}
+
+		if( found_trigger ){
+			float pT_0, pT_1;
+			if (jets->size() > 0) {pT_0 = (*jets)[0].pt();}
+			else {pT_0 = -9999;}
+			if (jets->size() > 1) {pT_1 = (*jets)[1].pt();}
+			else {pT_1 = -9999;}
+
+			int nPromptTracksLead = 0;
+			if (!jet_NPromptTracks.empty()) {nPromptTracksLead = jet_NPromptTracks[0];} 
+			else { 
+				if (debug) std::cout << "[Warning] jet_NPromptTracks is empty!" << std::endl;
+				nPromptTracksLead = -1;
+			}
 		
+			
+			if( debug ) cout<<"pT : "<< pT_0 << ", "<< pT_1 <<endl; 
+
+			float SF_L1 = GetL1SF(pT_0,pT_1,"cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/L1_Trigger_SF.txt");
+			float SF_HLT_1 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_PtrkShortSig5.txt");
+			float SF_HLT_2 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_Inclusive.txt");
+			float SF_HLT_3 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_DisplacedTrack.txt");
+			float HLT_SF = SF_L1*SF_HLT_1*SF_HLT_2*SF_HLT_3;
+
+			if (!isData_) {HLT_SF_L1.push_back(SF_L1);}
+			else {HLT_SF_L1.push_back(1.0);}
+			if (!isData_ && HLT_SF < 2.0) {HLT_SF_Tot.push_back(HLT_SF);}
+			else {HLT_SF_Tot.push_back(1.0);}
+		}
+
 		if( !found_trigger ){
 			if( debug ) cout<<"    --> trig not found in triggerBits"<<endl;
 			HLT_Decision.push_back( false );
 			HLT_Prescale.push_back( -2 );
+			HLT_SF_L1.push_back(1.0);
+			HLT_SF_Tot.push_back(1.0);
 		}
 
 	}
@@ -1812,6 +1851,167 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent){
 
 	return true;
 };
+
+double DisplacedHcalJetNTuplizer::GetL1SF(double ptLead, double ptSub, std::string filename) {
+    struct L1Bin {
+        double ptLeadLow, ptLeadHigh;
+        double ptSubLow,  ptSubHigh;
+        double sf, sf_err;
+    };
+
+    static std::vector<L1Bin> l1SFs;
+    if (l1SFs.empty()) {
+        struct Row { double pl, ps, sf, err; };
+        std::vector<Row> rows;
+        std::vector<double> ptLeadVals, ptSubVals;
+
+        edm::FileInPath fip(filename);
+        std::ifstream infile(fip.fullPath().c_str());
+	std::cout << "[INFO] Using file path: " << fip.fullPath() << std::endl;
+        if (!infile.is_open()) {
+            std::cerr << "[GetHLTSF ERROR] Could not open file: " << fip.fullPath() << std::endl;
+            return 1.0;
+        }
+
+        std::string line;
+        while (std::getline(infile, line)) {
+            if (line.empty() || line[0] == '#') continue;
+            std::istringstream iss(line);
+            double pl, ps, sf, err;
+            if (!(iss >> pl >> ps >> sf >> err)) continue;
+            rows.push_back({pl, ps, sf, err});
+            ptLeadVals.push_back(pl);
+            ptSubVals.push_back(ps);
+        }
+        infile.close();
+
+        std::sort(ptLeadVals.begin(), ptLeadVals.end());
+        ptLeadVals.erase(std::unique(ptLeadVals.begin(), ptLeadVals.end()), ptLeadVals.end());
+        std::sort(ptSubVals.begin(), ptSubVals.end());
+        ptSubVals.erase(std::unique(ptSubVals.begin(), ptSubVals.end()), ptSubVals.end());
+
+        for (auto &r : rows) {
+            auto itL = std::find(ptLeadVals.begin(), ptLeadVals.end(), r.pl);
+            auto itS = std::find(ptSubVals.begin(), ptSubVals.end(), r.ps);
+            if (itL == ptLeadVals.end() || itS == ptSubVals.end()) continue;
+
+            double plHigh, psHigh; 
+            if (std::next(itL) != ptLeadVals.end()) {plHigh = *std::next(itL);}
+            else {plHigh = 1e9;}
+            if (std::next(itS) != ptSubVals.end()) {psHigh = *std::next(itS);} 
+            else {psHigh = 1e9;}
+            l1SFs.push_back({r.pl, plHigh, r.ps, psHigh, r.sf, r.err});
+        }
+
+    }
+
+    for (const auto &b : l1SFs) {
+        if (ptLead >= b.ptLeadLow && ptLead < b.ptLeadHigh &&
+            ptSub  >= b.ptSubLow  && ptSub  < b.ptSubHigh) {
+            if (debug) {std::cout << "[L1SF] Loaded: " << b.sf << std::endl;}
+            return b.sf;
+        }
+    }
+
+
+    return 1.0; // fallback
+}
+
+double DisplacedHcalJetNTuplizer::GetHLTSF(double ptLead, int nTrk, std::string filename) {
+    struct Bin1D {
+        double low, high;
+        double sf, err;
+    };
+
+std::ifstream test("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_PtrkShortSig5.txt");
+
+    static std::vector<Bin1D> ptBins;
+    static std::vector<Bin1D> ntrkBins;
+
+    if (ptBins.empty() || ntrkBins.empty()) {
+
+        edm::FileInPath fip(filename);
+        std::ifstream infile(fip.fullPath().c_str());
+	std::cout << "[INFO] Using file path: " << fip.fullPath() << std::endl;
+        if (!infile.is_open()) {
+            std::cerr << "[GetHLTSF ERROR] Could not open file: " << fip.fullPath() << std::endl;
+            return 1.0;
+        }
+
+        std::string line;
+        enum Section { NONE, PT, NTRK };
+        Section sec = NONE;
+
+        std::vector<double> ptVals, ntrkVals;
+        struct Row { double x, sf, err; };
+        std::vector<Row> ptRows, ntrkRows;
+
+        while (std::getline(infile, line)) {
+            if (line.empty() || line[0] == '#') continue;
+
+            if (line.find("[Offline PF jet pT") != std::string::npos) { sec = PT; continue; }
+            if (line.find("[Number of Offline Prompt Tracks") != std::string::npos) { sec = NTRK; continue; }
+
+            std::istringstream iss(line);
+            if (sec == PT) {
+                double pt, sf, err;
+                if (!(iss >> pt >> sf >> err)) continue;
+                ptRows.push_back({pt, sf, err});
+                ptVals.push_back(pt);
+            } else if (sec == NTRK) {
+                double ntrk, sf, err;
+                if (!(iss >> ntrk >> sf >> err)) continue;
+                ntrkRows.push_back({ntrk, sf, err});
+                ntrkVals.push_back(ntrk);
+            }
+        }
+        infile.close();
+
+        // sort + unique
+        std::sort(ptVals.begin(), ptVals.end());
+        ptVals.erase(std::unique(ptVals.begin(), ptVals.end()), ptVals.end());
+        std::sort(ntrkVals.begin(), ntrkVals.end());
+        ntrkVals.erase(std::unique(ntrkVals.begin(), ntrkVals.end()), ntrkVals.end());
+
+        for (auto &r : ptRows) {
+            auto it = std::find(ptVals.begin(), ptVals.end(), r.x);
+            double high;
+	    if (std::next(it) != ptVals.end()) {high = *std::next(it);}
+            else {high = 1e9;}
+            ptBins.push_back({r.x, high, r.sf, r.err});
+        }
+        for (auto &r : ntrkRows) {
+            auto it = std::find(ntrkVals.begin(), ntrkVals.end(), r.x);
+            double high; 
+	    if (std::next(it) != ntrkVals.end()) { high = *std::next(it);} 
+            else {high = 1e9;}
+            ntrkBins.push_back({r.x, high, r.sf, r.err});
+        }
+
+        if (debug) {std::cout << "[GetHLTSF] Loaded " << ptBins.size() << " pt bins and "
+                  << ntrkBins.size() << " ntrk bins." << std::endl;}
+    }
+
+    double sf_pt = 1.0;
+    for (const auto &b : ptBins) {
+        if (ptLead >= b.low && ptLead < b.high) {
+            sf_pt = b.sf;
+            break;
+        }
+    }
+
+    double sf_ntrk = 1.0;
+    for (const auto &b : ntrkBins) {
+        if (nTrk >= b.low && nTrk < b.high) {
+            sf_ntrk = b.sf;
+            break;
+        }
+    }
+    if (debug) {std::cout << "[GetHLTSF] Loaded: " << sf_pt << " and " << sf_ntrk << std::endl;}
+
+
+    return sf_pt * sf_ntrk;
+}
 
 // ------------------------------------------------------------------------------------
 bool DisplacedHcalJetNTuplizer::FillMetBranches(const edm::Event& iEvent){
@@ -2321,6 +2521,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 	//  const CaloSubdetectorGeometry *hbGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
 	//  const CaloSubdetectorGeometry *heGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
 	// const CaloSubdetectorGeometry *hoGeometry = geoHandle->getSubdetectorGeometry(DetId::Hcal, HcalOuter); 
+	const auto& theB = &iSetup.getData(theTTBToken_);
 
 	// ********************************************************
 	// AK4 Jets
@@ -2553,6 +2754,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		if( debug ) cout<<" ------ 5"<<endl;  
 
 		vector<uint> jet_TrackIndices_temp; 
+		int nPtrk_1000=0;
 
 		for( uint it = 0; it < generalTracks->size(); it ++){
 			reco::Track generalTrack = generalTracks->at(it);
@@ -2560,13 +2762,19 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 			// DR
 			if( deltaR( jet.eta(), jet.phi(), generalTrack.eta(), generalTrack.phi()) > 0.5 ) continue;
 			// Energy 
-			if( generalTrack.pt() < 1 ) continue;
+			if( generalTrack.pt() < 1.0 ) continue;
 
 			jet_TrackIndices_temp.push_back( it );
+
+			reco::TransientTrack t_trk = (*theB).build(generalTrack);
+			Measurement1D ip2d = IPTools::absoluteTransverseImpactParameter(t_trk, *PV_global).second;
+			if ( fabs(ip2d.value())<0.1 ) nPtrk_1000+=1;
+	
 
 		}
 		jet_NTracks.push_back( jet_TrackIndices_temp.size() );
 		jet_TrackIndices.push_back( jet_TrackIndices_temp );
+		jet_NPromptTracks.push_back( nPtrk_1000 );
 
 		// ----- Find Ecal Rechits Inside Jet ----- //
 
