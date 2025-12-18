@@ -708,6 +708,9 @@ protected:
 	vector<float> jet_PtAllPVTracks;  
 	vector<int>   jet_NVertexTracks;
 	vector<int>   jet_NSelectedTracks; 
+	vector<float> jet_PileupE;
+	vector<int>   jet_PileupId;
+	vector<int>   jet_PileupIdFlag;
 	vector<int>   jet_NSV;
 	vector<int>   jet_NSVCand;
 	vector<float> jet_SV_x;
