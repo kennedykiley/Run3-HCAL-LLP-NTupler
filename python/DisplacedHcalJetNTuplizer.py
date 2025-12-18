@@ -450,7 +450,7 @@ updateJetCollection(
 )
 # now we have a new collection, selectedUpdatedPatJetsUpdatedJEC = corrected jets. As before, selectedPatJets = still the uncorrected PAT jets.
 from PhysicsTools.PatAlgos.producersLayer1.jetProducer_cfi import patJets
-# GK PUPPI 
+# GK PUPPI
 from PhysicsTools.PatAlgos.JetCorrFactorsProducer_cfi import JetCorrFactorsProducer
 process.patJetCorrFactorsPuppi = JetCorrFactorsProducer.clone(
     src = cms.InputTag("ak4PFJetsPuppi"),  # input RECO jets
@@ -756,7 +756,7 @@ process.selectedPatCandidatesTask = cms.Task(
  )
 process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 
-# GK PUPPI 
+# GK PUPPI
 # --- Puppi PAT task --- #
 process.selectedPatPuppiTask = cms.Task(
     process.patJetCorrFactorsPuppi, # (unclear if needed)
@@ -782,17 +782,6 @@ process.patTrigger.packTriggerPrescales = cms.bool(False) #True)
 
 process.load('PhysicsTools.PatAlgos.slimming.selectedPatTrigger_cfi')
 process.load('PhysicsTools.PatAlgos.slimming.slimmedPatTrigger_cfi')
-
-# PU JetID # was giving errors on PileupJetIdProducer:pileupJetId, but jet_PassIDLoose, jet_PassIDTight are not used downstrream...
-process.load("RecoJets.JetProducers.PileupJetID_cfi")
-# process.pileupJetId.jets = cms.InputTag("ak4PFJetsCHS") # Point pileupJetId to the initial jets 
-process.jetPUidTask = cms.Task(
-    process.pileupJetId,
-    process.pileupJetIdEvaluator
-)
-# Use PAT jets 
-process.patJets.userData.userFloats.src = [ cms.InputTag("pileupJetId:fullDiscriminant"), ]
-process.patJets.userData.userInts.src = [ cms.InputTag("pileupJetId:fullId"), ]
 
 process.patTask = cms.Task(
     process.patCandidatesTask,
@@ -825,6 +814,13 @@ process.patTask = cms.Task(
 # process.patTaus.genJetMatch      = ''
 # process.selectedPatTaus.cut = cms.string("pt > 18. && tauID('decayModeFindingNewDMs')> 0.5")
 # process.selectedPatJets.cut = cms.string("pt > 10")
+
+# PU JetID 
+process.load("RecoJets.JetProducers.PileupJetID_cfi")
+process.patTask.add(process.pileUpJetIDTask)
+process.pileupJetId.jets = cms.InputTag("ak4PFJetsCHS") # Point pileupJetId to the initial jets 
+process.patJets.userData.userFloats.src = [ cms.InputTag("pileupJetId:fullDiscriminant"), ]
+process.patJets.userData.userInts.src = [ cms.InputTag("pileupJetId:fullId"), ]
 
 #from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 #updateJetCollection(
@@ -928,10 +924,7 @@ else:
 
 #Add PAT tasks for jet Toolbox to execution schedule
 #if True:
-# Ordering is important here, patTask should be run before mainPath
-process.p.associate(process.jetPUidTask)
-process.p.associate(process.patTask)
-
+process.schedule.associate(process.patTask)
 from PhysicsTools.PatAlgos.tools.helpers import associatePatAlgosToolsTask
 associatePatAlgosToolsTask(process)
 
