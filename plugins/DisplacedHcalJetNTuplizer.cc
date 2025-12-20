@@ -64,7 +64,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	photonsToken_(consumes<reco::PhotonCollection>(iConfig.getParameter<edm::InputTag>("photons"))),
 	jetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4"))),
 	jetsCorrToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4_corrected"))), // GK, adding JECs
-	jetsPuppiCorrToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4Puppi"))), // GK, adding JECs for PUPPI jets 
+	jetsPuppiCorrToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK4Puppi"))), // GK, adding JECs for PUPPI jets
 	calojetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK4"))),
 	LRJetsToken_(consumes<pat::JetCollection>(iConfig.getParameter<edm::InputTag>("pfjetsAK8"))),
 	caloLRJetsToken_(consumes<reco::CaloJetCollection>(iConfig.getParameter<edm::InputTag>("calojetsAK8"))),
@@ -386,7 +386,7 @@ void DisplacedHcalJetNTuplizer::loadEvent(const edm::Event& iEvent){
 	iEvent.getByToken(rhoFastjetAllToken_,rhoFastjetAll);
 
 	iEvent.getByToken(metToken_, met);
-	iEvent.getByToken(metPuppiToken_, metPuppi);
+	iEvent.getByToken(metPuppiToken_, metPuppi); 
 
 	// Physics objects
 	iEvent.getByToken(electronsToken_, electrons);
@@ -684,6 +684,9 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "jet_PtAllPVTracks", &jet_PtAllPVTracks );
 	output_tree->Branch( "jet_NVertexTracks", &jet_NVertexTracks );
 	output_tree->Branch( "jet_NSelectedTracks", &jet_NSelectedTracks );
+	output_tree->Branch( "jet_PileupE", &jet_PileupE );
+	output_tree->Branch( "jet_PileupId", &jet_PileupId );
+	output_tree->Branch( "jet_PileupIdFlag", &jet_PileupIdFlag );
 	output_tree->Branch( "jet_NSV", &jet_NSV );
 	output_tree->Branch( "jet_NSVCand", &jet_NSVCand );
 	output_tree->Branch( "jet_SV_x", &jet_SV_x );
@@ -1272,6 +1275,9 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jet_PtAllPVTracks.clear();
 	jet_NVertexTracks.clear();
 	jet_NSelectedTracks.clear();
+	jet_PileupE.clear();
+	jet_PileupId.clear();
+	jet_PileupIdFlag.clear();
 	jet_NSV.clear();
 	jet_NSVCand.clear();
 	jet_SV_x.clear();
@@ -2722,9 +2728,9 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		jet_NVertexTracks.push_back( -1. ); // FIX
 		jet_NSelectedTracks.push_back( -1. ); // FIX
 
-		//jet_PileupE.push_back( jet.pileup() );
-		//jet_PileupId.push_back( jet.userFloat("pileupJetId:fullDiscriminant") );
-		//jet_PileupIdFlag.push_back( jet.userInt("pileupJetId:fullId") ); //A bit map for loose, medium, and tight working points
+		jet_PileupE.push_back( jet.pileup() );
+		jet_PileupId.push_back( jet.userFloat("pileupJetId:fullDiscriminant") );
+		jet_PileupIdFlag.push_back( jet.userInt("pileupJetId:fullId") ); //A bit map for loose, medium, and tight working points
 
 		// ----- BTagging  ----- //        
 		auto jet_pair_discrim = jet.getPairDiscri();

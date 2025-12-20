@@ -4,12 +4,19 @@ Long-Lived Particle Ntupler based on AOD, adapted for use with HBHE rechits for 
 # Setup Ntupler Code
 ```
 cmsrel <CMSSW version> # Use CMSSW_13_2_0 for NTuples v4
+cd CMSSW_13_2_0/src
+cmsenv
+git cms-addpkg RecoJets/JetProducers
+# edit a single line in RecoJets/JetProducers/plugins/PileupJetIdProducer.cc following the PR: [https://github.com/cms-sw/cmssw/pull/45271](https://github.com/cms-sw/cmssw/pull/45271)
+scram b -j 8
+
 mkdir cms_lpc_llp
 cd cms_lpc_llp
 git clone git@github.com:kennedykiley/Run3-HCAL-LLP-NTupler.git
 cd Run3-HCAL-LLP-NTupler
 git checkout -b <your-branch>
 ```
+The edit from the CMSSW PR is to backport a fix for the pileup jet ID that was only implemented in CMSSW_14_0_0. 
 
 ## Get JEC and JER files
 [JER twiki](https://cms-jerc.web.cern.ch/Recommendations/#jet-energy-resolution): Get textfiles from the JRDatabase from github and put them in `Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/`. 
