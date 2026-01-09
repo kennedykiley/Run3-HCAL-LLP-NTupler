@@ -2,12 +2,14 @@
 Long-Lived Particle Ntupler based on AOD, adapted for use with HBHE rechits for Run 3 LLP analysis.
 
 # Setup Ntupler Code
+This sets up the HCAL LLP ntupler for data and MC, and incorporates an edit for the pileup jet ID producer in `RecoJets/JetProducers/plugins/PileupJetIdProducer.cc` following [this PR](https://github.com/cms-sw/cmssw/pull/45271). The edit from the CMSSW PR is to backport a fix for the pileup jet ID that was only implemented in CMSSW_14_0_0, while we run in CMSSW_13_2_0 for 2022 and 2023 data. 
+
 ```
 cmsrel <CMSSW version> # Use CMSSW_13_2_0 for NTuples v4
 cd CMSSW_13_2_0/src
 cmsenv
 git cms-addpkg RecoJets/JetProducers
-# edit a single line in RecoJets/JetProducers/plugins/PileupJetIdProducer.cc following the PR: [https://github.com/cms-sw/cmssw/pull/45271](https://github.com/cms-sw/cmssw/pull/45271)
+mv PileupJetIdProducer.cc RecoJets/JetProducers/plugins/
 scram b -j 8
 
 mkdir cms_lpc_llp
@@ -16,7 +18,6 @@ git clone git@github.com:kennedykiley/Run3-HCAL-LLP-NTupler.git
 cd Run3-HCAL-LLP-NTupler
 git checkout -b <your-branch>
 ```
-The edit from the CMSSW PR is to backport a fix for the pileup jet ID that was only implemented in CMSSW_14_0_0. 
 
 ## Get JEC and JER files
 [JER twiki](https://cms-jerc.web.cern.ch/Recommendations/#jet-energy-resolution): Get textfiles from the JRDatabase from github and put them in `Run3-HCAL-LLP-NTupler/data/JEC_JER/JRDatabase/textFiles/`. 
@@ -88,7 +89,7 @@ Check event content with
 edmDumpEventContent root://cmsxrootd.fnal.gov/</store/path/to/file.root> > EDM_content.txt
 ```
 
-### CRAB Wrapper 1 for Automating Submissions
+### CRAB Wrapper 1 for Automating Submissions (outdated as of Jan 2026)
 First check that the dataset is on disk:
 ```
 python3 checkDatasetAvailability.py <txt file of datasets to check>
@@ -102,13 +103,14 @@ python3 CrabSubmitWrapper.py
 This handles changing the variables (isData and isSignal) in DisplacedHcalJetNTuplizer.py, as well as doing one crab submission per dataset listed. 
 
 ### CRAB Wrapper 2 for Automating Submissions
+Use this for the submission of v5 ntuples! 
 
-From src/
+From `src/`
 ```
 cmsenv
 voms-proxy-init -voms cms
 source /cvmfs/cms.cern.ch/crab3/crab.sh
-# scram b -j 10 # if needed
+scram b -j 10 # if needed
 cd cms_lpc_llp/Run3-HCAL-LLP-NTupler/python
 ```
 Edit `makeBulkCrabSubmission.py`:
