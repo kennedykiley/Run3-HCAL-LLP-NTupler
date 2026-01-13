@@ -15,7 +15,9 @@ cd cms_lpc_llp
 git clone git@github.com:kennedykiley/Run3-HCAL-LLP-NTupler.git
 cd Run3-HCAL-LLP-NTupler
 mv PileupJetIdProducer.cc ../../RecoJets/JetProducers/plugins/
+cd ../../
 scram b -j 8
+cd cms_lpc_llp/Run3-HCAL-LLP-NTupler
 git checkout -b <your-branch>
 ```
 
