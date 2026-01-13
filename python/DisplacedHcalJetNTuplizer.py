@@ -295,9 +295,11 @@ global_tags_MC = {
 # 140X_dataRun3_v17
 
 if options.isData: 
-    if "2022" in era_name: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4', '') 
-    else:                  process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '') 
-else:                      process.GlobalTag = GlobalTag(process.GlobalTag, global_tags_MC[era_name], '') 
+    if "2022" in era_name: 
+        if "G" not in era_name: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4', '') 
+        else:                   process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10', '')
+    else:                       process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '') 
+else:                           process.GlobalTag = GlobalTag(process.GlobalTag, global_tags_MC[era_name], '') 
 
 # ----- HLT Filter ----- #
 
