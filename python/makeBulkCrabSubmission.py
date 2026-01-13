@@ -28,7 +28,7 @@ datasets["Data_DisplacedJet_Run2022"] = [
 ]
 
 datasets["Data_EXOLLPJetHCAL_Run2023"] = [
-    "/DisplacedJet/Run2023B-EXOLLPJetHCAL-PromptReco-v1/AOD",
+    #"/DisplacedJet/Run2023B-EXOLLPJetHCAL-PromptReco-v1/AOD",
     "/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v1/AOD",
     "/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v2/AOD",
     "/DisplacedJet/Run2023C-EXOLLPJetHCAL-PromptReco-v3/AOD",
