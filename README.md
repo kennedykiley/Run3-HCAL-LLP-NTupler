@@ -9,13 +9,13 @@ cmsrel <CMSSW version> # Use CMSSW_13_2_0 for NTuples v4
 cd CMSSW_13_2_0/src
 cmsenv
 git cms-addpkg RecoJets/JetProducers
-mv PileupJetIdProducer.cc RecoJets/JetProducers/plugins/
-scram b -j 8
 
 mkdir cms_lpc_llp
 cd cms_lpc_llp
 git clone git@github.com:kennedykiley/Run3-HCAL-LLP-NTupler.git
 cd Run3-HCAL-LLP-NTupler
+mv PileupJetIdProducer.cc ../../RecoJets/JetProducers/plugins/
+scram b -j 8
 git checkout -b <your-branch>
 ```
 
