@@ -288,7 +288,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 
 global_tags_MC = {
     "2022preEE":    "124X_mcRun3_2022_realistic_v12",
-    "2022postEE":   "124X_mcRun3_2022_realistic_postEE_v1",
+    "2022postEE":   "124X_mcRun3_2022_realistic_postEE_v3",
     "2023preBPix":  "130X_mcRun3_2023_realistic_v14",
     "2023postBPix": "130X_mcRun3_2023_realistic_v14",
 }
@@ -300,6 +300,7 @@ if options.isData:
         else:                   process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10', '')
     else:                       process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '') 
 else:                           process.GlobalTag = GlobalTag(process.GlobalTag, global_tags_MC[era_name], '') 
+
 
 # ----- HLT Filter ----- #
 
