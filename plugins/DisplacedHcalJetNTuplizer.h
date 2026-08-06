@@ -277,7 +277,7 @@ public:
 	double deltaPhi(double phi1, double phi2);
 	double deltaR(double eta1, double phi1, double eta2, double phi2);
 	double GetL1SF(double ptLead, double ptSub, std::string filename);
-	double GetHLTSF(double ptLead, int nTrk, std::string filename);
+	double GetHLTSF(double HT, double ptLead, int nTrk, int nDTrk, std::string filename);
 	float getBTagSF(const unique_ptr<correction::CorrectionSet> &cset, map<string, correction::Variable::Type> &jet_properties, const string &key,  const string &wp, const string &syst );
 
 protected:
@@ -780,6 +780,7 @@ protected:
 	// Rechits Association 
 	vector<uint> jet_NTracks;
 	vector<int> jet_NPromptTracks;
+	vector<int> jet_NDisplacedTracks;
 	vector<vector<uint>> jet_TrackIndices;
 	vector<uint> jet_NPFCands;
 	vector<vector<uint>> jet_PFCandIndices;

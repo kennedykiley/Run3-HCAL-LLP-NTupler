@@ -75,6 +75,7 @@ config = config()
 
 # General
 config.General.workArea        = '/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CMSSW_14_0_0/src/cms_lpc_llp/Run3-HCAL-LLP-NTupler/python/../../../../../crab_signalMC_20240905' # workArea wrapper
+#config.General.workArea        = '/afs/cern.ch/work/f/fsimpson/2022_LLP_analysis/' # workArea wrapper
 config.General.instance        = 'prod'
 config.General.requestName     = 'HToSSTo4B_MH350_MS80_CTau500_USER_submission7_20240905_204933_version3' # requestName wrapper
 config.General.transferOutputs = True

@@ -465,7 +465,7 @@ void DisplacedHcalJetNTuplizer::EnableBranches(){
 	EnableEcalRechitBranches();
 	EnableHcalRechitBranches();
 	// MC
-	//EnablePileupBranches();
+	EnablePileupBranches();
 	//EnableMCBranches();
 	EnableGenParticleBranches();
 
@@ -738,6 +738,7 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 
 	output_tree->Branch( "jet_NTracks", &jet_NTracks );
 	output_tree->Branch( "jet_NPromptTracks", &jet_NPromptTracks );
+	output_tree->Branch( "jet_NDisplacedTracks", &jet_NDisplacedTracks );
 	output_tree->Branch( "jet_TrackIndices", &jet_TrackIndices );
 	output_tree->Branch( "jet_NPFCands", &jet_NPFCands );
 	output_tree->Branch( "jet_PFCandIndices", &jet_PFCandIndices );
@@ -953,8 +954,8 @@ void DisplacedHcalJetNTuplizer::EnableHcalRechitBranches(){
 // ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::EnablePileupBranches(){
 
-		output_tree->Branch( "n_BunchXing", &n_BunchXing );
-		output_tree->Branch( "BunchXing", &BunchXing );
+	output_tree->Branch( "n_BunchXing", &n_BunchXing );
+	output_tree->Branch( "BunchXing", &BunchXing );
 	output_tree->Branch( "nPU", &nPU );
 	output_tree->Branch( "nPUmean", &nPUmean );
 
@@ -1532,8 +1533,8 @@ void DisplacedHcalJetNTuplizer::ResetHcalRechitBranches(){
 // ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::ResetPileupBranches(){
 
-		n_BunchXing = 0;
-		BunchXing.clear();
+	n_BunchXing = 0;
+	BunchXing.clear();
 	nPU.clear();
 	nPUmean.clear();
 
@@ -1750,7 +1751,7 @@ void DisplacedHcalJetNTuplizer::analyze(const edm::Event& iEvent, const edm::Eve
 
 	// MC
 	if( !isData ){
-		//FillPileupBranches();
+		FillPileupBranches();
 		//FillMCBranches( iEvent, iSetup );
 		FillGenParticleBranches();
 	}
@@ -1899,26 +1900,43 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent, co
 			if (jets->size() > 1) {pT_1 = (*jets)[1].pt();}
 			else {pT_1 = -9999;}
 
+			float HT = 0;
+			for (const auto& jet : *jets) {
+				HT += jet.pt();
+			}
+
 			int nPromptTracksLead = 0;
+			int nDisplacedTracksLead = 0;
 			if (!jet_NPromptTracks.empty()) {nPromptTracksLead = jet_NPromptTracks[0];} 
 			else { 
 				if (debug) std::cout << "[Warning] jet_NPromptTracks is empty!" << std::endl;
 				nPromptTracksLead = -1;
 			}
 		
-			
+			if (!jet_NDisplacedTracks.empty()) {nDisplacedTracksLead = jet_NDisplacedTracks[0];} 
+			else { 
+				if (debug) std::cout << "[Warning] jet_NDisplacedTracks is empty!" << std::endl;
+				nDisplacedTracksLead = -1;
+			}
+				
 			if( debug ) cout<<"pT : "<< pT_0 << ", "<< pT_1 <<endl; 
 
-			float SF_L1 = GetL1SF(pT_0,pT_1,"cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/L1_Trigger_SF.txt");
-			float SF_HLT_1 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_PtrkShortSig5.txt");
-			float SF_HLT_2 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_Inclusive.txt");
-			float SF_HLT_3 = GetHLTSF(pT_0, nPromptTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_DisplacedTrack.txt");
+			float SF_L1 = 1.0;
+			if (pT_0 >= 60 && pT_0 < 100) SF_L1 = 1.1691;
+			else if (pT_0 >= 100) SF_L1 = 1.0077;
+			float SF_HLT_1 = GetHLTSF(HT, pT_0, nPromptTracksLead, nDisplacedTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_PtrkShortSig5.txt");
+			float SF_HLT_2 = GetHLTSF(HT, pT_0, nPromptTracksLead, nDisplacedTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_Inclusive.txt");
+			float SF_HLT_3 = GetHLTSF(HT, pT_0, nPromptTracksLead, nDisplacedTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_DisplacedTrack.txt");
 			float HLT_SF = SF_L1*SF_HLT_1*SF_HLT_2*SF_HLT_3;
 
 			if (!isData_) {HLT_SF_L1.push_back(SF_L1);}
 			else {HLT_SF_L1.push_back(1.0);}
 			if (!isData_ && HLT_SF < 2.0) {HLT_SF_Tot.push_back(HLT_SF);}
 			else {HLT_SF_Tot.push_back(1.0);}
+
+			if( debug ) cout<<"--> HLTSF_1 "<< SF_HLT_1 <<"--> HLTSF_2 "<< SF_HLT_2 <<"--> HLTSF_3 "<< SF_HLT_3 <<"--> HLTSF "<< HLT_SF << endl;
+			
+
 		}
 
 		if( !found_trigger ){
@@ -1954,108 +1972,46 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent, co
 	return true;
 };
 
-double DisplacedHcalJetNTuplizer::GetL1SF(double ptLead, double ptSub, std::string filename) {
-    struct L1Bin {
-        double ptLeadLow, ptLeadHigh;
-        double ptSubLow,  ptSubHigh;
-        double sf, sf_err;
-    };
+double DisplacedHcalJetNTuplizer::GetHLTSF(double HT, double ptLead, int nTrk, int nDTrk, std::string filename) {
+    struct Bin1D { double low, high; double sf, err; };
+    struct BinSet { std::vector<Bin1D> ht, pt, ntrk, nDtrk; };
 
-    static std::vector<L1Bin> l1SFs;
-    if (l1SFs.empty()) {
-        struct Row { double pl, ps, sf, err; };
-        std::vector<Row> rows;
-        std::vector<double> ptLeadVals, ptSubVals;
+    static std::map<std::string, BinSet> cache;
 
+    auto it = cache.find(filename);
+    if (it == cache.end()) {
+        BinSet bins;
         edm::FileInPath fip(filename);
         std::ifstream infile(fip.fullPath().c_str());
-	std::cout << "[INFO] Using file path: " << fip.fullPath() << std::endl;
+        std::cout << "[INFO] Using file path: " << fip.fullPath() << std::endl;
         if (!infile.is_open()) {
             std::cerr << "[GetHLTSF ERROR] Could not open file: " << fip.fullPath() << std::endl;
             return 1.0;
         }
 
         std::string line;
-        while (std::getline(infile, line)) {
-            if (line.empty() || line[0] == '#') continue;
-            std::istringstream iss(line);
-            double pl, ps, sf, err;
-            if (!(iss >> pl >> ps >> sf >> err)) continue;
-            rows.push_back({pl, ps, sf, err});
-            ptLeadVals.push_back(pl);
-            ptSubVals.push_back(ps);
-        }
-        infile.close();
-
-        std::sort(ptLeadVals.begin(), ptLeadVals.end());
-        ptLeadVals.erase(std::unique(ptLeadVals.begin(), ptLeadVals.end()), ptLeadVals.end());
-        std::sort(ptSubVals.begin(), ptSubVals.end());
-        ptSubVals.erase(std::unique(ptSubVals.begin(), ptSubVals.end()), ptSubVals.end());
-
-        for (auto &r : rows) {
-            auto itL = std::find(ptLeadVals.begin(), ptLeadVals.end(), r.pl);
-            auto itS = std::find(ptSubVals.begin(), ptSubVals.end(), r.ps);
-            if (itL == ptLeadVals.end() || itS == ptSubVals.end()) continue;
-
-            double plHigh, psHigh; 
-            if (std::next(itL) != ptLeadVals.end()) {plHigh = *std::next(itL);}
-            else {plHigh = 1e9;}
-            if (std::next(itS) != ptSubVals.end()) {psHigh = *std::next(itS);} 
-            else {psHigh = 1e9;}
-            l1SFs.push_back({r.pl, plHigh, r.ps, psHigh, r.sf, r.err});
-        }
-
-    }
-
-    for (const auto &b : l1SFs) {
-        if (ptLead >= b.ptLeadLow && ptLead < b.ptLeadHigh &&
-            ptSub  >= b.ptSubLow  && ptSub  < b.ptSubHigh) {
-            if (debug) {std::cout << "[L1SF] Loaded: " << b.sf << std::endl;}
-            return b.sf;
-        }
-    }
-
-
-    return 1.0; // fallback
-}
-
-double DisplacedHcalJetNTuplizer::GetHLTSF(double ptLead, int nTrk, std::string filename) {
-    struct Bin1D {
-        double low, high;
-        double sf, err;
-    };
-
-std::ifstream test("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_PtrkShortSig5.txt");
-
-    static std::vector<Bin1D> ptBins;
-    static std::vector<Bin1D> ntrkBins;
-
-    if (ptBins.empty() || ntrkBins.empty()) {
-
-        edm::FileInPath fip(filename);
-        std::ifstream infile(fip.fullPath().c_str());
-	std::cout << "[INFO] Using file path: " << fip.fullPath() << std::endl;
-        if (!infile.is_open()) {
-            std::cerr << "[GetHLTSF ERROR] Could not open file: " << fip.fullPath() << std::endl;
-            return 1.0;
-        }
-
-        std::string line;
-        enum Section { NONE, PT, NTRK };
+        enum Section { NONE, HT_SEC, PT, NTRK, NDTRK };
         Section sec = NONE;
 
-        std::vector<double> ptVals, ntrkVals;
         struct Row { double x, sf, err; };
-        std::vector<Row> ptRows, ntrkRows;
+        std::vector<double> htVals, ptVals, ntrkVals, nDtrkVals;
+        std::vector<Row> htRows, ptRows, ntrkRows, nDtrkRows;
 
         while (std::getline(infile, line)) {
             if (line.empty() || line[0] == '#') continue;
 
+            if (line.find("[Event HT") != std::string::npos) { sec = HT_SEC; continue; }
             if (line.find("[Offline PF jet pT") != std::string::npos) { sec = PT; continue; }
             if (line.find("[Number of Offline Prompt Tracks") != std::string::npos) { sec = NTRK; continue; }
+            if (line.find("[Number of Offline Displaced Tracks") != std::string::npos) { sec = NDTRK; continue; }
 
             std::istringstream iss(line);
-            if (sec == PT) {
+            if (sec == HT_SEC) {
+                double ht, sf, err;
+                if (!(iss >> ht >> sf >> err)) continue;
+                htRows.push_back({ht, sf, err});
+                htVals.push_back(ht);
+            } else if (sec == PT) {
                 double pt, sf, err;
                 if (!(iss >> pt >> sf >> err)) continue;
                 ptRows.push_back({pt, sf, err});
@@ -2065,54 +2021,72 @@ std::ifstream test("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_
                 if (!(iss >> ntrk >> sf >> err)) continue;
                 ntrkRows.push_back({ntrk, sf, err});
                 ntrkVals.push_back(ntrk);
+            } else if (sec == NDTRK) {
+                double nDtrk, sf, err;
+                if (!(iss >> nDtrk >> sf >> err)) continue;
+                nDtrkRows.push_back({nDtrk, sf, err});
+                nDtrkVals.push_back(nDtrk);
             }
         }
         infile.close();
 
-        // sort + unique
-        std::sort(ptVals.begin(), ptVals.end());
-        ptVals.erase(std::unique(ptVals.begin(), ptVals.end()), ptVals.end());
-        std::sort(ntrkVals.begin(), ntrkVals.end());
-        ntrkVals.erase(std::unique(ntrkVals.begin(), ntrkVals.end()), ntrkVals.end());
+        // sort + unique per variable (protects bin-edge lookup below from out-of-order/duplicate rows)
+        auto sortUnique = [](std::vector<double> &v) {
+            std::sort(v.begin(), v.end());
+            v.erase(std::unique(v.begin(), v.end()), v.end());
+        };
+        sortUnique(htVals);
+        sortUnique(ptVals);
+        sortUnique(ntrkVals);
+        sortUnique(nDtrkVals);
 
-        for (auto &r : ptRows) {
-            auto it = std::find(ptVals.begin(), ptVals.end(), r.x);
-            double high;
-	    if (std::next(it) != ptVals.end()) {high = *std::next(it);}
-            else {high = 1e9;}
-            ptBins.push_back({r.x, high, r.sf, r.err});
-        }
-        for (auto &r : ntrkRows) {
-            auto it = std::find(ntrkVals.begin(), ntrkVals.end(), r.x);
-            double high; 
-	    if (std::next(it) != ntrkVals.end()) { high = *std::next(it);} 
-            else {high = 1e9;}
-            ntrkBins.push_back({r.x, high, r.sf, r.err});
+        auto buildBins = [](const std::vector<Row> &rows, const std::vector<double> &vals, std::vector<Bin1D> &out) {
+            for (const auto &r : rows) {
+                auto vit = std::find(vals.begin(), vals.end(), r.x);
+                double high = (vit != vals.end() && std::next(vit) != vals.end()) ? *std::next(vit) : 1e9;
+                out.push_back({r.x, high, r.sf, r.err});
+            }
+        };
+        buildBins(htRows, htVals, bins.ht);
+        buildBins(ptRows, ptVals, bins.pt);
+        buildBins(ntrkRows, ntrkVals, bins.ntrk);
+        buildBins(nDtrkRows, nDtrkVals, bins.nDtrk);
+
+        if (debug) {
+            std::cout << "[GetHLTSF] " << filename << ": "
+                      << bins.ht.size() << " HT bins, "
+                      << bins.pt.size() << " pt bins, "
+                      << bins.ntrk.size() << " ntrk bins, "
+                      << bins.nDtrk.size() << " nDtrk bins" << std::endl;
         }
 
-        if (debug) {std::cout << "[GetHLTSF] Loaded " << ptBins.size() << " pt bins and "
-                  << ntrkBins.size() << " ntrk bins." << std::endl;}
+        it = cache.emplace(filename, std::move(bins)).first;
     }
 
-    double sf_pt = 1.0;
-    for (const auto &b : ptBins) {
-        if (ptLead >= b.low && ptLead < b.high) {
-            sf_pt = b.sf;
-            break;
+    const auto &bins = it->second;
+
+    auto lookup = [](double x, const std::vector<Bin1D> &binVec) {
+        double sf = 1.0;
+        for (const auto &b : binVec) {
+            if (x >= b.low && x < b.high) { sf = b.sf; break; }
         }
+        return sf;
+    };
+
+    double sf_ht    = lookup(HT, bins.ht);
+    double sf_pt    = lookup(ptLead, bins.pt);
+    double sf_ntrk  = lookup(nTrk, bins.ntrk);
+    double sf_nDtrk = lookup(nDTrk, bins.nDtrk);   // stays 1.0 for files without a displaced-track section
+
+    if (debug) {
+        std::cout << "[GetHLTSF] file=" << filename
+                   << " sf_ht=" << sf_ht
+                   << " sf_pt=" << sf_pt
+                   << " sf_ntrk=" << sf_ntrk
+                   << " sf_nDtrk=" << sf_nDtrk << std::endl;
     }
 
-    double sf_ntrk = 1.0;
-    for (const auto &b : ntrkBins) {
-        if (nTrk >= b.low && nTrk < b.high) {
-            sf_ntrk = b.sf;
-            break;
-        }
-    }
-    if (debug) {std::cout << "[GetHLTSF] Loaded: " << sf_pt << " and " << sf_ntrk << std::endl;}
-
-
-    return sf_pt * sf_ntrk;
+    return sf_ht * sf_pt * sf_ntrk * sf_nDtrk;
 }
 
 // ------------------------------------------------------------------------------------
@@ -2896,6 +2870,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 
 		vector<uint> jet_TrackIndices_temp; 
 		int nPtrk_1000=0;
+		int nDtrk_500=0;
 
 		for( uint it = 0; it < generalTracks->size(); it ++){
 			reco::Track generalTrack = generalTracks->at(it);
@@ -2910,12 +2885,14 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 			reco::TransientTrack t_trk = (*theB).build(generalTrack);
 			Measurement1D ip2d = IPTools::absoluteTransverseImpactParameter(t_trk, *PV_global).second;
 			if ( fabs(ip2d.value())<0.1 ) nPtrk_1000+=1;
+			if(fabs(ip2d.value())>0.05 && ip2d.significance()>5.0) nDtrk_500+=1;
 	
 
 		}
 		jet_NTracks.push_back( jet_TrackIndices_temp.size() );
 		jet_TrackIndices.push_back( jet_TrackIndices_temp );
 		jet_NPromptTracks.push_back( nPtrk_1000 );
+		jet_NDisplacedTracks.push_back( nDtrk_500 );
 
 		// ----- Find Ecal Rechits Inside Jet ----- //
 

@@ -1,0 +1,49 @@
+{
+  "schema_version": 2,
+  "description": "This json file contains the corrections for the UParTAK4 AK4 jet taggers for the 2025_Summer24 campaign. Working points for the tagging algorithms are also supplied in this file (wp_values). ",
+  "corrections": [
+    {
+      "name": "UParTAK4_wp_values",
+      "description": "Working points values of the b-jet discrimination for UParTAK4 in 2025_Summer24. The L/M/T/XT/XXT working points correspond to 10/1/0.1/0.05/0.01% light jet-misidentification rates.",
+      "version": 1,
+      "inputs": [
+        {
+          "name": "working_point",
+          "type": "string",
+          "description": "L/M/T/XT/XXT"
+        }
+      ],
+      "output": {
+        "name": "wp",
+        "type": "real",
+        "description": "Working point value of the b-jet discriminator"
+      },
+      "data": {
+        "nodetype": "category",
+        "input": "working_point",
+        "content": [
+          {
+            "key": "L",
+            "value": 0.0246
+          },
+          {
+            "key": "M",
+            "value": 0.1272
+          },
+          {
+            "key": "T",
+            "value": 0.4648
+          },
+          {
+            "key": "XT",
+            "value": 0.6298
+          },
+          {
+            "key": "XXT",
+            "value": 0.9739
+          }
+        ]
+      }
+    }
+  ]
+}

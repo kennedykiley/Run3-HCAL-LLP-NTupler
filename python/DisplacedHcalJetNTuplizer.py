@@ -138,11 +138,17 @@ else:
         ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC", "2023_Summer23"), 
         ("HToSSTo4B", "2022EE"):         ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
         ("HToSSTo4B", "2022_"):          ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
+        ("HTo2LongLivedTo4b", "postBPix"):("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
+        ("HTo2LongLivedTo4b", "postEE"): ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
+        ("HTo2LongLivedTo4b", "2022_"):  ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
         # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
         # ("WJetsToLNu", "preEE"):         ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
         ("HTo2LongLivedTo4b", "22DRPremix"): ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
         ("HTo2LongLivedTo4b", "22EEDR"):     ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
         ("HTo2LongLivedTo4b", "23BPix"):     ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
+        ("WJetsToLNu", "preEE"):         ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
+        ("WJetsToLNu", "postEE"):        ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"), 
+        ("QCD", "2025"):        ("Winter25Prompt25_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix")#"2025_Winter") #b tag 25 only contains UParT 
     }
 
 tag_name         = None
@@ -176,10 +182,14 @@ if options.isData:
 else:
     if "23BPix" in era_name:        era_name = "2023postBPix"
     elif "2023Prompt_" in era_name: era_name = "2023preBPix"
+    elif "postBPix" in era_name:        era_name = "2023postBPix"
+    elif "postEE" in era_name:      era_name = "2022postEE"
+    elif "preEE" in era_name:       era_name = "2022preEE"
     elif "2022EE" in era_name:      era_name = "2022postEE"
     elif "2022_" in era_name:       era_name = "2022preEE"
     elif "22DRPremix" in era_name:       era_name = "2022preEE"
     elif "22EEDR" in era_name:      era_name = "2022postEE"
+    elif "2025" in era_name:        era_name = "2025"
 
 if options.debug:
     print( tag_name         ) 
@@ -221,6 +231,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.source = cms.Source("PoolSource",
     #fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/k/kikenned/Run3-HCAL-LLP-NTupler/Run3-HCAL-LLP-NTupler/run/StudyFilesRAW/DisplacedJet_Run2023D-v1_RAW_369927_files/8b60c1c5-1a0e-4d7a-b9b3-9d197b9eac81.root'),
+    #fileNames = cms.untracked.vstring(
+    #    "root://cms-xrd-global.cern.ch//store/mc/Run3Winter25Reco/QCD_Bin-Pt-15to7000_TuneCP5_13p6TeV_pythia8/GEN-SIM-RECO/FEVTOUTPUT_142X_mcRun3_2025_realistic_v7-v1/2540000/039c21e6-2e36-405a-83e4-b2e6cfccb92c.root"),
     fileNames = cms.untracked.vstring(inputFiles),
     skipEvents = cms.untracked.uint32(options.skipEvents),
     secondaryFileNames = cms.untracked.vstring()
@@ -248,10 +260,11 @@ process.TFileService = cms.Service( "TFileService",
 # ----- Process Options ----- #
 
 process.options = cms.untracked.PSet(
-    FailPath = cms.untracked.vstring(),
+    FailPath = cms.untracked.vstring(), #remove for higher global tags for 2025
     IgnoreCompletely = cms.untracked.vstring(),
     Rethrow = cms.untracked.vstring(),
-    SkipEvent = cms.untracked.vstring(),
+    SkipEvent = cms.untracked.vstring(), #remove for higher global tags for 2025
+#    TryToContinue = cms.untracked.vstring("ProductNotFound"), #For 2025
     accelerators = cms.untracked.vstring('*'),
     allowUnscheduled = cms.obsolete.untracked.bool,
     canDeleteEarly = cms.untracked.vstring(),
@@ -303,6 +316,7 @@ global_tags_MC = {
     "2022postEE":   "124X_mcRun3_2022_realistic_postEE_v3",
     "2023preBPix":  "130X_mcRun3_2023_realistic_v14",
     "2023postBPix": "130X_mcRun3_2023_realistic_v14",
+    "2025": "142X_mcRun3_2025_realistic_v1"
 }
 
 # 140X_dataRun3_v17

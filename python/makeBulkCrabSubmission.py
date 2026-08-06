@@ -12,7 +12,8 @@ pwd = os.getcwd()
 crab_filepath = os.path.join(pwd, "../python/crab_DisplacedHcalJetNTuplizer_DO-NOT-EDIT_cfg.py")
 
 # Edit me:
-#crab_output_dir = '/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CRAB_Workarea/NTuples_v5/'
+#crab_output_dir = '/afs/cern.ch/work/g/gkopp/2022_LLP_analysis/CRAB_Workarea/NTuples_v6/'
+#crab_output_dir = '/afs/cern.ch/work/f/fsimpson/2022_LLP_analysis/CRAB_Workarea/NTuples_v6/'
 crab_output_dir = '/afs/cern.ch/work/k/kikenned/Run3-HCAL-LLP-NTupler/CRAB_Workarea/NTuples_v5/'
 
 #datasets = {}
@@ -25,6 +26,13 @@ dataset_name_to_request_name["/WJetsToLNu_TuneCP5_13p6TeV-madgraphMLM-pythia8/Ru
 dataset_name_to_request_name["/DYJetsToMuMu_M-50_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Winter23Reco-TRKRealistic_AlcaRecoRealisticTRK_preEE_126X_mcRun3_2022_realistic_v4-v2/GEN-SIM-RECO"] = "DYJetsToMuMu_Run3Winter23Reco_preEE_126X_mcRun3_2022"
 dataset_name_to_request_name["/DYJetsToMuMu_M-50_TuneCP5_13p6TeV_madgraphMLM-pythia8/Run3Winter23Reco-TRKRealistic_AlcaRecoRealisticTRK_REAL_126X_mcRun3_2022_realistic_postEE_v2-v3/GEN-SIM-RECO"] = "DYJetsToMuMu_Run3Winter23Reco_postEE_126X_mcRun3_2022"
 dataset_name_to_request_name["/QCD_PT-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter23Reco-FlatPU0to80_126X_mcRun3_2023_forPU65_v1-v2/GEN-SIM-RECO"] = "QCD_PT-15to7000_Run3Winter23Reco_FlatPU0to80_126X_mcRun3_2023"
+dataset_name_to_request_name["/QCD_Bin-Pt-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter25Reco-FlatPU0to120_142X_mcRun3_2025_realistic_v7-v3/GEN-SIM-RECO"] = "QCD_Bin-Pt-15to7000_Run3Winter25Reco-FlatPU0to120_142X_mcRun3_2025_realistic_v7-v3"
+dataset_name_to_request_name["/QCD_Bin-Pt-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter25Reco-FEVTOUTPUT_142X_mcRun3_2025_realistic_v7-v1/GEN-SIM-RECO"] = "QCD_Bin-Pt-15to7000_Run3Winter25Reco-FEVTOUTPUT_142X_mcRun3_2025_realistic_v7-v1"
+datasets["Background_QCD"] = [
+    #"/QCD_PT-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter23Reco-FlatPU0to80_126X_mcRun3_2023_forPU65_v1-v2/GEN-SIM-RECO",
+    "/QCD_Bin-Pt-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter25Reco-FlatPU0to120_142X_mcRun3_2025_realistic_v7-v3/GEN-SIM-RECO",
+    "/QCD_Bin-Pt-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter25Reco-FEVTOUTPUT_142X_mcRun3_2025_realistic_v7-v1/GEN-SIM-RECO"]
+
 
 # -------------------------------------------------------------------------------------------------
 def main():
@@ -47,11 +55,9 @@ def main():
     for tag in datasets: 
         if "Signal_RAW_" in tag: signal_central_tags.append(tag)
 
-    for dataset_tag in data_tags: # signal_central_tags, signal_tags, zmu_tags
-
+    for dataset_tag in signal_tags: #data_tags: # signal_central_tags, signal_tags, zmu_tags
         i = 0
         for dataset_name in datasets[dataset_tag]:
-
             replacements = {
                 "MYVAR_CRAB_OUTPUT_NAME": crab_output_dir, 
                 "MYVAR_DATASET_NAME": dataset_name,
@@ -59,8 +65,8 @@ def main():
                 "MYVAR_ISDATA": "False",
                 "MYVAR_ISSIGNAL": "False",
                 "MYVAR_RECO_FROM_RAW": "False", 
-                "MYVAR_REQUEST_NAME": dataset_name.replace("/","_")[1:]+"_v5",
-                "MYVAR_DATASET_TAG": dataset_name.replace("/","_")[1:]+"_v5",
+                "MYVAR_REQUEST_NAME": dataset_name.replace("/","_")[1:]+"_v6",
+                "MYVAR_DATASET_TAG": dataset_name.replace("/","_")[1:]+"_v6",
                 "MY_VAR_INPUTDBS": "global",
             }
 
@@ -78,8 +84,8 @@ def main():
                     replacements["MYVAR_EXTRACONFIG"] += "\nconfig.JobType.maxMemoryMB = 5000"
             elif "Signal_" in dataset_tag: 
                 replacements["MYVAR_ISSIGNAL"] = "True"
-                replacements["MYVAR_REQUEST_NAME"] = dataset_tag.replace("Signal_","") + "_batch" + str(i+1) + "_v5"
-                replacements["MYVAR_DATASET_TAG"]  = dataset_tag.replace("Signal_","") + "_batch" + str(i+1) + "_v5"
+                replacements["MYVAR_REQUEST_NAME"] = dataset_tag.replace("Signal_","") + "_batch" + str(i+1) + "_v6"
+                replacements["MYVAR_DATASET_TAG"]  = dataset_tag.replace("Signal_","") + "_batch" + str(i+1) + "_v6"
                 if "RAW" in dataset_tag:
                     replacements["MYVAR_RECO_FROM_RAW"] = "True"
                     replacements["MYVAR_EXTRACONFIG"]  = "\nconfig.Data.splitting         = 'EventAwareLumiBased'"
@@ -92,8 +98,8 @@ def main():
                     replacements["MYVAR_EXTRACONFIG"] += "\nconfig.Data.unitsPerJob       = 200"
             elif "Background_" in dataset_tag:
                 replacements["MYVAR_EXTRACONFIG"]  = "\nconfig.Data.partialDataset = True" # Just run over what is available
-                replacements["MYVAR_REQUEST_NAME"] = dataset_name_to_request_name[dataset_name] + "_v5"
-                replacements["MYVAR_DATASET_TAG"]  = dataset_name_to_request_name[dataset_name] + "_v5"
+                replacements["MYVAR_REQUEST_NAME"] = dataset_name_to_request_name[dataset_name] + "_v6"
+                replacements["MYVAR_DATASET_TAG"]  = dataset_name_to_request_name[dataset_name] + "_v6"
                 #replacements["MYVAR_EVENTS_PER_FILE"] = "100000" # check
             #if "Data_ZMu_" in dataset_tag:
             #    replacements["MYVAR_EVENTS_PER_FILE"] = 10000 
