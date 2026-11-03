@@ -73,10 +73,21 @@ datasets["Data_ZMu_Run2023"] = [
 #datasets["Signal_HToSSTo4B_MH125_MS15_CTau1000"] = [
 #    "/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER"
 #]
-
+# private datasets from here: https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FHToSSTo4B_MH*_MS*_CTau*%2Flpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH*_MS*_CTau*_batch*%2FUSER+instance%3Dprod%2Fphys03
 datasets["Signal_HToSSTo4B_MH125_MS50_CTau3000"] = [
     "/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER",
     "/HToSSTo4B_MH125_MS50_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau3000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER"
+]
+
+datasets["Signal_HToSSTo4B_MH125_MS50_CTau10000"] = [
+    "/HToSSTo4B_MH125_MS50_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS50_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER"
+]
+
+datasets["Signal_HToSSTo4B_MH125_MS15_CTau3000"] = [
+    "/HToSSTo4B_MH125_MS15_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS15_CTau3000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER"
+]
+datasets["Signal_HToSSTo4B_MH125_MS15_CTau10000"] = [
+    "/HToSSTo4B_MH125_MS15_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS15_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER"
 ]
 
 datasets["Signal_HToSSTo4B_MH250_MS120_CTau10000"] = [
