@@ -47,7 +47,11 @@ def main():
 
     crab_script_list = [] 
 
-    signal_tags = [ "Signal_HToSSTo4B_MH125_MS50_CTau3000", "Signal_HToSSTo4B_MH250_MS120_CTau10000", "Signal_HToSSTo4B_MH350_MS80_CTau500", "Signal_HToSSTo4B_MH350_MS160_CTau10000" ]
+    signal_tags = [ "Signal_HToSSTo4B_MH125_MS50_CTau3000", "Signal_HToSSTo4B_MH125_MS50_CTau10000",
+                    "Signal_HToSSTo4B_MH125_MS15_CTau3000", "Signal_HToSSTo4B_MH125_MS15_CTau10000",
+                    "Signal_HToSSTo4B_MH250_MS120_CTau10000", 
+                    "Signal_HToSSTo4B_MH350_MS80_CTau500", 
+                    "Signal_HToSSTo4B_MH350_MS160_CTau10000" ]
     data_tags = [ "Data_DisplacedJet_Run2022" ] #"Data_EXOLLPJetHCAL_Run2023" ]
     zmu_tags = [ "Data_ZMu_Run2022", "Data_ZMu_Run2023" ]
 
