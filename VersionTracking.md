@@ -100,3 +100,16 @@ Location of ntuples:
 /hdfs/store/user/fsimpson/HToSSTo4B_MH350_MS160_CTau10000/HToSSTo4B_MH350_MS160_CTau10000_batch2_v6/260722_173537/0000/
 /hdfs/store/user/fsimpson/HToSSTo4B_MH350_MS80_CTau500/HToSSTo4B_MH350_MS80_CTau500_batch1_v6/260722_173301/0000/
 ```
+## V7
+New trigger SF application method inspired by b tagging method 
+
+Location of ntuples:
+```
+/hdfs/store/user/fsimpson/HToSSTo4B_MH125_MS50_CTau3000/HToSSTo4B_MH125_MS50_CTau3000_batch1_v7/260924_222358/0000/
+/hdfs/store/user/fsimpson/HToSSTo4B_MH125_MS50_CTau3000/HToSSTo4B_MH125_MS50_CTau3000_batch2_v7/260924_222742/0000/
+/hdfs/store/user/fsimpson/HToSSTo4B_MH250_MS120_CTau10000/HToSSTo4B_MH250_MS120_CTau10000_batch1_v7/260924_222929/0000/
+/hdfs/store/user/fsimpson/HToSSTo4B_MH250_MS120_CTau10000/HToSSTo4B_MH250_MS120_CTau10000_batch2_v7/260924_223253/0000/
+/hdfs/store/user/fsimpson/HToSSTo4B_MH350_MS160_CTau10000/HToSSTo4B_MH350_MS160_CTau10000_batch1_v7/260924_223446/0000/
+/hdfs/store/user/fsimpson/HToSSTo4B_MH350_MS160_CTau10000/HToSSTo4B_MH350_MS160_CTau10000_batch2_v7/260924_223606/0000/
+/hdfs/store/user/fsimpson/HToSSTo4B_MH350_MS80_CTau500/HToSSTo4B_MH350_MS80_CTau500_batch1_v7/260924_223924/0000/
+```

@@ -520,8 +520,26 @@ void DisplacedHcalJetNTuplizer::EnableTriggerBranches(){
 	//output_tree->Branch("HLT_Names", &HLT_Names);
 	output_tree->Branch("HLT_Decision", &HLT_Decision);
 	output_tree->Branch("HLT_Prescale", &HLT_Prescale);
-	output_tree->Branch("HLT_SF_L1", &HLT_SF_L1);
-	output_tree->Branch("HLT_SF_Tot", &HLT_SF_Tot);
+	// 18 new branches for trigger SFs
+	output_tree->Branch("jet_Tagged_L1",           &jet_Tagged_L1);
+	output_tree->Branch("jet_Tagged_Varied_L1",    &jet_Tagged_Varied_L1);
+	output_tree->Branch("jet_SF_L1",               &jet_SF_L1);
+	output_tree->Branch("jet_Tagged_HLT1a",        &jet_Tagged_HLT1a);
+	output_tree->Branch("jet_Tagged_Varied_HLT1a", &jet_Tagged_Varied_HLT1a);
+	output_tree->Branch("jet_SF_HLT1a",            &jet_SF_HLT1a);
+	output_tree->Branch("jet_Tagged_HLT1b",        &jet_Tagged_HLT1b);
+	output_tree->Branch("jet_Tagged_Varied_HLT1b", &jet_Tagged_Varied_HLT1b);
+	output_tree->Branch("jet_SF_HLT1b",            &jet_SF_HLT1b);
+	output_tree->Branch("jet_Tagged_HLT2",         &jet_Tagged_HLT2);
+	output_tree->Branch("jet_Tagged_Varied_HLT2",  &jet_Tagged_Varied_HLT2);
+	output_tree->Branch("jet_SF_HLT2",             &jet_SF_HLT2);
+	output_tree->Branch("jet_Tagged_HLT3a",        &jet_Tagged_HLT3a);
+	output_tree->Branch("jet_Tagged_Varied_HLT3a", &jet_Tagged_Varied_HLT3a);
+	output_tree->Branch("jet_SF_HLT3a",            &jet_SF_HLT3a);
+	output_tree->Branch("jet_Tagged_HLT3b",        &jet_Tagged_HLT3b);
+	output_tree->Branch("jet_Tagged_Varied_HLT3b", &jet_Tagged_Varied_HLT3b);
+	output_tree->Branch("jet_SF_HLT3b",            &jet_SF_HLT3b);
+
 	output_tree->Branch("L1_Decision", &L1_Decision);
 	output_tree->Branch("L1_Prescale", &L1_Prescale);
 
@@ -1115,8 +1133,24 @@ void DisplacedHcalJetNTuplizer::ResetTriggerBranches(){
 	//HLT_Names.clear();
 	HLT_Decision.clear();
 	HLT_Prescale.clear();
-	HLT_SF_L1.clear();
-	HLT_SF_Tot.clear();
+	jet_Tagged_L1.clear();
+	jet_Tagged_Varied_L1.clear();
+	jet_SF_L1.clear();
+	jet_Tagged_HLT1a.clear();
+	jet_Tagged_Varied_HLT1a.clear();
+	jet_SF_HLT1a.clear();
+	jet_Tagged_HLT1b.clear();
+	jet_Tagged_Varied_HLT1b.clear();
+	jet_SF_HLT1b.clear();
+	jet_Tagged_HLT2.clear();
+	jet_Tagged_Varied_HLT2.clear();
+	jet_SF_HLT2.clear();
+	jet_Tagged_HLT3a.clear();
+	jet_Tagged_Varied_HLT3a.clear();
+	jet_SF_HLT3a.clear();
+	jet_Tagged_HLT3b.clear();
+	jet_Tagged_Varied_HLT3b.clear();
+	jet_SF_HLT3b.clear();
 	L1_Decision.clear();
 	L1_Prescale.clear();
 
@@ -1893,60 +1927,12 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent, co
 	
 		}
 
-		if( found_trigger ){
-			float pT_0, pT_1;
-			if (jets->size() > 0) {pT_0 = (*jets)[0].pt();}
-			else {pT_0 = -9999;}
-			if (jets->size() > 1) {pT_1 = (*jets)[1].pt();}
-			else {pT_1 = -9999;}
-
-			float HT = 0;
-			for (const auto& jet : *jets) {
-				HT += jet.pt();
-			}
-
-			int nPromptTracksLead = 0;
-			int nDisplacedTracksLead = 0;
-			if (!jet_NPromptTracks.empty()) {nPromptTracksLead = jet_NPromptTracks[0];} 
-			else { 
-				if (debug) std::cout << "[Warning] jet_NPromptTracks is empty!" << std::endl;
-				nPromptTracksLead = -1;
-			}
-		
-			if (!jet_NDisplacedTracks.empty()) {nDisplacedTracksLead = jet_NDisplacedTracks[0];} 
-			else { 
-				if (debug) std::cout << "[Warning] jet_NDisplacedTracks is empty!" << std::endl;
-				nDisplacedTracksLead = -1;
-			}
-				
-			if( debug ) cout<<"pT : "<< pT_0 << ", "<< pT_1 <<endl; 
-
-			float SF_L1 = 1.0;
-			if (pT_0 >= 60 && pT_0 < 100) SF_L1 = 1.1691;
-			else if (pT_0 >= 100) SF_L1 = 1.0077;
-			float SF_HLT_1 = GetHLTSF(HT, pT_0, nPromptTracksLead, nDisplacedTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_PtrkShortSig5.txt");
-			float SF_HLT_2 = GetHLTSF(HT, pT_0, nPromptTracksLead, nDisplacedTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_Inclusive.txt");
-			float SF_HLT_3 = GetHLTSF(HT, pT_0, nPromptTracksLead, nDisplacedTracksLead, "cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/Run2023scale_factors_DisplacedTrack.txt");
-			float HLT_SF = SF_L1*SF_HLT_1*SF_HLT_2*SF_HLT_3;
-
-			if (!isData_) {HLT_SF_L1.push_back(SF_L1);}
-			else {HLT_SF_L1.push_back(1.0);}
-			if (!isData_ && HLT_SF < 2.0) {HLT_SF_Tot.push_back(HLT_SF);}
-			else {HLT_SF_Tot.push_back(1.0);}
-
-			if( debug ) cout<<"--> HLTSF_1 "<< SF_HLT_1 <<"--> HLTSF_2 "<< SF_HLT_2 <<"--> HLTSF_3 "<< SF_HLT_3 <<"--> HLTSF "<< HLT_SF << endl;
-			
+                if (!found_trigger) {
+                    if (debug) std::cout << "    --> trig not found in triggerBits" << std::endl;
+                    HLT_Decision.push_back(false);
+                    HLT_Prescale.push_back(-2);
 
 		}
-
-		if( !found_trigger ){
-			if( debug ) cout<<"    --> trig not found in triggerBits"<<endl;
-			HLT_Decision.push_back( false );
-			HLT_Prescale.push_back( -2 );
-			HLT_SF_L1.push_back(1.0);
-			HLT_SF_Tot.push_back(1.0);
-		}
-
 	}
 
 	// ----- L1 Trigger Decisions ----- //
@@ -1967,127 +1953,245 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent, co
 		L1_Prescale.push_back( l1pre );
 	}
 
+	// ------ Trigger SF jet-by-jet update -------- //
+	// may move to FillJetBranches if we continue to save over all jets
+
+	for (int i = 0; i < (int)jetsCorr->size(); i++) {
+	    if( (*jetsCorr)[i].pt() < 20 || fabs((*jetsCorr)[i].eta()) > 2.0 ) continue;  // match FillJetBranches' cut
+	
+	    float pT_i  = (*jetsCorr)[i].pt();
+	    float eta_i = (*jetsCorr)[i].eta();
+
+	    int nPromptTracks_i;
+	    int nDisplacedTracks_i;
+
+	    if ((int)jet_NPromptTracks.size() > i) {
+	        nPromptTracks_i = jet_NPromptTracks[i];
+	    } else {
+	        if (debug) std::cout << "[Warning] jet NPromptTracks is empty!" << std::endl;
+	        nPromptTracks_i = -1;
+	    }
+	
+	    if ((int)jet_NDisplacedTracks.size() > i) {
+	        nDisplacedTracks_i = jet_NDisplacedTracks[i];
+	    } else {
+	        if (debug) std::cout << "[Warning] jet NDisplacedTracks is empty!" << std::endl;
+	        nDisplacedTracks_i = -1;
+	    }
+	
+	    // ---- nominal per-leg tag decisions (sequential filter logic) ----
+	    bool tag_L1_pT = (pT_i > 60.0) && (fabsf(eta_i) < 1.26);
+	
+	    // HLT1a: DisplacedDijet35_Inclusive1PtrkShortSig5
+	    bool tag_HLT1a_pT   = (pT_i > 35.0) && (fabsf(eta_i) < 2.0);
+	    bool tag_HLT1a_PTrk = tag_HLT1a_pT && (nPromptTracks_i >= 0) && (nPromptTracks_i <= 1);
+	
+	    // HLT1b: DisplacedDijet40_Inclusive1PtrkShortSig5
+	    bool tag_HLT1b_pT   = (pT_i > 40.0) && (fabsf(eta_i) < 2.0);
+	    bool tag_HLT1b_PTrk = tag_HLT1b_pT && (nPromptTracks_i >= 0) && (nPromptTracks_i <= 1);
+	
+	    // HLT2: DisplacedDijet60_Inclusive
+	    bool tag_HLT2_pT   = (pT_i > 60.0) && (fabsf(eta_i) < 2.0);
+	    bool tag_HLT2_PTrk = tag_HLT2_pT && (nPromptTracks_i >= 0) && (nPromptTracks_i <= 2);
+	
+	    // HLT3a: DisplacedDijet40_DisplacedTrack
+	    bool tag_HLT3a_pT   = (pT_i > 40.0) && (fabsf(eta_i) < 2.0);
+	    bool tag_HLT3a_PTrk = tag_HLT3a_pT && (nPromptTracks_i >= 0) && (nPromptTracks_i <= 2);
+	    bool tag_HLT3a_DTrk = tag_HLT3a_PTrk && (nDisplacedTracks_i >= 1);
+	
+	    // HLT3b: DisplacedDijet60_DisplacedTrack
+	    bool tag_HLT3b_pT   = (pT_i > 60.0) && (fabsf(eta_i) < 2.0);
+	    bool tag_HLT3b_PTrk = tag_HLT3b_pT && (nPromptTracks_i >= 0) && (nPromptTracks_i <= 2);
+	    bool tag_HLT3b_DTrk = tag_HLT3b_PTrk && (nDisplacedTracks_i >= 1);
+	
+	    // ---- varied per-leg tag decisions + SFs ----
+	    bool  tag_L1_pT_varied;
+	    bool  tag_HLT1a_pT_varied, tag_HLT1a_PTrk_varied;
+	    bool  tag_HLT1b_pT_varied, tag_HLT1b_PTrk_varied;
+	    bool  tag_HLT2_pT_varied,  tag_HLT2_PTrk_varied;
+	    bool  tag_HLT3a_pT_varied, tag_HLT3a_PTrk_varied, tag_HLT3a_DTrk_varied;
+	    bool  tag_HLT3b_pT_varied, tag_HLT3b_PTrk_varied, tag_HLT3b_DTrk_varied;
+	
+	    float SF_L1;
+	    float SF_HLT1a_pT, SF_HLT1a_PTrk;
+	    float SF_HLT1b_pT, SF_HLT1b_PTrk;
+	    float SF_HLT2_pT,  SF_HLT2_PTrk;
+	    float SF_HLT3a_pT, SF_HLT3a_PTrk, SF_HLT3a_DTrk;
+	    float SF_HLT3b_pT, SF_HLT3b_PTrk, SF_HLT3b_DTrk;
+
+            if (!isData_) {
+	        double eData_L1 = 0.64;
+	        double eQCD_L1;
+	        if (pT_i < 100) { eQCD_L1 = 0.55;}
+	        else { eQCD_L1 =  0.60;}
+	        tag_L1_pT_varied = applySF(tag_L1_pT, eData_L1, eQCD_L1);
+	        SF_L1 = ComputeTagSF(eData_L1, eQCD_L1);
+	    
+	        // HLT1a: 35 GeV, PtrkShortSig5 family DisplacedDijet35_Inclusive1PtrkShortSig5
+		auto eff_HLT1a_pT = GetEfficiencies(pT_i, Bins_PtrkShortSig5_pT_35GeV, Data_PtrkShortSig5_pT_35GeV, MC_PtrkShortSig5_pT_35GeV, N_PtrkShortSig5_pT_35GeV);
+	        tag_HLT1a_pT_varied = applySF(tag_HLT1a_pT, eff_HLT1a_pT.first, eff_HLT1a_pT.second);
+	        SF_HLT1a_pT = ComputeTagSF(eff_HLT1a_pT.first, eff_HLT1a_pT.second);
+	        
+	        // HLT1b: 40 GeV, PtrkShortSig5 family  DisplacedDijet40_Inclusive1PtrkShortSig5
+		auto eff_HLT1b_pT = GetEfficiencies(pT_i, Bins_PtrkShortSig5_pT_40GeV, Data_PtrkShortSig5_pT_40GeV, MC_PtrkShortSig5_pT_40GeV, N_PtrkShortSig5_pT_40GeV);
+	        tag_HLT1b_pT_varied = applySF(tag_HLT1b_pT, eff_HLT1b_pT.first, eff_HLT1b_pT.second);
+	        SF_HLT1b_pT = ComputeTagSF(eff_HLT1b_pT.first, eff_HLT1b_pT.second);
+	        
+	        // HLT2: 60 GeV, Inclusive family DisplacedDijet60_Inclusive
+		auto eff_HLT2_pT  = GetEfficiencies(pT_i, Bins_Inclusive_pT, Data_Inclusive_pT, MC_Inclusive_pT, N_Inclusive_pT);
+	        tag_HLT2_pT_varied = applySF(tag_HLT2_pT, eff_HLT2_pT.first, eff_HLT2_pT.second);
+	        SF_HLT2_pT = ComputeTagSF(eff_HLT2_pT.first, eff_HLT2_pT.second);
+	        
+	        // HLT3a: 40 GeV, DisplacedTrack family DisplacedDijet40_DisplacedTrack
+		auto eff_HLT3a_pT = GetEfficiencies(pT_i, Bins_DisplacedTrack_pT, Data_DisplacedTrack_pT, MC_DisplacedTrack_pT, N_DisplacedTrack_pT);
+	        tag_HLT3a_pT_varied = applySF(tag_HLT3a_pT, eff_HLT3a_pT.first, eff_HLT3a_pT.second);
+	        SF_HLT3a_pT = ComputeTagSF(eff_HLT3a_pT.first, eff_HLT3a_pT.second);
+	        
+	        // HLT3b: 60 GeV, DisplacedTrack family reuses Inclusive_pT.txt  DisplacedDijet60_DisplacedTrack
+		auto eff_HLT3b_pT = GetEfficiencies(pT_i, Bins_Inclusive_pT, Data_Inclusive_pT, MC_Inclusive_pT, N_Inclusive_pT);
+	        tag_HLT3b_pT_varied = applySF(tag_HLT3b_pT, eff_HLT3b_pT.first, eff_HLT3b_pT.second);
+	        SF_HLT3b_pT = ComputeTagSF(eff_HLT3b_pT.first, eff_HLT3b_pT.second);
+
+		auto eff_HLT1_PTrk = GetEfficiencies(nPromptTracks_i, Bins_PtrkShortSig5_PTrk, Data_PtrkShortSig5_PTrk, MC_PtrkShortSig5_PTrk, N_PtrkShortSig5_PTrk);
+                tag_HLT1a_PTrk_varied = applySF(tag_HLT1a_PTrk, eff_HLT1_PTrk.first, eff_HLT1_PTrk.second);
+                tag_HLT1b_PTrk_varied = applySF(tag_HLT1b_PTrk, eff_HLT1_PTrk.first, eff_HLT1_PTrk.second);
+                SF_HLT1a_PTrk = SF_HLT1b_PTrk = ComputeTagSF(eff_HLT1_PTrk.first, eff_HLT1_PTrk.second);
+
+		auto eff_HLT2_PTrk = GetEfficiencies(nPromptTracks_i, Bins_Inclusive_PTrk, Data_Inclusive_PTrk, MC_Inclusive_PTrk, N_Inclusive_PTrk);
+                tag_HLT2_PTrk_varied = applySF(tag_HLT2_PTrk, eff_HLT2_PTrk.first, eff_HLT2_PTrk.second);
+                SF_HLT2_PTrk = ComputeTagSF(eff_HLT2_PTrk.first, eff_HLT2_PTrk.second);
+
+		auto eff_HLT3_PTrk = GetEfficiencies(nPromptTracks_i, Bins_DisplacedTrack_PTrk, Data_DisplacedTrack_PTrk, MC_DisplacedTrack_PTrk, N_DisplacedTrack_PTrk);
+                tag_HLT3a_PTrk_varied = applySF(tag_HLT3a_PTrk, eff_HLT3_PTrk.first, eff_HLT3_PTrk.second);
+                tag_HLT3b_PTrk_varied = applySF(tag_HLT3b_PTrk, eff_HLT3_PTrk.first, eff_HLT3_PTrk.second);
+                SF_HLT3a_PTrk = SF_HLT3b_PTrk = ComputeTagSF(eff_HLT3_PTrk.first, eff_HLT3_PTrk.second);
+
+		auto eff_HLT3_DTrk = GetEfficiencies(nDisplacedTracks_i, Bins_DisplacedTrack_DTrk, Data_DisplacedTrack_DTrk, MC_DisplacedTrack_DTrk, N_DisplacedTrack_DTrk);
+                tag_HLT3a_DTrk_varied = applySF(tag_HLT3a_DTrk, eff_HLT3_DTrk.first, eff_HLT3_DTrk.second);
+                tag_HLT3b_DTrk_varied = applySF(tag_HLT3b_DTrk, eff_HLT3_DTrk.first, eff_HLT3_DTrk.second);
+                SF_HLT3a_DTrk = SF_HLT3b_DTrk = ComputeTagSF(eff_HLT3_DTrk.first, eff_HLT3_DTrk.second);
+
+	    } else {
+	        // (unchanged from before)
+	        tag_L1_pT_varied = tag_L1_pT;
+	        tag_HLT1a_pT_varied = tag_HLT1a_pT;   tag_HLT1a_PTrk_varied = tag_HLT1a_PTrk;
+	        tag_HLT1b_pT_varied = tag_HLT1b_pT;   tag_HLT1b_PTrk_varied = tag_HLT1b_PTrk;
+	        tag_HLT2_pT_varied  = tag_HLT2_pT;    tag_HLT2_PTrk_varied  = tag_HLT2_PTrk;
+	        tag_HLT3a_pT_varied = tag_HLT3a_pT;   tag_HLT3a_PTrk_varied = tag_HLT3a_PTrk;   tag_HLT3a_DTrk_varied = tag_HLT3a_DTrk;
+	        tag_HLT3b_pT_varied = tag_HLT3b_pT;   tag_HLT3b_PTrk_varied = tag_HLT3b_PTrk;   tag_HLT3b_DTrk_varied = tag_HLT3b_DTrk;
+	    
+	        SF_L1 = 1.0;
+	        SF_HLT1a_pT = SF_HLT1a_PTrk = 1.0;
+	        SF_HLT1b_pT = SF_HLT1b_PTrk = 1.0;
+	        SF_HLT2_pT  = SF_HLT2_PTrk  = 1.0;
+	        SF_HLT3a_pT = SF_HLT3a_PTrk = SF_HLT3a_DTrk = 1.0;
+	        SF_HLT3b_pT = SF_HLT3b_PTrk = SF_HLT3b_DTrk = 1.0;
+            }
+
+            // ---- stash this jet's leg-by-leg results ----
+            jet_Tagged_L1.push_back(   { tag_L1_pT } );
+            jet_Tagged_Varied_L1.push_back( { tag_L1_pT_varied } );
+            jet_SF_L1.push_back(       { SF_L1 } );
+
+            jet_Tagged_HLT1a.push_back(        { tag_HLT1a_pT,        tag_HLT1a_PTrk } );
+            jet_Tagged_Varied_HLT1a.push_back( { tag_HLT1a_pT_varied, tag_HLT1a_PTrk_varied } );
+            jet_SF_HLT1a.push_back(            { SF_HLT1a_pT,         SF_HLT1a_PTrk } );
+
+            jet_Tagged_HLT1b.push_back(        { tag_HLT1b_pT,        tag_HLT1b_PTrk } );
+            jet_Tagged_Varied_HLT1b.push_back( { tag_HLT1b_pT_varied, tag_HLT1b_PTrk_varied } );
+            jet_SF_HLT1b.push_back(            { SF_HLT1b_pT,         SF_HLT1b_PTrk } );
+
+            jet_Tagged_HLT2.push_back(        { tag_HLT2_pT,        tag_HLT2_PTrk } );
+            jet_Tagged_Varied_HLT2.push_back( { tag_HLT2_pT_varied, tag_HLT2_PTrk_varied } );
+            jet_SF_HLT2.push_back(            { SF_HLT2_pT,         SF_HLT2_PTrk } );
+
+            jet_Tagged_HLT3a.push_back(        { tag_HLT3a_pT,        tag_HLT3a_PTrk,        tag_HLT3a_DTrk } );
+            jet_Tagged_Varied_HLT3a.push_back( { tag_HLT3a_pT_varied, tag_HLT3a_PTrk_varied, tag_HLT3a_DTrk_varied } );
+            jet_SF_HLT3a.push_back(            { SF_HLT3a_pT,         SF_HLT3a_PTrk,         SF_HLT3a_DTrk } );
+
+            jet_Tagged_HLT3b.push_back(        { tag_HLT3b_pT,        tag_HLT3b_PTrk,        tag_HLT3b_DTrk } );
+            jet_Tagged_Varied_HLT3b.push_back( { tag_HLT3b_pT_varied, tag_HLT3b_PTrk_varied, tag_HLT3b_DTrk_varied } );
+            jet_SF_HLT3b.push_back(            { SF_HLT3b_pT,         SF_HLT3b_PTrk,         SF_HLT3b_DTrk } );
+
+            if (debug) {
+                cout << "[Trigger SF] jet pT"
+                     << " | L1 tag/varied: " << tag_L1_pT << "/" << tag_L1_pT_varied
+
+                     << " | HLT1a pT tag/varied: " << tag_HLT1a_pT << "/" << tag_HLT1a_pT_varied
+                     << " | HLT1a prompt track tag/varied: " << tag_HLT1a_PTrk << "/" << tag_HLT1a_PTrk_varied
+
+                     << " | HLT1b pT tag/varied: " << tag_HLT1b_pT << "/" << tag_HLT1b_pT_varied
+                     << " | HLT1b prompt track tag/varied: " << tag_HLT1b_PTrk << "/" << tag_HLT1b_PTrk_varied
+
+                     << " | HLT2 pT tag/varied: " << tag_HLT2_pT << "/" << tag_HLT2_pT_varied
+                     << " | HLT2 prompt track tag/varied: " << tag_HLT2_PTrk << "/" << tag_HLT2_PTrk_varied
+
+                     << " | HLT3a pT tag/varied: " << tag_HLT3a_pT << "/" << tag_HLT3a_pT_varied
+                     << " | HLT3a prompt track tag/varied: " << tag_HLT3a_PTrk << "/" << tag_HLT3a_PTrk_varied
+                     << " | HLT3a displaced track tag/varied: " << tag_HLT3a_DTrk << "/" << tag_HLT3a_DTrk_varied
+
+                     << " | HLT3b pT tag/varied: " << tag_HLT3b_pT << "/" << tag_HLT3b_pT_varied
+                     << " | HLT3b prompt track tag/varied: " << tag_HLT3b_PTrk << "/" << tag_HLT3b_PTrk_varied
+                     << " | HLT3b displaced track tag/varied: " << tag_HLT3b_DTrk << "/" << tag_HLT3b_DTrk_varied
+
+                     << endl;
+            }
+        }
+
+
+
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillTriggerBranches"<<endl;
 
 	return true;
 };
 
-double DisplacedHcalJetNTuplizer::GetHLTSF(double HT, double ptLead, int nTrk, int nDTrk, std::string filename) {
-    struct Bin1D { double low, high; double sf, err; };
-    struct BinSet { std::vector<Bin1D> ht, pt, ntrk, nDtrk; };
-
-    static std::map<std::string, BinSet> cache;
-
-    auto it = cache.find(filename);
-    if (it == cache.end()) {
-        BinSet bins;
-        edm::FileInPath fip(filename);
-        std::ifstream infile(fip.fullPath().c_str());
-        std::cout << "[INFO] Using file path: " << fip.fullPath() << std::endl;
-        if (!infile.is_open()) {
-            std::cerr << "[GetHLTSF ERROR] Could not open file: " << fip.fullPath() << std::endl;
-            return 1.0;
-        }
-
-        std::string line;
-        enum Section { NONE, HT_SEC, PT, NTRK, NDTRK };
-        Section sec = NONE;
-
-        struct Row { double x, sf, err; };
-        std::vector<double> htVals, ptVals, ntrkVals, nDtrkVals;
-        std::vector<Row> htRows, ptRows, ntrkRows, nDtrkRows;
-
-        while (std::getline(infile, line)) {
-            if (line.empty() || line[0] == '#') continue;
-
-            if (line.find("[Event HT") != std::string::npos) { sec = HT_SEC; continue; }
-            if (line.find("[Offline PF jet pT") != std::string::npos) { sec = PT; continue; }
-            if (line.find("[Number of Offline Prompt Tracks") != std::string::npos) { sec = NTRK; continue; }
-            if (line.find("[Number of Offline Displaced Tracks") != std::string::npos) { sec = NDTRK; continue; }
-
-            std::istringstream iss(line);
-            if (sec == HT_SEC) {
-                double ht, sf, err;
-                if (!(iss >> ht >> sf >> err)) continue;
-                htRows.push_back({ht, sf, err});
-                htVals.push_back(ht);
-            } else if (sec == PT) {
-                double pt, sf, err;
-                if (!(iss >> pt >> sf >> err)) continue;
-                ptRows.push_back({pt, sf, err});
-                ptVals.push_back(pt);
-            } else if (sec == NTRK) {
-                double ntrk, sf, err;
-                if (!(iss >> ntrk >> sf >> err)) continue;
-                ntrkRows.push_back({ntrk, sf, err});
-                ntrkVals.push_back(ntrk);
-            } else if (sec == NDTRK) {
-                double nDtrk, sf, err;
-                if (!(iss >> nDtrk >> sf >> err)) continue;
-                nDtrkRows.push_back({nDtrk, sf, err});
-                nDtrkVals.push_back(nDtrk);
-            }
-        }
-        infile.close();
-
-        // sort + unique per variable (protects bin-edge lookup below from out-of-order/duplicate rows)
-        auto sortUnique = [](std::vector<double> &v) {
-            std::sort(v.begin(), v.end());
-            v.erase(std::unique(v.begin(), v.end()), v.end());
-        };
-        sortUnique(htVals);
-        sortUnique(ptVals);
-        sortUnique(ntrkVals);
-        sortUnique(nDtrkVals);
-
-        auto buildBins = [](const std::vector<Row> &rows, const std::vector<double> &vals, std::vector<Bin1D> &out) {
-            for (const auto &r : rows) {
-                auto vit = std::find(vals.begin(), vals.end(), r.x);
-                double high = (vit != vals.end() && std::next(vit) != vals.end()) ? *std::next(vit) : 1e9;
-                out.push_back({r.x, high, r.sf, r.err});
-            }
-        };
-        buildBins(htRows, htVals, bins.ht);
-        buildBins(ptRows, ptVals, bins.pt);
-        buildBins(ntrkRows, ntrkVals, bins.ntrk);
-        buildBins(nDtrkRows, nDtrkVals, bins.nDtrk);
-
-        if (debug) {
-            std::cout << "[GetHLTSF] " << filename << ": "
-                      << bins.ht.size() << " HT bins, "
-                      << bins.pt.size() << " pt bins, "
-                      << bins.ntrk.size() << " ntrk bins, "
-                      << bins.nDtrk.size() << " nDtrk bins" << std::endl;
-        }
-
-        it = cache.emplace(filename, std::move(bins)).first;
+// ------------------------------------------------------------------------------------
+std::pair<double,double> DisplacedHcalJetNTuplizer::GetEfficiencies(double binValue, const double* binEdges, const double* dataVals,const double* mcVals,int nBins) {
+    if (binValue < 0) { //guard against nPrompt or nDisplaced = -1
+    return std::make_pair(1.0, 1.0);
     }
-
-    const auto &bins = it->second;
-
-    auto lookup = [](double x, const std::vector<Bin1D> &binVec) {
-        double sf = 1.0;
-        for (const auto &b : binVec) {
-            if (x >= b.low && x < b.high) { sf = b.sf; break; }
+    double eData = 1.0, eQCD = 1.0;
+    for (int i = 0; i < nBins; ++i) {
+        if (binValue < binEdges[i] || i == nBins - 1) {
+            eData = dataVals[i];
+            eQCD  = mcVals[i];
+            break;
         }
-        return sf;
-    };
-
-    double sf_ht    = lookup(HT, bins.ht);
-    double sf_pt    = lookup(ptLead, bins.pt);
-    double sf_ntrk  = lookup(nTrk, bins.ntrk);
-    double sf_nDtrk = lookup(nDTrk, bins.nDtrk);   // stays 1.0 for files without a displaced-track section
+    }
 
     if (debug) {
-        std::cout << "[GetHLTSF] file=" << filename
-                   << " sf_ht=" << sf_ht
-                   << " sf_pt=" << sf_pt
-                   << " sf_ntrk=" << sf_ntrk
-                   << " sf_nDtrk=" << sf_nDtrk << std::endl;
+        cout << "[GetEfficiencies] " << nBins << " bins, eData=" << eData << ", eQCD=" << eQCD << endl;
     }
 
-    return sf_ht * sf_pt * sf_ntrk * sf_nDtrk;
-}
+    return std::make_pair(eData, eQCD);
+};
+
+// ------------------------------------------------------------------------------------
+// Jet-by-jet tag update. Pass eData/eQCD directly (not a collapsed SF).
+bool DisplacedHcalJetNTuplizer::applySF(bool isTagged, double eData, double eQCD) {
+    bool newTag = isTagged;
+    if (eData == eQCD) return newTag;  // no correction needed
+
+    double coin = rand_.Uniform(1.0);
+
+    if (eData < eQCD) {
+        double SF = eData / eQCD;
+        if (isTagged && coin >= SF) newTag = false;   // demote w/ prob (1-SF)
+        // untagged jets: unchanged
+    } else {
+        double SFprime = (1.0 - eData) / (1.0 - eQCD);
+        if (!isTagged && coin >= SFprime) newTag = true;  // promote w/ prob (1-SF')
+        // tagged jets: unchanged
+    }
+
+    return newTag;
+};
+
+// ------------------------------------------------------------------------------------
+double DisplacedHcalJetNTuplizer::ComputeTagSF(double eData, double eQCD) {
+    if (eData < eQCD) return eData / eQCD;
+    else               return (1.0 - eData) / (1.0 - eQCD);
+};
 
 // ------------------------------------------------------------------------------------
 bool DisplacedHcalJetNTuplizer::FillMetBranches(const edm::Event& iEvent){

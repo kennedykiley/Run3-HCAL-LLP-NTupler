@@ -179,6 +179,7 @@ using namespace std;
 //LOCAL includes
 //#include "cms_lpc_llp/llp_ntupler/interface/GetTrackTrajInfo.h"
 //#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
+#include "cms_lpc_llp/Run3-HCAL-LLP-NTupler/interface/TriggerSFTables.h"
 
 // ------ Class declaration ------ //
 
@@ -276,8 +277,9 @@ public:
 
 	double deltaPhi(double phi1, double phi2);
 	double deltaR(double eta1, double phi1, double eta2, double phi2);
-	double GetL1SF(double ptLead, double ptSub, std::string filename);
-	double GetHLTSF(double HT, double ptLead, int nTrk, int nDTrk, std::string filename);
+	std::pair<double,double> GetEfficiencies(double binValue, const double* binEdges, const double* dataVals, const double* mcVals, int nBins);
+	double ComputeTagSF(double eData, double eQCD);
+	bool applySF(bool isTagged, double eData, double eQCD);
 	float getBTagSF(const unique_ptr<correction::CorrectionSet> &cset, map<string, correction::Variable::Type> &jet_properties, const string &key,  const string &wp, const string &syst );
 
 protected:
@@ -567,8 +569,30 @@ protected:
 	//vector<string> HLT_Names;
 	vector<bool> HLT_Decision; //[NTriggersMAX];
 	vector<int> HLT_Prescale; //[NTriggersMAX];
-	vector<double> HLT_SF_Tot; //[NTriggersMAX];
-	vector<double> HLT_SF_L1; //[NTriggersMAX];
+
+	vector<vector<bool>> jet_Tagged_L1;
+	vector<vector<bool>> jet_Tagged_Varied_L1;
+	vector<vector<float>> jet_SF_L1;
+	
+	vector<vector<bool>> jet_Tagged_HLT1a;
+	vector<vector<bool>> jet_Tagged_Varied_HLT1a;
+	vector<vector<float>> jet_SF_HLT1a;
+	
+	vector<vector<bool>> jet_Tagged_HLT1b;
+	vector<vector<bool>> jet_Tagged_Varied_HLT1b;
+	vector<vector<float>> jet_SF_HLT1b;
+	
+	vector<vector<bool>> jet_Tagged_HLT2;
+	vector<vector<bool>> jet_Tagged_Varied_HLT2;
+	vector<vector<float>> jet_SF_HLT2;
+	
+	vector<vector<bool>> jet_Tagged_HLT3a;
+	vector<vector<bool>> jet_Tagged_Varied_HLT3a;
+	vector<vector<float>> jet_SF_HLT3a;
+	
+	vector<vector<bool>> jet_Tagged_HLT3b;
+	vector<vector<bool>> jet_Tagged_Varied_HLT3b;
+	vector<vector<float>> jet_SF_HLT3b;
 
 	vector<bool> L1_Decision;
 	vector<double> L1_Prescale;
