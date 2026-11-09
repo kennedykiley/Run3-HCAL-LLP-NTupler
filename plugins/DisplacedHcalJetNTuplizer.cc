@@ -3,7 +3,7 @@
 /*
 	Description: Base class for miniAOD analysis with CRAB
 */
-//   Author:  CristiÃ¡n PeÃ±a and Si Xie; adapted for HCAL LLP Analysis by Kiley Kennedy and Gillian Kopp
+//   Author:  Cristián Peña and Si Xie; adapted for HCAL LLP Analysis by Kiley Kennedy and Gillian Kopp
 //   Created:  Thu, 26 March 2019 15:00:06 GMT
 
 #include "DisplacedHcalJetNTuplizer.h"
@@ -91,7 +91,6 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	photon_cutbasedID_decisions_loose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_loose"))),
 	photon_cutbasedID_decisions_medium_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_medium"))),
 	photon_cutbasedID_decisions_tight_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_tight"))),
-
 	// MC
 	genParticlesToken_(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"))),
 	puInfoToken_(consumes<std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puInfo"))),
