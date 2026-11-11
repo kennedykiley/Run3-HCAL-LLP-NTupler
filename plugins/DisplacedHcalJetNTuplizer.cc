@@ -2062,6 +2062,259 @@ std::pair<double,double> DisplacedHcalJetNTuplizer::GetEfficiencies(double binVa
 
 	if (binValue < binEdges[0]) {   // underflow (also covers -1)
 		return {1.0, 1.0};
+=======
+void DisplacedHcalJetNTuplizer::endLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const& iSetup) {
+	if (debug) cout << "Running DisplacedHcalJetNTuplizer::endLuminosityBlock" << endl;
+}
+
+// ------------------------------------------------------------------------------------
+void DisplacedHcalJetNTuplizer::endRun(edm::Run const& iRun, edm::EventSetup const& iSetup) {
+	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::endRun"<<endl; 
+}
+
+// ------------------------------------------------------------------------------------
+void DisplacedHcalJetNTuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+	// Method called for each event
+
+	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::analyze"<<endl; 
+
+	using namespace edm;
+
+	// ----- Initialize Event ----- //
+
+	if( debug ) cout<<"Initializing Event..."<<endl;
+
+	loadEvent(iEvent); // Load objects and resets tree branches
+	NEvents->Fill(0); // Event Count
+
+	// ----- Reset Branches ----- //
+
+	if( debug ) cout<<"Resetting Branches..."<<endl;
+
+	ResetBranches();
+
+	// ----- Getting CaloGeometry ----- //
+
+	if( debug ) cout<<"Getting CaloGeometry..."<<endl;
+
+	auto const& geoHandle = iSetup.getData(caloGeometryToken_);
+	caloGeometry_EB = geoHandle.getSubdetectorGeometry(DetId::Ecal, EcalBarrel);
+	caloGeometry_EE = geoHandle.getSubdetectorGeometry(DetId::Ecal, EcalEndcap);
+	caloGeometry_HB = geoHandle.getSubdetectorGeometry(DetId::Hcal, HcalBarrel);
+	caloGeometry_HE = geoHandle.getSubdetectorGeometry(DetId::Hcal, HcalEndcap);
+	caloGeometry_HO = geoHandle.getSubdetectorGeometry(DetId::Hcal, HcalOuter); 
+
+	// ----- Fill Branches ----- //
+
+	if( debug ) cout<<"Filling Branches..."<<endl;
+
+	//FillBranches();
+
+	// Event Level Info
+	FillEventInfoBranches( iEvent );
+	FillPVBranches( iEvent );
+	FillMetBranches( iEvent );
+
+	// Standard Objects
+	FillElectronBranches( iEvent );
+	FillMuonBranches( iEvent );
+	//FillTauBranches( iEvent );
+	FillPhotonBranches( iEvent );
+	FillJetBranches( iEvent, iSetup );
+
+	// Low-Level Objects
+	FillTriggerBranches( iEvent, iSetup );
+	FillTrackBranches( iEvent ); //, iSetup );
+	//FillPFCandidateBranches( iEvent, iSetup );
+	//FillSecondaryVerticesBranches( iEvent, iSetup );
+
+	// Hits
+	FillEcalRechitBranches( iEvent, iSetup ); 
+	FillHcalRechitBranches( iEvent, iSetup );
+
+	// MC
+	if( !isData ){
+		FillPileupBranches();
+		//FillMCBranches( iEvent, iSetup );
+		FillGenParticleBranches();
+	}
+
+	//fillPVAll();
+	//if ( enableTriggerInfo_ ) 
+	//	fillTrigger( iEvent );
+
+	output_tree->Fill();
+
+	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::analyze"<<endl; 
+
+};
+
+// ------------------------------------------------------------------------------------
+void DisplacedHcalJetNTuplizer::endJob(){
+	// Method called once each job just after ending the event loop
+};
+
+// 
+// ************************************************************************************
+// Fill Output NTuple Branches
+// ************************************************************************************
+// 
+
+// ------------------------------------------------------------------------------------
+bool DisplacedHcalJetNTuplizer::FillEventInfoBranches(const edm::Event& iEvent){
+	// Fill tree variables
+
+	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillEventInfoBranches"<<endl; 
+
+	isData 		= isData_;
+	era 		= era_;
+	runNumber 	= iEvent.id().run();
+	lumiNumber 	= iEvent.luminosityBlock();
+	eventNumber = iEvent.id().event();
+	eventTime 	= iEvent.eventAuxiliary().time().unixTime();
+
+	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillEventInfoBranches"<<endl; 
+
+	return true;
+
+};
+
+// ------------------------------------------------------------------------------------
+bool DisplacedHcalJetNTuplizer::FillPVBranches( const edm::Event& iEvent ){
+
+	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillPVBranches"<<endl; 
+
+	// Select the primary vertex (if any) //
+
+	n_PV 		 = 0;
+	PV_global 	 = &(vertices->front());
+	bool foundPV = false;
+
+	for( unsigned int i = 0; i < vertices->size(); i++ ){
+		if(vertices->at(i).isValid() && !vertices->at(i).isFake()){
+			if (!foundPV){
+				PV_global = &(vertices->at(i));
+				foundPV = true;
+			}
+			n_PV++;
+		}
+	}
+
+	PV_X = PV_global->x();
+	PV_Y = PV_global->y();
+	PV_Z = PV_global->z();
+
+	// get rho
+	fixedGridRhoFastjetAll = *rhoFastjetAll;
+
+	// Get All PVs //
+
+	n_PVCand = vertices->size(); 
+	for (int ipv = 0; ipv < n_PVCand; ++ipv){
+		const reco::Vertex &vtx_temp = vertices->at(ipv);
+		PVCand_X.push_back( vtx_temp.x() );
+		PVCand_Y.push_back( vtx_temp.y() );
+		PVCand_Z.push_back( vtx_temp.z() );
+
+		PVCand_LogSumPtSq.push_back( log(0) ); // FIX
+		PVCand_SumPx.push_back( 0 ); // FIX
+		PVCand_SumPy.push_back( 0 ); // FIX
+	} 
+
+	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillPVBranches"<<endl; 
+
+	return true;
+
+};
+
+
+// ------------------------------------------------------------------------------------
+bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent, const edm::EventSetup& iSetup){
+
+	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::FillTriggerBranches"<<endl; 
+
+	string hltPathNameReq = "HLT_";
+
+	//fill trigger information
+	const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
+
+	if( debug ) cout<<"N TRIGGER BITS = "<<triggerBits->size()<<endl;
+
+	for( auto triggerPathName: triggerPathNames ){
+
+		if( debug ) cout<<"  -- "<<triggerPathName<<endl;
+
+		if( triggerPathName == "" ) continue;
+
+		bool found_trigger = false;
+
+		for( uint i = 0; i < triggerBits->size(); ++i) { // TODO: CHECK OUT INDEXING
+
+			if( (names.triggerName(i)).find(hltPathNameReq) == string::npos ) continue;
+
+			int lastUnderscorePos = (names.triggerName(i)).find_last_of("_");
+			//if( lastUnderscorePos == string::npos ) continue;
+
+			string hltPathNameWithoutVersionNumber = (names.triggerName(i)).substr(0,lastUnderscorePos);
+			if( hltPathNameWithoutVersionNumber != triggerPathName ) continue;
+
+			if( debug && triggerBits->accept(i) ) cout<<"PASS TRIGGER "<<names.triggerName(i)<<endl;
+
+			// Fill Branches //
+
+			HLT_Decision.push_back( triggerBits->accept(i) );
+			HLT_Prescale.push_back( -1 );			
+						// if (isData_) HLT_Prescale.push_back( triggerPrescales->getPrescaleForIndex(i) ); // FIX
+						// else HLT_Prescale.push_back( 1 ); // TODO Need to figure out yields
+
+
+			if( triggerBits->accept(i) ) NEvents_HLT->Fill(triggerPathNamesIndices[triggerPathName]); // FIX WEIGHTS
+
+			found_trigger = true;
+
+			break;
+	
+		}
+
+		if (!found_trigger) {
+		    if (debug) std::cout << "    --> trig not found in triggerBits" << std::endl;
+		    HLT_Decision.push_back(false);
+		    HLT_Prescale.push_back(-2);
+
+		}
+	}
+
+	// ----- L1 Trigger Decisions ----- //
+
+	l1GtUtils_.retrieveL1(iEvent, iSetup);
+	for( size_t i = 0; i < l1TriggerNames.size(); ++i ){
+		const string& l1Name = l1TriggerNames[i];
+		bool l1dec = false;
+		double l1pre = 0.0;
+		l1GtUtils_.getInitialDecisionByName(l1Name, l1dec);
+		if( isData_ ){
+			l1GtUtils_.getPrescaleByName(l1Name, l1pre);
+		} else {
+			l1pre = l1TriggerPrescalesMC[i];
+		}
+		if( debug ) cout<<"  L1 "<<l1Name<<" : "<<l1dec<<" (prescale "<<l1pre<<")"<<endl;
+		L1_Decision.push_back( l1dec );
+		L1_Prescale.push_back( l1pre );
+	}
+
+
+
+	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillTriggerBranches"<<endl;
+
+	return true;
+};
+
+// ------------------------------------------------------------------------------------
+std::pair<double,double> DisplacedHcalJetNTuplizer::GetEfficiencies(double binValue, const double* binEdges, const double* dataVals, const double* mcVals, int nBins) {
+	// binEdges has nBins+1 entries (ROOT-style); dataVals/mcVals have nBins entries
+
+	if (binValue < binEdges[0]) {   // underflow (also covers -1)
+		return {1.0, 1.0};
 	}
 
 	int bin = nBins - 1;            // overflow goes into the last bin
@@ -2077,6 +2330,7 @@ std::pair<double,double> DisplacedHcalJetNTuplizer::GetEfficiencies(double binVa
 
 	return {dataVals[bin], mcVals[bin]};
 };
+
 // ------------------------------------------------------------------------------------
 // Jet-by-jet tag update. Pass eData/eQCD directly (not a collapsed SF).
 bool DisplacedHcalJetNTuplizer::applySF(bool isTagged, double eData, double eQCD) {
@@ -2118,7 +2372,6 @@ void DisplacedHcalJetNTuplizer::UnpackTriggerObjects(const edm::Event& iEvent) {
 		obj.unpackFilterLabels(iEvent, *triggerBits);
 		if (!obj.type(trigger::TriggerJet)) continue;            // HLT jets only
 		unpackedTrigObjs_.push_back(obj);
-	}
 };
 
 // ------------------------------------------------------------------------------------
@@ -2734,6 +2987,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecParColl["Uncertainty"]);
 	}
 	UnpackTriggerObjects( iEvent ); 
+	MatchLeg0Objects();
 
 	// FIX URGENT
 	//  edm::ESHandle<CaloGeometry> geoHandle;
