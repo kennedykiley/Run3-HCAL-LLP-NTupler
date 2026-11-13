@@ -57,7 +57,8 @@ def main():
 
     signal_central_tags = []
     for tag in datasets: 
-        if "Signal_RAW_" in tag: signal_central_tags.append(tag)
+        # if "Signal_RAW_" in tag: signal_central_tags.append(tag) # for low stat central samples
+        if "CentralSignal_RAW_" in tag: signal_central_tags.append(tag) # for high stat central samples
 
     for dataset_tag in signal_tags: #data_tags: # signal_central_tags, signal_tags, zmu_tags
         i = 0
