@@ -53,6 +53,8 @@ using namespace std;
 #include "JetMETCorrections/Modules/interface/JetResolution.h" // GK
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h" // GK
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h" // GK
+#include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h" // GK
+#include "FWCore/Framework/interface/ESWatcher.h" // GK, rebuild JES uncertainty when JEC IOV changes
 
 #include "DataFormats/CSCDigi/interface/CSCComparatorDigi.h"
 #include "DataFormats/CSCDigi/interface/CSCComparatorDigiCollection.h"
@@ -308,10 +310,12 @@ protected:
 	// JER tools // GK
 	JME::JetResolution jerRes_;
 	JME::JetResolutionScaleFactor jerSF_;
-	// JEC uncertainty
+	// JEC uncertainty (JES), built from the "Uncertainty" level of the same sqlite JEC payload used for the JECs // GK
 	std::unique_ptr<JetCorrectionUncertainty> jecUnc_;
+	edm::ESWatcher<JetCorrectionsRecord> jecWatcher_;
 
 	const edm::ESGetToken<TransientTrackBuilder, TransientTrackRecord> theTTBToken_;
+	const edm::ESGetToken<JetCorrectorParametersCollection, JetCorrectionsRecord> jecParamsToken_; // GK, label set by "jecPayload" in python cfg
 
 	// BTAG
 	unique_ptr<correction::CorrectionSet> btag_cset_;
@@ -745,7 +749,14 @@ protected:
 	vector<float> jet_Pt_JER_down;
 	vector<float> jet_E_JER_down;
 	vector<float> jet_Mass_JER_down;
-	// Features 
+	vector<float> jet_JES_unc; // fractional Total JES uncertainty (symmetric)
+	vector<float> jet_Pt_JES_up;
+	vector<float> jet_E_JES_up;
+	vector<float> jet_Mass_JES_up;
+	vector<float> jet_Pt_JES_down;
+	vector<float> jet_E_JES_down;
+	vector<float> jet_Mass_JES_down;
+	// Features
 	vector<float> jet_JetArea;  
 	vector<float> jet_ChargedHadEFrac;
 	vector<float> jet_NeutralHadEFrac;

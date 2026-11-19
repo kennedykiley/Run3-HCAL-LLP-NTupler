@@ -33,6 +33,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	rand_(0), // random seed // GK for JER
 	// Trigger
 	theTTBToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
+	jecParamsToken_(esConsumes(edm::ESInputTag("", iConfig.getParameter<std::string>("jecPayload")))), // GK, JES uncertainty from JEC sqlite payload
 	triggerBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerBits"))),
 	triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
 	triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
@@ -202,12 +203,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 		//sumPdfWeights = 0;
 		//sumAlphasWeights = 0;
 	}
-	// JEC uncertainty, data and MC txt paths are listed in .py file
-	// std::string jecUncPath = iConfig.getParameter<std::string>("jec_Uncertainty"); // for cms.string
-	// jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecUncPath);
-	// edm::FileInPath jecUncPath = iConfig.getParameter<edm::FileInPath>("jec_Uncertainty"); // no uncertainties for Run 3 yet
-	// JetCorrectorParameters jecUncParams(jecUncPath.fullPath());
-	// jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecUncParams);
+	// JEC uncertainty (JES): built in FillJetBranches from the EventSetup (same sqlite payload as the JECs), not from a txt file
 
 	// ----- Get Triggers ----- // 
 
@@ -700,6 +696,13 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "jet_Pt_JER_down", &jet_Pt_JER_down );
 	output_tree->Branch( "jet_E_JER_down", &jet_E_JER_down );
 	output_tree->Branch( "jet_Mass_JER_down", &jet_Mass_JER_down );
+	output_tree->Branch( "jet_JES_unc", &jet_JES_unc );
+	output_tree->Branch( "jet_Pt_JES_up", &jet_Pt_JES_up );
+	output_tree->Branch( "jet_E_JES_up", &jet_E_JES_up );
+	output_tree->Branch( "jet_Mass_JES_up", &jet_Mass_JES_up );
+	output_tree->Branch( "jet_Pt_JES_down", &jet_Pt_JES_down );
+	output_tree->Branch( "jet_E_JES_down", &jet_E_JES_down );
+	output_tree->Branch( "jet_Mass_JES_down", &jet_Mass_JES_down );
 	output_tree->Branch( "jet_ChargedHadEFrac", &jet_ChargedHadEFrac );
 	output_tree->Branch( "jet_NeutralHadEFrac", &jet_NeutralHadEFrac );
 	output_tree->Branch( "jet_PhoEFrac", &jet_PhoEFrac );
@@ -1310,6 +1313,13 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jet_Pt_JER_down.clear();
 	jet_E_JER_down.clear();
 	jet_Mass_JER_down.clear();
+	jet_JES_unc.clear();
+	jet_Pt_JES_up.clear();
+	jet_E_JES_up.clear();
+	jet_Mass_JES_up.clear();
+	jet_Pt_JES_down.clear();
+	jet_E_JES_down.clear();
+	jet_Mass_JES_down.clear();
 	jet_ChargedHadEFrac.clear();
 	jet_NeutralHadEFrac.clear();
 	jet_PhoEFrac.clear();
@@ -2693,6 +2703,12 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 	uint32_t seed = run + lumi + evt;  // simple combo
 	rand_.SetSeed(seed);
 
+	// JES uncertainty: (re)build from the "Uncertainty" level of the JEC payload when the IOV changes // GK
+	if( jecWatcher_.check(iSetup) || !jecUnc_ ) {
+		const JetCorrectorParametersCollection& jecParColl = iSetup.getData(jecParamsToken_);
+		jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecParColl["Uncertainty"]);
+	}
+
 	// FIX URGENT
 	//  edm::ESHandle<CaloGeometry> geoHandle;
 	//  iSetup.get<CaloGeometryRecord>().get(geoHandle);
@@ -2739,22 +2755,28 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		jet_Eta.push_back( jet.eta() );
 		jet_Phi.push_back( jet.phi() );
 
-		// // JEC, jet energy scale uncertainty
-		// jecUnc_->setJetPt(jet.pt());
-		// jecUnc_->setJetEta(jet.eta());
-		// double unc = jecUnc_->getUncertainty(true);  // true = up variation
-		// double factor_jesUp = (1 + unc);
-		// double factor_jesDown = (1 - unc);
-		// // correct 4 vector instead of each component
-		// auto jet_JES_up = jet.p4() * factor_jesUp;
-		// auto jet_JES_down = jet.p4() * factor_jesDown;
-		// // Save to tree
-		// jet_Pt_JES_up.		push_back(jet_JES_up.pt());
-		// jet_E_JES_up.		push_back(jet_JES_up.energy());
-		// jet_Mass_JES_up.	push_back(jet_JES_up.mass());
-		// jet_Pt_JES_down.	push_back(jet_JES_down.pt());
-		// jet_E_JES_down.		push_back(jet_JES_down.energy());
-		// jet_Mass_JES_down.	push_back(jet_JES_down.mass());
+		// ----- JEC, jet energy scale (JES) uncertainty ----- // GK
+		// Evaluated at the JEC-corrected (unsmeared) jet pt, eta. Run 3 Total uncertainty tables are symmetric, so up == down.
+		jecUnc_->setJetPt(jet.pt());
+		jecUnc_->setJetEta(jet.eta());
+		double unc = jecUnc_->getUncertainty(true);  // true = up variation
+		double factor_jesUp = (1 + unc);
+		double factor_jesDown = (1 - unc);
+		jet_JES_unc.push_back(unc);
+
+		// Save JES variation to tree. Applied to the nominal jet: JEC only for data, JEC + JER for MC (filled below, after smearing)
+		auto fillJES = [&](const reco::Candidate::LorentzVector& p4_nom) {
+			// correct 4 vector instead of each component
+			auto jet_JES_up = p4_nom * factor_jesUp;
+			auto jet_JES_down = p4_nom * factor_jesDown;
+			jet_Pt_JES_up.		push_back(jet_JES_up.pt());
+			jet_E_JES_up.		push_back(jet_JES_up.energy());
+			jet_Mass_JES_up.	push_back(jet_JES_up.mass());
+			jet_Pt_JES_down.	push_back(jet_JES_down.pt());
+			jet_E_JES_down.		push_back(jet_JES_down.energy());
+			jet_Mass_JES_down.	push_back(jet_JES_down.mass());
+		};
+		if (isData_) fillJES(jet.p4());
 
 		// ----- JEC + JER (only for MC) ----- // GK
 		if (!isData_) {
@@ -2790,6 +2812,8 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 			jet_Pt			.push_back(jet_JER.pt());
 			jet_E			.push_back(jet_JER.energy());
 			jet_Mass		.push_back(jet_JER.mass());
+
+			fillJES(jet_JER); // JES variation on top of the nominal JEC + JER jet
 
 			auto jet_JER_up = jet.p4() * smearJetFactor(jet, sf_up);
 			jet_Pt_JER_up	.push_back(jet_JER_up.pt());
