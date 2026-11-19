@@ -762,6 +762,7 @@ process.DisplacedHcalJets = cms.EDAnalyzer('DisplacedHcalJetNTuplizer',
     calojetsAK8 = cms.InputTag("ak8CaloJets"), #,"","RECO"),
     l1jets = cms.InputTag("gtStage2Digis","Jet"), #,"RECO"), # GK, added for L1 jets access
     pfjetsAK4_corrected = cms.InputTag("selectedUpdatedPatJetsUpdatedJEC"), # GK, adding JECs # Point analyzer to corrected jets
+    jecPayload = cms.string("AK4PFchs"), # GK, JES uncertainty payload label in process.jec. Must match the jets looped over in FillJetBranches (CHS now; "AK4PFPuppi" if switching to jetsPuppiCorr)
     #jetsPF = cms.InputTag("ak4PFJets"),
     #jets = cms.InputTag("ak4PFJetsCHS"),
     #jets = cms.InputTag("selectedPatJets"),
@@ -908,7 +909,7 @@ if not options.isData:
     process.DisplacedHcalJets.btagSysSF        = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/BTag/btv-scale-factors/"+BTag_SF_tag_name+"/json/btagging_v2.json")
     # note that _AK4PFchs.txt is a symlink back to _AK4PFPuppi.txt, and there are issues when the symlinked version is used. So the puppi version is listed. 
     # based on https://cms-jerc.web.cern.ch/Recommendations/#2023_1
-# process.DisplacedHcalJets.jec_Uncertainty = cms.FileInPath("cms_lpc_llp/Run3-HCAL-LLP-NTupler/data/JEC_JER/JECDatabase/textFiles/"+tag_name+"/"+tag_name+"_Uncertainty_AK4PFPuppi.txt")
+# JES uncertainty (data and MC) is read in the analyzer from the "Uncertainty" level of the JEC sqlite payload in process.jec (label set by jecPayload), no txt file needed
 
 
 # ------ MET Filter Handling for RECO From RAW ------ #

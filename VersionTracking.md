@@ -87,6 +87,8 @@ Still on the to-do list:
 * MET filters added
 * Prescale for HLT paths added
 
+## V5
+
 ## V6
 New trigger SFs calculated using the correct monitoring path HLT_L1SingleLLP and QCD MC samples
 
@@ -100,3 +102,7 @@ Location of ntuples:
 /hdfs/store/user/fsimpson/HToSSTo4B_MH350_MS160_CTau10000/HToSSTo4B_MH350_MS160_CTau10000_batch2_v6/260722_173537/0000/
 /hdfs/store/user/fsimpson/HToSSTo4B_MH350_MS80_CTau500/HToSSTo4B_MH350_MS80_CTau500_batch1_v6/260722_173301/0000/
 ```
+
+## V8
+* JES uncertainties added
+* Include list of central samples for LLP MC

@@ -34,6 +34,8 @@ The saved branches are:
 - `jetRaw`: no JEC applied, this is the uncorrected jet
 - `jet_*_noJER`: no smearing applied (MC only)
 - `jet_*_JER_up/down`: smeared up / down variation with JER
+- `jet_JES_unc`: fractional Total JES uncertainty, read from the `Uncertainty` level of the same JEC sqlite payload
+- `jet_*_JES_up/down`: nominal jet (JEC for data, JEC + JER for MC) scaled by (1 ± `jet_JES_unc`). For systematics, use the MC branches: shift the simulated jets and leave data fixed. The data branches are only for cross-checks.
 - `jet_E`, `jet_Pt`: corrected and (MC only) smeared jet. This should be used for analysis
 
 # Run the ntuples

@@ -35,3 +35,6 @@
 #*#
 
 *.pyc
+
+# JEC text files dumped from the SQLite DBs (scripts/dumpJECtxt_cfg.py)
+data/JEC_JER/txt/
