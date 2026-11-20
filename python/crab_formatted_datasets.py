@@ -70,6 +70,15 @@ datasets["Data_ZMu_Run2023"] = [
     '/Muon1/Run2023D-ZMu-PromptReco-v2/RAW-RECO'
 ]
 
+datasets["Data_HighMET_Skim_2023"] = [
+    # '/JetMET0/Run2023C-EXOHighMET-PromptReco-v1/RAW-RECO',
+    # '/JetMET0/Run2023C-EXOHighMET-PromptReco-v2/RAW-RECO',
+    # '/JetMET0/Run2023C-EXOHighMET-PromptReco-v3/RAW-RECO',
+    '/JetMET0/Run2023C-EXOHighMET-PromptReco-v4/RAW-RECO',
+    '/JetMET0/Run2023D-EXOHighMET-PromptReco-v1/RAW-RECO',
+    # '/JetMET0/Run2023D-EXOHighMET-PromptReco-v2/RAW-RECO'
+]
+
 #datasets["Signal_HToSSTo4B_MH125_MS15_CTau1000"] = [
 #    "/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER"
 #]
