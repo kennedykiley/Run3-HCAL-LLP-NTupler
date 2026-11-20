@@ -70,6 +70,15 @@ datasets["Data_ZMu_Run2023"] = [
     '/Muon1/Run2023D-ZMu-PromptReco-v2/RAW-RECO'
 ]
 
+datasets["Data_HighMET_Skim_2023"] = [
+    # '/JetMET0/Run2023C-EXOHighMET-PromptReco-v1/RAW-RECO',
+    # '/JetMET0/Run2023C-EXOHighMET-PromptReco-v2/RAW-RECO',
+    # '/JetMET0/Run2023C-EXOHighMET-PromptReco-v3/RAW-RECO',
+    '/JetMET0/Run2023C-EXOHighMET-PromptReco-v4/RAW-RECO',
+    '/JetMET0/Run2023D-EXOHighMET-PromptReco-v1/RAW-RECO',
+    # '/JetMET0/Run2023D-EXOHighMET-PromptReco-v2/RAW-RECO'
+]
+
 #datasets["Signal_HToSSTo4B_MH125_MS15_CTau1000"] = [
 #    "/ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV/lpclonglived-crab_PrivateProduction_Summer22_DR_step2_RECOSIM_ggH_HToSSTobbbb_MH-125_MS-15_CTau1000_13p6TeV_batch1_v1-59a22edf0600a784f6c900595d24e883/USER"
 #]
@@ -105,66 +114,68 @@ datasets["Signal_HToSSTo4B_MH350_MS160_CTau10000"] = [
     "/HToSSTo4B_MH350_MS160_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH350_MS160_CTau10000_batch2_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER"
 ]
 
-# central signal production samples, DAS = https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FHTo2LongLivedTo4b_MH-*_MFF-*_CTau-*mm_TuneCP5_13p6TeV_pythia8%2FRun3*-124X_mcRun3_*%2FGEN-SIM-RAW
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS15_CTau10000_2022"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW"
+# central signal production samples, DAS:
+# 2022: https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FHTo2LongLivedTo4b_MH-*_MFF-*_CTau-*mm_TuneCP5_13p6TeV_pythia8%2FRun3*-124X_mcRun3_*%2FGEN-SIM-RAW
+# 2023: https://cmsweb.cern.ch/das/request?view=list&limit=50&instance=prod%2Fglobal&input=dataset%3D%2FHTo2LongLivedTo4b_MH-*_MFF-*_CTau-*mm_TuneCP5_13p6TeV_pythia8%2FRun3*23*mcRun3_*%2FGEN-SIM-RAW (these are in 130X)
+datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS15_CTau10000"] = [
+    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23DRPremix-130X_mcRun3_2023_realistic_v15-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23BPixDRPremix-130X_mcRun3_2023_realistic_postBPix_v6-v2/GEN-SIM-RAW"
 ]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS15_CTau10000_2022postEE"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW"
+datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS15_CTau3000"] = [
+    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23DRPremix-130X_mcRun3_2023_realistic_v15-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23BPixDRPremix-130X_mcRun3_2023_realistic_postBPix_v6-v2/GEN-SIM-RAW"
 ]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS15_CTau3000_2022"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW"
+datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS23_CTau10000"] = [
+    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23DRPremix-130X_mcRun3_2023_realistic_v15-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23BPixDRPremix-130X_mcRun3_2023_realistic_postBPix_v6-v2/GEN-SIM-RAW"
 ]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS15_CTau3000_2022postEE"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-15_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW"
+datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS23_CTau3000"] = [
+    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23DRPremix-130X_mcRun3_2023_realistic_v15-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23BPixDRPremix-130X_mcRun3_2023_realistic_postBPix_v6-v2/GEN-SIM-RAW"
 ]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS23_CTau10000_2022"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_20２２_realistic_v1２-v２/GEN-SIM-RAW"
+datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS30_CTau10000"] = [
+    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23DRPremix-130X_mcRun3_2023_realistic_v15-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23BPixDRPremix-130X_mcRun3_2023_realistic_postBPix_v6-v2/GEN-SIM-RAW"
 ]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS23_CTau10000_2022postEE"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW"
+datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS30_CTau3000"] = [
+    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23DRPremix-130X_mcRun3_2023_realistic_v15-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23BPixDRPremix-130X_mcRun3_2023_realistic_postBPix_v6-v2/GEN-SIM-RAW"
 ]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS23_CTau3000_2022"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW"
+datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS40_CTau10000"] = [
+    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23DRPremix-130X_mcRun3_2023_realistic_v15-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23BPixDRPremix-130X_mcRun3_2023_realistic_postBPix_v6-v2/GEN-SIM-RAW"
 ]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS23_CTau3000_2022postEE"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-23_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW"
+datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS40_CTau3000"] = [
+    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23DRPremix-130X_mcRun3_2023_realistic_v15-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23BPixDRPremix-130X_mcRun3_2023_realistic_postBPix_v6-v2/GEN-SIM-RAW"
 ]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS30_CTau10000_2022"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW"
+datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS55_CTau10000"] = [
+    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23DRPremix-130X_mcRun3_2023_realistic_v15-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23BPixDRPremix-130X_mcRun3_2023_realistic_postBPix_v6-v2/GEN-SIM-RAW"
 ]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS30_CTau10000_2022postEE"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW"
-]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS30_CTau3000_2022"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW"
-]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS30_CTau3000_2022postEE"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-30_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW"
-]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS40_CTau10000_2022"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW"
-]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS40_CTau10000_2022postEE"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW"
-]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS40_CTau3000_2022"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW"
-]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS40_CTau3000_2022postEE"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-40_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW"
-]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS55_CTau10000_2022"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW"
-]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS55_CTau10000_2022postEE"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-10000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW"
-]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS55_CTau3000_2022"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW"
-]
-datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS55_CTau3000_2022postEE"] = [
-    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW"
+datasets["CentralSignal_RAW_HToSSTo4B_MH125_MS55_CTau3000"] = [
+    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22DRPremix-124X_mcRun3_2022_realistic_v12-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer22EEDRPremix-124X_mcRun3_2022_realistic_postEE_v1-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23BPixDRPremix-130X_mcRun3_2023_realistic_postBPix_v6-v2/GEN-SIM-RAW",
+    "/HTo2LongLivedTo4b_MH-125_MFF-55_CTau-3000mm_TuneCP5_13p6TeV_pythia8/Run3Summer23DRPremix-130X_mcRun3_2023_realistic_v15-v2/GEN-SIM-RAW"
 ]
 
 # data used for background studies 
