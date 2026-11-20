@@ -98,7 +98,7 @@ config.Data.splitting        = 'Automatic' #'LumiBased'
 #config.Data.splitting         = 'FileBased' #'EventAwareLumiBased' #'FileBased'
 #config.Data.unitsPerJob       = 400 #MYVAR_EVENTS_PER_FILE
 #config.Data.totalUnits       = 1
-config.Data.ignoreLocality   = True
+config.Data.ignoreLocality   = False
 config.Data.publication      = False
 config.Data.outputDatasetTag = "MYVAR_DATASET_TAG"
 
