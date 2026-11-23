@@ -261,9 +261,9 @@ process.TFileService = cms.Service( "TFileService",
 
 process.options = cms.untracked.PSet(
     FailPath = cms.untracked.vstring(), #remove for higher global tags for 2025
-    IgnoreCompletely = cms.untracked.vstring(),
+    # try without IgnoreCompletely = cms.untracked.vstring(),
     Rethrow = cms.untracked.vstring(),
-    SkipEvent = cms.untracked.vstring(), #remove for higher global tags for 2025
+    # try without SkipEvent = cms.untracked.vstring(), #remove for higher global tags for 2025
 #    TryToContinue = cms.untracked.vstring("ProductNotFound"), #For 2025
     accelerators = cms.untracked.vstring('*'),
     allowUnscheduled = cms.obsolete.untracked.bool,
@@ -421,7 +421,8 @@ process.selectedPatCandidates = cms.Sequence(process.selectedPatCandidatesTask)
 # ----- PAT Trigger ----- #
 
 process.load('PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cfi')
-process.patTrigger.onlyStandAlone = cms.bool(False)
+process.patTrigger.onlyStandAlone = cms.bool(True) #False)
+process.patTrigger.processName    = cms.string("HLT")
 process.patTrigger.packTriggerLabels = cms.bool(False)
 process.patTrigger.packTriggerPathNames = cms.bool(False)
 process.patTrigger.packTriggerPrescales = cms.bool(False) #True)
@@ -958,7 +959,7 @@ if options.recoFromRAW:
 process.outputPath = cms.EndPath(process.output)
 
 # NTuplization Process
-process.p = cms.Path( process.primaryVertexAssociationLocal * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFiltersRecommended * process.DisplacedHcalJets )
+process.p = cms.Path( process.primaryVertexAssociationLocal * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFiltersRecommended * process.patTrigger * process.selectedPatTrigger * process.DisplacedHcalJets )
 
 # Schedule
 process.schedule = cms.Schedule( process.p )
@@ -966,7 +967,7 @@ process.schedule = cms.Schedule( process.p )
 if options.recoFromRAW:
 
     # Include HLT Filter to NTuplization Process (NB filter does nothing for MC)
-    process.p = cms.Path( process.hltFilter * process.primaryVertexAssociationLocal * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFiltersRecommended * process.DisplacedHcalJets )
+    process.p = cms.Path( process.hltFilter * process.primaryVertexAssociationLocal * process.egmGsfElectronIDSequence * process.egmPhotonIDSequence * process.NjettinessAK8CHS * process.metFiltersRecommended * process.patTrigger * process.selectedPatTrigger * process.DisplacedHcalJets )
 
     # Schedule definition
     process.schedule = cms.Schedule(process.raw2digi_step,process.L1Reco_step,process.reconstruction_step,

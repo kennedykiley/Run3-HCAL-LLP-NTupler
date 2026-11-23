@@ -28,4 +28,5 @@
 <use name="L1Trigger/L1TGlobal"/>
 <use name="DataFormats/L1TGlobal"/>
 <use name="correctionlib"/>
+<use name="HLTrigger/HLTcore"/>
 <flags EDM_PLUGIN="1"/>
