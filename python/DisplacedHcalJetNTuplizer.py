@@ -143,7 +143,7 @@ else:
         ("HTo2LongLivedTo4b", "22EEDR"):     ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
         ("HTo2LongLivedTo4b", "23DRPremix"): ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC", "2023_Summer23"), 
         ("HTo2LongLivedTo4b", "23BPix"):     ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
-        # naming for other samples used previously
+        # naming for other central samples used previously, this should be out of date / proceeded by the above 4 lines now
         ("HTo2LongLivedTo4b", "postBPix"):("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
         ("HTo2LongLivedTo4b", "postEE"): ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
         ("HTo2LongLivedTo4b", "2022_"):  ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
@@ -330,9 +330,9 @@ global_tags_MC = {
 
 if options.isData: 
     if "2022" in era_name: 
-        if "G" not in era_name: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4', '') 
-        else:                   process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10', '')
-    else:                       process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '') 
+        if "G" not in era_name: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4', '')     # should this be 124X_dataRun3_v15? this is offline tag for CDE (https://twiki.cern.ch/twiki/bin/view/CMSPublic/GTsRun3#Global_tag_for_ReReco_of_Run_202)
+        else:                   process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10', '')    # F and G only have prompt (JEC derived on prompt), so use prompt_v4 for F and prompt_v10 for G (or 130X_dataRun3_PromptAnalysis_v1 for FG and 2023?)
+    else:                       process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '')           # we don't re-reco this one
 else:                           process.GlobalTag = GlobalTag(process.GlobalTag, global_tags_MC[era_name], '') 
 
 
