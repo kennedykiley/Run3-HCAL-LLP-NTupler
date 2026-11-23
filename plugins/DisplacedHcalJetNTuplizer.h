@@ -291,7 +291,7 @@ public:
                 const double* bins, const double* dataVals, const double* mcVals, int nBins,
                 bool& cumNom, bool& cumVar,
                 std::vector<int>& status, std::vector<bool>& tag,
-                std::vector<bool>& tagVar, std::vector<float>& sf);
+                std::vector<bool>& tagVar, std::vector<float>& sf, std::vector<bool>& tagVarLeg);
 	pair<double,double> GetEfficiencies(double binValue, const double* binEdges, const double* dataVals, const double* mcVals, int nBins);
 	double ComputeTagSF(bool tagged, double eData, double eQCD);
 	bool applySF(bool isTagged, double eData, double eQCD);
@@ -604,22 +604,27 @@ protected:
 	
 	vector<vector<bool>> jet_Tagged_HLT1a;
 	vector<vector<bool>> jet_Tagged_Varied_HLT1a;
+	vector<vector<bool>> jet_Tagged_VariedLeg_HLT1a;
 	vector<vector<float>> jet_SF_HLT1a;
 	
 	vector<vector<bool>> jet_Tagged_HLT1b;
 	vector<vector<bool>> jet_Tagged_Varied_HLT1b;
+	vector<vector<bool>> jet_Tagged_VariedLeg_HLT1b;
 	vector<vector<float>> jet_SF_HLT1b;
 	
 	vector<vector<bool>> jet_Tagged_HLT2;
 	vector<vector<bool>> jet_Tagged_Varied_HLT2;
+	vector<vector<bool>> jet_Tagged_VariedLeg_HLT2;
 	vector<vector<float>> jet_SF_HLT2;
 	
 	vector<vector<bool>> jet_Tagged_HLT3a;
 	vector<vector<bool>> jet_Tagged_Varied_HLT3a;
+	vector<vector<bool>> jet_Tagged_VariedLeg_HLT3a;
 	vector<vector<float>> jet_SF_HLT3a;
 	
 	vector<vector<bool>> jet_Tagged_HLT3b;
 	vector<vector<bool>> jet_Tagged_Varied_HLT3b;
+	vector<vector<bool>> jet_Tagged_VariedLeg_HLT3b;
 	vector<vector<float>> jet_SF_HLT3b;
 
 	vector<vector<int>> jet_HLTStatus_HLT1a, jet_HLTStatus_HLT1b, jet_HLTStatus_HLT2,

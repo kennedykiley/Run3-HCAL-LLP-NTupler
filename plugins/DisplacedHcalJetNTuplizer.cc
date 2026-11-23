@@ -856,18 +856,23 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch("jet_SF_L1",               &jet_SF_L1);
 	output_tree->Branch("jet_Tagged_HLT1a",        &jet_Tagged_HLT1a);
 	output_tree->Branch("jet_Tagged_Varied_HLT1a", &jet_Tagged_Varied_HLT1a);
+	output_tree->Branch("jet_Tagged_VariedLeg_HLT1a", &jet_Tagged_VariedLeg_HLT1a);
 	output_tree->Branch("jet_SF_HLT1a",            &jet_SF_HLT1a);
 	output_tree->Branch("jet_Tagged_HLT1b",        &jet_Tagged_HLT1b);
 	output_tree->Branch("jet_Tagged_Varied_HLT1b", &jet_Tagged_Varied_HLT1b);
+	output_tree->Branch("jet_Tagged_VariedLeg_HLT1b", &jet_Tagged_VariedLeg_HLT1b);
 	output_tree->Branch("jet_SF_HLT1b",            &jet_SF_HLT1b);
 	output_tree->Branch("jet_Tagged_HLT2",         &jet_Tagged_HLT2);
 	output_tree->Branch("jet_Tagged_Varied_HLT2",  &jet_Tagged_Varied_HLT2);
+	output_tree->Branch("jet_Tagged_VariedLeg_HLT2",  &jet_Tagged_VariedLeg_HLT2);
 	output_tree->Branch("jet_SF_HLT2",             &jet_SF_HLT2);
 	output_tree->Branch("jet_Tagged_HLT3a",        &jet_Tagged_HLT3a);
 	output_tree->Branch("jet_Tagged_Varied_HLT3a", &jet_Tagged_Varied_HLT3a);
+	output_tree->Branch("jet_Tagged_VariedLeg_HLT3a", &jet_Tagged_VariedLeg_HLT3a);
 	output_tree->Branch("jet_SF_HLT3a",            &jet_SF_HLT3a);
 	output_tree->Branch("jet_Tagged_HLT3b",        &jet_Tagged_HLT3b);
 	output_tree->Branch("jet_Tagged_Varied_HLT3b", &jet_Tagged_Varied_HLT3b);
+	output_tree->Branch("jet_Tagged_VariedLeg_HLT3b", &jet_Tagged_VariedLeg_HLT3b);
 	output_tree->Branch("jet_SF_HLT3b",            &jet_SF_HLT3b);
 
 	};
@@ -1462,18 +1467,23 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	jet_SF_L1.clear();
 	jet_Tagged_HLT1a.clear();
 	jet_Tagged_Varied_HLT1a.clear();
+	jet_Tagged_VariedLeg_HLT1a.clear();
 	jet_SF_HLT1a.clear();
 	jet_Tagged_HLT1b.clear();
 	jet_Tagged_Varied_HLT1b.clear();
+	jet_Tagged_VariedLeg_HLT1b.clear();
 	jet_SF_HLT1b.clear();
 	jet_Tagged_HLT2.clear();
 	jet_Tagged_Varied_HLT2.clear();
+	jet_Tagged_VariedLeg_HLT2.clear();
 	jet_SF_HLT2.clear();
 	jet_Tagged_HLT3a.clear();
 	jet_Tagged_Varied_HLT3a.clear();
+	jet_Tagged_VariedLeg_HLT3a.clear();
 	jet_SF_HLT3a.clear();
 	jet_Tagged_HLT3b.clear();
 	jet_Tagged_Varied_HLT3b.clear();
+	jet_Tagged_VariedLeg_HLT3b.clear();
 	jet_SF_HLT3b.clear();
 	jet_NTracks.clear();
 	jet_NPromptTracks.clear();
@@ -2003,10 +2013,10 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent, co
 	
 		}
 
-		if (!found_trigger) {
-		    if (debug) std::cout << "    --> trig not found in triggerBits" << std::endl;
-		    HLT_Decision.push_back(false);
-		    HLT_Prescale.push_back(-2);
+                if (!found_trigger) {
+                    if (debug) std::cout << "    --> trig not found in triggerBits" << std::endl;
+                    HLT_Decision.push_back(false);
+                    HLT_Prescale.push_back(-2);
 
 		}
 	}
@@ -2150,7 +2160,8 @@ void DisplacedHcalJetNTuplizer::EvalHLTLeg(const std::string& key, int k, float 
 		const double* bins, const double* dataVals, const double* mcVals, int nBins,
 		bool& cumNom, bool& cumVar,
 		std::vector<int>& status, std::vector<bool>& tag,
-		std::vector<bool>& tagVar, std::vector<float>& sf) {
+		std::vector<bool>& tagVar, std::vector<float>& sf,
+		std::vector<bool>& tagVarLeg) {
 
 	// online decision: leg's filter ran in this path, and the jet was one of its inputs
 	int st = -1;
@@ -2182,6 +2193,10 @@ void DisplacedHcalJetNTuplizer::EvalHLTLeg(const std::string& key, int k, float 
 		pass = emulated;
 	}
 
+	const bool prevNom = cumNom;
+	const bool prevVar = cumVar;
+	bool legVar = pass;
+
 	float w = 1.;
 	if (isData_) {
 		cumNom = cumNom && pass;
@@ -2191,12 +2206,16 @@ void DisplacedHcalJetNTuplizer::EvalHLTLeg(const std::string& key, int k, float 
 		if (cumNom) w = ComputeTagSF(pass, eff.first, eff.second);
 		if (cumVar) cumVar = applySF(pass, eff.first, eff.second);
 		cumNom = cumNom && pass;
+
+		if (prevVar)      legVar = cumVar;
+		else if (prevNom) legVar = applySF(pass, eff.first, eff.second);
 	}
 
 	status.push_back(st);
 	tag.push_back(cumNom);
 	tagVar.push_back(cumVar);
 	sf.push_back(w);
+	tagVarLeg.push_back(prevNom && legVar);
 };
 
 // ------------------------------------------------------------------------------------
@@ -3141,58 +3160,60 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		// HLT1a: DisplacedDijet35_Inclusive1PtrkShortSig5
 		{
 		    bool nom = true, var = true;
-		    vector<int> st; vector<bool> tg, tv; vector<float> sf;
-		    EvalHLTLeg("HLT1a", 0, eta_i, phi_i, emu_pT35, pT_i, Bins_PtrkShortSig5_pT_35GeV, Data_PtrkShortSig5_pT_35GeV, MC_PtrkShortSig5_pT_35GeV, N_PtrkShortSig5_pT_35GeV, nom, var, st, tg, tv, sf);
-		    EvalHLTLeg("HLT1a", 1, eta_i, phi_i, emu_PTrk1, nPromptTracks_i, Bins_PtrkShortSig5_PTrk, Data_PtrkShortSig5_PTrk, MC_PtrkShortSig5_PTrk, N_PtrkShortSig5_PTrk, nom, var, st, tg, tv, sf);
-		    jet_HLTStatus_HLT1a.push_back(st); jet_Tagged_HLT1a.push_back(tg); jet_Tagged_Varied_HLT1a.push_back(tv); jet_SF_HLT1a.push_back(sf);
+		    vector<int> st; vector<bool> tg, tv, tvl; vector<float> sf;
+		    EvalHLTLeg("HLT1a", 0, eta_i, phi_i, emu_pT35, pT_i, Bins_PtrkShortSig5_pT_35GeV, Data_PtrkShortSig5_pT_35GeV, MC_PtrkShortSig5_pT_35GeV, N_PtrkShortSig5_pT_35GeV, nom, var, st, tg, tv, sf, tvl);
+		    EvalHLTLeg("HLT1a", 1, eta_i, phi_i, emu_PTrk1, nPromptTracks_i, Bins_PtrkShortSig5_PTrk, Data_PtrkShortSig5_PTrk, MC_PtrkShortSig5_PTrk, N_PtrkShortSig5_PTrk, nom, var, st, tg, tv, sf, tvl);
+		    jet_HLTStatus_HLT1a.push_back(st); jet_Tagged_HLT1a.push_back(tg); jet_Tagged_Varied_HLT1a.push_back(tv); jet_SF_HLT1a.push_back(sf); jet_Tagged_VariedLeg_HLT1a.push_back(tvl);
 		}
 		
 		// HLT1b: DisplacedDijet40_Inclusive1PtrkShortSig5
 		{
 		    bool nom = true, var = true;
-		    vector<int> st; vector<bool> tg, tv; vector<float> sf;
-		    EvalHLTLeg("HLT1b", 0, eta_i, phi_i, emu_pT40,  pT_i,            Bins_PtrkShortSig5_pT_40GeV, Data_PtrkShortSig5_pT_40GeV, MC_PtrkShortSig5_pT_40GeV, N_PtrkShortSig5_pT_40GeV, nom, var, st, tg, tv, sf);
-		    EvalHLTLeg("HLT1b", 1, eta_i, phi_i, emu_PTrk1, nPromptTracks_i, Bins_PtrkShortSig5_PTrk,     Data_PtrkShortSig5_PTrk,     MC_PtrkShortSig5_PTrk,     N_PtrkShortSig5_PTrk,     nom, var, st, tg, tv, sf);
-		    jet_HLTStatus_HLT1b.push_back(st); jet_Tagged_HLT1b.push_back(tg); jet_Tagged_Varied_HLT1b.push_back(tv); jet_SF_HLT1b.push_back(sf);
+		    vector<int> st; vector<bool> tg, tv, tvl; vector<float> sf;
+		    EvalHLTLeg("HLT1b", 0, eta_i, phi_i, emu_pT40,  pT_i,            Bins_PtrkShortSig5_pT_40GeV, Data_PtrkShortSig5_pT_40GeV, MC_PtrkShortSig5_pT_40GeV, N_PtrkShortSig5_pT_40GeV, nom, var, st, tg, tv, sf,  tvl);
+		    EvalHLTLeg("HLT1b", 1, eta_i, phi_i, emu_PTrk1, nPromptTracks_i, Bins_PtrkShortSig5_PTrk,     Data_PtrkShortSig5_PTrk,     MC_PtrkShortSig5_PTrk,     N_PtrkShortSig5_PTrk,     nom, var, st, tg, tv, sf, tvl);
+		    jet_HLTStatus_HLT1b.push_back(st); jet_Tagged_HLT1b.push_back(tg); jet_Tagged_Varied_HLT1b.push_back(tv); jet_SF_HLT1b.push_back(sf); jet_Tagged_VariedLeg_HLT1b.push_back(tvl);
 		}
 		
 		// HLT2: DisplacedDijet60_Inclusive
 		{
 		    bool nom = true, var = true;
-		    vector<int> st; vector<bool> tg, tv; vector<float> sf;
-		    EvalHLTLeg("HLT2", 0, eta_i, phi_i, emu_pT60,  pT_i,            Bins_Inclusive_pT,   Data_Inclusive_pT,   MC_Inclusive_pT,   N_Inclusive_pT,   nom, var, st, tg, tv, sf);
-		    EvalHLTLeg("HLT2", 1, eta_i, phi_i, emu_PTrk2, nPromptTracks_i, Bins_Inclusive_PTrk, Data_Inclusive_PTrk, MC_Inclusive_PTrk, N_Inclusive_PTrk, nom, var, st, tg, tv, sf);
-		    jet_HLTStatus_HLT2.push_back(st); jet_Tagged_HLT2.push_back(tg); jet_Tagged_Varied_HLT2.push_back(tv); jet_SF_HLT2.push_back(sf);
+		    vector<int> st; vector<bool> tg, tv, tvl; vector<float> sf;
+		    EvalHLTLeg("HLT2", 0, eta_i, phi_i, emu_pT60,  pT_i,            Bins_Inclusive_pT,   Data_Inclusive_pT,   MC_Inclusive_pT,   N_Inclusive_pT,   nom, var, st, tg, tv, sf, tvl);
+		    EvalHLTLeg("HLT2", 1, eta_i, phi_i, emu_PTrk2, nPromptTracks_i, Bins_Inclusive_PTrk, Data_Inclusive_PTrk, MC_Inclusive_PTrk, N_Inclusive_PTrk, nom, var, st, tg, tv, sf, tvl);
+		    jet_HLTStatus_HLT2.push_back(st); jet_Tagged_HLT2.push_back(tg); jet_Tagged_Varied_HLT2.push_back(tv); jet_SF_HLT2.push_back(sf); jet_Tagged_VariedLeg_HLT2.push_back(tvl);
 		}
 		
 		// HLT3a: DisplacedDijet40_DisplacedTrack
 		{
 		    bool nom = true, var = true;
-		    vector<int> st; vector<bool> tg, tv; vector<float> sf;
-		    EvalHLTLeg("HLT3a", 0, eta_i, phi_i, emu_pT40,  pT_i,               Bins_DisplacedTrack_pT,   Data_DisplacedTrack_pT,   MC_DisplacedTrack_pT,   N_DisplacedTrack_pT,   nom, var, st, tg, tv, sf);
-		    EvalHLTLeg("HLT3a", 1, eta_i, phi_i, emu_PTrk2, nPromptTracks_i,    Bins_DisplacedTrack_PTrk, Data_DisplacedTrack_PTrk, MC_DisplacedTrack_PTrk, N_DisplacedTrack_PTrk, nom, var, st, tg, tv, sf);
-		    EvalHLTLeg("HLT3a", 2, eta_i, phi_i, emu_DTrk1, nDisplacedTracks_i, Bins_DisplacedTrack_DTrk, Data_DisplacedTrack_DTrk, MC_DisplacedTrack_DTrk, N_DisplacedTrack_DTrk, nom, var, st, tg, tv, sf);
-		    jet_HLTStatus_HLT3a.push_back(st); jet_Tagged_HLT3a.push_back(tg); jet_Tagged_Varied_HLT3a.push_back(tv); jet_SF_HLT3a.push_back(sf);
+		    vector<int> st; vector<bool> tg, tv, tvl; vector<float> sf;
+		    EvalHLTLeg("HLT3a", 0, eta_i, phi_i, emu_pT40,  pT_i,               Bins_DisplacedTrack_pT,   Data_DisplacedTrack_pT,   MC_DisplacedTrack_pT,   N_DisplacedTrack_pT,   nom, var, st, tg, tv, sf,  tvl);
+		    EvalHLTLeg("HLT3a", 1, eta_i, phi_i, emu_PTrk2, nPromptTracks_i,    Bins_DisplacedTrack_PTrk, Data_DisplacedTrack_PTrk, MC_DisplacedTrack_PTrk, N_DisplacedTrack_PTrk, nom, var, st, tg, tv, sf,  tvl);
+		    EvalHLTLeg("HLT3a", 2, eta_i, phi_i, emu_DTrk1, nDisplacedTracks_i, Bins_DisplacedTrack_DTrk, Data_DisplacedTrack_DTrk, MC_DisplacedTrack_DTrk, N_DisplacedTrack_DTrk, nom, var, st, tg, tv, sf, tvl);
+		    jet_HLTStatus_HLT3a.push_back(st); jet_Tagged_HLT3a.push_back(tg); jet_Tagged_Varied_HLT3a.push_back(tv); jet_SF_HLT3a.push_back(sf); jet_Tagged_VariedLeg_HLT3a.push_back(tvl);
 		}
 		
 		// HLT3b: DisplacedDijet60_DisplacedTrack (pT leg reuses Inclusive_pT, as before)
 		{
 		    bool nom = true, var = true;
-		    vector<int> st; vector<bool> tg, tv; vector<float> sf;
-		    EvalHLTLeg("HLT3b", 0, eta_i, phi_i, emu_pT60,  pT_i,               Bins_Inclusive_pT,        Data_Inclusive_pT,        MC_Inclusive_pT,        N_Inclusive_pT,        nom, var, st, tg, tv, sf);
-		    EvalHLTLeg("HLT3b", 1, eta_i, phi_i, emu_PTrk2, nPromptTracks_i,    Bins_DisplacedTrack_PTrk, Data_DisplacedTrack_PTrk, MC_DisplacedTrack_PTrk, N_DisplacedTrack_PTrk, nom, var, st, tg, tv, sf);
-		    EvalHLTLeg("HLT3b", 2, eta_i, phi_i, emu_DTrk1, nDisplacedTracks_i, Bins_DisplacedTrack_DTrk, Data_DisplacedTrack_DTrk, MC_DisplacedTrack_DTrk, N_DisplacedTrack_DTrk, nom, var, st, tg, tv, sf);
-		    jet_HLTStatus_HLT3b.push_back(st); jet_Tagged_HLT3b.push_back(tg); jet_Tagged_Varied_HLT3b.push_back(tv); jet_SF_HLT3b.push_back(sf);
+		    vector<int> st; vector<bool> tg, tv, tvl; vector<float> sf;
+		    EvalHLTLeg("HLT3b", 0, eta_i, phi_i, emu_pT60,  pT_i,               Bins_Inclusive_pT,        Data_Inclusive_pT,        MC_Inclusive_pT,        N_Inclusive_pT,        nom, var, st, tg, tv, sf, tvl);
+		    EvalHLTLeg("HLT3b", 1, eta_i, phi_i, emu_PTrk2, nPromptTracks_i,    Bins_DisplacedTrack_PTrk, Data_DisplacedTrack_PTrk, MC_DisplacedTrack_PTrk, N_DisplacedTrack_PTrk, nom, var, st, tg, tv, sf, tvl);
+		    EvalHLTLeg("HLT3b", 2, eta_i, phi_i, emu_DTrk1, nDisplacedTracks_i, Bins_DisplacedTrack_DTrk, Data_DisplacedTrack_DTrk, MC_DisplacedTrack_DTrk, N_DisplacedTrack_DTrk, nom, var, st, tg, tv, sf, tvl);
+		    jet_HLTStatus_HLT3b.push_back(st); jet_Tagged_HLT3b.push_back(tg); jet_Tagged_Varied_HLT3b.push_back(tv); jet_SF_HLT3b.push_back(sf); jet_Tagged_VariedLeg_HLT3b.push_back(tvl);
 		}
 		
 		if (debug) {
 		    const auto& s = jet_HLTStatus_HLT3a.back();
 		    const auto& v = jet_Tagged_Varied_HLT3a.back();
 		    const auto& t = jet_Tagged_HLT3a.back();
+		    const auto& vl = jet_Tagged_VariedLeg_HLT3a.back();
 		    cout << "[Trigger SF] jet " << n_jet - 1  << " pT=" << pT_i
 		         << " nPrompt=" << nPromptTracks_i << " nDisp=" << nDisplacedTracks_i
 		         << " | HLT3a status " << s[0] << "/" << s[1] << "/" << s[2]
 			 << " tagged " << t[0] << "/" << t[1] << "/" << t[2]
+			 << " tagged only one leg" << vl[0] << "/" << vl[1] << "/" << vl[2]
 		         << " varied " << v[0] << "/" << v[1] << "/" << v[2] << endl;
 		}
 
