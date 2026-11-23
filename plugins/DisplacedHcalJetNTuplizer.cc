@@ -3,7 +3,7 @@
 /*
 	Description: Base class for miniAOD analysis with CRAB
 */
-//   Author:  Cristián Peña and Si Xie; adapted for HCAL LLP Analysis by Kiley Kennedy and Gillian Kopp
+//   Author:  CristiÃ¡n PeÃ±a and Si Xie; adapted for HCAL LLP Analysis by Kiley Kennedy and Gillian Kopp
 //   Created:  Thu, 26 March 2019 15:00:06 GMT
 
 #include "DisplacedHcalJetNTuplizer.h"
@@ -91,6 +91,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	photon_cutbasedID_decisions_loose_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_loose"))),
 	photon_cutbasedID_decisions_medium_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_medium"))),
 	photon_cutbasedID_decisions_tight_Token_(consumes<edm::ValueMap<bool> >(iConfig.getParameter<edm::InputTag>("photon_cutbasedID_decisions_tight"))),
+
 	// MC
 	genParticlesToken_(consumes<reco::GenParticleCollection>(iConfig.getParameter<edm::InputTag>("genParticles"))),
 	puInfoToken_(consumes<std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("puInfo"))),
@@ -1658,7 +1659,7 @@ void DisplacedHcalJetNTuplizer::ResetMCBranches(){
 	if (scaleWeights) scaleWeights->clear();
 	if (pdfWeights) pdfWeights->clear();
 	if (alphasWeights) alphasWeights->clear();
-		*/
+			*/
 
 	return;
 };
@@ -2023,10 +2024,10 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent, co
 	
 		}
 
-                if (!found_trigger) {
-                    if (debug) std::cout << "    --> trig not found in triggerBits" << std::endl;
-                    HLT_Decision.push_back(false);
-                    HLT_Prescale.push_back(-2);
+		if (!found_trigger) {
+		    if (debug) std::cout << "    --> trig not found in triggerBits" << std::endl;
+		    HLT_Decision.push_back(false);
+		    HLT_Prescale.push_back(-2);
 
 		}
 	}
@@ -2077,7 +2078,6 @@ std::pair<double,double> DisplacedHcalJetNTuplizer::GetEfficiencies(double binVa
 
 	return {dataVals[bin], mcVals[bin]};
 };
-
 // ------------------------------------------------------------------------------------
 // Jet-by-jet tag update. Pass eData/eQCD directly (not a collapsed SF).
 bool DisplacedHcalJetNTuplizer::applySF(bool isTagged, double eData, double eQCD) {
@@ -2216,7 +2216,6 @@ void DisplacedHcalJetNTuplizer::EvalHLTLeg(const std::string& key, int k, float 
 		if (cumNom) w = ComputeTagSF(pass, eff.first, eff.second);
 		if (cumVar) cumVar = applySF(pass, eff.first, eff.second);
 		cumNom = cumNom && pass;
-
 		if (prevVar)      legVar = cumVar;
 		else if (prevNom) legVar = applySF(pass, eff.first, eff.second);
 	}
@@ -2735,6 +2734,7 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		const JetCorrectorParametersCollection& jecParColl = iSetup.getData(jecParamsToken_);
 		jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecParColl["Uncertainty"]);
 	}
+	UnpackTriggerObjects( iEvent ); 
 
 	// FIX URGENT
 	//  edm::ESHandle<CaloGeometry> geoHandle;
