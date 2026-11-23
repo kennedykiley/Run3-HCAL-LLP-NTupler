@@ -26,6 +26,7 @@
 <use   name="Geometry/DTGeometry"/>
 <use   name="Geometry/RPCGeometry"/>
 <use   name="fastjet"/>
+<use   name="HLTrigger/HLTcore"/>
 <export>
   <lib   name="1"/>
 </export>
