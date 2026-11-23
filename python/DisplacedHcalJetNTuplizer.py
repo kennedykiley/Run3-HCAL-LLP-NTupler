@@ -138,14 +138,17 @@ else:
         ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC", "2023_Summer23"), 
         ("HToSSTo4B", "2022EE"):         ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
         ("HToSSTo4B", "2022_"):          ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
+        # naming for central samples
+        ("HTo2LongLivedTo4b", "22DRPremix"): ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
+        ("HTo2LongLivedTo4b", "22EEDR"):     ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
+        ("HTo2LongLivedTo4b", "23DRPremix"): ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC", "2023_Summer23"), 
+        ("HTo2LongLivedTo4b", "23BPix"):     ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
+        # naming for other samples used previously
         ("HTo2LongLivedTo4b", "postBPix"):("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
         ("HTo2LongLivedTo4b", "postEE"): ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
         ("HTo2LongLivedTo4b", "2022_"):  ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
         # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
         # ("WJetsToLNu", "preEE"):         ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
-        ("HTo2LongLivedTo4b", "22DRPremix"): ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
-        ("HTo2LongLivedTo4b", "22EEDR"):     ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
-        ("HTo2LongLivedTo4b", "23BPix"):     ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
         ("WJetsToLNu", "preEE"):         ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
         ("WJetsToLNu", "postEE"):        ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"), 
         ("QCD", "2025"):        ("Winter25Prompt25_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix")#"2025_Winter") #b tag 25 only contains UParT 
@@ -182,13 +185,14 @@ if options.isData:
 else:
     if "23BPix" in era_name:        era_name = "2023postBPix"
     elif "2023Prompt_" in era_name: era_name = "2023preBPix"
-    elif "postBPix" in era_name:        era_name = "2023postBPix"
+    elif "postBPix" in era_name:    era_name = "2023postBPix"
     elif "postEE" in era_name:      era_name = "2022postEE"
     elif "preEE" in era_name:       era_name = "2022preEE"
     elif "2022EE" in era_name:      era_name = "2022postEE"
     elif "2022_" in era_name:       era_name = "2022preEE"
-    elif "22DRPremix" in era_name:       era_name = "2022preEE"
+    elif "22DRPremix" in era_name:  era_name = "2022preEE"
     elif "22EEDR" in era_name:      era_name = "2022postEE"
+    elif "23DRPremix" in era_name:  era_name = "2023preBPix"
     elif "2025" in era_name:        era_name = "2025"
 
 if options.debug:
@@ -317,6 +321,9 @@ global_tags_MC = {
     "2023preBPix":  "130X_mcRun3_2023_realistic_v14",
     "2023postBPix": "130X_mcRun3_2023_realistic_v14",
     "2025": "142X_mcRun3_2025_realistic_v1"
+
+    # "2023preBPix":  "130X_mcRun3_2023_realistic_v15",          # was v14; dataset says v15
+    # "2023postBPix": "130X_mcRun3_2023_realistic_postBPix_v6",  # was v14 (pre-BPix tag)
 }
 
 # 140X_dataRun3_v17
