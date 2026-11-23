@@ -102,6 +102,7 @@ Location of ntuples:
 /hdfs/store/user/fsimpson/HToSSTo4B_MH350_MS160_CTau10000/HToSSTo4B_MH350_MS160_CTau10000_batch2_v6/260722_173537/0000/
 /hdfs/store/user/fsimpson/HToSSTo4B_MH350_MS80_CTau500/HToSSTo4B_MH350_MS80_CTau500_batch1_v6/260722_173301/0000/
 ```
+
 ## V7
 New trigger SF application method inspired by b tagging method 
 

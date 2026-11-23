@@ -2986,8 +2986,6 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		const JetCorrectorParametersCollection& jecParColl = iSetup.getData(jecParamsToken_);
 		jecUnc_ = std::make_unique<JetCorrectionUncertainty>(jecParColl["Uncertainty"]);
 	}
-	UnpackTriggerObjects( iEvent ); 
-	MatchLeg0Objects();
 
 	// FIX URGENT
 	//  edm::ESHandle<CaloGeometry> geoHandle;
