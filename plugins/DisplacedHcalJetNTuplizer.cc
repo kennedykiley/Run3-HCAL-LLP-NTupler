@@ -35,7 +35,7 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	theTTBToken_(esConsumes(edm::ESInputTag("", "TransientTrackBuilder"))),
 	jecParamsToken_(esConsumes(edm::ESInputTag("", iConfig.getParameter<std::string>("jecPayload")))), // GK, JES uncertainty from JEC sqlite payload
 	triggerBitsToken_(consumes<edm::TriggerResults>(iConfig.getParameter<edm::InputTag>("triggerBits"))),
-	triggerObjectsToken_(consumes<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
+	triggerObjectsToken_(mayConsume<pat::TriggerObjectStandAloneCollection>(iConfig.getParameter<edm::InputTag>("triggerObjects"))),
 	triggerPrescalesToken_(consumes<pat::PackedTriggerPrescales>(iConfig.getParameter<edm::InputTag>("triggerPrescales"))),
 	triggerPathNamesFile_(iConfig.getParameter<string>( "triggerPathNamesFile" )),
 	//eleHLTFilterNamesFile_(iConfig.getParameter<string>( "electronHLTFilterNamesFile" )),
@@ -324,6 +324,13 @@ DisplacedHcalJetNTuplizer::DisplacedHcalJetNTuplizer(const edm::ParameterSet& iC
 	l1TriggerNames.push_back("L1_HTT240_SingleLLPJet70");  l1TriggerPrescalesMC.push_back(1);
 	l1TriggerNames.push_back("L1_DoubleLLPJet40");         l1TriggerPrescalesMC.push_back(1);
 
+	// ----- Paths emulated jet-by-jet (key -> path, number of per-jet legs) ----- //
+	hltPathName_["HLT1a"] = "HLT_HT200_L1SingleLLPJet_DisplacedDijet35_Inclusive1PtrkShortSig5";  hltPathNLegs_["HLT1a"] = 2;
+	hltPathName_["HLT1b"] = "HLT_HT200_L1SingleLLPJet_DisplacedDijet40_Inclusive1PtrkShortSig5";  hltPathNLegs_["HLT1b"] = 2;
+	hltPathName_["HLT2" ] = "HLT_HT320_L1SingleLLPJet_DisplacedDijet60_Inclusive";                hltPathNLegs_["HLT2" ] = 2;
+	hltPathName_["HLT3a"] = "HLT_HT200_L1SingleLLPJet_DisplacedDijet40_DisplacedTrack";           hltPathNLegs_["HLT3a"] = 3;
+	hltPathName_["HLT3b"] = "HLT_HT200_L1SingleLLPJet_DisplacedDijet60_DisplacedTrack";           hltPathNLegs_["HLT3b"] = 3;
+
 		/*
 	ifstream myfile (edm::FileInPath(triggerPathNamesFile_.c_str()).fullPath().c_str()) ;
 
@@ -516,26 +523,6 @@ void DisplacedHcalJetNTuplizer::EnableTriggerBranches(){
 	//output_tree->Branch("HLT_Names", &HLT_Names);
 	output_tree->Branch("HLT_Decision", &HLT_Decision);
 	output_tree->Branch("HLT_Prescale", &HLT_Prescale);
-	// 18 new branches for trigger SFs
-	output_tree->Branch("jet_Tagged_L1",           &jet_Tagged_L1);
-	output_tree->Branch("jet_Tagged_Varied_L1",    &jet_Tagged_Varied_L1);
-	output_tree->Branch("jet_SF_L1",               &jet_SF_L1);
-	output_tree->Branch("jet_Tagged_HLT1a",        &jet_Tagged_HLT1a);
-	output_tree->Branch("jet_Tagged_Varied_HLT1a", &jet_Tagged_Varied_HLT1a);
-	output_tree->Branch("jet_SF_HLT1a",            &jet_SF_HLT1a);
-	output_tree->Branch("jet_Tagged_HLT1b",        &jet_Tagged_HLT1b);
-	output_tree->Branch("jet_Tagged_Varied_HLT1b", &jet_Tagged_Varied_HLT1b);
-	output_tree->Branch("jet_SF_HLT1b",            &jet_SF_HLT1b);
-	output_tree->Branch("jet_Tagged_HLT2",         &jet_Tagged_HLT2);
-	output_tree->Branch("jet_Tagged_Varied_HLT2",  &jet_Tagged_Varied_HLT2);
-	output_tree->Branch("jet_SF_HLT2",             &jet_SF_HLT2);
-	output_tree->Branch("jet_Tagged_HLT3a",        &jet_Tagged_HLT3a);
-	output_tree->Branch("jet_Tagged_Varied_HLT3a", &jet_Tagged_Varied_HLT3a);
-	output_tree->Branch("jet_SF_HLT3a",            &jet_SF_HLT3a);
-	output_tree->Branch("jet_Tagged_HLT3b",        &jet_Tagged_HLT3b);
-	output_tree->Branch("jet_Tagged_Varied_HLT3b", &jet_Tagged_Varied_HLT3b);
-	output_tree->Branch("jet_SF_HLT3b",            &jet_SF_HLT3b);
-
 	output_tree->Branch("L1_Decision", &L1_Decision);
 	output_tree->Branch("L1_Prescale", &L1_Prescale);
 
@@ -859,7 +846,39 @@ void DisplacedHcalJetNTuplizer::EnableJetBranches(){
 	output_tree->Branch( "caloLRJet_HcalRechitIndices", &caloLRJet_HcalRechitIndices );
 	//output_tree->Branch( "caloLRJet_passHLTFilter", &caloLRJet_passHLTFilter );
 
-};
+	output_tree->Branch("jet_L1Status",       &jet_L1Status);
+	output_tree->Branch("jet_L1Match_Pt",     &jet_L1Match_Pt);
+	output_tree->Branch("jet_L1Match_hwQual", &jet_L1Match_hwQual);
+	output_tree->Branch("jet_HLTStatus_HLT1a", &jet_HLTStatus_HLT1a);
+	output_tree->Branch("jet_HLTStatus_HLT1b", &jet_HLTStatus_HLT1b);
+	output_tree->Branch("jet_HLTStatus_HLT2",  &jet_HLTStatus_HLT2);
+	output_tree->Branch("jet_HLTStatus_HLT3a", &jet_HLTStatus_HLT3a);
+	output_tree->Branch("jet_HLTStatus_HLT3b", &jet_HLTStatus_HLT3b);
+	output_tree->Branch("jet_Tagged_L1",           &jet_Tagged_L1);
+	output_tree->Branch("jet_Tagged_Varied_L1",    &jet_Tagged_Varied_L1);
+	output_tree->Branch("jet_SF_L1",               &jet_SF_L1);
+	output_tree->Branch("jet_Tagged_HLT1a",        &jet_Tagged_HLT1a);
+	output_tree->Branch("jet_Tagged_Varied_HLT1a", &jet_Tagged_Varied_HLT1a);
+	output_tree->Branch("jet_Tagged_VariedLeg_HLT1a", &jet_Tagged_VariedLeg_HLT1a);
+	output_tree->Branch("jet_SF_HLT1a",            &jet_SF_HLT1a);
+	output_tree->Branch("jet_Tagged_HLT1b",        &jet_Tagged_HLT1b);
+	output_tree->Branch("jet_Tagged_Varied_HLT1b", &jet_Tagged_Varied_HLT1b);
+	output_tree->Branch("jet_Tagged_VariedLeg_HLT1b", &jet_Tagged_VariedLeg_HLT1b);
+	output_tree->Branch("jet_SF_HLT1b",            &jet_SF_HLT1b);
+	output_tree->Branch("jet_Tagged_HLT2",         &jet_Tagged_HLT2);
+	output_tree->Branch("jet_Tagged_Varied_HLT2",  &jet_Tagged_Varied_HLT2);
+	output_tree->Branch("jet_Tagged_VariedLeg_HLT2",  &jet_Tagged_VariedLeg_HLT2);
+	output_tree->Branch("jet_SF_HLT2",             &jet_SF_HLT2);
+	output_tree->Branch("jet_Tagged_HLT3a",        &jet_Tagged_HLT3a);
+	output_tree->Branch("jet_Tagged_Varied_HLT3a", &jet_Tagged_Varied_HLT3a);
+	output_tree->Branch("jet_Tagged_VariedLeg_HLT3a", &jet_Tagged_VariedLeg_HLT3a);
+	output_tree->Branch("jet_SF_HLT3a",            &jet_SF_HLT3a);
+	output_tree->Branch("jet_Tagged_HLT3b",        &jet_Tagged_HLT3b);
+	output_tree->Branch("jet_Tagged_Varied_HLT3b", &jet_Tagged_Varied_HLT3b);
+	output_tree->Branch("jet_Tagged_VariedLeg_HLT3b", &jet_Tagged_VariedLeg_HLT3b);
+	output_tree->Branch("jet_SF_HLT3b",            &jet_SF_HLT3b);
+
+	};
 
 // ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::EnableTrackBranches(){
@@ -869,6 +888,7 @@ void DisplacedHcalJetNTuplizer::EnableTrackBranches(){
 	output_tree->Branch( "track_Eta", &track_Eta );
 	output_tree->Branch( "track_Phi", &track_Phi );
 	output_tree->Branch( "track_Charge", &track_Charge ); 
+	output_tree->Branch( "track_PassQuality", &track_PassQuality );
 	output_tree->Branch( "track_bestVertexIndex", &track_bestVertexIndex );
 	output_tree->Branch( "track_nMissingInnerHits", &track_nMissingInnerHits );
 	output_tree->Branch( "track_nMissingOuterHits", &track_nMissingOuterHits );
@@ -1136,24 +1156,6 @@ void DisplacedHcalJetNTuplizer::ResetTriggerBranches(){
 	//HLT_Names.clear();
 	HLT_Decision.clear();
 	HLT_Prescale.clear();
-	jet_Tagged_L1.clear();
-	jet_Tagged_Varied_L1.clear();
-	jet_SF_L1.clear();
-	jet_Tagged_HLT1a.clear();
-	jet_Tagged_Varied_HLT1a.clear();
-	jet_SF_HLT1a.clear();
-	jet_Tagged_HLT1b.clear();
-	jet_Tagged_Varied_HLT1b.clear();
-	jet_SF_HLT1b.clear();
-	jet_Tagged_HLT2.clear();
-	jet_Tagged_Varied_HLT2.clear();
-	jet_SF_HLT2.clear();
-	jet_Tagged_HLT3a.clear();
-	jet_Tagged_Varied_HLT3a.clear();
-	jet_SF_HLT3a.clear();
-	jet_Tagged_HLT3b.clear();
-	jet_Tagged_Varied_HLT3b.clear();
-	jet_SF_HLT3b.clear();
 	L1_Decision.clear();
 	L1_Prescale.clear();
 
@@ -1467,6 +1469,42 @@ void DisplacedHcalJetNTuplizer::ResetJetBranches(){
 	caloLRJet_HcalRechitIDs.clear();
 	caloLRJet_HcalRechitIndices.clear();
 
+	jet_L1Status.clear();
+	jet_L1Match_Pt.clear();
+	jet_L1Match_hwQual.clear();
+	jet_Tagged_L1.clear();
+	jet_Tagged_Varied_L1.clear();
+	jet_SF_L1.clear();
+	jet_Tagged_HLT1a.clear();
+	jet_Tagged_Varied_HLT1a.clear();
+	jet_Tagged_VariedLeg_HLT1a.clear();
+	jet_SF_HLT1a.clear();
+	jet_Tagged_HLT1b.clear();
+	jet_Tagged_Varied_HLT1b.clear();
+	jet_Tagged_VariedLeg_HLT1b.clear();
+	jet_SF_HLT1b.clear();
+	jet_Tagged_HLT2.clear();
+	jet_Tagged_Varied_HLT2.clear();
+	jet_Tagged_VariedLeg_HLT2.clear();
+	jet_SF_HLT2.clear();
+	jet_Tagged_HLT3a.clear();
+	jet_Tagged_Varied_HLT3a.clear();
+	jet_Tagged_VariedLeg_HLT3a.clear();
+	jet_SF_HLT3a.clear();
+	jet_Tagged_HLT3b.clear();
+	jet_Tagged_Varied_HLT3b.clear();
+	jet_Tagged_VariedLeg_HLT3b.clear();
+	jet_SF_HLT3b.clear();
+	jet_NTracks.clear();
+	jet_NPromptTracks.clear();
+	jet_NDisplacedTracks.clear();
+	jet_HLTStatus_HLT1a.clear();
+	jet_HLTStatus_HLT1b.clear();
+	jet_HLTStatus_HLT2.clear();
+	jet_HLTStatus_HLT3a.clear();
+	jet_HLTStatus_HLT3b.clear();
+	unpackedTrigObjs_.clear();
+
 };
 
 // ------------------------------------------------------------------------------------
@@ -1477,6 +1515,7 @@ void DisplacedHcalJetNTuplizer::ResetTrackBranches(){
 	track_Eta.clear();
 	track_Phi.clear();
 	track_Charge.clear();
+	track_PassQuality.clear();
 	track_bestVertexIndex.clear();
 	track_nMissingInnerHits.clear();
 	track_nMissingOuterHits.clear();
@@ -1619,7 +1658,7 @@ void DisplacedHcalJetNTuplizer::ResetMCBranches(){
 	if (scaleWeights) scaleWeights->clear();
 	if (pdfWeights) pdfWeights->clear();
 	if (alphasWeights) alphasWeights->clear();
-		*/
+			*/
 
 	return;
 };
@@ -1697,10 +1736,57 @@ void DisplacedHcalJetNTuplizer::beginRun(const edm::Run& iRun, const edm::EventS
 	if( debug ) cout<<"Running DisplacedHcalJetNTuplizer::beginRun"<<endl; 
 	
 	// Code		
+	bool changed = false;
+	if (!hltConfig_.init(iRun, iSetup, "HLT", changed))
+		throw cms::Exception("HLTConfig") << "HLTConfigProvider init failed for run " << iRun.run();
+
+	static const std::vector<std::string> nonJetTypes = {
+		"HLTL1TSeed", "HLTPrescaler", "HLTHtMhtFilter", "HLTBool", "HLTTriggerTypeFilter"
+	};
+
+	for (const auto& kv : hltPathName_) {
+		const std::string& key  = kv.first;
+		const std::string& path = kv.second;
+
+		hltPathIdx_[key] = -1;
+		hltPathFilters_[key].clear();
+		hltPathModuleIdx_[key].clear();
+
+		for (unsigned i = 0; i < hltConfig_.size(); ++i)
+			if (hltConfig_.triggerName(i).rfind(path + "_v", 0) == 0) { hltPathIdx_[key] = i; break; }
+
+		if (hltPathIdx_[key] < 0) {
+			cout << "[HLTLegs] " << key << ": " << path << " not in menu for run "
+			     << iRun.run() << " -> offline emulation only" << endl;
+			continue;
+		}
+
+		std::vector<std::pair<int, std::string>> legs;   // (module index, label)
+		for (const auto& m : hltConfig_.saveTagsModules(hltPathIdx_[key])) {
+			if (hltConfig_.moduleEDMType(m) != "EDFilter") continue;
+			if (std::find(nonJetTypes.begin(), nonJetTypes.end(), hltConfig_.moduleType(m)) != nonJetTypes.end()) continue;
+			if (m.find("HLTL3") != std::string::npos) continue;   // skip intermediate L3 track filters
+			legs.emplace_back(hltConfig_.moduleIndex(hltPathIdx_[key], m), m);
+		}
+		std::sort(legs.begin(), legs.end());
+		for (const auto& leg : legs) {
+			hltPathModuleIdx_[key].push_back(leg.first);
+			hltPathFilters_[key].push_back(leg.second);
+		}
+
+		if (changed) {
+			cout << "[HLTLegs] " << key << " = " << hltConfig_.triggerName(hltPathIdx_[key]) << endl;
+			for (const auto& m : hltPathFilters_[key]) cout << "      " << m << "  (" << hltConfig_.moduleType(m) << ")" << endl;
+		}
+		if ((int)hltPathFilters_[key].size() != hltPathNLegs_[key])
+			throw cms::Exception("HLTLegs") << key << ": found " << hltPathFilters_[key].size()
+				<< " jet filters, expected " << hltPathNLegs_[key]
+				<< ". See the printed chain; add any non-jet filter type to nonJetTypes.";
+	}
 
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::beginRun"<<endl; 
 
-}
+};
 
 // ------------------------------------------------------------------------------------
 void DisplacedHcalJetNTuplizer::beginLuminosityBlock(edm::LuminosityBlock const& iLumi, edm::EventSetup const& iSetup) {
@@ -1936,7 +2022,6 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent, co
 			break;
 	
 		}
-
                 if (!found_trigger) {
                     if (debug) std::cout << "    --> trig not found in triggerBits" << std::endl;
                     HLT_Decision.push_back(false);
@@ -1963,191 +2048,6 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent, co
 		L1_Prescale.push_back( l1pre );
 	}
 
-	// ------ Trigger SF jet-by-jet update -------- //
-	// may move to FillJetBranches if we continue to save over all jets
-
-	for (int i = 0; i < (int)jetsCorr->size(); i++) {
-	    if( (*jetsCorr)[i].pt() < 20 || fabs((*jetsCorr)[i].eta()) > 2.0 ) continue;  // match FillJetBranches' cut
-	
-	    float pT_i  = (*jetsCorr)[i].pt();
-	    float eta_i = (*jetsCorr)[i].eta();
-
-	    int nPromptTracks_i;
-	    int nDisplacedTracks_i;
-
-	    if ((int)jet_NPromptTracks.size() > i) {
-	        nPromptTracks_i = jet_NPromptTracks[i];
-	    } else {
-	        if (debug) std::cout << "[Warning] jet NPromptTracks is empty!" << std::endl;
-	        nPromptTracks_i = -1;
-	    }
-	
-	    if ((int)jet_NDisplacedTracks.size() > i) {
-	        nDisplacedTracks_i = jet_NDisplacedTracks[i];
-	    } else {
-	        if (debug) std::cout << "[Warning] jet NDisplacedTracks is empty!" << std::endl;
-	        nDisplacedTracks_i = -1;
-	    }
-	
-	    // ---- nominal per-leg tag decisions (sequential filter logic) ----
-	    bool tag_L1_pT = (pT_i > 60.0) && (fabsf(eta_i) < 1.26);
-	
-	    // HLT1a: DisplacedDijet35_Inclusive1PtrkShortSig5
-	    bool tag_HLT1a_pT   = (pT_i > 35.0) && (fabsf(eta_i) < 2.0);
-	    bool tag_HLT1a_PTrk = tag_HLT1a_pT && (nPromptTracks_i >= 0) && (nPromptTracks_i <= 1);
-	
-	    // HLT1b: DisplacedDijet40_Inclusive1PtrkShortSig5
-	    bool tag_HLT1b_pT   = (pT_i > 40.0) && (fabsf(eta_i) < 2.0);
-	    bool tag_HLT1b_PTrk = tag_HLT1b_pT && (nPromptTracks_i >= 0) && (nPromptTracks_i <= 1);
-	
-	    // HLT2: DisplacedDijet60_Inclusive
-	    bool tag_HLT2_pT   = (pT_i > 60.0) && (fabsf(eta_i) < 2.0);
-	    bool tag_HLT2_PTrk = tag_HLT2_pT && (nPromptTracks_i >= 0) && (nPromptTracks_i <= 2);
-	
-	    // HLT3a: DisplacedDijet40_DisplacedTrack
-	    bool tag_HLT3a_pT   = (pT_i > 40.0) && (fabsf(eta_i) < 2.0);
-	    bool tag_HLT3a_PTrk = tag_HLT3a_pT && (nPromptTracks_i >= 0) && (nPromptTracks_i <= 2);
-	    bool tag_HLT3a_DTrk = tag_HLT3a_PTrk && (nDisplacedTracks_i >= 1);
-	
-	    // HLT3b: DisplacedDijet60_DisplacedTrack
-	    bool tag_HLT3b_pT   = (pT_i > 60.0) && (fabsf(eta_i) < 2.0);
-	    bool tag_HLT3b_PTrk = tag_HLT3b_pT && (nPromptTracks_i >= 0) && (nPromptTracks_i <= 2);
-	    bool tag_HLT3b_DTrk = tag_HLT3b_PTrk && (nDisplacedTracks_i >= 1);
-	
-	    // ---- varied per-leg tag decisions + SFs ----
-	    bool  tag_L1_pT_varied;
-	    bool  tag_HLT1a_pT_varied, tag_HLT1a_PTrk_varied;
-	    bool  tag_HLT1b_pT_varied, tag_HLT1b_PTrk_varied;
-	    bool  tag_HLT2_pT_varied,  tag_HLT2_PTrk_varied;
-	    bool  tag_HLT3a_pT_varied, tag_HLT3a_PTrk_varied, tag_HLT3a_DTrk_varied;
-	    bool  tag_HLT3b_pT_varied, tag_HLT3b_PTrk_varied, tag_HLT3b_DTrk_varied;
-	
-	    float SF_L1;
-	    float SF_HLT1a_pT, SF_HLT1a_PTrk;
-	    float SF_HLT1b_pT, SF_HLT1b_PTrk;
-	    float SF_HLT2_pT,  SF_HLT2_PTrk;
-	    float SF_HLT3a_pT, SF_HLT3a_PTrk, SF_HLT3a_DTrk;
-	    float SF_HLT3b_pT, SF_HLT3b_PTrk, SF_HLT3b_DTrk;
-
-            if (!isData_) {
-	        double eData_L1 = 0.64;
-	        double eQCD_L1;
-	        if (pT_i < 100) { eQCD_L1 = 0.55;}
-	        else { eQCD_L1 =  0.60;}
-	        tag_L1_pT_varied = applySF(tag_L1_pT, eData_L1, eQCD_L1);
-	        SF_L1 = ComputeTagSF(eData_L1, eQCD_L1);
-	    
-	        // HLT1a: 35 GeV, PtrkShortSig5 family DisplacedDijet35_Inclusive1PtrkShortSig5
-		auto eff_HLT1a_pT = GetEfficiencies(pT_i, Bins_PtrkShortSig5_pT_35GeV, Data_PtrkShortSig5_pT_35GeV, MC_PtrkShortSig5_pT_35GeV, N_PtrkShortSig5_pT_35GeV);
-	        tag_HLT1a_pT_varied = applySF(tag_HLT1a_pT, eff_HLT1a_pT.first, eff_HLT1a_pT.second);
-	        SF_HLT1a_pT = ComputeTagSF(eff_HLT1a_pT.first, eff_HLT1a_pT.second);
-	        
-	        // HLT1b: 40 GeV, PtrkShortSig5 family  DisplacedDijet40_Inclusive1PtrkShortSig5
-		auto eff_HLT1b_pT = GetEfficiencies(pT_i, Bins_PtrkShortSig5_pT_40GeV, Data_PtrkShortSig5_pT_40GeV, MC_PtrkShortSig5_pT_40GeV, N_PtrkShortSig5_pT_40GeV);
-	        tag_HLT1b_pT_varied = applySF(tag_HLT1b_pT, eff_HLT1b_pT.first, eff_HLT1b_pT.second);
-	        SF_HLT1b_pT = ComputeTagSF(eff_HLT1b_pT.first, eff_HLT1b_pT.second);
-	        
-	        // HLT2: 60 GeV, Inclusive family DisplacedDijet60_Inclusive
-		auto eff_HLT2_pT  = GetEfficiencies(pT_i, Bins_Inclusive_pT, Data_Inclusive_pT, MC_Inclusive_pT, N_Inclusive_pT);
-	        tag_HLT2_pT_varied = applySF(tag_HLT2_pT, eff_HLT2_pT.first, eff_HLT2_pT.second);
-	        SF_HLT2_pT = ComputeTagSF(eff_HLT2_pT.first, eff_HLT2_pT.second);
-	        
-	        // HLT3a: 40 GeV, DisplacedTrack family DisplacedDijet40_DisplacedTrack
-		auto eff_HLT3a_pT = GetEfficiencies(pT_i, Bins_DisplacedTrack_pT, Data_DisplacedTrack_pT, MC_DisplacedTrack_pT, N_DisplacedTrack_pT);
-	        tag_HLT3a_pT_varied = applySF(tag_HLT3a_pT, eff_HLT3a_pT.first, eff_HLT3a_pT.second);
-	        SF_HLT3a_pT = ComputeTagSF(eff_HLT3a_pT.first, eff_HLT3a_pT.second);
-	        
-	        // HLT3b: 60 GeV, DisplacedTrack family reuses Inclusive_pT.txt  DisplacedDijet60_DisplacedTrack
-		auto eff_HLT3b_pT = GetEfficiencies(pT_i, Bins_Inclusive_pT, Data_Inclusive_pT, MC_Inclusive_pT, N_Inclusive_pT);
-	        tag_HLT3b_pT_varied = applySF(tag_HLT3b_pT, eff_HLT3b_pT.first, eff_HLT3b_pT.second);
-	        SF_HLT3b_pT = ComputeTagSF(eff_HLT3b_pT.first, eff_HLT3b_pT.second);
-
-		auto eff_HLT1_PTrk = GetEfficiencies(nPromptTracks_i, Bins_PtrkShortSig5_PTrk, Data_PtrkShortSig5_PTrk, MC_PtrkShortSig5_PTrk, N_PtrkShortSig5_PTrk);
-                tag_HLT1a_PTrk_varied = applySF(tag_HLT1a_PTrk, eff_HLT1_PTrk.first, eff_HLT1_PTrk.second);
-                tag_HLT1b_PTrk_varied = applySF(tag_HLT1b_PTrk, eff_HLT1_PTrk.first, eff_HLT1_PTrk.second);
-                SF_HLT1a_PTrk = SF_HLT1b_PTrk = ComputeTagSF(eff_HLT1_PTrk.first, eff_HLT1_PTrk.second);
-
-		auto eff_HLT2_PTrk = GetEfficiencies(nPromptTracks_i, Bins_Inclusive_PTrk, Data_Inclusive_PTrk, MC_Inclusive_PTrk, N_Inclusive_PTrk);
-                tag_HLT2_PTrk_varied = applySF(tag_HLT2_PTrk, eff_HLT2_PTrk.first, eff_HLT2_PTrk.second);
-                SF_HLT2_PTrk = ComputeTagSF(eff_HLT2_PTrk.first, eff_HLT2_PTrk.second);
-
-		auto eff_HLT3_PTrk = GetEfficiencies(nPromptTracks_i, Bins_DisplacedTrack_PTrk, Data_DisplacedTrack_PTrk, MC_DisplacedTrack_PTrk, N_DisplacedTrack_PTrk);
-                tag_HLT3a_PTrk_varied = applySF(tag_HLT3a_PTrk, eff_HLT3_PTrk.first, eff_HLT3_PTrk.second);
-                tag_HLT3b_PTrk_varied = applySF(tag_HLT3b_PTrk, eff_HLT3_PTrk.first, eff_HLT3_PTrk.second);
-                SF_HLT3a_PTrk = SF_HLT3b_PTrk = ComputeTagSF(eff_HLT3_PTrk.first, eff_HLT3_PTrk.second);
-
-		auto eff_HLT3_DTrk = GetEfficiencies(nDisplacedTracks_i, Bins_DisplacedTrack_DTrk, Data_DisplacedTrack_DTrk, MC_DisplacedTrack_DTrk, N_DisplacedTrack_DTrk);
-                tag_HLT3a_DTrk_varied = applySF(tag_HLT3a_DTrk, eff_HLT3_DTrk.first, eff_HLT3_DTrk.second);
-                tag_HLT3b_DTrk_varied = applySF(tag_HLT3b_DTrk, eff_HLT3_DTrk.first, eff_HLT3_DTrk.second);
-                SF_HLT3a_DTrk = SF_HLT3b_DTrk = ComputeTagSF(eff_HLT3_DTrk.first, eff_HLT3_DTrk.second);
-
-	    } else {
-	        // (unchanged from before)
-	        tag_L1_pT_varied = tag_L1_pT;
-	        tag_HLT1a_pT_varied = tag_HLT1a_pT;   tag_HLT1a_PTrk_varied = tag_HLT1a_PTrk;
-	        tag_HLT1b_pT_varied = tag_HLT1b_pT;   tag_HLT1b_PTrk_varied = tag_HLT1b_PTrk;
-	        tag_HLT2_pT_varied  = tag_HLT2_pT;    tag_HLT2_PTrk_varied  = tag_HLT2_PTrk;
-	        tag_HLT3a_pT_varied = tag_HLT3a_pT;   tag_HLT3a_PTrk_varied = tag_HLT3a_PTrk;   tag_HLT3a_DTrk_varied = tag_HLT3a_DTrk;
-	        tag_HLT3b_pT_varied = tag_HLT3b_pT;   tag_HLT3b_PTrk_varied = tag_HLT3b_PTrk;   tag_HLT3b_DTrk_varied = tag_HLT3b_DTrk;
-	    
-	        SF_L1 = 1.0;
-	        SF_HLT1a_pT = SF_HLT1a_PTrk = 1.0;
-	        SF_HLT1b_pT = SF_HLT1b_PTrk = 1.0;
-	        SF_HLT2_pT  = SF_HLT2_PTrk  = 1.0;
-	        SF_HLT3a_pT = SF_HLT3a_PTrk = SF_HLT3a_DTrk = 1.0;
-	        SF_HLT3b_pT = SF_HLT3b_PTrk = SF_HLT3b_DTrk = 1.0;
-            }
-
-            // ---- stash this jet's leg-by-leg results ----
-            jet_Tagged_L1.push_back(   { tag_L1_pT } );
-            jet_Tagged_Varied_L1.push_back( { tag_L1_pT_varied } );
-            jet_SF_L1.push_back(       { SF_L1 } );
-
-            jet_Tagged_HLT1a.push_back(        { tag_HLT1a_pT,        tag_HLT1a_PTrk } );
-            jet_Tagged_Varied_HLT1a.push_back( { tag_HLT1a_pT_varied, tag_HLT1a_PTrk_varied } );
-            jet_SF_HLT1a.push_back(            { SF_HLT1a_pT,         SF_HLT1a_PTrk } );
-
-            jet_Tagged_HLT1b.push_back(        { tag_HLT1b_pT,        tag_HLT1b_PTrk } );
-            jet_Tagged_Varied_HLT1b.push_back( { tag_HLT1b_pT_varied, tag_HLT1b_PTrk_varied } );
-            jet_SF_HLT1b.push_back(            { SF_HLT1b_pT,         SF_HLT1b_PTrk } );
-
-            jet_Tagged_HLT2.push_back(        { tag_HLT2_pT,        tag_HLT2_PTrk } );
-            jet_Tagged_Varied_HLT2.push_back( { tag_HLT2_pT_varied, tag_HLT2_PTrk_varied } );
-            jet_SF_HLT2.push_back(            { SF_HLT2_pT,         SF_HLT2_PTrk } );
-
-            jet_Tagged_HLT3a.push_back(        { tag_HLT3a_pT,        tag_HLT3a_PTrk,        tag_HLT3a_DTrk } );
-            jet_Tagged_Varied_HLT3a.push_back( { tag_HLT3a_pT_varied, tag_HLT3a_PTrk_varied, tag_HLT3a_DTrk_varied } );
-            jet_SF_HLT3a.push_back(            { SF_HLT3a_pT,         SF_HLT3a_PTrk,         SF_HLT3a_DTrk } );
-
-            jet_Tagged_HLT3b.push_back(        { tag_HLT3b_pT,        tag_HLT3b_PTrk,        tag_HLT3b_DTrk } );
-            jet_Tagged_Varied_HLT3b.push_back( { tag_HLT3b_pT_varied, tag_HLT3b_PTrk_varied, tag_HLT3b_DTrk_varied } );
-            jet_SF_HLT3b.push_back(            { SF_HLT3b_pT,         SF_HLT3b_PTrk,         SF_HLT3b_DTrk } );
-
-            if (debug) {
-                cout << "[Trigger SF] jet pT"
-                     << " | L1 tag/varied: " << tag_L1_pT << "/" << tag_L1_pT_varied
-
-                     << " | HLT1a pT tag/varied: " << tag_HLT1a_pT << "/" << tag_HLT1a_pT_varied
-                     << " | HLT1a prompt track tag/varied: " << tag_HLT1a_PTrk << "/" << tag_HLT1a_PTrk_varied
-
-                     << " | HLT1b pT tag/varied: " << tag_HLT1b_pT << "/" << tag_HLT1b_pT_varied
-                     << " | HLT1b prompt track tag/varied: " << tag_HLT1b_PTrk << "/" << tag_HLT1b_PTrk_varied
-
-                     << " | HLT2 pT tag/varied: " << tag_HLT2_pT << "/" << tag_HLT2_pT_varied
-                     << " | HLT2 prompt track tag/varied: " << tag_HLT2_PTrk << "/" << tag_HLT2_PTrk_varied
-
-                     << " | HLT3a pT tag/varied: " << tag_HLT3a_pT << "/" << tag_HLT3a_pT_varied
-                     << " | HLT3a prompt track tag/varied: " << tag_HLT3a_PTrk << "/" << tag_HLT3a_PTrk_varied
-                     << " | HLT3a displaced track tag/varied: " << tag_HLT3a_DTrk << "/" << tag_HLT3a_DTrk_varied
-
-                     << " | HLT3b pT tag/varied: " << tag_HLT3b_pT << "/" << tag_HLT3b_pT_varied
-                     << " | HLT3b prompt track tag/varied: " << tag_HLT3b_PTrk << "/" << tag_HLT3b_PTrk_varied
-                     << " | HLT3b displaced track tag/varied: " << tag_HLT3b_DTrk << "/" << tag_HLT3b_DTrk_varied
-
-                     << endl;
-            }
-        }
-
 
 
 	if( debug ) cout<<"Done DisplacedHcalJetNTuplizer::FillTriggerBranches"<<endl;
@@ -2156,24 +2056,25 @@ bool DisplacedHcalJetNTuplizer::FillTriggerBranches(const edm::Event& iEvent, co
 };
 
 // ------------------------------------------------------------------------------------
-std::pair<double,double> DisplacedHcalJetNTuplizer::GetEfficiencies(double binValue, const double* binEdges, const double* dataVals,const double* mcVals,int nBins) {
-    if (binValue < 0) { //guard against nPrompt or nDisplaced = -1
-    return std::make_pair(1.0, 1.0);
-    }
-    double eData = 1.0, eQCD = 1.0;
-    for (int i = 0; i < nBins; ++i) {
-        if (binValue < binEdges[i] || i == nBins - 1) {
-            eData = dataVals[i];
-            eQCD  = mcVals[i];
-            break;
-        }
-    }
+std::pair<double,double> DisplacedHcalJetNTuplizer::GetEfficiencies(double binValue, const double* binEdges, const double* dataVals, const double* mcVals, int nBins) {
+	// binEdges has nBins+1 entries (ROOT-style); dataVals/mcVals have nBins entries
 
-    if (debug) {
-        cout << "[GetEfficiencies] " << nBins << " bins, eData=" << eData << ", eQCD=" << eQCD << endl;
-    }
+	if (binValue < binEdges[0]) {   // underflow (also covers -1)
+		return {1.0, 1.0};
+	}
 
-    return std::make_pair(eData, eQCD);
+	int bin = nBins - 1;            // overflow goes into the last bin
+	for (int i = 0; i < nBins; ++i) {
+		if (binValue < binEdges[i+1]) { bin = i; break; }
+	}
+
+	if (debug) {
+		cout << "[GetEfficiencies] x=" << binValue << " bin=" << bin
+		     << " [" << binEdges[bin] << "," << binEdges[bin+1] << ")"
+		     << " eData=" << dataVals[bin] << ", eQCD=" << mcVals[bin] << endl;
+	}
+
+	return {dataVals[bin], mcVals[bin]};
 };
 
 // ------------------------------------------------------------------------------------
@@ -2185,22 +2086,143 @@ bool DisplacedHcalJetNTuplizer::applySF(bool isTagged, double eData, double eQCD
     double coin = rand_.Uniform(1.0);
 
     if (eData < eQCD) {
-        double SF = eData / eQCD;
-        if (isTagged && coin >= SF) newTag = false;   // demote w/ prob (1-SF)
-        // untagged jets: unchanged
+	double SF = eData / eQCD;
+	if (isTagged && coin >= SF) newTag = false;   // demote w/ prob (1-SF)
+	// untagged jets: unchanged
     } else {
-        double SFprime = (1.0 - eData) / (1.0 - eQCD);
-        if (!isTagged && coin >= SFprime) newTag = true;  // promote w/ prob (1-SF')
-        // tagged jets: unchanged
+	double SFprime = (1.0 - eData) / (1.0 - eQCD);
+	if (!isTagged && coin >= SFprime) newTag = true;  // promote w/ prob (1-SF')
+	// tagged jets: unchanged
     }
 
     return newTag;
 };
 
 // ------------------------------------------------------------------------------------
-double DisplacedHcalJetNTuplizer::ComputeTagSF(double eData, double eQCD) {
-    if (eData < eQCD) return eData / eQCD;
-    else               return (1.0 - eData) / (1.0 - eQCD);
+double DisplacedHcalJetNTuplizer::ComputeTagSF(bool tagged, double eData, double eQCD) {
+	if (tagged) return (eQCD > 0.) ? eData / eQCD : 1.;
+	return (eQCD < 1.) ? (1. - eData) / (1. - eQCD) : 1.;
+}
+
+// ------------------------------------------------------------------------------------
+void DisplacedHcalJetNTuplizer::UnpackTriggerObjects(const edm::Event& iEvent) {
+	unpackedTrigObjs_.clear();
+	if (!triggerObjects.isValid()) {
+		static bool warned = false;
+		if (!warned) { cout << "[Trigger] WARNING: trigger objects not found, HLT legs use offline emulation only" << endl; warned = true; }
+		return;
+	}
+	const edm::TriggerNames& names = iEvent.triggerNames(*triggerBits);
+	for (pat::TriggerObjectStandAlone obj : *triggerObjects) {   // copy, then unpack
+		obj.unpackPathNames(names);
+		obj.unpackFilterLabels(iEvent, *triggerBits);
+		unpackedTrigObjs_.push_back(obj);
+	}
+};
+
+// ------------------------------------------------------------------------------------
+void DisplacedHcalJetNTuplizer::MatchLeg0Objects() {
+	// selected offline jets, same cut and order as the jet loop in FillJetBranches
+	std::vector<float> selEta, selPhi;
+	for (const auto& jet : *jetsCorr) {
+		if (jet.pt() < 20 || fabs(jet.eta()) > 2.0) continue;
+		selEta.push_back(jet.eta());
+		selPhi.push_back(jet.phi());
+	}
+
+	for (const auto& kv : hltPathName_) {
+		const std::string& key = kv.first;
+		std::vector<int>& match = hltLeg0Match_[key];
+		match.assign(selEta.size(), -1);
+		if (hltPathIdx_[key] < 0 || hltPathFilters_[key].empty()) continue;
+
+		const std::string& leg0 = hltPathFilters_[key][0];
+		std::vector<float> bestDR(selEta.size(), 0.4);
+
+		for (size_t io = 0; io < unpackedTrigObjs_.size(); ++io) {
+			const auto& o = unpackedTrigObjs_[io];
+			if (!o.hasFilterLabel(leg0)) continue;
+
+			int jm = -1;
+			float minDR = 0.4;
+			for (size_t j = 0; j < selEta.size(); ++j) {
+				float dr = deltaR(selEta[j], selPhi[j], o.eta(), o.phi());
+				if (dr < minDR) { minDR = dr; jm = j; }
+			}
+			if (jm >= 0 && minDR < bestDR[jm]) { bestDR[jm] = minDR; match[jm] = io; }
+		}
+	}
+};
+
+// ------------------------------------------------------------------------------------
+bool DisplacedHcalJetNTuplizer::HasHLTCounterpart(int objIdx, const std::string& label) {
+	const auto& ref = unpackedTrigObjs_[objIdx];
+	for (const auto& o : unpackedTrigObjs_)
+		if (o.hasFilterLabel(label) && deltaR(ref.eta(), ref.phi(), o.eta(), o.phi()) < 0.1) return true;
+	return false;
+};
+
+// ------------------------------------------------------------------------------------
+void DisplacedHcalJetNTuplizer::EvalHLTLeg(const std::string& key, int k, float eta, float phi,
+		bool emulated, double x,
+		const double* bins, const double* dataVals, const double* mcVals, int nBins,
+		bool& cumNom, bool& cumVar,
+		std::vector<int>& status, std::vector<bool>& tag,
+		std::vector<bool>& tagVar, std::vector<float>& sf,
+		std::vector<bool>& tagVarLeg) {
+
+	// online decision: leg's filter ran in this path, and the jet was one of its inputs
+	int st = -1;
+	const int pathIdx = hltPathIdx_[key];
+	if (pathIdx >= 0 && (int)hltPathFilters_[key].size() == hltPathNLegs_[key]
+	    && triggerBits->wasrun(pathIdx)) {
+		const int lastRun = (int)triggerBits->index(pathIdx);
+		const bool legReached = (k == 0) ? (lastRun >= hltPathModuleIdx_[key][0])
+		                                 : (lastRun >  hltPathModuleIdx_[key][k-1]);
+		const int obj = hltLeg0Match_[key][n_jet - 1];
+		if (legReached) {
+			if (k == 0) {
+				st = (obj >= 0) ? 1 : 0;
+			} else if (obj >= 0 && HasHLTCounterpart(obj, hltPathFilters_[key][k-1])) {   // jet passed previous leg online
+				st = HasHLTCounterpart(obj, hltPathFilters_[key][k]) ? 1 : 0;
+			}
+		}
+	}
+
+	bool pass;
+	if (st >= 0) {
+		if (st == 1) {
+			pass = true;
+		} else {
+			pass = false;
+		}
+	} else {
+		// no online decision: use the offline emulation
+		pass = emulated;
+	}
+
+	const bool prevNom = cumNom;
+	const bool prevVar = cumVar;
+	bool legVar = pass;
+
+	float w = 1.;
+	if (isData_) {
+		cumNom = cumNom && pass;
+		cumVar = cumNom;
+	} else {
+		auto eff = GetEfficiencies(x, bins, dataVals, mcVals, nBins);
+		if (cumNom) w = ComputeTagSF(pass, eff.first, eff.second);
+		if (cumVar) cumVar = applySF(pass, eff.first, eff.second);
+		cumNom = cumNom && pass;
+		if (prevVar)      legVar = cumVar;
+		else if (prevNom) legVar = applySF(pass, eff.first, eff.second);
+	}
+
+	status.push_back(st);
+	tag.push_back(cumNom);
+	tagVar.push_back(cumVar);
+	sf.push_back(w);
+	tagVarLeg.push_back(prevNom && legVar);
 };
 
 // ------------------------------------------------------------------------------------
@@ -2703,6 +2725,8 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 	uint32_t seed = run + lumi + evt;  // simple combo
 	rand_.SetSeed(seed);
 
+	UnpackTriggerObjects( iEvent ); 
+	MatchLeg0Objects();
 	// JES uncertainty: (re)build from the "Uncertainty" level of the JEC payload when the IOV changes // GK
 	if( jecWatcher_.check(iSetup) || !jecUnc_ ) {
 		const JetCorrectorParametersCollection& jecParColl = iSetup.getData(jecParamsToken_);
@@ -3004,11 +3028,13 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 			reco::Track generalTrack = generalTracks->at(it);
 
 			// DR
-			if( deltaR( jet.eta(), jet.phi(), generalTrack.eta(), generalTrack.phi()) > 0.5 ) continue;
+			if( deltaR( jet.eta(), jet.phi(), generalTrack.eta(), generalTrack.phi()) > 0.4 ) continue;
 			// Energy 
 			if( generalTrack.pt() < 1.0 ) continue;
 
 			jet_TrackIndices_temp.push_back( it );
+
+			if( !generalTrack.quality(reco::TrackBase::highPurity) ) continue;
 
 			reco::TransientTrack t_trk = (*theB).build(generalTrack);
 			Measurement1D ip2d = IPTools::absoluteTransverseImpactParameter(t_trk, *PV_global).second;
@@ -3086,6 +3112,130 @@ bool DisplacedHcalJetNTuplizer::FillJetBranches( const edm::Event& iEvent, const
 		jet_HcalRechitIndices.push_back( jet_HcalRechitIndices_temp );
 
 		if( debug ) cout<<" ------ 8"<<endl;  
+
+		// ------ Trigger SF jet-by-jet update -------- //
+	
+		const float pT_i  = jet.pt(); 
+		const float eta_i = jet.eta();
+		const float phi_i = jet.phi();
+		const int nPromptTracks_i    = nPtrk_1000;
+		const int nDisplacedTracks_i = nDtrk_500;
+		
+		// ---- L1 ---- //
+
+		float l1Pt = -1.;
+		int   l1Qual = -1;
+		int   l1Status = -1;
+
+		if (l1jets.isValid()) {
+		    float bestDR = 0.4;
+	    	    for (auto it = l1jets->begin(0); it != l1jets->end(0); ++it) {
+	    	        float dr = deltaR(eta_i, phi_i, it->eta(), it->phi());
+	    	        if (dr < bestDR) { bestDR = dr; l1Pt = it->pt(); l1Qual = it->hwQual(); }
+	    	    }
+	    	    l1Status = (l1Pt >= 60 && l1Qual) ? 1 : 0;
+	    	}
+	    	jet_L1Status.push_back(l1Status);
+	    	jet_L1Match_Pt.push_back(l1Pt);
+	    	jet_L1Match_hwQual.push_back(l1Qual);
+
+	    	bool tag_L1_pT = false;
+	    	if (l1Status >= 0) {
+	    	    // online L1 decision available: use it
+	    	    if (l1Status == 1) {
+	    	        tag_L1_pT = true;
+	    	    } else {
+	    	        tag_L1_pT = false;
+	    	    }
+	    	} else {
+	    	    // no L1 information: fall back to the offline cut
+	    	    if (pT_i > 60.0 && fabsf(eta_i) < 1.26) {
+	    	        tag_L1_pT = true;
+	    	    } else {
+	    	        tag_L1_pT = false;
+	    	    }
+	    	}
+	    	bool  tag_L1_pT_varied = tag_L1_pT;
+	    	float SF_L1            = 1.0;
+
+	    	if (!isData_) {
+	    	    double eData_L1 = 0.64;
+	    	    double eQCD_L1  = (pT_i < 100) ? 0.55 : 0.60;
+	    	    tag_L1_pT_varied = applySF(tag_L1_pT, eData_L1, eQCD_L1);
+	    	    SF_L1            = ComputeTagSF(tag_L1_pT, eData_L1, eQCD_L1);
+	    	}
+	    	jet_Tagged_L1.push_back(        { tag_L1_pT } );
+	    	jet_Tagged_Varied_L1.push_back( { tag_L1_pT_varied } );
+	    	jet_SF_L1.push_back(            { SF_L1 } );
+
+		// ---- offline-emulated per-leg cuts (used only when there is no online decision) ----
+		const bool central   = fabsf(eta_i) < 2.0;
+		const bool emu_pT35  = central && pT_i > 35.0;
+		const bool emu_pT40  = central && pT_i > 40.0;
+		const bool emu_pT60  = central && pT_i > 60.0;
+		const bool emu_PTrk1 = nPromptTracks_i <= 1;
+		const bool emu_PTrk2 = nPromptTracks_i <= 2;
+		const bool emu_DTrk1 = nDisplacedTracks_i >= 1;
+		
+		// HLT1a: DisplacedDijet35_Inclusive1PtrkShortSig5
+		{
+		    bool nom = true, var = true;
+		    vector<int> st; vector<bool> tg, tv, tvl; vector<float> sf;
+		    EvalHLTLeg("HLT1a", 0, eta_i, phi_i, emu_pT35, pT_i, Bins_PtrkShortSig5_pT_35GeV, Data_PtrkShortSig5_pT_35GeV, MC_PtrkShortSig5_pT_35GeV, N_PtrkShortSig5_pT_35GeV, nom, var, st, tg, tv, sf, tvl);
+		    EvalHLTLeg("HLT1a", 1, eta_i, phi_i, emu_PTrk1, nPromptTracks_i, Bins_PtrkShortSig5_PTrk, Data_PtrkShortSig5_PTrk, MC_PtrkShortSig5_PTrk, N_PtrkShortSig5_PTrk, nom, var, st, tg, tv, sf, tvl);
+		    jet_HLTStatus_HLT1a.push_back(st); jet_Tagged_HLT1a.push_back(tg); jet_Tagged_Varied_HLT1a.push_back(tv); jet_SF_HLT1a.push_back(sf); jet_Tagged_VariedLeg_HLT1a.push_back(tvl);
+		}
+		
+		// HLT1b: DisplacedDijet40_Inclusive1PtrkShortSig5
+		{
+		    bool nom = true, var = true;
+		    vector<int> st; vector<bool> tg, tv, tvl; vector<float> sf;
+		    EvalHLTLeg("HLT1b", 0, eta_i, phi_i, emu_pT40,  pT_i,            Bins_PtrkShortSig5_pT_40GeV, Data_PtrkShortSig5_pT_40GeV, MC_PtrkShortSig5_pT_40GeV, N_PtrkShortSig5_pT_40GeV, nom, var, st, tg, tv, sf,  tvl);
+		    EvalHLTLeg("HLT1b", 1, eta_i, phi_i, emu_PTrk1, nPromptTracks_i, Bins_PtrkShortSig5_PTrk,     Data_PtrkShortSig5_PTrk,     MC_PtrkShortSig5_PTrk,     N_PtrkShortSig5_PTrk,     nom, var, st, tg, tv, sf, tvl);
+		    jet_HLTStatus_HLT1b.push_back(st); jet_Tagged_HLT1b.push_back(tg); jet_Tagged_Varied_HLT1b.push_back(tv); jet_SF_HLT1b.push_back(sf); jet_Tagged_VariedLeg_HLT1b.push_back(tvl);
+		}
+		
+		// HLT2: DisplacedDijet60_Inclusive
+		{
+		    bool nom = true, var = true;
+		    vector<int> st; vector<bool> tg, tv, tvl; vector<float> sf;
+		    EvalHLTLeg("HLT2", 0, eta_i, phi_i, emu_pT60,  pT_i,            Bins_Inclusive_pT,   Data_Inclusive_pT,   MC_Inclusive_pT,   N_Inclusive_pT,   nom, var, st, tg, tv, sf, tvl);
+		    EvalHLTLeg("HLT2", 1, eta_i, phi_i, emu_PTrk2, nPromptTracks_i, Bins_Inclusive_PTrk, Data_Inclusive_PTrk, MC_Inclusive_PTrk, N_Inclusive_PTrk, nom, var, st, tg, tv, sf, tvl);
+		    jet_HLTStatus_HLT2.push_back(st); jet_Tagged_HLT2.push_back(tg); jet_Tagged_Varied_HLT2.push_back(tv); jet_SF_HLT2.push_back(sf); jet_Tagged_VariedLeg_HLT2.push_back(tvl);
+		}
+		
+		// HLT3a: DisplacedDijet40_DisplacedTrack
+		{
+		    bool nom = true, var = true;
+		    vector<int> st; vector<bool> tg, tv, tvl; vector<float> sf;
+		    EvalHLTLeg("HLT3a", 0, eta_i, phi_i, emu_pT40,  pT_i,               Bins_DisplacedTrack_pT,   Data_DisplacedTrack_pT,   MC_DisplacedTrack_pT,   N_DisplacedTrack_pT,   nom, var, st, tg, tv, sf,  tvl);
+		    EvalHLTLeg("HLT3a", 1, eta_i, phi_i, emu_PTrk2, nPromptTracks_i,    Bins_DisplacedTrack_PTrk, Data_DisplacedTrack_PTrk, MC_DisplacedTrack_PTrk, N_DisplacedTrack_PTrk, nom, var, st, tg, tv, sf,  tvl);
+		    EvalHLTLeg("HLT3a", 2, eta_i, phi_i, emu_DTrk1, nDisplacedTracks_i, Bins_DisplacedTrack_DTrk, Data_DisplacedTrack_DTrk, MC_DisplacedTrack_DTrk, N_DisplacedTrack_DTrk, nom, var, st, tg, tv, sf, tvl);
+		    jet_HLTStatus_HLT3a.push_back(st); jet_Tagged_HLT3a.push_back(tg); jet_Tagged_Varied_HLT3a.push_back(tv); jet_SF_HLT3a.push_back(sf); jet_Tagged_VariedLeg_HLT3a.push_back(tvl);
+		}
+		
+		// HLT3b: DisplacedDijet60_DisplacedTrack (pT leg reuses Inclusive_pT, as before)
+		{
+		    bool nom = true, var = true;
+		    vector<int> st; vector<bool> tg, tv, tvl; vector<float> sf;
+		    EvalHLTLeg("HLT3b", 0, eta_i, phi_i, emu_pT60,  pT_i,               Bins_Inclusive_pT,        Data_Inclusive_pT,        MC_Inclusive_pT,        N_Inclusive_pT,        nom, var, st, tg, tv, sf, tvl);
+		    EvalHLTLeg("HLT3b", 1, eta_i, phi_i, emu_PTrk2, nPromptTracks_i,    Bins_DisplacedTrack_PTrk, Data_DisplacedTrack_PTrk, MC_DisplacedTrack_PTrk, N_DisplacedTrack_PTrk, nom, var, st, tg, tv, sf, tvl);
+		    EvalHLTLeg("HLT3b", 2, eta_i, phi_i, emu_DTrk1, nDisplacedTracks_i, Bins_DisplacedTrack_DTrk, Data_DisplacedTrack_DTrk, MC_DisplacedTrack_DTrk, N_DisplacedTrack_DTrk, nom, var, st, tg, tv, sf, tvl);
+		    jet_HLTStatus_HLT3b.push_back(st); jet_Tagged_HLT3b.push_back(tg); jet_Tagged_Varied_HLT3b.push_back(tv); jet_SF_HLT3b.push_back(sf); jet_Tagged_VariedLeg_HLT3b.push_back(tvl);
+		}
+		
+		if (debug) {
+		    const auto& s = jet_HLTStatus_HLT3a.back();
+		    const auto& v = jet_Tagged_Varied_HLT3a.back();
+		    const auto& t = jet_Tagged_HLT3a.back();
+		    const auto& vl = jet_Tagged_VariedLeg_HLT3a.back();
+		    cout << "[Trigger SF] jet " << n_jet - 1  << " pT=" << pT_i
+		         << " nPrompt=" << nPromptTracks_i << " nDisp=" << nDisplacedTracks_i
+		         << " | HLT3a status " << s[0] << "/" << s[1] << "/" << s[2]
+			 << " tagged " << t[0] << "/" << t[1] << "/" << t[2]
+			 << " tagged only one leg" << vl[0] << "/" << vl[1] << "/" << vl[2]
+		         << " varied " << v[0] << "/" << v[1] << "/" << v[2] << endl;
+		}
 
 	} //loop over jets
 
@@ -3367,6 +3517,8 @@ bool DisplacedHcalJetNTuplizer::FillTrackBranches( const edm::Event& iEvent ){
 		track_Phi.push_back( track.phi() );
 		
 		track_Charge.push_back( track.charge() );
+
+		track_PassQuality.push_back( track.quality(reco::TrackBase::highPurity) );
 
 		// Find the best vertex for this track
 		float maxWeight = 0;

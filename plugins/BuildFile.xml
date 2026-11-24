@@ -30,4 +30,5 @@
 <use name="correctionlib"/>
 <use name="CondFormats/JetMETObjects"/>
 <use name="JetMETCorrections/Objects"/>
+<use name="HLTrigger/HLTcore"/>
 <flags EDM_PLUGIN="1"/>

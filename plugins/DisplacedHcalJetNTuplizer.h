@@ -115,6 +115,7 @@ using namespace std;
 #include "DataFormats/TauReco/interface/PFTau.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/HLTReco/interface/TriggerTypeDefs.h"
 
 #include "SimDataFormats/DigiSimLinks/interface/DTDigiSimLink.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
@@ -182,6 +183,10 @@ using namespace std;
 //#include "cms_lpc_llp/llp_ntupler/interface/GetTrackTrajInfo.h"
 //#include "cms_lpc_llp/llp_ntupler/interface/RazorPDFWeightsHelper.h"
 #include "cms_lpc_llp/Run3-HCAL-LLP-NTupler/interface/TriggerSFTables.h"
+
+#include <algorithm>
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
+#include "DataFormats/HLTReco/interface/TriggerTypeDefs.h"
 
 // ------ Class declaration ------ //
 
@@ -279,9 +284,20 @@ public:
 
 	double deltaPhi(double phi1, double phi2);
 	double deltaR(double eta1, double phi1, double eta2, double phi2);
-	std::pair<double,double> GetEfficiencies(double binValue, const double* binEdges, const double* dataVals, const double* mcVals, int nBins);
-	double ComputeTagSF(double eData, double eQCD);
+
+	void UnpackTriggerObjects(const edm::Event& iEvent);
+	void MatchLeg0Objects();
+	bool HasHLTCounterpart(int objIdx, const std::string& label);
+	void EvalHLTLeg(const std::string& key, int k, float eta, float phi,
+                bool emulated, double x,
+                const double* bins, const double* dataVals, const double* mcVals, int nBins,
+                bool& cumNom, bool& cumVar,
+                std::vector<int>& status, std::vector<bool>& tag,
+                std::vector<bool>& tagVar, std::vector<float>& sf, std::vector<bool>& tagVarLeg);
+	pair<double,double> GetEfficiencies(double binValue, const double* binEdges, const double* dataVals, const double* mcVals, int nBins);
+	double ComputeTagSF(bool tagged, double eData, double eQCD);
 	bool applySF(bool isTagged, double eData, double eQCD);
+
 	float getBTagSF(const unique_ptr<correction::CorrectionSet> &cset, map<string, correction::Variable::Type> &jet_properties, const string &key,  const string &wp, const string &syst );
 
 protected:
@@ -428,6 +444,15 @@ protected:
 	// Mapping of the HLT Triggers and Filters
 	vector<string> triggerPathNames;
 	map<string, int> triggerPathNamesIndices;
+	map<std::string, std::vector<int>> hltLeg0Match_;
+
+	// ----- HLT jet-leg matching (all keyed by "HLT1a", "HLT1b", ...) ----- //
+	map<string, string>              hltPathName_;
+	map<string, int>                      hltPathNLegs_;
+	map<string, int>                      hltPathIdx_;        // resolved per run (-1 = not in menu)
+	map<string, vector<string>> hltPathFilters_;
+	map<string, vector<int>>         hltPathModuleIdx_;
+
 
 	// L1 trigger names and utility
 	l1t::L1TGlobalUtil l1GtUtils_;
@@ -577,29 +602,43 @@ protected:
 	vector<vector<bool>> jet_Tagged_L1;
 	vector<vector<bool>> jet_Tagged_Varied_L1;
 	vector<vector<float>> jet_SF_L1;
+	vector<int>   jet_L1Status;
+	vector<float> jet_L1Match_Pt;
+	vector<int>   jet_L1Match_hwQual;
 	
 	vector<vector<bool>> jet_Tagged_HLT1a;
 	vector<vector<bool>> jet_Tagged_Varied_HLT1a;
+	vector<vector<bool>> jet_Tagged_VariedLeg_HLT1a;
 	vector<vector<float>> jet_SF_HLT1a;
 	
 	vector<vector<bool>> jet_Tagged_HLT1b;
 	vector<vector<bool>> jet_Tagged_Varied_HLT1b;
+	vector<vector<bool>> jet_Tagged_VariedLeg_HLT1b;
 	vector<vector<float>> jet_SF_HLT1b;
 	
 	vector<vector<bool>> jet_Tagged_HLT2;
 	vector<vector<bool>> jet_Tagged_Varied_HLT2;
+	vector<vector<bool>> jet_Tagged_VariedLeg_HLT2;
 	vector<vector<float>> jet_SF_HLT2;
 	
 	vector<vector<bool>> jet_Tagged_HLT3a;
 	vector<vector<bool>> jet_Tagged_Varied_HLT3a;
+	vector<vector<bool>> jet_Tagged_VariedLeg_HLT3a;
 	vector<vector<float>> jet_SF_HLT3a;
 	
 	vector<vector<bool>> jet_Tagged_HLT3b;
 	vector<vector<bool>> jet_Tagged_Varied_HLT3b;
+	vector<vector<bool>> jet_Tagged_VariedLeg_HLT3b;
 	vector<vector<float>> jet_SF_HLT3b;
+
+	vector<vector<int>> jet_HLTStatus_HLT1a, jet_HLTStatus_HLT1b, jet_HLTStatus_HLT2,
+                              jet_HLTStatus_HLT3a, jet_HLTStatus_HLT3b;
 
 	vector<bool> L1_Decision;
 	vector<double> L1_Prescale;
+
+	HLTConfigProvider hltConfig_;
+	vector<pat::TriggerObjectStandAlone> unpackedTrigObjs_;
 
 	//pdf weight helper
 	//RazorPDFWeightsHelper pdfweightshelper;
@@ -959,6 +998,7 @@ protected:
 	vector<float> track_chi2;
 	vector<int>   track_ndof;
 	vector<int>   track_index;
+	vector<bool> track_PassQuality;
 
 	// ------ Secondary Vertices ------ //
 
