@@ -138,14 +138,17 @@ else:
         ("HToSSTo4B", "2023Prompt_"):    ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC", "2023_Summer23"), 
         ("HToSSTo4B", "2022EE"):         ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
         ("HToSSTo4B", "2022_"):          ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
+        # naming for central samples
+        ("HTo2LongLivedTo4b", "22DRPremix"): ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
+        ("HTo2LongLivedTo4b", "22EEDR"):     ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
+        ("HTo2LongLivedTo4b", "23DRPremix"): ("Summer23Prompt23_V3_MC", "Summer23Prompt23_RunCv1234_JRV1_MC", "2023_Summer23"), 
+        ("HTo2LongLivedTo4b", "23BPix"):     ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
+        # naming for other central samples used previously, this should be out of date / proceeded by the above 4 lines now
         ("HTo2LongLivedTo4b", "postBPix"):("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
         ("HTo2LongLivedTo4b", "postEE"): ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
         ("HTo2LongLivedTo4b", "2022_"):  ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
         # ("HToSSTo4B", "2023BPixPrompt"): "Summer23BPixPrompt23_V3_MC",
         # ("WJetsToLNu", "preEE"):         ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC"),
-        ("HTo2LongLivedTo4b", "22DRPremix"): ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
-        ("HTo2LongLivedTo4b", "22EEDR"):     ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"),
-        ("HTo2LongLivedTo4b", "23BPix"):     ("Summer23BPixPrompt23_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix"),
         ("WJetsToLNu", "preEE"):         ("Summer22_22Sep2023_V3_MC", "Summer22_22Sep2023_JRV1_MC", "2022_Summer22"),
         ("WJetsToLNu", "postEE"):        ("Summer22EE_22Sep2023_V3_MC", "Summer22EE_22Sep2023_JRV1_MC", "2022_Summer22EE"), 
         ("QCD", "2025"):        ("Winter25Prompt25_V3_MC", "Summer23BPixPrompt23_RunD_JRV1_MC", "2023_Summer23BPix")#"2025_Winter") #b tag 25 only contains UParT 
@@ -182,13 +185,14 @@ if options.isData:
 else:
     if "23BPix" in era_name:        era_name = "2023postBPix"
     elif "2023Prompt_" in era_name: era_name = "2023preBPix"
-    elif "postBPix" in era_name:        era_name = "2023postBPix"
+    elif "postBPix" in era_name:    era_name = "2023postBPix"
     elif "postEE" in era_name:      era_name = "2022postEE"
     elif "preEE" in era_name:       era_name = "2022preEE"
     elif "2022EE" in era_name:      era_name = "2022postEE"
     elif "2022_" in era_name:       era_name = "2022preEE"
-    elif "22DRPremix" in era_name:       era_name = "2022preEE"
+    elif "22DRPremix" in era_name:  era_name = "2022preEE"
     elif "22EEDR" in era_name:      era_name = "2022postEE"
+    elif "23DRPremix" in era_name:  era_name = "2023preBPix"
     elif "2025" in era_name:        era_name = "2025"
 
 if options.debug:
@@ -317,15 +321,18 @@ global_tags_MC = {
     "2023preBPix":  "130X_mcRun3_2023_realistic_v14",
     "2023postBPix": "130X_mcRun3_2023_realistic_v14",
     "2025": "142X_mcRun3_2025_realistic_v1"
+
+    # "2023preBPix":  "130X_mcRun3_2023_realistic_v15",          # was v14; dataset says v15
+    # "2023postBPix": "130X_mcRun3_2023_realistic_postBPix_v6",  # was v14 (pre-BPix tag)
 }
 
 # 140X_dataRun3_v17
 
 if options.isData: 
     if "2022" in era_name: 
-        if "G" not in era_name: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4', '') 
-        else:                   process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10', '')
-    else:                       process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '') 
+        if "G" not in era_name: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4', '')     # should this be 124X_dataRun3_v15? this is offline tag for CDE (https://twiki.cern.ch/twiki/bin/view/CMSPublic/GTsRun3#Global_tag_for_ReReco_of_Run_202)
+        else:                   process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10', '')    # F and G only have prompt (JEC derived on prompt), so use prompt_v4 for F and prompt_v10 for G (or 130X_dataRun3_PromptAnalysis_v1 for FG and 2023?)
+    else:                       process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '')           # we don't re-reco this one
 else:                           process.GlobalTag = GlobalTag(process.GlobalTag, global_tags_MC[era_name], '') 
 
 
