@@ -316,25 +316,19 @@ if options.recoFromRAW: process.options.numberOfThreads = cms.untracked.uint32(2
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 global_tags_MC = {
-    "2022preEE":    "124X_mcRun3_2022_realistic_v12",
+    "2022preEE":    "124X_mcRun3_2022_realistic_v12",               # https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis?extralog=-%20caching%20topic#MC_AN4
     "2022postEE":   "124X_mcRun3_2022_realistic_postEE_v3",
     "2023preBPix":  "130X_mcRun3_2023_realistic_v14",
-    "2023postBPix": "130X_mcRun3_2023_realistic_v14",
-    "2025": "142X_mcRun3_2025_realistic_v1"
-
-    # "2023preBPix":  "130X_mcRun3_2023_realistic_v15",          # was v14; dataset says v15
-    # "2023postBPix": "130X_mcRun3_2023_realistic_postBPix_v6",  # was v14 (pre-BPix tag)
+    "2023postBPix": "130X_mcRun3_2023_realistic_postBPix_v2",
+    "2025":         "142X_mcRun3_2025_realistic_v1"
 }
-
-# 140X_dataRun3_v17
 
 if options.isData: 
     if "2022" in era_name: 
-        if "G" not in era_name: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4', '')     # should this be 124X_dataRun3_v15? this is offline tag for CDE (https://twiki.cern.ch/twiki/bin/view/CMSPublic/GTsRun3#Global_tag_for_ReReco_of_Run_202)
-        else:                   process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10', '')    # F and G only have prompt (JEC derived on prompt), so use prompt_v4 for F and prompt_v10 for G (or 130X_dataRun3_PromptAnalysis_v1 for FG and 2023?)
-    else:                       process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '')           # we don't re-reco this one
+        if "G" not in era_name: process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v4', '')     # 124X_dataRun3_v15 is offline tag for CDE (https://twiki.cern.ch/twiki/bin/view/CMSPublic/GTsRun3#Global_tag_for_ReReco_of_Run_202), but prompt is recommended. PromptAnalysis only differs in JEC/JER (https://cms-conddb.cern.ch/cmsDbBrowser/diff/Prod/gts/124X_dataRun3_Prompt_v10/124X_dataRun3_PromptAnalysis_v2)
+        else:                   process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_Prompt_v10', '')    # F and G have JEC derived on prompt, so use prompt_v4 for F and prompt_v10 for G (or 130X_dataRun3_PromptAnalysis_v1 for FG and 2023?)
+    else:                       process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_v15', '')           # we don't re-reco this one, https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVRun3Analysis?extralog=-%20caching%20topic#MC_AN4
 else:                           process.GlobalTag = GlobalTag(process.GlobalTag, global_tags_MC[era_name], '') 
-
 
 # ----- HLT Filter ----- #
 

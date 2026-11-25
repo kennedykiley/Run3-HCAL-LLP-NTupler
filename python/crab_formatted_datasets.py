@@ -96,6 +96,7 @@ datasets["Signal_HToSSTo4B_MH125_MS50_CTau10000"] = [
 datasets["Signal_HToSSTo4B_MH125_MS15_CTau3000"] = [
     "/HToSSTo4B_MH125_MS15_CTau3000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS15_CTau3000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER"
 ]
+
 datasets["Signal_HToSSTo4B_MH125_MS15_CTau10000"] = [
     "/HToSSTo4B_MH125_MS15_CTau10000/lpclonglived-crab_PrivateProduction_Summer23BPix_DR_step2_RECOSIM_HToSSTo4B_MH125_MS15_CTau10000_batch1_v1-6c03a81f0d97498cab5c296ab3fa9a76/USER"
 ]
